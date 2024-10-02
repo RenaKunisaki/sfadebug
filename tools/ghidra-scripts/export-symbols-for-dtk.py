@@ -3,6 +3,9 @@
 #source files containing decompiled code.
 #Source file names are taken from function names.
 #Functions without a name tag are written to the file 'unknown'.
+#Asks for two directories. The first is where to output the
+#generated source files. The second is the location of the dtk
+#config files (symbols.txt, etc).
 #@author Rena
 #@category Functions
 #@keybinding
@@ -805,7 +808,7 @@ def run():
     outPath = str(askDirectory("Select Export Path", "Export"))
     monitor.setIndeterminate(True)
 
-    inPath  = str(askDirectory("Select Original Files", "Import"))
+    inPath  = str(askDirectory("Select Config Directory", "Import"))
     symbols = readSymbolsTxt(inPath+'/symbols.txt')
     applySymbolsTxt(symbols)
 
