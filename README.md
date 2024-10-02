@@ -1,5 +1,5 @@
 Star Fox Adventures
-[![Build Status]][actions] ![Progress] [![Discord Badge]][discord]
+<!-- [![Build Status]][actions] ![Progress] [![Discord Badge]][discord] -->
 =============
 
 <!--
