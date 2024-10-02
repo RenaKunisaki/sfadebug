@@ -222,13 +222,13 @@ def applySymbolsTxt(symbols):
                         func.setName(name, SourceType.IMPORTED)
                         # preserve old name in a comment
                         if not oldName.startswith(GENERIC_FUNC_NAME_PREFIXES):
-                            comment = getPlateComment(addrMin)
+                            comment = getPlateComment(intToAddr(addrMin))
                             comment = comment.text if comment else ''
                             comment = list(comment.split('\n'))
                             if comment[0].startswith('aka: '):
                                 comment.pop(0) # remove previous
                             comment.insert(0, "aka: "+oldName)
-                            setPlateComment(addrMin, '\n'.join(comment))
+                            setPlateComment(intToAddr(addrMin), '\n'.join(comment))
         else:
             if sym['type'] == 'function':
                 func = createFunction(addrObj, name)
@@ -802,7 +802,7 @@ def writeSplitsTxt(inPath, outPath, files, symbols):
 ###################################### main
 
 def run():
-    outPath = str(askDirectory("Export Symbols", "Export"))
+    outPath = str(askDirectory("Select Export Path", "Export"))
     monitor.setIndeterminate(True)
 
     inPath  = str(askDirectory("Select Original Files", "Import"))
