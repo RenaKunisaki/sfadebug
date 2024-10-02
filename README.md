@@ -32,7 +32,7 @@ Supported versions:
 default.dol
 ===========
 
-This is a debug build of the game from shortly after the initial transition to GameCube (late 2001). This file is found on the (TODO: which one?) GameCube demo disc, where it's unused and presumably included by mistake.
+This is a debug build of the game from shortly after the initial transition to GameCube (late 2001). This file is found on `Interactive Multi-Game Demo Disc - July 2002 (USA)`, where it's unused and presumably included by mistake.
 
 I'm targeting this build because:
 - it has a lot of debugging functions/info that aren't present in retail builds (helps with identifying and reverse engineering)
@@ -102,18 +102,18 @@ Building
   git clone https://github.com/my/repo.git
   ```
 
-- Using [Dolphin Emulator](https://dolphin-emu.org/), extract your game to `orig/GAMEID`.
+- Using [Dolphin Emulator](https://dolphin-emu.org/), extract the file `files/zz_StarFox051702_e3.tgc` from the demo disc to a temporary folder.
 ![](assets/dolphin-extract.png)
-  - To save space, the only necessary files are the following. Any others can be deleted.
-    - `sys/main.dol`
-    - `files/rels/*.rel`
+- Load that file in Dolphin Emulator, and extract `files/default.dol` to `orig/GSAP01-DEBUG/default.dol`.
+  - You can then delete the `zz_StarFox051702_e3.tgc` file.
+
 - Configure:
 
   ```sh
   python configure.py
   ```
 
-  To use a version other than `GAMEID` (USA), specify it with `--version`.
+  To use a version other than `GSAP01-DEBUG`, specify it with `--version`.
 - Build:
 
   ```sh
