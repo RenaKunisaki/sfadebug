@@ -19,7 +19,6 @@ from typing import Any, Dict, List
 
 from tools.project import (
     Object,
-    ProgressCategory,
     ProjectConfig,
     calculate_progress,
     generate_build,
@@ -29,7 +28,7 @@ from tools.project import (
 # Game versions
 DEFAULT_VERSION = 0
 VERSIONS = [
-    "GAMEID",  # 0
+    "GSAP01-DEBUG",  # 0
 ]
 
 parser = argparse.ArgumentParser()
@@ -113,12 +112,6 @@ parser.add_argument(
     action="store_true",
     help="builds equivalent (but non-matching) or modded objects",
 )
-parser.add_argument(
-    "--no-progress",
-    dest="progress",
-    action="store_false",
-    help="disable progress calculation",
-)
 args = parser.parse_args()
 
 config = ProjectConfig()
@@ -131,10 +124,10 @@ config.dtk_path = args.dtk
 config.objdiff_path = args.objdiff
 config.binutils_path = args.binutils
 config.compilers_path = args.compilers
+config.debug = args.debug
 config.generate_map = args.map
 config.non_matching = args.non_matching
 config.sjiswrap_path = args.sjiswrap
-config.progress = args.progress
 if not is_windows():
     config.wrapper = args.wrapper
 # Don't build asm unless we're --non-matching
@@ -144,8 +137,8 @@ if not config.non_matching:
 # Tool versions
 config.binutils_tag = "2.42-1"
 config.compilers_tag = "20240706"
-config.dtk_tag = "v1.0.0"
-config.objdiff_tag = "v2.2.1"
+config.dtk_tag = "v0.9.4"
+config.objdiff_tag = "v2.0.0-beta.3"
 config.sjiswrap_tag = "v1.1.1"
 config.wibo_tag = "0.6.11"
 
@@ -162,15 +155,15 @@ config.asflags = [
 config.ldflags = [
     "-fp hardware",
     "-nodefaults",
+    "-g",
+    "-sym on",
+    # "-warn off",
+    # "-listclosure", # Uncomment for Wii linkers
 ]
-if args.debug:
-    config.ldflags.append("-g")  # Or -gdwarf-2 for Wii linkers
-if args.map:
-    config.ldflags.append("-mapunused")
-    # config.ldflags.append("-listclosure") # For Wii linkers
-
 # Use for any additional files that should cause a re-configure when modified
-config.reconfig_deps = []
+config.reconfig_deps = [
+    'config/GSAP01-DEBUG/ldscript.tpl',
+]
 
 # Base flags, common to most GC/Wii games.
 # Generally leave untouched, with overrides added below.
@@ -182,8 +175,17 @@ cflags_base = [
     "-fp hardware",
     "-Cpp_exceptions off",
     # "-W all",
-    "-O4,p",
-    "-inline auto",
+    #"-O4,p",
+    #"-O1,p",
+    "-O0",
+    "-opt peephole",
+    #"-opt off",
+    "-g",
+    #"-func_align 8",
+    #"-common on",
+    #"-inline auto",
+    #"-inline noauto,deferred",
+    "-use_lmw_stmw on",
     '-pragma "cats off"',
     '-pragma "warn_notinlined off"',
     "-maxerrors 1",
@@ -193,13 +195,13 @@ cflags_base = [
     "-str reuse",
     "-multibyte",  # For Wii compilers, replace with `-enc SJIS`
     "-i include",
+    "-i include/libc",
     f"-i build/{config.version}/include",
     f"-DVERSION={version_num}",
 ]
 
 # Debug flags
-if args.debug:
-    # Or -sym dwarf-2 for Wii compilers
+if config.debug:
     cflags_base.extend(["-sym on", "-DDEBUG=1"])
 else:
     cflags_base.append("-DNDEBUG=1")
@@ -209,7 +211,6 @@ cflags_runtime = [
     *cflags_base,
     "-use_lmw_stmw on",
     "-str reuse,pool,readonly",
-    "-gccinc",
     "-common off",
     "-inline auto",
 ]
@@ -221,16 +222,16 @@ cflags_rel = [
     "-sdata2 0",
 ]
 
-config.linker_version = "GC/1.3.2"
+config.linker_version = "GC/1.0"
 
 
 # Helper function for Dolphin libraries
 def DolphinLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
-        "mw_version": "GC/1.2.5n",
+        "mw_version": "GC/1.0",
         "cflags": cflags_base,
-        "progress_category": "sdk",
+        "host": False,
         "objects": objects,
     }
 
@@ -239,9 +240,9 @@ def DolphinLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
 def Rel(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
-        "mw_version": "GC/1.3.2",
+        "mw_version": "GC/1.0",
         "cflags": cflags_rel,
-        "progress_category": "game",
+        "host": True,
         "objects": objects,
     }
 
@@ -257,27 +258,33 @@ config.libs = [
         "lib": "Runtime.PPCEABI.H",
         "mw_version": config.linker_version,
         "cflags": cflags_runtime,
-        "progress_category": "sdk",  # str | List[str]
+        "host": False,
         "objects": [
-            Object(NonMatching, "Runtime.PPCEABI.H/global_destructor_chain.c"),
-            Object(NonMatching, "Runtime.PPCEABI.H/__init_cpp_exceptions.cpp"),
+            Object(Equivalent, "Runtime.PPCEABI.H/global_destructor_chain.c"),
+            Object(Equivalent, "Runtime.PPCEABI.H/__init_cpp_exceptions.cpp"),
+        ],
+    },
+    #DolphinLib("ai", [
+    #    DolphinLib(Matching, "dolphin/ai/ai.c"),
+    #]),
+    {
+        "lib": "main",
+        "mw_version": config.linker_version,
+        "cflags": cflags_base,
+        "host": False,
+        "objects": [
+            Object(NonMatching, "debug.c"),
+            Object(NonMatching, "main.c"),
         ],
     },
 ]
-
-# Optional extra categories for progress tracking
-# Adjust as desired for your project
-config.progress_categories = [
-    ProgressCategory("game", "Game Code"),
-    ProgressCategory("sdk", "SDK Code"),
-]
-config.progress_each_module = args.verbose
 
 if args.mode == "configure":
     # Write build.ninja and objdiff.json
     generate_build(config)
 elif args.mode == "progress":
     # Print progress and write progress.json
+    config.progress_each_module = args.verbose
     calculate_progress(config)
 else:
     sys.exit("Unknown mode: " + args.mode)

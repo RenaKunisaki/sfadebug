@@ -1,0 +1,243 @@
+Sections:
+	.init       type:code align:4
+	extab       type:rodata align:32
+	extabindex  type:rodata align:4
+	.text       type:code align:4
+	.ctors      type:rodata align:32
+	.dtors      type:rodata align:32
+	.rodata     type:rodata align:32
+	.data       type:data align:32
+	.bss        type:bss align:8
+	.sdata      type:data align:32
+	.sbss       type:bss align:32
+	.sdata2     type:rodata align:8
+
+Dolphin/os/OSAddress.c:
+	.text       start:0x800075AC end:0x80007714
+	.data       start:0x802D1088 end:0x802D1140
+
+Dolphin/os/OSAlarm.c:
+	.data       start:0x802D1140 end:0x802D1490
+
+Dolphin/os/OSAlloc.c:
+	.data       start:0x802D1490 end:0x802D1F48
+
+Dolphin/os/OSArena.c:
+	.data       start:0x802D1F48 end:0x802D2018
+
+Dolphin/os/OSAudioSystem.c:
+	.data       start:0x802D2018 end:0x802D2170
+
+Dolphin/os/OSCache.c:
+	.data       start:0x802D2170 end:0x802D2310
+
+Dolphin/os/OSError.c:
+	.data       start:0x802D2310 end:0x802D2950
+
+Dolphin/os/OSExi.c:
+	.data       start:0x802D2950 end:0x802D2C28
+
+Dolphin/os/OSInterrupt.c:
+	.data       start:0x802D2C28 end:0x802D3078
+
+Dolphin/os/OSMutex.c:
+	.data       start:0x802D3078 end:0x802D30B0
+
+Dolphin/os/OSReset.c:
+	.data       start:0x802D30B0 end:0x802D30D8
+
+Dolphin/os/OSRtc.c:
+	.data       start:0x802D30D8 end:0x802D3130
+
+Dolphin/os/OSSerial.c:
+	.data       start:0x802D3130 end:0x802D3430
+
+Dolphin/os/OSThread.c:
+	.data       start:0x802D3430 end:0x802D4280
+
+Dolphin/mtx/mtx.c:
+	.data       start:0x802D4280 end:0x802D4A38
+
+Dolphin/mtx/mtxvec.c:
+	.data       start:0x802D4A38 end:0x802D4F58
+
+Dolphin/dvd/dvdlow.c:
+	.data       start:0x802D4F58 end:0x802D50E8
+
+Dolphin/dvd/dvd.c:
+	.data       start:0x802D50E8 end:0x802D6740
+
+Dolphin/dvd/dvdqueue.c:
+	.data       start:0x802D6740 end:0x802D67E0
+
+Dolphin/vi/vi.c:
+	.data       start:0x802D67E0 end:0x802D6D90
+
+Dolphin/pad/Pad.c:
+	.data       start:0x802D6D90 end:0x802D7140
+
+Dolphin/ai/ai.c:
+	.data       start:0x802D7140 end:0x802D7230
+
+Dolphin/ar/ar.c:
+	.data       start:0x802D7230 end:0x802D7490
+
+Dolphin/ar/arq.c:
+	.data       start:0x802D7490 end:0x802D7588
+
+Dolphin/dsp/dsp.c:
+	.data       start:0x802D7588 end:0x802D75C0
+
+Dolphin/dsp/dsp_task.c:
+	.data       start:0x802D75C0 end:0x802D7948
+
+Dolphin/gx/GXInit.c:
+	.text       start:0x8001AFFC end:0x8001C334
+	.data       start:0x802D7948 end:0x802D79B8
+
+Dolphin/gx/GXFifo.c:
+	.text       start:0x8001C334 end:0x8001D494
+	.data       start:0x802D79B8 end:0x802D7F60
+
+Dolphin/gx/GXAttr.c:
+	.data       start:0x802D7F60 end:0x802D8638
+
+Dolphin/gx/GXMisc.c:
+	.data       start:0x802D8638 end:0x802D8A98
+
+Dolphin/gx/GXGeometry.c:
+	.data       start:0x802D8A98 end:0x802D9238
+
+Dolphin/gx/GXFrameBuf.c:
+	.data       start:0x802D9238 end:0x802D9908
+
+Dolphin/gx/GXLight.c:
+	.data       start:0x802D9908 end:0x802D9EA0
+
+Dolphin/gx/GXTexture.c:
+	.data       start:0x802D9EA0 end:0x802DA8E8
+
+Dolphin/gx/GXBump.c:
+	.data       start:0x802DA8E8 end:0x802DB398
+
+Dolphin/gx/GXPixel.c:
+	.data       start:0x802DB398 end:0x802DB398
+
+Dolphin/gx/GXDraw.c:
+	.data       start:0x802DB7B0 end:0x802DB810
+
+Dolphin/gx/GXDisplayList.c:
+	.data       start:0x802DB810 end:0x802DBA70
+
+Dolphin/gx/GXTransform.c:
+	.data       start:0x802DBA70 end:0x802DF520
+
+Dolphin/gx/GXPerf.c:
+	.data       start:0x802DF520 end:0x802DF7C0
+
+Dolphin/card/CARDBios.c:
+	.data       start:0x802DF7C0 end:0x802DFB20
+
+Dolphin/card/CARDUnlock.c:
+	.data       start:0x802DFB20 end:0x802DFB58
+
+Dolphin/card/CARDRdwr.c:
+	.data       start:0x802DFB58 end:0x802DFC08
+
+Dolphin/card/CARDBlock.c:
+	.data       start:0x802DFC08 end:0x802DFCA8
+
+Dolphin/card/CARDDir.c:
+	.data       start:0x802DFCA8 end:0x802DFD30
+
+Dolphin/card/CARDCheck.c:
+	.data       start:0x802DFD30 end:0x802DFE68
+
+Dolphin/card/CARDMount.c:
+	.data       start:0x802DFE68 end:0x802DFEF0
+
+Dolphin/card/CARDFormat.c:
+	.data       start:0x802DFEF0 end:0x802DFF48
+
+Dolphin/card/CARDOpen.c:
+	.data       start:0x802DFF48 end:0x802E0040
+
+Dolphin/card/CARDCreate.c:
+	.data       start:0x802E0040 end:0x802E0128
+
+Dolphin/card/CARDRead.c:
+	.data       start:0x802E0128 end:0x802E03B0
+
+Dolphin/card/CARDWrite.c:
+	.data       start:0x802E03B0 end:0x802E04D8
+
+Dolphin/card/CARDDelete.c:
+	.data       start:0x802E04D8 end:0x802E0548
+
+Dolphin/card/CARDStat.c:
+	.data       start:0x802E0548 end:0x802E05B8
+
+Dolphin/card/CARDRename.c:
+	.data       start:0x802E05B8 end:0x802E0650
+
+musyx/runtime/seq.c:
+	.data       start:0x802E0650 end:0x802E0720
+
+musyx/runtime/seq_api.c:
+	.data       start:0x802E0720 end:0x802E0870
+
+musyx/runtime/snd_synthapi.c:
+	.data       start:0x802E0870 end:0x802E08A8
+
+musyx/runtime/synthdata.c:
+	.data       start:0x802E08A8 end:0x802E0D48
+
+musyx/runtime/synthmacros.c:
+	.data       start:0x802E0D48 end:0x802E0DA0
+
+musyx/runtime/synthvoice.c:
+	.data       start:0x802E0DA0 end:0x802E1960
+
+musyx/runtime/s_data.c:
+	.data       start:0x802E1960 end:0x802E1C18
+
+musyx/runtime/hw_dspctrl.c:
+	.data       start:0x802E1C18 end:0x802E1FD8
+
+musyx/runtime/snd_midictrl.c:
+	.data       start:0x802E1FD8 end:0x802E2948
+
+musyx/runtime/hardware.c:
+	.data       start:0x802E2948 end:0x802E2980
+
+musyx/runtime/hw_aramdma.c:
+	.data       start:0x802E2980 end:0x802E2B24
+
+musyx/runtime/hw_dolphin.c:
+	.data       start:0x802E2B24 end:0x802E44E0
+
+musyx/runtime/StdReverb/reverb_fx.c:
+	.data       start:0x802E44E0 end:0x802E4D28
+
+musyx/runtime/Chorus/chorus_fx.c:
+	.data       start:0x802E4D28 end:0x802E4D50
+
+Runtime.PPCEABI.H/__init_cpp_exceptions.cpp:
+	.text       start:0x8005BCA4 end:0x8005BD20
+	.ctors      start:0x802CEA00 end:0x802CEA08
+	.dtors      start:0x802CEA20 end:0x802CEA2C
+	.sdata      start:0x80396A18 end:0x80396A20
+
+main.c:
+	.text       start:0x80077CA8 end:0x8007A284
+	.sdata      start:0x80396E88 end:0x80396E94
+
+debug.c:
+	.text       start:0x80179B60 end:0x80181F38
+	.sbss       start:0x803997B8 end:0x80399C28
+
+AmcExi.c:
+	.data       start:0x802E4D50 end:0x802E5380
+
+audio.c:
+	.data       start:0x802E5380 end:0x802E5830
