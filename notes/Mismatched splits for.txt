@@ -1,0 +1,19 @@
+Mismatched splits for
+.ctors   4:0x802CEA04 (Runtime.PPCEABI.H/__init_cpp_exceptions.cpp) and
+function 3:0x800636E8 (unk8005BD20)
+
+Runtime.PPCEABI.H/__init_cpp_exceptions.cpp:
+    .ctors	start:0x802CEA00 end:0x802CEA08
+unk8005BD20:  (something related to TRK)
+	.text	start:0x8005BD20 end:0x80068C20
+
+preInit_800636e8 = .text:0x800636E8; // type:function size:0x30
+
+// .ctors  ram:802cea00-ram:802cea0b
+pre_init_funcs
+802cea00 80 05 bc e0     addr      __init_cpp_exceptions   [0]
+802cea04 80 06 36 e8     addr      preInit_800636e8        [1]
+802cea08 00 00 00 00     addr      00000000                [2]
+
+it's complaining that the pointer is in a different file than the code?
+

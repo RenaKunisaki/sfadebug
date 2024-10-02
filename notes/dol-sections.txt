@@ -1,0 +1,14 @@
+Sections in default.dol:
+      Name | Address  |   Size | End      | Note
+     .init | 80003100 |   23D0 | 800054D0 | eg _start, memcpy, TRK stuff
+     extab | 800054E0 |    980 | 80005E60 |
+extabindex | 80005E60 |    E60 | 80006CC0 |
+     .text | 80006CC0 | 2C7D28 | 802CE9E8 | game code
+    .ctors | 802CEA00 |      C | 802CEA0C |
+    .dtors | 802CEA20 |     10 | 802CEA30 |
+   .rodata | 802CEA40 |   2308 | 802D0D48 |
+     .data | 802D0D60 |  54FBC | 80325D1C |
+      .bss | 80325D20 |  709C8 | 803966E8 |
+    .sdata | 80396700 |   1B2F | 8039822F |
+     .sbss | 80398240 |   1F5C | 8039A19C |
+    .data9 | 8039A1A0 |   9FD4 | 803A4174 | float constants (.sdata2?)
