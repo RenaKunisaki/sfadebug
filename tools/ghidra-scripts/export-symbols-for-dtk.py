@@ -58,8 +58,16 @@ SECTION_ALIGN = {
 SYMBOL_MIN_ADDR = 0x80003100
 SYMBOL_MAX_ADDR = 0x81800000
 
+ASSERT_FUNCS = {
+    # address: (arg, arg...)
+    # only 'file' arg is currently used
+    0x80009968: ('msg',), # OSReport
+    0x800099f8: ('file', 'line', 'msg'), # OSPanic
+}
+
 re_stringRef = re.compile(r's_([0-9a-zA-Z_]+)_([0-9a-fA-F]{8})')
 re_symbolsTxt = re.compile(r'^(\S+)\s*=\s*([^\s:]+):(\S+);\s*//\s*(.+)$')
+re_splitFileName = re.compile(r'^([^\.]+)')
 
 ###################################### General Ghidra stuff
 
@@ -128,7 +136,26 @@ def readString(addr, length=None, maxLength=1000):
 def getCodeUnitContaining(address):
     return currentProgram.getListing().getCodeUnitAt(address)
 
-def getSectionForAddr(addr):
+def getConstantAnalyzer(program):
+    mgr = AutoAnalysisManager.getAnalysisManager(program)
+    analyzers = ClassSearcher.getInstances(ConstantPropagationAnalyzer)
+    for analyzer in analyzers:
+        if analyzer.canAnalyze(program):
+            return mgr.getAnalyzer(analyzer.getName())
+    return None
+
+def analyzeFunction(function, monitor):
+    program = function.getProgram()
+    analyzer = getConstantAnalyzer(program)
+    symEval = SymbolicPropogator(program)
+    symEval.setParamRefCheck (True)
+    symEval.setReturnRefCheck(True)
+    symEval.setStoredRefCheck(True)
+    analyzer.flowConstants(program, function.getEntryPoint(), function.getBody(),
+        symEval, monitor)
+    return symEval
+
+def getSectionTypeAt(addr):
     # note: bss can also be sbss
     # data can also be sdata, etc
     mem = getMemoryBlock(intToAddr(addr))
@@ -142,7 +169,100 @@ def getSectionForAddr(addr):
     #return 'data'
     return None
 
+###################################### tagging functions
+
+# used to track cases where the same file name appears
+# multiple times.
+FILE_NAME_STRINGS = {} # addr => name
+
+def findCall(caller, addrCall):
+    """Scan through 'caller' and find the first address
+    at which it calls/jumps to 'addrCall'.
+    addrCall should be an Address object."""
+    addrStart = caller.body.minAddress
+    addrEnd   = caller.body.maxAddress
+    addressSetView = AF.getAddressSet(addrStart, addrEnd)
+    instrs = listing.getInstructions(addressSetView, True)
+    for i, instr in enumerate(instrs):
+        for addrDst in instr.getFlows():
+            if addrDst == addrCall:
+                return instr.getAddress()
+    return None
+
+def assignTagsFromCall(funcAddr, paramIdx):
+    """Check every function that calls the function at
+    'funcAddr'. Retrieve the source file name from the
+    parameter 'paramIdx' and tag the calling function
+    with that name.
+    """
+    addrObj = intToAddr(funcAddr)
+    func = getFunctionAt(addrObj)
+    monitor.setMessage("Finding calls to " + str(func.getName()))
+    for caller in func.getCallingFunctions(monitor):
+        # find where exactly this is called from
+        callAddr = findCall(caller, addrObj)
+        if callAddr is None: continue
+
+        # extract the desired parameter from that call
+        prop  = analyzeFunction(caller, monitor)
+        instr = listing.getCodeUnitAt(callAddr)
+        # XXX hardcoded register for PPC
+        val = prop.getRegisterValue(callAddr,
+            instr.getRegister('r%d' % (paramIdx + 3)))
+        if val is None:
+            print("[!] Can't find param for call to %s at 0x%X" % (
+                str(func.getName()), addrToInt(callAddr)))
+            continue
+        val = val.getValue() & 0xFFFFFFFF
+
+        # the value should be the address of a string
+        fileName, nameLen = readString(intToAddr(val))
+        oldName = fileName
+        if val in FILE_NAME_STRINGS:
+            fileName = FILE_NAME_STRINGS[val]
+
+        # see if this name appears at another address
+        for nameAddr, nameVal in FILE_NAME_STRINGS.items():
+            if nameVal == fileName and nameAddr != val:
+                print("[!] Multiple instances of file name: %s (0x%X, 0x%X)" % (
+                    fileName, val, nameAddr))
+                # stuff the address in to distinguish it
+                nameStart = re_splitFileName.match(fileName).group(1)
+                fileName = '%s.%08x%s' % (nameStart, val,
+                    fileName[len(nameStart):])
+                #print(" => %s" % fileName)
+        FILE_NAME_STRINGS[val] = fileName
+
+        # tag the caller with this name
+        if fileName != oldName: caller.removeTag(oldName)
+        caller.addTag(fileName)
+
+def assignTagsToFunctions():
+    """For each function listed in ASSERT_FUNCS which has
+    a 'file' parameter, iterate all calls to it.
+    Tag the calling functions with that name.
+    """
+    for addr, params in ASSERT_FUNCS.items():
+        for i, param in enumerate(params):
+            if param == 'file':
+                assignTagsFromCall(addr, i)
+
 ###################################### symbols.txt
+
+SYMBOLS_TXT_DATA_TYPE_MAP = {
+    '1byte':  'byte',
+    '2byte':  'word',
+    '4byte':  'dword',
+    '8byte':  'qword',
+    'double': 'double',
+    'float':  'float',
+    # if no 'data' param, guess from the size
+    1: 'byte',
+    2: 'word',
+    4: 'dword',
+    8: 'double', # qword doesn't exist?
+}
+GENERIC_FUNC_NAME_PREFIXES = ('FUN_', 'unk_', 'fn', 'lbl_')
 
 def readSymbolsTxt(path):
     symbols = {}
@@ -177,20 +297,24 @@ def readSymbolsTxt(path):
                 except IndexError: sym[param[0]] = True
     return symbols
 
-SYMBOLS_TXT_DATA_TYPE_MAP = {
-    '1byte':  'byte',
-    '2byte':  'word',
-    '4byte':  'dword',
-    '8byte':  'qword',
-    'double': 'double',
-    'float':  'float',
-    # if no 'data' param, guess from the size
-    1: 'byte',
-    2: 'word',
-    4: 'dword',
-    8: 'double', # qword doesn't exist?
-}
-GENERIC_FUNC_NAME_PREFIXES = ('FUN_', 'unk_', 'fn', 'lbl_')
+def correctSymbolSizes(symbols):
+    """for each symbol, check if we have a known size in
+    Ghidra and if so, override the symbol size from that."""
+    for name, sym in symbols.items():
+        addr    = sym['address']
+        addrObj = intToAddr(addr)
+        addrMin = None
+        addrMax = None
+        unit    = getFunctionContaining(addrObj)
+        if unit is None:
+            unit = getDataContaining(addrObj)
+            if unit is None: continue
+            addrMin = addrToInt(unit.getMinAddress())
+            addrMax = addrToInt(unit.getMaxAddress())
+        else: # is function
+            addrMin = addrToInt(unit.body.minAddress)
+            addrMax = addrToInt(unit.body.maxAddress)
+        sym['size'] = addrMax - addrMin
 
 def applySymbolsTxt(symbols):
     for name, sym in symbols.items():
@@ -307,6 +431,7 @@ def writeSymbolsTxt(outPath, files, symbols):
     outAddrs   = {}
 
     nextAddr = intToAddr(SYMBOL_MIN_ADDR)
+    prevAddr = addrToInt(nextAddr)
     while True:
         sym = getSymbolAt(nextAddr)
         if sym is None: sym = getSymbolAfter(nextAddr)
@@ -315,7 +440,39 @@ def writeSymbolsTxt(outPath, files, symbols):
         nextAddr = addrObj.add(1)
         addr = addrToInt(addrObj)
         monitor.setProgress(addr - SYMBOL_MIN_ADDR)
-        symName = sym.getName(True).replace('::', '_')
+
+        symName = sym.getName(True)
+        if '::override::' in symName: continue
+        if symName.startswith('@'): continue
+        symName = symName.replace('::', '_')
+
+        # why are we skipping over 802d1058?
+        # is it not assigned a section? no, it's not.
+        # why not? it's referenced by __OSGetExceptionHandler
+        # which is in OS.c
+        # populateDataRefs sees that reference and adds it
+        # to DATA_REFS
+        # findDataSections then should be seeing that and
+        # making it part of OS.c's data
+        # 802d1058 in section data, file OS.c (0x802D0D60 - 0x802D107F)
+        # so why is that section missing?
+        # [*] Missing section: 0x802D0D48 - 0x802D1080
+        # *** section moved from 802D0D60 - 802D0D60, end 802D1085
+        # *** section end for 802D0D60 moved from 802D1085 to 802D1088
+        # looks like overlapping section removal is being fooled by
+        # some strange cases, eg:
+        # CARDStat.c:text (80040DC8-80040F48) overlaps with
+        # GXGeometry.h:text (8002C444-802CD3F8)
+        # this particular case looks like multiple copies of GX
+        # are linked in
+        # there are multiple copies of string "GXGeometry.h"
+        # so (at least some of) the fix may be to detect when the
+        # same name is used at different addresses.
+        # this isn't handled by this script, but by the one we
+        # used to assign the function tags.
+        if prevAddr <= 0x802d1058 and addr >= 0x802d1058:
+            print("802d1058", hex(prevAddr), hex(addr), sym)
+        prevAddr = addrToInt(nextAddr)
 
         # get the section
         symSection = None
@@ -324,11 +481,12 @@ def writeSymbolsTxt(outPath, files, symbols):
                 symSection = entry[3]
                 break
         # fall back to block-name-based check (less accurate)
-        if symSection is None: symSection = getSectionForAddr(addr)
+        if symSection is None: symSection = getSectionTypeAt(addr)
         if symSection is None:
-            print("[!] No section for symbol 0x%08X: %s" % (
-                addr, symName))
+            #print("[!] No section for symbol 0x%08X: %s" % (
+            #    addr, symName))
             continue
+            #symSection = "unk"
         if not symSection.startswith('.'):
             symSection = '.'+symSection
 
@@ -502,7 +660,7 @@ def listFuncs():
 
 def updateFuncFile(files, func):
     fileName = func['file'] or 'unknown'
-    secName  = getSectionForAddr(func['start'])
+    secName  = getSectionTypeAt(func['start'])
     if fileName not in files:
         files[fileName] = {
             'text': {'min':0xFFFFFFFF, 'max':0},
@@ -565,16 +723,17 @@ def populateDataRefsForFunc(func):
     for addr in range(func['start'], func['end'], 4):
         refs = getReferencesFrom(intToAddr(addr))
         for ref in refs:
-            try: addr = addrToInt(ref.getToAddress())
-            except ValueError: addr = 0 # eg "Stack[0x4]"
-            if addr >= SYMBOL_MIN_ADDR and addr < SYMBOL_MAX_ADDR:
+            try: refAddr = addrToInt(ref.getToAddress())
+            except ValueError: refAddr = 0 # eg "Stack[0x4]"
+            if (refAddr >= SYMBOL_MIN_ADDR
+            and refAddr <  SYMBOL_MAX_ADDR):
                 # this is a valid reference
-                sec = getSectionForAddr(addr)
+                sec = getSectionTypeAt(refAddr)
                 if sec in ('bss', 'data', 'rodata', 'init'):
                     data = getDataAt(ref.getToAddress())
                     if data is None: dLen = 4
                     else: dLen = data.getLength()
-                    for dAddr in range(addr, addr+dLen):
+                    for dAddr in range(refAddr, refAddr+dLen):
                         if dAddr not in DATA_REFS:
                             # not set() because no good way to
                             # retrieve elements from it
@@ -602,13 +761,13 @@ def alignSections(files):
             align = SECTION_ALIGN.get(secName, 4)
             prevMin, prevMax = sec['min'], sec['max']
             sec['min'] = sec['min'] & ~(align-1)
-            if sec['min'] == 0x802D0240:
+            if sec['min'] == 0x802D0D60:
                 print(" *** section moved from %08X - %08X, end %08X" % (
                     prevMin, sec['min'], sec['max']))
             align = 4
             pad = sec['max'] % align
             if pad > 0: sec['max'] += align-pad
-            if sec['min'] == 0x802D0240:
+            if sec['min'] == 0x802D0D60:
                 print(" *** section end for %08X moved from %08X to %08X" % (
                     sec['min'], prevMax, sec['max']))
 
@@ -627,8 +786,8 @@ def removeOverlappingSections(files):
             for addr in range(sec['min'], sec['max'], 4):
                 if addr in addrs:
                     if secName not in delList[fileName]:
-                        #print("%s overlaps with %s" % (
-                        #    secStr, addrs[addr]))
+                        print("%s overlaps with %s" % (
+                            secStr, addrs[addr]))
                         delList[fileName].append(secName)
                 addrs[addr] = secStr
     for fileName, delItems in delList.items():
@@ -655,7 +814,7 @@ def findDataSections(files):
         for secName in SECTION_NAMES:
             if secName not in file:
                 file[secName] = {'min':0xFFFFFFFF, 'max':0}
-        sec = getSectionForAddr(addr) # which section?
+        sec = getSectionTypeAt(addr) # which section?
         if sec in file:
             file[sec]['min'] = min(file[sec]['min'], addr)
             file[sec]['max'] = max(file[sec]['max'], addr)
@@ -674,6 +833,26 @@ def fillSectionGaps(files):
                 sections.append((sec['min'], sec))
     sections.sort(key=lambda it: it[0]) # sort by start addr
 
+    # XXX this is creating a section from
+    # .text	start:0x80073E70 end:0x800816B4
+    # which completely overlaps main.c
+    # because apparently main.c isn't here yet
+    # main.c bss: 0xFFFFFFF8 - 0x0
+    # main.c sbss: 0xFFFFFFE0 - 0x0
+    # main.c sdata: 0xFFFFFFE0 - 0x0
+    # main.c rodata: 0xFFFFFFFC - 0x0
+    # main.c init: 0xFFFFFFFC - 0x0
+    # main.c ctors: 0xFFFFFFFC - 0x0
+    # main.c dtors: 0xFFFFFFFC - 0x0
+    # main.c sdata2: 0xFFFFFFFC - 0x0
+    # text is missing. how does it end up in splits?
+    # from mergeSplits()
+
+    # this is from the end of front.c to the start of SKNControl.c
+    # main.c is 0x80077CA8 - 0x8007A284
+    # ? (57): 0x80073C58 - 0x80073E70 (front.c .text)
+    # main.c .text should be here... it's not present in `sections`?
+    # ? (58): 0x800816B4 - 0x80081994 (SKNControl.c .text)
     newSecs = []
     prevEnd = SYMBOL_MIN_ADDR
     for i, entry in enumerate(sections):
@@ -683,24 +862,18 @@ def fillSectionGaps(files):
         if addrMin > prevEnd:
             print("[*] Missing section: 0x%08X - 0x%08X" % (
                 prevEnd, addrMin))
-            if prevEnd == 0x802D0258:
-                sPrev = sections[i-1][1]
-                sNext = sections[i+1][1]
-                print("prev: 0x%08X - 0x%08X" % (
-                    sPrev['min'], sPrev['max']))
-                print("this: 0x%08X - 0x%08X" % (
-                    sec['min'], sec['max']))
-                print("next: 0x%08X - 0x%08X" % (
-                    sNext['min'], sNext['max'],
-                ))
             newSecs.append((prevEnd, addrMin))
         prevEnd = addrMax
 
     for sec in newSecs:
         name = 'unk%08X' % sec[0]
-        mem  = getSectionForAddr(sec[0])
+        mem  = getSectionTypeAt(sec[0])
         if mem == 'init': # HACK
             name = 'init.c'
+            if name not in files:
+                files[name] = { 'funcs': [] }
+            if mem not in files[name]:
+                files[name][mem] = {'min':sec[0], 'max':sec[1]}
             files[name][mem]['min'] = min(files[name][mem]['min'], sec[0])
             files[name][mem]['max'] = max(files[name][mem]['max'], sec[1])
         else:
@@ -753,12 +926,71 @@ def readSplitsTxt(path):
                 }
     return result, headerItems
 
+def getSectionAt(files, addr):
+    for fileName, file in files.items():
+        for secName in SECTION_NAMES:
+            if secName not in file: continue
+            sec = file[secName]
+            if (sec['min'] <= addr and sec['max'] > addr
+            and sec['min'] >= SYMBOL_MIN_ADDR
+            and sec['min'] <  SYMBOL_MAX_ADDR
+            and sec['max'] >= SYMBOL_MIN_ADDR
+            and sec['max'] <  SYMBOL_MAX_ADDR):
+                return fileName, file, secName, sec
+    return None, None, None, None
+
+def importSection(files, fileName, file, secName, sec):
+    """Add this section (from original splits.txt)
+    to the given file, and correct any resulting
+    section overlaps."""
+    newStart, newEnd = sec['min'], sec['max']
+    # TODO: optimize
+    for addr in range(newStart, newEnd, 4):
+        olFileName, olFile, olSecName, olSec = getSectionAt(files, addr)
+        if olFileName is not None:
+            print("Imported section %s .%s (0x%X - 0x%X) overlaps %s .%s (0x%X - 0x%X)" % (
+                fileName, secName, newStart, newEnd,
+                olFileName, olSecName, olSec['min'], olSec['max']))
+            # this section overlaps the other's start and/or end
+            isStart = newEnd   >= olSec['min']
+            isEnd   = newStart <= olSec['max']
+            if isStart and isEnd:
+                if fileName.startswith('unk'): # delete this section
+                    print("Discarding section %s %s" % (
+                        fileName, secName))
+                    return
+                else: # delete the other section
+                    print("Discarding section %s %s" % (
+                        olFileName, olSecName))
+                    del olFile[olSecName]
+
+            elif isStart: # change the end
+                print("Section %s %s end 0x%X => 0x%X" % (
+                    fileName, secName, sec['max'], olSec['min']))
+                sec['max'] = olSec['min']
+
+            else: # isEnd; change the staet
+                print("Section %s %s start 0x%X => 0x%X" % (
+                    fileName, secName, sec['min'], olSec['max']))
+                sec['min'] = olSec['max']
+
+            break
+            # XXX can there be multiple overlaps?
+    # we may have shrunk the section to nothing
+    if sec['max'] > sec['min']:
+        file[secName] = sec
+    else:
+        print("Section %s %s truncated to zero length" % (
+            fileName, secName))
+
 def mergeSplits(origSplits, files):
     for fileName, splits in origSplits.items():
         file = files.get(fileName, splits)
         for secName, sec in splits.items():
             if secName not in file:
-                file[secName] = sec
+                print("Merge %s %s (0x%X - 0x%X)" % (
+                    fileName, secName, sec['min'], sec['max']))
+                importSection(files, fileName, file, secName, sec)
 
 def _sortFilesKey(entry):
     file = entry[1]
@@ -767,10 +999,7 @@ def _sortFilesKey(entry):
             return file[sec]['min']
     return 0
 
-def writeSplitsTxt(inPath, outPath, files, symbols):
-    origSplits, headerItems = readSplitsTxt(inPath+'/splits.txt')
-    mergeSplits(origSplits, files)
-
+def writeSplitsTxt(inPath, outPath, files, symbols, headerItems):
     # sort the split info
     monitor.setIndeterminate(True)
     monitor.setMessage("Sorting...")
@@ -810,6 +1039,7 @@ def run():
 
     inPath  = str(askDirectory("Select Config Directory", "Import"))
     symbols = readSymbolsTxt(inPath+'/symbols.txt')
+    correctSymbolSizes(symbols)
     applySymbolsTxt(symbols)
 
     # get the func/file info
@@ -821,6 +1051,8 @@ def run():
         nFuncs = nFuncs + 1
         #print(func['name'], func['tags'])
 
+    origSplits, headerItems = readSplitsTxt(inPath+'/splits.txt')
+
     # try to find the data sections.
     findDataSections(files)
     alignSections(files)
@@ -828,8 +1060,9 @@ def run():
     checkMemoryBlocks(files)
     checkSymbolsPastBlockEnd()
     fillSectionGaps(files)
+    mergeSplits(origSplits, files)
 
-    writeSplitsTxt(inPath, outPath, files, symbols)
+    writeSplitsTxt(inPath, outPath, files, symbols, headerItems)
     writeSymbolsTxt(outPath, files, symbols)
 
     # write the functions (disabled until the splits are right)
@@ -849,3 +1082,5 @@ def run():
     #            writeFunction(func, file, name)
 
 run()
+# XXX a way to call this without editing the script
+#assignTagsToFunctions()
