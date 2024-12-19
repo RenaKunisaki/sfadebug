@@ -1,0 +1,3 @@
+we should make a script to import the file tags from the spreadsheet
+then re-run the assign-names-for-DLLs script
+then make a script that reports any overlaps (two funcs with the same tag and another between them with another tag)

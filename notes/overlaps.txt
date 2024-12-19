@@ -1,0 +1,6 @@
+Overlap 0x802F3DC8 - 0x802F953F / 0x802F7BB0 - 0x802F7C7B (anim.c:.data / partfx_nwaning.c:.data)
+Overlap 0x802F3DC8 - 0x802F953F / 0x802F8770 - 0x802F88A7 (anim.c:.data / partfx_rexning2.c:.data)
+Overlap 0x802F3DC8 - 0x802F953F / 0x802F90C0 - 0x802F90E7 (anim.c:.data / dll_1A.c:.data)
+Overlap 0x802F3DC8 - 0x802F953F / 0x802F7C7C - 0x802F876F (anim.c:.data / unk802F7C7C:.data)
+Overlap 0x802F3DC8 - 0x802F953F / 0x802F88A8 - 0x802F90BF (anim.c:.data / unk802F88A8:.data)
+Overlap 0x802F3DC8 - 0x802F953F / 0x802F90E8 - 0x802F9A77 (anim.c:.data / unk802F90E8:.data)

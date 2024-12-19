@@ -5,8 +5,10 @@ Star Fox Adventures
 <!--
 Replace with your repository's URL.
 -->
+<!--
 [Build Status]: https://github.com/zeldaret/tww/actions/workflows/build.yml/badge.svg
 [actions]: https://github.com/zeldaret/tww/actions/workflows/build.yml
+-->
 <!---
 Code progress URL:
 https://progress.decomp.club/data/[project]/[version]/all/?mode=shield&measure=code
