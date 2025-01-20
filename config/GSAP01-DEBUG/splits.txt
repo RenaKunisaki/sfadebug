@@ -12,3104 +12,1153 @@ Sections:
 	.sbss       type:bss align:32
 	.sdata2     type:rodata align:8
 
-dolphin/OSAlarm.c:
-	.text	start:0x80007714 end:0x800080B8
-	.data	start:0x802D11CC end:0x802D148C
-
-dolphin/OSAlloc.c:
-	.text	start:0x800080B8 end:0x800087C4
-	.data	start:0x802D1490 end:0x802D18FC
-
-unk802D18FC:
-	.data	start:0x802D18FC end:0x802D1F48
-
-dolphin/OSArena.c:
-	.text	start:0x800087C4 end:0x800088C4
-	.data	start:0x802D1F48 end:0x802D2010
-
-unk802D2010:
-	.data	start:0x802D2010 end:0x802D2950
-
-dolphin/OSExi.c:
-	.bss	start:0x80325D60 end:0x80325DCC
-	.data	start:0x802D2950 end:0x802D2C20
-
-unk802D2C20:
-	.data	start:0x802D2C20 end:0x802D2C28
-
-dolphin/OSInterrupt.c:
-	.data	start:0x802D2C28 end:0x802D3078
-
-OSMutex.c:
-	.data	start:0x802D3078 end:0x802D30AC
-
-unk802D30AC:
-	.data	start:0x802D30AC end:0x802D3130
-
-dolphin/OSSerial.c:
-	.text	start:0x8000C518 end:0x8000CFBC
-	.bss	start:0x80325E78 end:0x80325EF8
-	.data	start:0x802D3130 end:0x802D3428
-
-unk802D3428:
-	.data	start:0x802D3428 end:0x802D343C
-
-dolphin/OSThread.c:
-	.text	start:0x8000D228 end:0x8000E4A0
-	.bss	start:0x80325F98 end:0x80326980
-	.data	start:0x802D343C end:0x802D39C0
-
-unk802D39C0:
-	.data	start:0x802D39C0 end:0x802D4904
-
-mtx44.c:
-	.text	start:0x8000FA60 end:0x8000FD58
-	.data	start:0x802D4904 end:0x802D4A34
-
-unk802D4A34:
-	.data	start:0x802D4A34 end:0x802D5C68
-
-dolphin/dvd.c:
-	.text	start:0x80011D40 end:0x80013F4C
-	.bss	start:0x80326980 end:0x80326A00
-	.data	start:0x802D5C68 end:0x802D670C
-
-unk802D670C:
-	.data	start:0x802D670C end:0x802D7140
-
-dolphin/ai.c:
-	.text	start:0x800188A4 end:0x80019448
-	.bss	start:0x80326C48 end:0x80326C78
-	.data	start:0x802D7140 end:0x802D722C
-
-dolphin/ar.c:
-	.data	start:0x802D7230 end:0x802D7488
-
-unk802D7488:
-	.data	start:0x802D7488 end:0x802D74AC
-
-dolphin/arq.c:
-	.bss	start:0x8034B800 end:0x8034B804
-	.data	start:0x802D74AC end:0x802D7588
-
-dolphin/dsp.c:
-	.data	start:0x802D7588 end:0x802D75EC
-
-unk802D75EC:
-	.data	start:0x802D75EC end:0x802D79B8
-
-dolphin/GXFifo.c:
-	.bss	start:0x80327170 end:0x803271F0
-	.data	start:0x802D79B8 end:0x802D7E54
-
-unk802D7E54:
-	.data	start:0x802D7E54 end:0x802D7F6C
-
-dolphin/GXAttr.c:
-	.data	start:0x802D7F6C end:0x802D8634
-
-unk802D8634:
-	.data	start:0x802D8634 end:0x802D9908
-
-GXLight.c:
-	.data	start:0x802D9908 end:0x802D9E9C
-
-unk802D9E9C:
-	.data	start:0x802D9E9C end:0x802DA8E8
-
-GXBump.c:
-	.text	start:0x80027EEC end:0x80028F60
-	.data	start:0x802DA8E8 end:0x802DADC4
-
-GXTev.c:
-	.text	start:0x80028FAC end:0x8002A9E0
-	.data	start:0x802DADC8 end:0x802DB398
-
-GXPixel.c:
-	.data	start:0x802DB398 end:0x802DB7AC
-
-unk802DB7AC:
-	.data	start:0x802DB7AC end:0x802DBA70
-
-dolphin/GXTransform.c:
-	.bss	start:0x80328AA8 end:0x80328FB8
-	.data	start:0x802DBA70 end:0x802DBEE0
-
-unk802DBEE0:
-	.data	start:0x802DBEE0 end:0x802DF520
-
-GXPerf.c:
-	.data	start:0x802DF520 end:0x802DF594
-
-unk802DF594:
-	.data	start:0x802DF594 end:0x802DF790
-
-unk802DF7C0:
-	.data	start:0x802DF7C0 end:0x802DF7D0
-
-dolphin/CARDBios.c:
-	.data	start:0x802DF7D0 end:0x802DF9A4
-
-unk802DF9A4:
-	.data	start:0x802DF9A4 end:0x802DF9C0
-
-dolphin/CARDUnlock.c:
-	.data	start:0x802DF9C0 end:0x802DFB58
-
-unk802DFB58:
-	.data	start:0x802DFB58 end:0x802DFCA8
-
-dolphin/CARDDir.c:
-	.data	start:0x802DFCA8 end:0x802DFD2C
-
-unk802DFD2C:
-	.data	start:0x802DFD2C end:0x802DFEF0
-
-dolphin/CARDFormat.c:
-	.data	start:0x802DFEF0 end:0x802DFF44
-
-unk802DFF44:
-	.data	start:0x802DFF44 end:0x802E0128
-
-dolphin/CARDRead.c:
-	.data	start:0x802E0128 end:0x802E03B0
-
-unk802E03B0:
-	.data	start:0x802E03B0 end:0x802E04D8
-
-dolphin/CARDDelete.c:
-	.data	start:0x802E04D8 end:0x802E0548
-
-dolphin/CARDStat.c:
-	.data	start:0x802E0548 end:0x802E05B4
-
-dolphin/CARDRename.c:
-	.data	start:0x802E05B8 end:0x802E0650
-
-unk802E0650:
-	.data	start:0x802E0650 end:0x802E06E8
-
-musyx/synth.c:
-	.bss	start:0x803365D0 end:0x80336F64
-	.data	start:0x802E06E8 end:0x802E071C
-
-unk802E071C:
-	.data	start:0x802E071C end:0x802E0870
-
-snd_synthapi.c:
-	.data	start:0x802E0870 end:0x802E08A0
-
-unk802E08A0:
-	.data	start:0x802E08A0 end:0x802E08A8
-
-musyx/synthdata.c:
-	.data	start:0x802E08A8 end:0x802E08FC
-
-unk802E08FC:
-	.data	start:0x802E08FC end:0x802E0DA0
-
-musyx/synthvoice.c:
-	.data	start:0x802E0DA0 end:0x802E0DD8
-
-unk802E0DD8:
-	.data	start:0x802E0DD8 end:0x802E196C
-
-musyx/s_data.c:
-	.text	start:0x8004FAB4 end:0x80050340
-	.bss	start:0x80343D20 end:0x80343D30
-	.data	start:0x802E196C end:0x802E1AB0
-
-unk802E1AB0:
-	.data	start:0x802E1AB0 end:0x802E1C80
-
-musyx/hw_volconv.c:
-	.data	start:0x802E1C80 end:0x802E1EA4
-
-musyx/snd_init.c:
-	.text	start:0x800553D4 end:0x8005560C
-	.data	start:0x802E1EA8 end:0x802E1F44
-
-dolphin/snd_init.c:
-	.data	start:0x802E1F48 end:0x802E1FD4
-
-musyx/snd_midictrl.c:
-	.data	start:0x802E1FD8 end:0x802E2038
-	.rodata	start:0x802CEA40 end:0x802CEAC8
-
-unk802E2038:
-	.data	start:0x802E2038 end:0x802E2858
-
-musyx/hardware.c:
-	.data	start:0x802E2858 end:0x802E297C
-
-musyx/hw_aramdma.c:
-	.text	start:0x80058944 end:0x80058E64
-	.data	start:0x802E2980 end:0x802E2B00
-
-unk802E2B00:
-	.data	start:0x802E2B00 end:0x802E4528
-
-musyx/chorus_fx.c:
-	.text	start:0x8005A098 end:0x8005A858
-	.data	start:0x802E4528 end:0x802E4D4C
-
-unk802E4D4C:
-	.data	start:0x802E4D4C end:0x802EA85C
-
-main/light.c:
-	.text	start:0x800750AC end:0x8007725C
-	.data	start:0x802EA85C end:0x802EADA4
-
-unk802EADA4:
-	.data	start:0x802EADA4 end:0x802EB0E0
-
-main/mm_dolphin.c:
-	.text	start:0x8007B3A4 end:0x8007C4AC
-	.bss	start:0x80352CD8 end:0x80357698
-	.data	start:0x802EB0E0 end:0x802EB348
-
-unk802EB348:
-	.data	start:0x802EB348 end:0x802EB6A4
-
-main/models_dolphin.c:
-	.text	start:0x8007C524 end:0x800816B4
-	.data	start:0x802EB6A4 end:0x802EC988
-	.rodata	start:0x802CF000 end:0x802CF018
-
-main/SKNControl.c:
-	.text	start:0x800816B4 end:0x80081DB4
-	.data	start:0x802EC988 end:0x802ECA98
-
-unk802ECA98:
-	.data	start:0x802ECA98 end:0x802EDDE0
-
-main/objprint.c:
-	.text	start:0x8009471C end:0x800961A0
-	.data	start:0x802EDDE0 end:0x802EE50C
-	.rodata	start:0x802CF028 end:0x802CF454
-
-unk802EE50C:
-	.data	start:0x802EE50C end:0x802F07F8
-
-main/rcp_dolphin.c:
-	.text	start:0x8009FC10 end:0x8009FE30
-	.bss	start:0x8036BCF8 end:0x8036BCFC
-	.data	start:0x802F07F8 end:0x802F0840
-
-unk802F0840:
-	.data	start:0x802F0840 end:0x802F09D8
-
-main/shader.c:
-	.text	start:0x800A138C end:0x800A3270
-	.data	start:0x802F09D8 end:0x802F0BE0
-	.rodata	start:0x802CF500 end:0x802CF518
-
-unk802F0BE0:
-	.data	start:0x802F0BE0 end:0x802F0C10
-
-main/lightmap.c:
-	.text	start:0x800A32DC end:0x800A46AC
-	.bss	start:0x8036D018 end:0x8036D05C
-	.data	start:0x802F0C10 end:0x802F0DD4
-
-unk802F0DD4:
-	.data	start:0x802F0DD4 end:0x802F8770
-
-partfx_rexning2.c:
-	.text	start:0x801116C0 end:0x80112F90
-	.bss	start:0x80385E10 end:0x80385E28
-	.data	start:0x802F8770 end:0x802F88A8
-
-unk802F88A8:
-	.data	start:0x802F88A8 end:0x803022B0
-
-dll_56.c:
-	.text	start:0x8015D7C8 end:0x8015E4C4
-	.data	start:0x803022B0 end:0x80302844
-
-unk80302844:
-	.data	start:0x80302844 end:0x80302A20
-
-projLib.c:
-	.text	start:0x80165A40 end:0x80165F54
-	.data	start:0x80302A20 end:0x80302A48
-
-unk80302A48:
-	.data	start:0x80302A48 end:0x80304398
-
-dll_3E.c:
-	.text	start:0x8016C2B4 end:0x8016C8A0
-	.data	start:0x80304398 end:0x8030547C
-
-unk8030547C:
-	.data	start:0x8030547C end:0x80305510
-
-dll_43.c:
-	.text	start:0x801758CC end:0x801759A4
-	.data	start:0x80305510 end:0x80305564
-
-unk80305564:
-	.data	start:0x80305564 end:0x8030583C
-
-dll_47.c:
-	.text	start:0x801759EC end:0x80177AF4
-	.bss	start:0x8038BA38 end:0x8038BA60
-	.data	start:0x8030583C end:0x80305848
-
-unk80305848:
-	.data	start:0x80305848 end:0x8030FCC0
-
-wisp_baddie.c:
-	.data	start:0x8030FCC0 end:0x8030FD08
-
-core_snowworm.c:
-	.bss	start:0x80395850 end:0x803958A8
-	.data	start:0x80310138 end:0x8031027C
-
-unk8031027C:
-	.data	start:0x8031027C end:0x80310850
-
-Tumbleweed.c:
-	.data	start:0x80310850 end:0x80310868
-
-unk80310868:
-	.data	start:0x80310868 end:0x803108C0
-
-skeetla.c:
-	.bss	start:0x80395960 end:0x8039598C
-	.data	start:0x803108C0 end:0x803109B8
-
-unk803109B8:
-	.data	start:0x803109B8 end:0x80310A58
-
-MMP_cratercritter.c:
-	.bss	start:0x80395990 end:0x803959D8
-	.data	start:0x80310A58 end:0x80310AF8
-
-MMP_critterspit.c:
-	.data	start:0x80310B38 end:0x80310B4C
-
-unk80310B4C:
-	.data	start:0x80310B4C end:0x80310EA8
-
-flamethrower.c:
-	.data	start:0x80310EA8 end:0x80310EB8
-
-OBJ_InvHit.c:
-	.data	start:0x80311540 end:0x80311598
-
-unk80311598:
-	.data	start:0x80311598 end:0x80311888
-
-projswitch.c:
-	.data	start:0x80311888 end:0x80311894
-
-unk80311894:
-	.data	start:0x80311894 end:0x80311908
-
-pressureSwitch.c:
-	.data	start:0x80311908 end:0x8031194C
-
-unk8031194C:
-	.data	start:0x8031194C end:0x803119C0
-
-dll_118.c:
-	.data	start:0x803119C0 end:0x80311A24
-
-unk80311A24:
-	.data	start:0x80311A24 end:0x80311A78
-
-useObj.c:
-	.data	start:0x80311A78 end:0x80311AA4
-
-seqObj11E.c:
-	.data	start:0x80311E28 end:0x80311E40
-
-fruit.c:
-	.data	start:0x80312148 end:0x803121D0
-
-talkObj.c:
-	.data	start:0x803123B0 end:0x803123F8
-
-unk803123F8:
-	.data	start:0x803123F8 end:0x80312430
-
-interactObj.c:
-	.data	start:0x80312430 end:0x80312480
-
-unk80312480:
-	.data	start:0x80312480 end:0x803126C8
-
-mediumbasket.c:
-	.data	start:0x803126C8 end:0x803126D8
-	.rodata	start:0x802D02B8 end:0x802D02E0
-
-unk803126D8:
-	.data	start:0x803126D8 end:0x80312710
-
-scarab.c:
-	.bss	start:0x80395A40 end:0x80395A50
-	.data	start:0x80312710 end:0x80312718
-	.rodata	start:0x802D02E0 end:0x802D02F8
-
-unk80312718:
-	.data	start:0x80312718 end:0x803129C0
-
-ladders.803129c0.c:
-	.data	start:0x803129C0 end:0x803129CC
-
-landedArwing.c:
-	.data	start:0x80312C38 end:0x80312C60
-
-unk80312C60:
-	.data	start:0x80312C60 end:0x80312C98
-
-staffAction.c:
-	.text	start:0x801ED218 end:0x801EE420
-	.data	start:0x80312C98 end:0x80312CA8
-	.rodata	start:0x802D02F8 end:0x802D0318
-
-unk80312CA8:
-	.data	start:0x80312CA8 end:0x803134F0
-
-alphaanim.c:
-	.data	start:0x803134F0 end:0x80313508
-
-unk80313508:
-	.data	start:0x80313508 end:0x803135C0
-
-crackanim.c:
-	.data	start:0x803135C0 end:0x803135E0
-
-unk803135E0:
-	.data	start:0x803135E0 end:0x80314C38
-
-windlift.c:
-	.data	start:0x80314C38 end:0x80314C64
-
-unk80314C64:
-	.data	start:0x80314C64 end:0x80314DE8
-
-unk80314DE8:
-	.data	start:0x80314DE8 end:0x80315460
-
-laser.c:
-
-SimpleExploder.c:
-	.data	start:0x80315460 end:0x80315480
-
-unk80315480:
-	.data	start:0x80315480 end:0x80315BE8
-
-CFTreasSharpy.c:
-	.data	start:0x80315BE8 end:0x80315C4C
-
-unk80315C4C:
-	.data	start:0x80315C4C end:0x80315EC8
-
-holoPoint.c:
-	.data	start:0x80315EC8 end:0x80315EF0
-
-unk80315EF0:
-	.data	start:0x80315EF0 end:0x80315F30
-
-dll_182.c:
-	.data	start:0x80315F30 end:0x80315F7C
-
-unk80315F7C:
-	.data	start:0x80315F7C end:0x80315FB8
-
-dll_1A0.c:
-	.data	start:0x80315FB8 end:0x80315FE8
-	.rodata	start:0x802D0440 end:0x802D0470
-
-unk80315FE8:
-	.data	start:0x80315FE8 end:0x80316098
-
-mmp_barrel.c:
-	.data	start:0x80316098 end:0x803160BC
-
-unk803160BC:
-	.data	start:0x803160BC end:0x803160F8
-
-mmp_levelcontrol.c:
-	.data	start:0x803160F8 end:0x80316148
-
-unk80316148:
-	.data	start:0x80316148 end:0x80316878
-
-gasventControl.c:
-	.data	start:0x80316878 end:0x80316888
-
-DIMlevcontrol.c:
-	.data	start:0x80318848 end:0x80318858
-
-unk80318858:
-	.data	start:0x80318858 end:0x80318A08
-
-DIM2generator.c:
-	.data	start:0x80318A08 end:0x80318AA0
-
-unk80318AA0:
-	.data	start:0x80318AA0 end:0x80318BA8
-
-DIM2icefloe.c:
-	.data	start:0x80318BA8 end:0x80318BF8
-
-dll_227.c:
-
-unk80319150:
-	.data	start:0x80319150 end:0x803191B0
-
-riverFlowRelated018D.c:
-	.data	start:0x803191B0 end:0x803191D4
-
-unk803191D4:
-	.data	start:0x803191D4 end:0x80319738
-
-laser19F.c:
-
-unk80319738:
-	.data	start:0x80319738 end:0x803197D4
-
-mmshrine.c:
-	.data	start:0x803197D4 end:0x803197D8
-
-unk803197D8:
-	.data	start:0x803197D8 end:0x80319BE8
-
-colrise.c:
-	.data	start:0x80319BE8 end:0x80319BF4
-
-unk80319BF4:
-	.data	start:0x80319BF4 end:0x80319C68
-
-dll_1CA.c:
-	.data	start:0x80319C68 end:0x80319C6C
-
-unk80319C6C:
-	.data	start:0x80319C6C end:0x80319E70
-
-creator1CF.c:
-	.data	start:0x80319E70 end:0x80319E7C
-
-unk80319E7C:
-	.data	start:0x80319E7C end:0x80319F78
-
-dll_1D3.c:
-	.data	start:0x80319F78 end:0x80319F7C
-
-unk80319F7C:
-	.data	start:0x80319F7C end:0x8031A008
-
-creator1D4.c:
-	.data	start:0x8031A008 end:0x8031A014
-
-unk8031A014:
-	.data	start:0x8031A014 end:0x8031A050
-
-dll_1D5.c:
-	.data	start:0x8031A050 end:0x8031A060
-
-unk8031A060:
-	.data	start:0x8031A060 end:0x8031A0E0
-
-creator1D6.c:
-	.data	start:0x8031A0E0 end:0x8031A0EC
-
-unk8031A0EC:
-	.data	start:0x8031A0EC end:0x8031A170
-
-projball1D8.c:
-	.data	start:0x8031A170 end:0x8031A17C
-
-unk8031A17C:
-	.data	start:0x8031A17C end:0x8031AA28
-
-dll_1E8.c:
-	.data	start:0x8031AA28 end:0x8031AA2C
-
-unk8031AA2C:
-	.data	start:0x8031AA2C end:0x8031B784
-
-SCchieflightfoot.c:
-	.bss	start:0x80396378 end:0x80396388
-	.data	start:0x8031B784 end:0x8031B798
-
-unk8031B798:
-	.data	start:0x8031B798 end:0x8031B908
-
-SClantern.c:
-	.data	start:0x8031B908 end:0x8031B914
-
-unk8031B914:
-	.data	start:0x8031B914 end:0x8031B950
-
-SCcollectables.c:
-	.data	start:0x8031B950 end:0x8031B960
-
-unk8031B960:
-	.data	start:0x8031B960 end:0x8031B9A8
-
-SCanimobj.c:
-	.bss	start:0x80396388 end:0x803963A0
-	.data	start:0x8031B9A8 end:0x8031B9B4
-
-unk8031B9B4:
-	.data	start:0x8031B9B4 end:0x8031BD18
-
-SBpropeller.c:
-	.data	start:0x8031BD18 end:0x8031BD24
-
-unk8031BD24:
-	.data	start:0x8031BD24 end:0x8031CA38
-
-DFlog.c:
-	.data	start:0x8031CA38 end:0x8031CAE8
-
-DRearthwalk.c:
-	.bss	start:0x80396450 end:0x803964B0
-	.data	start:0x8031CAE8 end:0x8031CBC0
-	.rodata	start:0x802D08C0 end:0x802D08D8
-
-unk8031CBC0:
-	.data	start:0x8031CBC0 end:0x8031CC60
-
-BWlog.c:
-	.data	start:0x8031CC60 end:0x8031CC88
-
-unk8031CC88:
-	.data	start:0x8031CC88 end:0x8031CF48
-
-DRcloudrunner.c:
-	.bss	start:0x803964C8 end:0x80396528
-	.data	start:0x8031CF48 end:0x8031CFE8
-	.rodata	start:0x802D08E8 end:0x802D0928
-
-unk8031CFE8:
-	.data	start:0x8031CFE8 end:0x8031D098
-
-dll_23B.c:
-	.data	start:0x8031D098 end:0x8031D09C
-
-unk8031D09C:
-	.data	start:0x8031D09C end:0x8031D190
-
-deaddino.c:
-	.data	start:0x8031D190 end:0x8031D3CC
-
-unk8031D3CC:
-	.data	start:0x8031D3CC end:0x8031D408
-
-unk8031D408:
-	.data	start:0x8031D408 end:0x8031D460
-
-laser23E.c:
-
-pswitch.c:
-	.data	start:0x8031D460 end:0x8031D46C
-
-unk8031D46C:
-	.data	start:0x8031D46C end:0x8031D518
-
-dll_242.c:
-	.data	start:0x8031D518 end:0x8031D6B0
-	.rodata	start:0x802D0928 end:0x802D0940
-
-unk8031D6B0:
-	.data	start:0x8031D6B0 end:0x8031D810
-
-walltorch248.c:
-	.data	start:0x8031D810 end:0x8031D81C
-
-unk8031D81C:
-	.data	start:0x8031D81C end:0x8031DFE8
-
-WMcrystal.c:
-	.data	start:0x8031DFE8 end:0x8031E000
-	.rodata	start:0x802D0A60 end:0x802D0A78
-
-unk8031E000:
-	.data	start:0x8031E000 end:0x8031E0C4
-
-crawler.c:
-	.data	start:0x8031E0C4 end:0x8031E0D0
-
-minifire.c:
-	.data	start:0x8031E258 end:0x8031E264
-
-unk8031E264:
-	.data	start:0x8031E264 end:0x8031E4C8
-
-doorswitch261.c:
-	.data	start:0x8031E4C8 end:0x8031E4D4
-
-unk8031E4D4:
-	.data	start:0x8031E4D4 end:0x8031E640
-
-lavaflow.c:
-	.data	start:0x8031E640 end:0x8031E64C
-
-unk8031E64C:
-	.data	start:0x8031E64C end:0x8031E720
-
-DBrockfall.c:
-	.data	start:0x8031E720 end:0x80320D0C
-
-unk80320D0C:
-	.data	start:0x80320D0C end:0x80320D48
-
-rockGenerator.c:
-	.data	start:0x80320D48 end:0x80320D60
-
-unk80320D60:
-	.data	start:0x80320D60 end:0x80321118
-
-DBspike.c:
-	.data	start:0x80321118 end:0x80321124
-
-unk80321124:
-	.data	start:0x80321124 end:0x80321DD8
-
-DBlightgo.c:
-	.data	start:0x80321DD8 end:0x80321DF4
-	.rodata	start:0x802D0BE0 end:0x802D0C10
-
-unk80321DF4:
-	.data	start:0x80321DF4 end:0x80321F38
-
-DBbullet.c:
-	.data	start:0x80321F38 end:0x80321F44
-
-unk80321F44:
-	.data	start:0x80321F44 end:0x80321FF0
-
-DBKillbot.c:
-	.data	start:0x80321FF0 end:0x80322024
-
-DBbonedust.c:
-	.data	start:0x80322108 end:0x80322114
-
-unk80322114:
-	.data	start:0x80322114 end:0x80322AD8
-
-useobj28C.c:
-	.data	start:0x80322AD8 end:0x80322B64
-
-unk80322B64:
-	.data	start:0x80322B64 end:0x80323010
-
-unk80323010:
-	.data	start:0x80323010 end:0x80323AC0
-
-dll_213.c:
-
-DRexplodeDoor.c:
-	.data	start:0x80323AC0 end:0x80323AD0
-
-unk80323AD0:
-	.data	start:0x80323AD0 end:0x80323B08
-
-DRgeezer.c:
-	.data	start:0x80323B08 end:0x80323B1C
-	.rodata	start:0x802D0C70 end:0x802D0C7C
-
-unk80323B1C:
-	.data	start:0x80323B1C end:0x80323CF0
-
-DRshackle.c:
-	.data	start:0x80323CF0 end:0x80323D0C
-
-unk80323D0C:
-	.data	start:0x80323D0C end:0x80323D60
-
-DRhightop.c:
-	.bss	start:0x80396610 end:0x80396634
-	.data	start:0x80323D60 end:0x80323DE8
-	.rodata	start:0x802D0C90 end:0x802D0CB8
-
-unk80323DE8:
-	.data	start:0x80323DE8 end:0x80323E48
-
-DRbells.c:
-	.data	start:0x80323E48 end:0x80323E54
-
-unk80323E54:
-	.data	start:0x80323E54 end:0x80323EE0
-
-DRicefire.c:
-	.data	start:0x80323EE0 end:0x80323EEC
-
-unk80323EEC:
-	.data	start:0x80323EEC end:0x80324040
-
-DRprojswitch.c:
-	.data	start:0x80324040 end:0x80324050
-
-unk80324050:
-	.data	start:0x80324050 end:0x80324160
-
-DRcavein.c:
-	.data	start:0x80324160 end:0x8032416C
-
-unk8032416C:
-	.data	start:0x8032416C end:0x803241C0
-
-dll_2C4.c:
-	.data	start:0x803241C0 end:0x803241CC
-
-unk803241CC:
-	.data	start:0x803241CC end:0x803244B0
-
-BWalphaanim.c:
-	.data	start:0x803244B0 end:0x803244DC
-
-unk803244DC:
-	.data	start:0x803244DC end:0x80324650
-
-WCpushblock.c:
-	.data	start:0x80324650 end:0x8032467C
-
-unk8032467C:
-	.data	start:0x8032467C end:0x80324728
-
-WClevcontrol.c:
-	.text	start:0x802C1984 end:0x802C3054
-	.bss	start:0x80396668 end:0x803966E8
-	.data	start:0x80324728 end:0x80324910
-
-unk80324910:
-	.data	start:0x80324910 end:0x80324980
-
-WCbeacon.c:
-	.text	start:0x802C3054 end:0x802C34AC
-	.data	start:0x80324980 end:0x8032498C
-
-unk8032498C:
-	.data	start:0x8032498C end:0x80324A00
-
-WCpressureswitch.c:
-	.data	start:0x80324A34 end:0x80324A58
-
-unk80324A58:
-	.data	start:0x80324A58 end:0x80324AC8
-
-USEOBJ.c:
-	.text	start:0x802C4368 end:0x802C48B4
-	.data	start:0x80324AC8 end:0x80324AF4
-
-unk80324AF4:
-	.data	start:0x80324AF4 end:0x80324BA0
-
-dll_2DF.c:
-	.text	start:0x802C4F10 end:0x802C5578
-	.data	start:0x80324BA0 end:0x80324BB0
-
-unk80324BB0:
-	.data	start:0x80324BB0 end:0x80324BE8
-
-WCdial.c:
-	.text	start:0x802C5578 end:0x802C5A28
-	.data	start:0x80324BE8 end:0x80324C08
-
-unk80324C08:
-	.data	start:0x80324C08 end:0x80324C48
-
-WClaser.c:
-	.data	start:0x80324C48 end:0x80324C54
-
-unk80324C54:
-	.data	start:0x80324C54 end:0x80324CC8
-
-WCfloortile.c:
-	.data	start:0x80324CC8 end:0x80324CD8
-
-unk80324CD8:
-	.data	start:0x80324CD8 end:0x80324D10
-
-dll_2E8.c:
-	.text	start:0x802C6D38 end:0x802C6EB4
-	.data	start:0x80324D10 end:0x80324D64
-
-unk80324D64:
-	.data	start:0x80324D64 end:0x80324DA0
-
-ARWarwingattachment.c:
-	.text	start:0x802C6ECC end:0x802CA654
-	.data	start:0x80324DA0 end:0x803256F4
-
-unk803256F4:
-	.data	start:0x803256F4 end:0x803258F0
-
-LGTpointlight.c:
-	.data	start:0x803258F0 end:0x80325988
-	.rodata	start:0x802D0CF8 end:0x802D0D08
-
-unk80325988:
-	.data	start:0x80325988 end:0x803259C0
-
-LGTdirectionallight.c:
-	.data	start:0x803259C0 end:0x80325AFC
-	.rodata	start:0x802D0D08 end:0x802D0D18
-
-unk80325AFC:
-	.data	start:0x80325AFC end:0x80325B38
-
-LGTprojectedlight.c:
-	.data	start:0x80325B38 end:0x80325BA0
-	.rodata	start:0x802D0D18 end:0x802D0D24
-
-unk80325BA0:
-	.data	start:0x80325BA0 end:0x80325BD8
-
-LGTcontrollight.c:
-	.text	start:0x802CD3F8 end:0x802CD620
-	.data	start:0x80325BD8 end:0x80325C2C
-
-unk80325C2C:
-	.data	start:0x80325C2C end:0x80325CD8
-
-boulder.c:
-	.data	start:0x80325CD8 end:0x80325D1C
-	.rodata	start:0x802D0D38 end:0x802D0D48
-
 dolphin/PPCArch.c:
-	.text	start:0x80006CC0 end:0x80006D74
+	.text       start:0x80006CC0 end:0x80006D74
 
 dolphin/OS.c:
-	.text	start:0x80006D74 end:0x80007480
-
-unk80007480:
-	.text	start:0x80007480 end:0x800075AC
+	.text       start:0x80006D74 end:0x80007480
+	.data       start:0x802D0D60 end:0x802D1088
 
 OSAddress.c:
-	.text	start:0x800075AC end:0x80007714
-
-unk800088C4:
-	.text	start:0x800088C4 end:0x80009130
-
-dolphin/OSContext.c:
-	.text	start:0x80009130 end:0x80009968
-
-dolphin/OSError.c:
-	.text	start:0x80009968 end:0x80009D24
-
-unk80009D24:
-	.text	start:0x80009D24 end:0x8000BE68
-
-OSReset.c:
-	.text	start:0x8000BE68 end:0x8000BF3C
-
-unk8000BF3C:
-	.text	start:0x8000BF3C end:0x8000C518
-
-dolphin/OSStopwatch.c:
-	.text	start:0x8000CFBC end:0x8000D198
-
-dolphin/OSSync.c:
-	.text	start:0x8000D198 end:0x8000D228
-
-unk8000E4A0:
-	.text	start:0x8000E4A0 end:0x8000E518
-
-dolphin/OSUartExi.c:
-	.text	start:0x8000E518 end:0x8000E78C
-
-unk8000E808:
-	.text	start:0x8000E808 end:0x8000FA60
-
-unk8000FD58:
-	.text	start:0x8000FD58 end:0x80011D40
-
-unk80013F4C:
-	.text	start:0x80013F4C end:0x800188A4
-
-unk80019448:
-	.text	start:0x80019448 end:0x80027EEC
-
-unk80028F60:
-	.text	start:0x80028F60 end:0x80028FAC
-
-unk8002A9E0:
-	.text	start:0x8002A9E0 end:0x8004FAB4
-
-unk80050340:
-	.text	start:0x80050340 end:0x800553D4
-
-musyx/snd_math.c:
-	.text	start:0x8005560C end:0x80055744
-
-unk80055744:
-	.text	start:0x80055744 end:0x80058944
-
-unk80058E64:
-	.text	start:0x80058E64 end:0x80059360
-
-musyx/hw_memory.c:
-	.text	start:0x80059360 end:0x800593C4
-
-unk800593C4:
-	.text	start:0x800593C4 end:0x8005A098
-
-unk8007725C:
-	.text	start:0x8007725C end:0x8007B3A4
-
-unk8007C4AC:
-	.text	start:0x8007C4AC end:0x8007C524
-
-unk80081DB4:
-	.text	start:0x80081DB4 end:0x800826F8
-
-main/objects.c:
-	.text	start:0x800826F8 end:0x80085F14
-	.bss	start:0x80357720 end:0x80357728
-
-unk80085F14:
-	.text	start:0x80085F14 end:0x8009471C
-
-unk800961A0:
-	.text	start:0x800961A0 end:0x800993E0
-
-unk8009942C:
-	.text	start:0x8009942C end:0x8009FC10
-
-unk8009FE30:
-	.text	start:0x8009FE30 end:0x800A138C
-
-unk800A3270:
-	.text	start:0x800A3270 end:0x800A32DC
-
-unk800A46AC:
-	.text	start:0x800A46AC end:0x800ADEA4
-
-main/track_dolphin.c:
-	.text	start:0x800ADEA4 end:0x800B20DC
-	.bss	start:0x80373740 end:0x80382DA0
-
-unk800B20DC:
-	.text	start:0x800B20DC end:0x800E5F70
-
-projgfx.c:
-	.text	start:0x800E5F70 end:0x800E9FB4
-	.rodata	start:0x802CF7A0 end:0x802CF7B8
-
-unk800E9FB4:
-	.text	start:0x800E9FB4 end:0x801057C0
-
-partfx_nwaning.c:
-	.text	start:0x801057C0 end:0x80106B30
-
-unk80106B30:
-	.text	start:0x80106B30 end:0x8010BB64
-
-partfx_bayning.c:
-	.text	start:0x8010BB64 end:0x8010D490
-
-unk8010D490:
-	.text	start:0x8010D490 end:0x801116C0
-
-unk80112F90:
-	.text	start:0x80112F90 end:0x8011AF34
-
-dll_1A.c:
-	.text	start:0x8011AF34 end:0x8011B2C0
-
-unk8011B2C0:
-	.text	start:0x8011B2C0 end:0x8011BC5C
-
-Dummy04.c:
-	.text	start:0x8011BC5C end:0x8011BD20
-
-unk8011BD20:
-	.text	start:0x8011BD20 end:0x8011E200
-
-subtitles.c:
-	.text	start:0x8011E200 end:0x8011FD68
-	.bss	start:0x80386518 end:0x80386C8C
-
-unk8011FD68:
-	.text	start:0x8011FD68 end:0x8011FD74
-
-Dummy15.c:
-	.text	start:0x8011FD74 end:0x8011FDA4
-
-TrickyWalk.c:
-	.text	start:0x8011FDA8 end:0x80124090
-	.rodata	start:0x802CF7B8 end:0x802CFBB8
-
-unk80124090:
-	.text	start:0x80124090 end:0x8012436C
-
-curves.c:
-	.text	start:0x8012436C end:0x8012A6B8
-	.bss	start:0x80386D70 end:0x80386D78
-
-unk8012A6B8:
-	.text	start:0x8012A6B8 end:0x8012F3A4
-
-screens.c:
-	.text	start:0x8012F3A4 end:0x8012F530
-
-unk8012F530:
-	.text	start:0x8012F530 end:0x8012F578
-
-pickup.c:
-	.text	start:0x8012F578 end:0x8012FA8C
-
-unk8012FA8C:
-	.text	start:0x8012FA8C end:0x80130564
-
-modgfx67.c:
-	.text	start:0x80130564 end:0x8013056C
-
-unk8013056C:
-	.text	start:0x8013056C end:0x80131C38
-
-dll_69.c:
-	.text	start:0x80131C38 end:0x80131C40
-
-unk80131C40:
-	.text	start:0x80131C40 end:0x801320C0
-
-dll_6A.c:
-	.text	start:0x801320C0 end:0x801320C8
-
-unk801320C8:
-	.text	start:0x801320C8 end:0x80132FF8
-
-dll_6D.c:
-	.text	start:0x80132FF8 end:0x80133000
-
-unk80133000:
-	.text	start:0x80133000 end:0x80133B5C
-
-dll_6F.c:
-	.text	start:0x80133B5C end:0x80133B64
-
-unk80133B64:
-	.text	start:0x80133B64 end:0x801348B4
-
-dll_71.c:
-	.text	start:0x801348B4 end:0x801348BC
-
-unk801348BC:
-	.text	start:0x801348BC end:0x80134DEC
-
-dll_AF.c:
-	.text	start:0x80134DEC end:0x80134DF4
-
-unk80134DF4:
-	.text	start:0x80134DF4 end:0x801359D8
-
-dll_73.c:
-	.text	start:0x801359D8 end:0x801359E0
-
-unk801359E0:
-	.text	start:0x801359E0 end:0x8013678C
-
-dll_76.c:
-	.text	start:0x8013678C end:0x80136794
-
-unk80136794:
-	.text	start:0x80136794 end:0x80136F7C
-
-dll_78.c:
-	.text	start:0x80136F7C end:0x80136F84
-
-unk80136F84:
-	.text	start:0x80136F84 end:0x80137630
-
-dll_7B.c:
-	.text	start:0x80137630 end:0x80137638
-
-unk80137638:
-	.text	start:0x80137638 end:0x80138758
-
-dll_7D.c:
-	.text	start:0x80138758 end:0x80138760
-
-unk80138760:
-	.text	start:0x80138760 end:0x80138C94
-
-dll_7E.c:
-	.text	start:0x80138C94 end:0x80138C9C
-
-unk80138C9C:
-	.text	start:0x80138C9C end:0x8013A194
-
-dll_82.c:
-	.text	start:0x8013A194 end:0x8013A19C
-
-unk8013A19C:
-	.text	start:0x8013A19C end:0x8013A84C
-
-dll_84.c:
-	.text	start:0x8013A84C end:0x8013A854
-
-unk8013A854:
-	.text	start:0x8013A854 end:0x8013B838
-
-modcloudrunner2.c:
-	.text	start:0x8013B838 end:0x8013B840
-
-unk8013B840:
-	.text	start:0x8013B840 end:0x8013BD50
-
-dll_87.c:
-	.text	start:0x8013BD50 end:0x8013BD58
-
-unk8013BD58:
-	.text	start:0x8013BD58 end:0x8013CAEC
-
-dll_89.c:
-	.text	start:0x8013CAEC end:0x8013CAF4
-
-unk8013CAF4:
-	.text	start:0x8013CAF4 end:0x8013D954
-
-dll_8C.c:
-	.text	start:0x8013D954 end:0x8013D95C
-
-unk8013D95C:
-	.text	start:0x8013D95C end:0x8013E388
-
-dll_8E.c:
-	.text	start:0x8013E388 end:0x8013E390
-
-unk8013E390:
-	.text	start:0x8013E390 end:0x8013E934
-
-dll_8F.c:
-	.text	start:0x8013E934 end:0x8013E93C
-
-unk8013E93C:
-	.text	start:0x8013E93C end:0x8013F680
-
-dll_91.c:
-	.text	start:0x8013F680 end:0x8013F688
-
-unk8013F688:
-	.text	start:0x8013F688 end:0x80140A38
-
-dll_95.c:
-	.text	start:0x80140A38 end:0x80140A40
-
-unk80140A40:
-	.text	start:0x80140A40 end:0x801410B4
-
-dll_97.c:
-	.text	start:0x801410B4 end:0x801410BC
-
-unk801410BC:
-	.text	start:0x801410BC end:0x80141734
-
-dll_98.c:
-	.text	start:0x80141734 end:0x8014173C
-
-unk8014173C:
-	.text	start:0x8014173C end:0x80143C54
-
-dll_9D.c:
-	.text	start:0x80143C54 end:0x80143C5C
-
-unk80143C5C:
-	.text	start:0x80143C5C end:0x801447B4
-
-dll_9F.c:
-	.text	start:0x801447B4 end:0x801447BC
-
-unk801447BC:
-	.text	start:0x801447BC end:0x80144B40
-
-dll_A0.c:
-	.text	start:0x80144B40 end:0x80144B48
-
-unk80144B48:
-	.text	start:0x80144B48 end:0x8014543C
-
-dll_A2.c:
-	.text	start:0x8014543C end:0x80145444
-
-unk80145444:
-	.text	start:0x80145444 end:0x801461F4
-
-dll_A5.c:
-	.text	start:0x801461F4 end:0x801461FC
-
-unk801461FC:
-	.text	start:0x801461FC end:0x80147124
-
-dll_A7.c:
-	.text	start:0x80147124 end:0x8014712C
-
-unk8014712C:
-	.text	start:0x8014712C end:0x80147BAC
-
-dll_A9.c:
-	.text	start:0x80147BAC end:0x80147BB4
-
-unk80147BB4:
-	.text	start:0x80147BB4 end:0x801480AC
-
-dll_AA.c:
-	.text	start:0x801480AC end:0x801480B4
-
-unk801480B4:
-	.text	start:0x801480B4 end:0x80148BFC
-
-dll_AC.c:
-	.text	start:0x80148BFC end:0x80148C04
-
-unk80148C04:
-	.text	start:0x80148C04 end:0x8014908C
-
-dll_AD.c:
-	.text	start:0x8014908C end:0x80149094
-
-unk80149094:
-	.text	start:0x80149094 end:0x80149A98
-
-dll_B1.c:
-	.text	start:0x80149A98 end:0x80149AA0
-
-unk80149AA0:
-	.text	start:0x80149AA0 end:0x8014A858
-
-dll_B3.c:
-	.text	start:0x8014A858 end:0x8014A860
-
-unk8014A860:
-	.text	start:0x8014A860 end:0x8014B820
-
-dll_B6.c:
-	.text	start:0x8014B820 end:0x8014B828
-
-unk8014B828:
-	.text	start:0x8014B828 end:0x8014BAB8
-
-dll_B8.c:
-	.text	start:0x8014BAB8 end:0x8014BAC0
-
-unk8014BAC0:
-	.text	start:0x8014BAC0 end:0x8014CDBC
-
-dll_BB.c:
-	.text	start:0x8014CDBC end:0x8014CDC4
-
-unk8014CDC4:
-	.text	start:0x8014CDC4 end:0x8014D7B8
-
-dll_BD.c:
-	.text	start:0x8014D7B8 end:0x8014D7C0
-
-unk8014D7C0:
-	.text	start:0x8014D7C0 end:0x8014E438
-
-dll_C4.c:
-	.text	start:0x8014E438 end:0x8014E440
-
-unk8014E440:
-	.text	start:0x8014E440 end:0x8014EF48
-
-dll_C6.c:
-	.text	start:0x8014EF48 end:0x8014EF50
-
-unk8014EF50:
-	.text	start:0x8014EF50 end:0x8014FB90
-
-dll_BE.c:
-	.text	start:0x8014FB90 end:0x8014FB98
-
-unk8014FB98:
-	.text	start:0x8014FB98 end:0x8014FFFC
-
-dll_C2.c:
-	.text	start:0x8014FFFC end:0x80150004
-
-unk80150004:
-	.text	start:0x80150004 end:0x80150748
-
-dll_C7.c:
-	.text	start:0x80150748 end:0x80150750
-
-unk80150750:
-	.text	start:0x80150750 end:0x801511CC
-
-dll_C9.c:
-	.text	start:0x801511CC end:0x801511D4
-
-unk801511D4:
-	.text	start:0x801511D4 end:0x801528B4
-
-dll_CC.c:
-	.text	start:0x801528B4 end:0x801528BC
-
-unk801528BC:
-	.text	start:0x801528BC end:0x80152FF4
-
-dll_CE.c:
-	.text	start:0x80152FF4 end:0x80152FFC
-
-unk80152FFC:
-	.text	start:0x80152FFC end:0x8015D7C8
-
-unk8015E4C4:
-	.text	start:0x8015E4C4 end:0x8015E9A0
-
-dll_58.c:
-	.text	start:0x8015E9A0 end:0x8015F0B8
-
-unk8015F0B8:
-	.text	start:0x8015F0B8 end:0x80165A40
-
-unk80165F54:
-	.text	start:0x80165F54 end:0x8016B948
-
-n_pausemenu.c:
-	.text	start:0x8016B948 end:0x8016BD20
-
-unk8016BD20:
-	.text	start:0x8016BD20 end:0x8016C2B4
-
-dll_36.c:
-	.text	start:0x80177AF4 end:0x80177BE4
-
-dll_49.c:
-	.text	start:0x80178740 end:0x80178B10
-
-dll_4B.c:
-	.text	start:0x80179650 end:0x80179664
-
-dll_4D.c:
-	.text	start:0x80179B08 end:0x80179B10
-
-prof.c:
-	.text	start:0x80179EC0 end:0x80190130
-
-unk801EE420:
-	.text	start:0x801EE420 end:0x802C187C
-
-dll_2D5.c:
-	.text	start:0x802C187C end:0x802C18F8
-
-unk802C18F8:
-	.text	start:0x802C18F8 end:0x802C1984
-
-unk802C34AC:
-	.text	start:0x802C34AC end:0x802C34B4
-
-dll_2DB.c:
-	.text	start:0x802C34B4 end:0x802C3994
-
-unk802C3994:
-	.text	start:0x802C3994 end:0x802C4368
-
-unk802C48B4:
-	.text	start:0x802C48B4 end:0x802C4C40
-
-dll_2E4.c:
-	.text	start:0x802C4C40 end:0x802C4F08
-
-unk802C4F08:
-	.text	start:0x802C4F08 end:0x802C4F10
-
-unk802C5A28:
-	.text	start:0x802C5A28 end:0x802C62C8
-
-dll_2E2.c:
-	.text	start:0x802C62C8 end:0x802C6630
-
-unk802C6630:
-	.text	start:0x802C6630 end:0x802C6D38
-
-unk802C6EB4:
-	.text	start:0x802C6EB4 end:0x802C6ECC
-
-unk802CA654:
-	.text	start:0x802CA654 end:0x802CA680
-
-dll_2EE.c:
-	.text	start:0x802CA680 end:0x802CA6EC
-
-unk802CA6EC:
-	.text	start:0x802CA6EC end:0x802CA990
-
-dll_2F1.c:
-	.text	start:0x802CA990 end:0x802CABC8
-
-unk802CABC8:
-	.text	start:0x802CABC8 end:0x802CAFF4
-
-dll_2F3.c:
-	.text	start:0x802CAFF4 end:0x802CB2AC
-
-unk802CB2AC:
-	.text	start:0x802CB2AC end:0x802CD3F8
-
-unk802CD620:
-	.text	start:0x802CD620 end:0x802CE9E8
-
-dll_1E2.c:
-
-dll_247.c:
-
-NWsfx.c:
-
-dll_1F3.c:
-
-dll_258.c:
-
-dll_1DB.c:
-
-dll_180.c:
-
-dll_20B.c:
-
-dll_1EC.c:
-
-dll_2EA.c:
-
-unk80328FB8:
-	.bss	start:0x80328FB8 end:0x803365D0
-
-dll_1D1.c:
-
-unk802CFC90:
-	.rodata	start:0x802CFC90 end:0x802CFDB0
-
-dll_138.c:
-
-dll_236.c:
-
-dll_1FF.c:
-
-dll_249.c:
-
-unk803274A0:
-	.bss	start:0x803274A0 end:0x80328AA8
-
-dll_21E.c:
-
-dll_18A.c:
-
-dll_214.c:
-
-DBstealerworm.c:
-
-torch1D9.c:
-	.rodata	start:0x802D0760 end:0x802D0770
-
-dll_280.c:
-
-unk80325EF8:
-	.bss	start:0x80325EF8 end:0x80325F98
-
-dll_1EE.c:
-
-dll_238.c:
-
-dll_F1.c:
-
-dll_2D1.c:
-	.bss	start:0x80396638 end:0x80396648
-
-unk802D04D0:
-	.rodata	start:0x802D04D0 end:0x802D04E0
-
-dll_2EC.c:
-
-dll_291.c:
-
-n_options.c:
-	.bss	start:0x80389FE0 end:0x8038A0C4
-
-unk80325D1C:
-
-ped.c:
-
-dll_205.c:
-
-dll_1CC.c:
-
-unk80386C90:
-	.bss	start:0x80386C90 end:0x80386D70
-
-dll_5C.c:
-
-camcontrol.c:
-	.bss	start:0x80389D60 end:0x80389E84
-
-dll_1B1.c:
-
-dll_2CA.c:
-	.rodata	start:0x802D0CB8 end:0x802D0CC8
-
-dll_1DF.c:
-
-dll_2C2.c:
-
-unk80343D30:
-	.bss	start:0x80343D30 end:0x8034B800
-
-dll_16A.c:
-
-unk80357728:
-	.bss	start:0x80357728 end:0x803599A8
-
-unk802D0CE8:
-	.rodata	start:0x802D0CE8 end:0x802D0CF8
-
-dll_1AA.c:
-
-dll_195.c:
-
-dll_2D3.c:
-	.bss	start:0x80396648 end:0x80396668
-	.rodata	start:0x802D0CC8 end:0x802D0CE8
-
-dll_293.c:
-
-dll_52.c:
-
-CFtoggleswitch.c:
-
-unk802D0720:
-	.rodata	start:0x802D0720 end:0x802D0730
-
-dll_1BD.c:
-
-dll_1A2.c:
-
-dll_5E.c:
-
-dbayExp.c:
-
-unk80389F8C:
-	.bss	start:0x80389F8C end:0x80389FD0
-
-dll_18E.c:
-
-dll_29D.c:
-
-dbayMap.c:
-
-dll_1B3.c:
-
-dll_271.c:
-
-SBcloudrunner.c:
-
-dll_140.c:
-
-dll_186.c:
-
-dll_16C.c:
-
-camTalk.c:
-
-dll_1AC.c:
-
-dll_27B.c:
-
-crate.c:
-	.rodata	start:0x802D0288 end:0x802D0298
-
-dll_3A.c:
-	.bss	start:0x80389F28 end:0x80389F8C
-
-fruitBranch.c:
-
-dll_164.c:
-
-dll_2A2.c:
-
-fireblock.c:
-
-dll_28E.c:
-
-dll_262.c:
-
-dll_60.c:
-
-TrickyCurve.c:
-	.bss	start:0x80395A00 end:0x80395A10
-
-dll_175.c:
-
-dll_29F.c:
-	.bss	start:0x803963D8 end:0x8039644C
-
-attention.c:
-
-dll_1B5.c:
-
-unk803959D8:
-	.bss	start:0x803959D8 end:0x80395A00
-
-dll_273.c:
-	.rodata	start:0x802D0BD0 end:0x802D0BE0
-
-dll_15B.c:
-
-SCtotemlogpuz.c:
-
-torch246.c:
-
-DIMbosstonsil.c:
-	.bss	start:0x803962C8 end:0x803962E0
-
-wall_crawler.c:
-	.bss	start:0x803958F8 end:0x80395920
-
-fish.c:
-
-dll_2C6.c:
-
-dll_1B7.c:
-
-pushpull.c:
-
-SCbirchtree.c:
-
-dll_16E.c:
-
-SCtotembondpuz.c:
-
-dll_F7.c:
-
-maybeTemplate.c:
-	.bss	start:0x803957F8 end:0x8039584C
-	.rodata	start:0x802D0238 end:0x802D0248
-
-dll_1AE.c:
-
-dll_153.c:
-
-dll_27D.c:
-
-DBwaterflow.c:
-
-dll_199.c:
-
-hightop.c:
-
-dll_251.c:
-
-dll_297.c:
-
-dll_17F.c:
-
-chukachuck.c:
-
-tesla.c:
-
-dll_166.c:
-
-DIMlavaball.c:
-	.rodata	start:0x802D04E0 end:0x802D04F0
-
-dll_24A.c:
-
-dll_2A4.c:
-
-dll_14C.c:
-
-dll_62.c:
-
-dll_264.c:
-
-fire.c:
-
-dll_131.c:
-
-unk8036BCFC:
-	.bss	start:0x8036BCFC end:0x8036D018
-
-dll_275.c:
-
-IMicicle.c:
-
-rope.c:
-	.rodata	start:0x802D0650 end:0x802D06B0
-
-dinoCall02C9.c:
-
-DIM2projrock.c:
-
-dll_144.c:
-
-dll_1B9.c:
-
-screenOverlay.c:
-
-dll_DF.c:
-
-IMspacecraft.c:
-	.bss	start:0x80395D60 end:0x80395D78
-
-musyx/snd3d.c:
-
-dll_F9.c:
-
-fireCrystalLightRelated01AF.c:
-
-CFcrystal.c:
-
-dll_155.c:
-
-unk802D0C10:
-	.rodata	start:0x802D0C10 end:0x802D0C20
-
-genprops.c:
-
-dll_13B.c:
-
-cannon.c:
-
-gfxEmit.c:
-
-dll_E2.c:
-
-dll_168.c:
-
-dll_FD.c:
-
-ship.c:
-
-balloon_baddie.c:
-
-dll_266.c:
-
-dll_14E.c:
-
-dll_D1.c:
-
-dll_179.c:
-
-dll_EC.c:
-
-dll_231.c:
-
-foodbag120.c:
-
-dll_277.c:
-
-DFbarrelanim.c:
-
-unk802CFC24:
-	.rodata	start:0x802CFC24 end:0x802CFC80
-
-n_rareware.c:
-
-mtx.c:
-
-SPdrape.c:
-
-unk802D0C48:
-	.rodata	start:0x802D0C48 end:0x802D0C70
-
-chuka.c:
-
-waterfallControl.c:
-
-dll_244.c:
-
-dll_F3.c:
-
-main/pi_dolphin.c:
-	.rodata	start:0x802CF460 end:0x802CF500
-
-unk802D0A0C:
-	.rodata	start:0x802D0A0C end:0x802D0A60
-
-DIMbossspit.c:
-
-iceblast.c:
-
-dll_111.c:
-
-dll_157.c:
-
-dolphin/OSRtc.c:
-	.bss	start:0x80325E20 end:0x80325E74
-
-SHroot.c:
-
-SCtotemstrength.c:
-
-dll_255.c:
-
-dll_13D.c:
-	.bss	start:0x80395A60 end:0x80395A70
-
-dll_1F0.c:
-
-autoTransporter.c:
-
-dll_124.c:
-
-dll_FF.c:
-
-dll_24E.c:
-
-unk802CEB50:
-	.rodata	start:0x802CEB50 end:0x802CF000
-
-dll_8A.c:
-
-DFcradle.c:
-
-DFpulley.c:
-
-DIMcannon.c:
-
-magicGem.c:
-
-POST.c:
-
-sandwormBoss.c:
-
-dll_10A.c:
-
-SCtotempole.c:
-
-MMP_moonrock.c:
-	.bss	start:0x80395D30 end:0x80395D48
-
-dll_268.c:
-
-dll_D3.c:
-
-weaponE6.c:
-	.rodata	start:0x802D0248 end:0x802D0288
-
-groundAnimator.c:
-
-zBomb02A7.c:
-
-dll_EE.c:
-
-foodbag.c:
-	.rodata	start:0x802CFBC8 end:0x802CFC24
-
-DIMboulder.c:
-
-unk802D06B0:
-	.rodata	start:0x802D06B0 end:0x802D0710
-
-unk802CF454:
-	.rodata	start:0x802CF454 end:0x802CF460
-
-dll_93.c:
-
-DIM2conveyor.c:
-
-DFmole.c:
-	.bss	start:0x803962E0 end:0x8039631C
-
-SPshopkeeper.c:
-	.bss	start:0x803963A0 end:0x803963C0
-
-dll_C0.c:
-
-NWtricky.c:
-
-dll_102.c:
-
-dll_148.c:
-
-dll_22C.c:
-
-dolphin/vec.c:
-
-dll_DB.c:
-	.bss	start:0x80395920 end:0x80395960
-
-CFtreasRobo.c:
-
-unk8036D05C:
-	.bss	start:0x8036D05C end:0x80373740
-
-CFexploder.c:
-
-dll_1E1.c:
-
-dll_80.c:
-
-partfx_wcning2.c:
-
-_start.c:
-
-dll_F5.c:
-
-dll_211.c:
-
-DRbarrelplace.c:
-	.rodata	start:0x802D0410 end:0x802D0420
-
-dll_159.c:
-	.bss	start:0x80395A88 end:0x80395BAC
-
-dll_9B.c:
-
-dll_2F0.c:
-
-dll_CA.c:
-
-DIM2snowball.c:
-
-swaphol.c:
-
-dimlavagen.c:
-
-main/objlib.c:
-
-frontend_control.c:
-
-dll_13F.c:
-
-CFforcecontrol.c:
-
-dll_224.c:
-
-WORLDplanet.c:
-
-anim.c:
-
-dll_68.c:
-
-sfxplayer.c:
-
-dll_20A.c:
-
-SPshop.c:
-
-dll_11.c:
-
-unk802D05CC:
-	.rodata	start:0x802D05CC end:0x802D0620
-
-flybaddie.80319b98.c:
-
-dim_partfx.c:
-
-dll_57.c:
-
-dll_F0.c:
-
-treasurechest.c:
-	.rodata	start:0x802D0318 end:0x802D0328
-
-treasureRelated0177.c:
-
-DFbarrel.c:
-
-dll_235.c:
-
-dll_1D0.c:
-
-dll_11F.c:
-
-DRbullet.c:
-
-dll_44.c:
-
-tex_dolphin.c:
-
-dll_104.c:
-
-dll_22E.c:
-
-dll_5F.c:
-
-robot.c:
-	.rodata	start:0x802D0420 end:0x802D0430
-
-dll_B9.c:
-
-ladders25D.c:
-
-unk8038BA60:
-	.bss	start:0x8038BA60 end:0x803957A8
-
-dll_2F2.c:
-
-dolphin/GXTexture.c:
-
-dll_79.c:
-
-dolphin/OSFont.c:
-
-DRpulley.c:
-
-dll_115.c:
-
-dll_23F.c:
-
-DBdustgeezer.c:
-
-dolphin/dvdlow.c:
-
-dll_4E.c:
-
-barrel.c:
-
-dll_A8.c:
-
-dll_1DC.c:
-
-cannontargetControl.c:
-	.rodata	start:0x802D0470 end:0x802D04D0
-
-projball.c:
-
-NWmammoth.c:
-
-CRsnowbike.c:
-	.bss	start:0x803964B0 end:0x803964C8
-	.rodata	start:0x802D08D8 end:0x802D08E8
-
-dll_128.c:
-
-camCtrl54.c:
-
-TREX_levelcontrol.c:
-
-waterfx.c:
-
-dolphin/vi.c:
-	.bss	start:0x80326AC0 end:0x80326C08
-
-DRhalolight.c:
-
-dolphin/CARDRdwr.c:
-
-dll_226.c:
-
-dll_1ED.c:
-
-dll_59.c:
-
-dll_F2.c:
-
-creator1C4.c:
-
-unk802CFFA8:
-	.rodata	start:0x802CFFA8 end:0x802D0238
-
-unk80357698:
-	.bss	start:0x80357698 end:0x80357720
-
-rope_baddie.c:
-
-wispBaddie.c:
-
-dll_2D0.c:
-
-dll_290.c:
-
-dll_2EB.c:
-
-CFwalltorch.c:
-	.rodata	start:0x802D0430 end:0x802D0440
-
-DIMboss.c:
-	.bss	start:0x80395D88 end:0x803962C4
-	.rodata	start:0x802D0620 end:0x802D0650
-
-DIM2icicle.c:
-
-modelfx.c:
-
-dolphin/dvdfs.c:
-
-creator19D.c:
-
-DRcloudcage.c:
-	.rodata	start:0x802D0C80 end:0x802D0C8C
-
-DRcradle.c:
-
-dll_21F.c:
-
-dll_18B.c:
-
-partfx22.c:
-
-unk80336F64:
-	.bss	start:0x80336F64 end:0x80343D20
-
-cannonball.c:
-
-partfx_rexning3.c:
-
-dolphin/dvdqueue.c:
-	.bss	start:0x80326A30 end:0x80326A48
-
-SClevelcontrol.c:
-
-lift1.c:
-
-dll_204.c:
-
-baby_snowworm.c:
-
-dll_2F4.c:
-
-unk80325DCC:
-	.bss	start:0x80325DCC end:0x80325E20
-
-dll_170.c:
-
-CRsnowClaw.c:
-
-dll_29A.c:
-
-camDebug.c:
-
-musyx/hw_dspctrl.c:
-
-dll_117.c:
-
-dll_19C.c:
-
-dll_1B0.c:
-
-newSeqObj.c:
-
-dll_0A.c:
-
-gameplay.c:
-	.rodata	start:0x802CFBB8 end:0x802CFBC4
-
-DBshooter.c:
-
-trigger.c:
+	.text       start:0x800075AC end:0x80007714
+	.data       start:0x802D1088 end:0x802D1140
+
+dolphin/OSAlarm.c:
+	.text       start:0x80007714 end:0x800080B8
+	.data       start:0x802D1140 end:0x802D1490
+
+dolphin/OSAlloc.c:
+	.text       start:0x800080B8 end:0x800087C4
+	.data       start:0x802D1490 end:0x802D1900
+
+dolphin/OSArena.c:
+	.text       start:0x800087C4 end:0x800088C4
+	.data       start:0x802D1F48 end:0x802D2018
 
 OSAudioSystem.c:
-
-dll_183.c:
-
-SBshiphead.c:
-
-partfx1F.c:
-
-SBcloudball.c:
-
-dll_4A.c:
-
-dll_2C1.c:
-
-df_partfx.c:
-
-dll_BF.c:
-
-TREX_Lazerwall.c:
-
-dll_2DC.c:
-
-main/maketex.c:
-
-WaterFlowWe.c:
-
-MMP_asteroid.c:
-	.bss	start:0x80395D18 end:0x80395D30
-
-dll_64.c:
-
-dolphin/CARDBlock.c:
-
-dolphin/CARDCheck.c:
-
-dll_194.c:
-
-creator1C6.c:
-
-dll_1EF.c:
-
-dll_99.c:
-
-dll_7F.c:
-
-DIMlogfire.c:
-
-dll_2D2.c:
-
-dll_20E.c:
-
-dll_AE.c:
-
-unk803271F0:
-	.bss	start:0x803271F0 end:0x80327478
-
-dll_17A.c:
-
-dll_2ED.c:
-
-dll_292.c:
-
-flybaddie.c:
-
-foodMenu.c:
-
-dll_53.c:
-
-dll_C8.c:
-
-dll_28B.c:
-
-dll_1BC.c:
-
-cup1C3.c:
-	.rodata	start:0x802D0730 end:0x802D073C
-
-dll_6C.c:
-
-dolphin/GXMisc.c:
-
-DIMlavasmash.c:
-
-dll_1A1.c:
-
-dll_1E7.c:
-
-dll_40.c:
-
-dll_B5.c:
-
-robotpatrol.c:
-	.rodata	start:0x802D03E0 end:0x802D0410
-
-dolphin/db.c:
-
-partfx_wcning.c:
-
-draghead.c:
-	.rodata	start:0x802D0BA8 end:0x802D0BC0
-
-dll_206.c:
-
-SClightfoot.c:
-	.bss	start:0x80396338 end:0x80396374
-
-unk8016C8A0:
-
-dll_172.c:
-
-dll_29C.c:
-
-dll_5B.c:
-
-SPscarab.c:
-
-colrise243.c:
-
-dll_19E.c:
-
-torch1C1.c:
-	.rodata	start:0x802D0710 end:0x802D0720
-
-dll_75.c:
-
-dll_A4.c:
-
-lily.c:
-
-dolphin/CARDWrite.c:
-
-dll_2CB.c:
-
-partfx_mmpning.c:
-
-snowWorm.c:
-	.bss	start:0x80396528 end:0x803965A0
-
-expr.c:
-
-dll_66.c:
-
-dll_185.c:
-
-DBpointmum.c:
-	.rodata	start:0x802D0BC0 end:0x802D0BD0
-
-unk802CEAC8:
-	.rodata	start:0x802CEAC8 end:0x802CEB50
-
-dll_1C5.c:
-	.bss	start:0x80396328 end:0x80396338
-
-dll_16B.c:
-
-dll_2DE.c:
-
-zBomb.c:
-
-campfire.c:
-
-scalesanim.c:
-	.rodata	start:0x802D0790 end:0x802D085C
-
-unk8034B804:
-	.bss	start:0x8034B804 end:0x80352CD8
-
-SHmushroom.c:
-
-partfx_shpning.c:
-
-dll_150.c:
-
-dll_55.c:
-
-CFguardian.c:
-	.rodata	start:0x802D0350 end:0x802D035C
-
-unk80389E84:
-	.bss	start:0x80389E84 end:0x80389F28
-
-DRcreator.c:
-
-dll_3B.c:
-
-dll_2D4.c:
-
-dll_196.c:
-
-DFwhirlpool.c:
-
-musyx/seq.c:
-
-baddieControl.c:
-	.rodata	start:0x802CFC80 end:0x802CFC90
-
-unk802D085C:
-	.rodata	start:0x802D085C end:0x802D08B0
-
-dll_294.c:
-
-dll_2EF.c:
-
-crate2.c:
-
-DIM2flameburst.c:
-
-CFchuckobj.c:
-
-DRpushcart.c:
-
-DRsimplehuman.c:
-
-musyx/synth_adsr.c:
-
-SHthorntail.c:
-
-dll_88.c:
-
-dll_2E7.c:
-
-torch1CD.c:
-	.rodata	start:0x802D0740 end:0x802D0750
-
-dll_6E.c:
-
-dll_28D.c:
-
-dll_163.c:
-
-flybaddie1D7.c:
-
-musyx/synthmacros.c:
-
-ladders.c:
-
-dll_B7.c:
-
-statueball.c:
-
-musyx/reverb_fx.c:
-
-dolphin/GXInit.c:
-
-shrine1CE.c:
-
-DBprotection.c:
-
-dll_77.c:
-
-groundanim.c:
-
-dll_5D.c:
-
-partfx_rexning.c:
-
-dll_174.c:
-
-dll_15A.c:
-	.bss	start:0x80395BB0 end:0x80395D18
-
-dll_1B4.c:
-
-dll_272.c:
-
-TREX_trex.c:
-	.bss	start:0x803965A0 end:0x8039660C
-	.rodata	start:0x802D0C20 end:0x802D0C30
-
-dll_219.c:
-	.bss	start:0x80395D78 end:0x80395D88
-
-savegame.c:
-
-DRlavacontrol.c:
-	.rodata	start:0x802D0C30 end:0x802D0C48
-
-dll_A6.c:
-
-listcode.c:
-
-dll_2C5.c:
-
-dll_141.c:
-	.rodata	start:0x802D0340 end:0x802D0350
-
-platform1.c:
-
-dll_187.c:
+	.data       start:0x802D2018 end:0x802D2170
 
 dolphin/OSCache.c:
+	.data       start:0x802D22E0 end:0x802D2510
 
-unk803958A8:
-	.bss	start:0x803958A8 end:0x803958F8
+dolphin/OSContext.c:
+	.text       start:0x80009130 end:0x80009968
+	.data       start:0x802D2510 end:0x802D26E8
 
-dll_B2.c:
+dolphin/OSExi.c:
+	.data       start:0x802D2950 end:0x802D2C28
+	.bss        start:0x80325D60 end:0x80325DD8
 
-dll_285.c:
+dolphin/OSRtc.c:
+	.bss        start:0x80325E20 end:0x80325E78
 
-dll_83.c:
+dolphin/OSInterrupt.c:
+	.data       start:0x802D2C28 end:0x802D3078
 
-grenade.c:
+dolphin/OSMutex.c:
+	.data       start:0x802D3078 end:0x802D30B0
 
-unk802D0770:
-	.rodata	start:0x802D0770 end:0x802D0780
+dolphin/OSError.c:
+	.text       start:0x80009968 end:0x80009D38
 
-dll_1AD.c:
+OSReset.c:
+	.text       start:0x8000BE68 end:0x8000BF3C
 
-unk80326A00:
-	.bss	start:0x80326A00 end:0x80326A30
+dolphin/OSSerial.c:
+	.text       start:0x8000C518 end:0x8000CFBC
+	.data       start:0x802D3130 end:0x802D3430
+	.bss        start:0x80325E78 end:0x80325EF8
 
-main/intersect.c:
+dolphin/OSStopwatch.c:
+	.text       start:0x8000CFBC end:0x8000D198
 
-dll_2D6.c:
+dolphin/OSSync.c:
+	.text       start:0x8000D1B8 end:0x8000D228
 
-dll_27C.c:
+dolphin/OSThread.c:
+	.text       start:0x8000D228 end:0x8000E4A0
+	.data       start:0x802D3430 end:0x802D39C0
+	.bss        start:0x80325F98 end:0x80326980
 
-dll_9E.c:
+dolphin/OSUartExi.c:
+	.text       start:0x8000E518 end:0x8000E78C
 
-dll_19.c:
+mtx44.c:
+	.text       start:0x8000FA60 end:0x8000FD58
+	.data       start:0x802D4900 end:0x802D4A38
 
-dll_152.c:
+dolphin/dvd.c:
+	.text       start:0x80011D40 end:0x80013F4C
+	.data       start:0x802D5C68 end:0x802D6740
+	.bss        start:0x80326980 end:0x80326A00
 
-dll_CD.c:
+dolphin/dvdqueue.c:
+	.bss        start:0x80326A30 end:0x80326A90
 
-dll_198.c:
-
-dolphin/OSResetSW.c:
-
-dolphin/CARDMount.c:
-
-seqObj11D.c:
-
-dolphin/mtxvec.c:
-
-shrine.803197fc.c:
-
-dll_A1.c:
-
-dll_296.c:
-
-dll_72.c:
-
-SHspore.c:
-
-unk80395A10:
-	.bss	start:0x80395A10 end:0x80395A30
-
-lanternfirefly.c:
-
-dll_28F.c:
-
-dll_165.c:
-
-dll_8B.c:
-
-DRcollpieace.c:
-
-dll_BA.c:
-
-timer.c:
-
-dll_1A5.c:
-
-WMgeneralscales.c:
-	.rodata	start:0x802D0940 end:0x802D0A0C
-
-modgfx.c:
-	.rodata	start:0x802CF788 end:0x802CF7A0
-
-dll_2BE.c:
-
-texScroll.c:
-
-seqObj.c:
-
-SBcagedkyte.c:
-
-unk802D0750:
-	.rodata	start:0x802D0750 end:0x802D0760
-
-weapons.c:
-
-partfx.c:
-
-unk80326C24:
-	.bss	start:0x80326C24 end:0x80326C48
-
-dll_176.c:
-
-dll_25A.c:
-
-dll_2B4.c:
-
-init.c:
-	.init	start:0x80003100 end:0x800054D0
-
-dll_7A.c:
-
-shrine1C2.c:
-
-dll_1B6.c:
-
-magicdust.c:
-
-modanimeflash1.c:
-
-dll_C3.c:
-
-tree.c:
-	.rodata	start:0x802D0D28 end:0x802D0D38
-
-dll_94.c:
-
-dolphin/dsp_task.c:
-
-dinoCall02C8.c:
-
-DRyoutube.c:
-
-CFBaby.c:
+dolphin/vi.c:
+	.bss        start:0x80326AC0 end:0x80326C08
 
 dolphin/Pad.c:
-	.bss	start:0x80326C08 end:0x80326C24
+	.bss        start:0x80326C08 end:0x80326C28
 
-dll_189.c:
+dolphin/ai.c:
+	.text       start:0x800188A4 end:0x80019448
+	.data       start:0x802D7140 end:0x802D7230
+	.bss        start:0x80326C48 end:0x80326C78
 
-Checkpoint.c:
+dolphin/ar.c:
+	.data       start:0x802D7230 end:0x802D7490
 
-dll_6B.c:
+dolphin/arq.c:
+	.data       start:0x802D7490 end:0x802D7588
 
-scene1C7.c:
+dolphin/dsp.c:
+	.data       start:0x802D7588 end:0x802D7688
 
-VFlevcontrol.c:
+dolphin/GXFifo.c:
+	.data       start:0x802D79B8 end:0x802D7E58
 
-unk80395A70:
-	.bss	start:0x80395A70 end:0x80395A88
+dolphin/GXAttr.c:
+	.data       start:0x802D7F60 end:0x802D8638
 
-dll_26D.c:
+GXLight.c:
+	.data       start:0x802D9908 end:0x802D9EA0
 
-DRpickup.c:
+GXBump.c:
+	.text       start:0x80027EEC end:0x80028F60
+	.data       start:0x802DA8E8 end:0x802DADC8
+	.bss        start:0x80326DA0 end:0x80328698
 
-perform_viewer.c:
+GXTev.c:
+	.text       start:0x80028FAC end:0x8002A9E0
+	.data       start:0x802DADC8 end:0x802DB398
 
-unk802D0D48:
+GXPixel.c:
+	.data       start:0x802DB398 end:0x802DB7B0
 
-dll_B4.c:
+dolphin/GXTransform.c:
+	.data       start:0x802DBA70 end:0x802DBEE8
 
-dll_241.c:
+GXPerf.c:
+	.data       start:0x802DF520 end:0x802DF598
 
-tricky.c:
-	.bss	start:0x803957A8 end:0x803957F4
-	.rodata	start:0x802CFE70 end:0x802CFFA8
+dolphin/CARDBios.c:
+	.data       start:0x802DF7D0 end:0x802DF9A8
 
-dll_85.c:
+dolphin/CARDUnlock.c:
+	.data       start:0x802DF9C0 end:0x802DFB58
 
-tFrameAnimator154.c:
+dolphin/CARDRdwr.c:
+	.data       start:0x802DFB58 end:0x802DFC08
 
-dolphin/CARDCreate.c:
+dolphin/CARDBlock.c:
+	.data       start:0x802DFC08 end:0x802DFCA8
+
+dolphin/CARDDir.c:
+	.data       start:0x802DFCA8 end:0x802DFD30
+
+dolphin/CARDCheck.c:
+	.data       start:0x802DFD30 end:0x802DFE28
+
+dolphin/CARDMount.c:
+	.data       start:0x802DFE28 end:0x802DFEF0
+
+dolphin/CARDFormat.c:
+	.data       start:0x802DFEF0 end:0x802DFF48
 
 dolphin/CARDOpen.c:
+	.data       start:0x802DFF48 end:0x802E0040
 
-newday.c:
-	.rodata	start:0x802CF570 end:0x802CF638
+dolphin/CARDCreate.c:
+	.data       start:0x802E0040 end:0x802E0128
 
-DRvines.c:
+dolphin/CARDRead.c:
+	.data       start:0x802E0128 end:0x802E03B0
 
-dll_27E.c:
+dolphin/CARDWrite.c:
+	.data       start:0x802E03B0 end:0x802E04D8
 
-exploder.c:
+dolphin/CARDDelete.c:
+	.data       start:0x802E04D8 end:0x802E0548
 
-musyx/hw_dolphin.c:
+dolphin/CARDStat.c:
+	.data       start:0x802E0548 end:0x802E05B8
 
-unk80386D78:
-	.bss	start:0x80386D78 end:0x80389D60
+dolphin/CARDRename.c:
+	.data       start:0x802E05B8 end:0x802E0650
 
-partfx_dakning.c:
+musyx/seq.c:
+	.data       start:0x802E0650 end:0x802E06E8
 
-dll_A3.c:
-
-dll_252.c:
-	.rodata	start:0x802D0A78 end:0x802D0A88
-
-dll_74.c:
-
-gametext.c:
-
-SCtumbleweedmeter.c:
-
-cage.c:
-
-sidekickToy.c:
-
-CFPrisonGuard.c:
-
-dll_BC.c:
-
-dll_8D.c:
-
-dll_08.c:
-	.rodata	start:0x802CF650 end:0x802CF668
-
-fox.c:
-	.rodata	start:0x802CFDB0 end:0x802CFE70
-
-collectable.c:
-
-door.c:
-
-dll_14D.c:
-
-dll_265.c:
-
-dll_61.c:
-
-DBkillboulder.c:
-
-WCpressureSwitch.c:
-
-musyx/reverb.c:
-
-dll_132.c:
-
-firstperson.c:
-
-dll_1A7.c:
-	.bss	start:0x80395D48 end:0x80395D60
-
-dll_AB.c:
-
-dll_7C.c:
-
-duster.c:
-
-objfsa.c:
-
-transporter.c:
-
-dll_25C.c:
-
-BOSSdrakor_laser.c:
-
-unk802CF518:
-	.rodata	start:0x802CF518 end:0x802CF570
-
-dll_2A5.c:
-
-dll_15E.c:
-
-dll_C5.c:
-
-dll_276.c:
-
-CRfueltank.c:
-
-dll_96.c:
-
-unk80382DA0:
-	.bss	start:0x80382DA0 end:0x80385E10
-
-animobjD2.c:
-
-dolphin/GXDisplayList.c:
-	.bss	start:0x80327478 end:0x803274A0
-
-SHrocketmushroom.c:
-
-shrine.c:
-
-brokecannon.c:
-
-dll_26F.c:
-
-dll_145.c:
-
-CRdropbombs.c:
-
-DFlantern.c:
-
-dll_DA.c:
-
-SBcannonball.c:
-
-dll_12B.c:
-
-dolphin/OSTime.c:
-
-symbol.c:
-
-dll_289.c:
+musyx/synth.c:
+	.data       start:0x802E06E8 end:0x802E0720
+	.bss        start:0x80336390 end:0x80336F68
 
 musyx/seq_api.c:
+	.data       start:0x802E0720 end:0x802E0820
 
-dll_F4.c:
+snd_synthapi.c:
+	.data       start:0x802E0870 end:0x802E08A8
 
-dolphin/GXGeometry.c:
+musyx/synthdata.c:
+	.data       start:0x802E08A8 end:0x802E0900
 
-commandmenu.c:
+musyx/synthvoice.c:
+	.data       start:0x802E0DA0 end:0x802E0DD8
 
-WMlevcontrol.c:
+musyx/s_data.c:
+	extab       start:0x80005AB8 end:0x80005B30
+	extabindex  start:0x80006724 end:0x800067D8
+	.text       start:0x8004FAB4 end:0x80050340
+	.data       start:0x802E1960 end:0x802E1AB0
+	.bss        start:0x80343D20 end:0x80343D30
 
-dll_23A.c:
+musyx/hw_dspctrl.c:
+	.data       start:0x802E1AB0 end:0x802E1C80
 
-fireflyLantern.c:
+musyx/hw_volconv.c:
+	.data       start:0x802E1C80 end:0x802E1E98
 
-dll_9A.c:
+musyx/snd_init.c:
+	extab       start:0x80005BE0 end:0x80005BF8
+	extabindex  start:0x800068E0 end:0x80006904
+	.text       start:0x800553D4 end:0x8005560C
+	.data       start:0x802E1EA8 end:0x802E1F48
 
-dll_156.c:
+dolphin/snd_init.c:
+	.data       start:0x802E1F48 end:0x802E1FD8
 
-unk802D0B54:
-	.rodata	start:0x802D0B54 end:0x802D0BA8
+musyx/snd_midictrl.c:
+	.rodata     start:0x802CEA40 end:0x802CEAC8
+	.data       start:0x802E1FD8 end:0x802E2058
 
-dll_13C.c:
-	.rodata	start:0x802D0328 end:0x802D0340
+musyx/hardware.c:
+	.rodata     start:0x802CEB50 end:0x802CEC50
+	.data       start:0x802E2858 end:0x802E2980
 
-unk8038A0C4:
-	.bss	start:0x8038A0C4 end:0x8038BA38
+musyx/snd_math.c:
+	extab       start:0x80005BF8 end:0x80005C00
+	extabindex  start:0x80006904 end:0x80006910
+	.text       start:0x8005560C end:0x80055744
 
-dll_254.c:
+musyx/hw_aramdma.c:
+	extab       start:0x80005D80 end:0x80005DA8
+	extabindex  start:0x80006B50 end:0x80006B8C
+	.text       start:0x80058944 end:0x80058E64
+	.data       start:0x802E2980 end:0x802E2B00
+	.bss        start:0x8034B9E0 end:0x8034B9F8
 
-dll_48.c:
+musyx/hw_dolphin.c:
+	.data       start:0x802E2B00 end:0x802E2B60
+
+musyx/reverb_fx.c:
+	.data       start:0x802E44E0 end:0x802E4508
+
+musyx/reverb.c:
+	.data       start:0x802E4508 end:0x802E4520
+
+musyx/hw_memory.c:
+	extab       start:0x80005E18 end:0x80005E28
+	extabindex  start:0x80006C34 end:0x80006C4C
+	.text       start:0x80059360 end:0x800593C4
+
+musyx/chorus_fx.c:
+	extab       start:0x80005E50 end:0x80005E60
+	extabindex  start:0x80006C88 end:0x80006CA0
+	.text       start:0x8005A098 end:0x8005A858
+	.data       start:0x802E4528 end:0x802E4D50
 
 amc/AmcExi.c:
+	.data       start:0x802E4D50 end:0x802E4F30
 
-partfx_badning.c:
+main/light.c:
+	.text       start:0x800750AC end:0x8007725C
+	.data       start:0x802EA828 end:0x802EADA8
+	.bss        start:0x80352DC0 end:0x80352EE8
 
-dll_221.c:
+main/mm_dolphin.c:
+	.text       start:0x8007B3A4 end:0x8007C4AC
+	.data       start:0x802EB0E0 end:0x802EB348
+	.bss        start:0x803555F8 end:0x80357698
 
-IMsnowbike.c:
-	.bss	start:0x803963C0 end:0x803963D8
-	.rodata	start:0x802D08B0 end:0x802D08C0
-
-dll_24D.c:
+main/models_dolphin.c:
+	.text       start:0x8007C524 end:0x800816B4
+	.rodata     start:0x802CF000 end:0x802CF018
+	.data       start:0x802EB690 end:0x802EC988
+	.bss        start:0x80357698 end:0x803576C0
 
 main/objhits.c:
-	.rodata	start:0x802CF018 end:0x802CF028
-
-dll_169.c:
-
-TumbleweedBush.c:
-
-main/main.c:
-
-sparsearray.c:
-
-partfx20.c:
-
-newstars.c:
-	.rodata	start:0x802CF668 end:0x802CF788
-
-flameblast.c:
-
-partfx_swcning.c:
-
-openingScene.c:
-
-dll_14F.c:
-
-dolphin/OSLink.c:
-
-animobj1C0.c:
-
-babySnowWorm.c:
-
-dll_134.c:
-
-unk802D035C:
-	.rodata	start:0x802D035C end:0x802D03E0
-
-dll_90.c:
-
-DIM2lift.c:
-
-moveLib.c:
-
-partfx_clfning.c:
-
-unk80389FD0:
-	.bss	start:0x80389FD0 end:0x80389FE0
-
-dll_232.c:
-
-CFlevelControl.c:
-
-partfx_dfnning.c:
-
-dll_278.c:
-
-smallbasket.c:
-	.bss	start:0x80395A30 end:0x80395A40
-
-DIMExplosion.c:
-	.rodata	start:0x802D04F0 end:0x802D04FC
-
-objanim.c:
-
-dll_C1.c:
-
-picmenu.c:
-
-backpack.c:
-	.bss	start:0x80395A50 end:0x80395A60
-
-dll_101.c:
-
-dll_147.c:
-
-expgfx.c:
-
-MMP_gyservent.c:
-
-SHkillermushroom.c:
-
-unk80385E28:
-	.bss	start:0x80385E28 end:0x80386518
-
-balloonBaddie.c:
-
-dll_1E0.c:
-
-dll_245.c:
-
-dll_81.c:
-
-GXDraw.c:
-
-unk8039631C:
-	.bss	start:0x8039631C end:0x80396328
-
-dll_210.c:
-	.rodata	start:0x802D0500 end:0x802D05CC
-
-unk80326A48:
-	.bss	start:0x80326A48 end:0x80326AC0
-
-dll_B0.c:
-
-killbot.c:
-
-unk803599A8:
-	.bss	start:0x803599A8 end:0x8036BCF8
-
-dolphin/perf.c:
-
-dll_23C.c:
-
-dll_112.c:
-
-dll_9C.c:
-
-dll_158.c:
-
-dll_CB.c:
-
-SBshipgun.c:
-
-DRcagecontrol.c:
-
-swarmBaddie.c:
-
-DRlaserturret.c:
-
-dll_1F1.c:
-
-dll_256.c:
-	.rodata	start:0x802D0A88 end:0x802D0B54
-
-tFrameAnimator.c:
-
-dll_70.c:
-
-dll_13E.c:
-
-dll_223.c:
-
-spellStonePlace.c:
-
-SBship.c:
-
-partfx_icening.c:
-
-main/objprint_dolphin.c:
-
-unk80326C78:
-	.bss	start:0x80326C78 end:0x80327170
-
-DIMsnowball.c:
-
-dll_125.c:
-
-musyx/snd_service.c:
-
-crawler253.c:
-
-dll_10B.c:
-
-dll_39.c:
-
-gasvent.c:
+	.rodata     start:0x802CF018 end:0x802CF028
+
+main/SKNControl.c:
+	.text       start:0x800816B4 end:0x80081DB4
+	.data       start:0x802EC988 end:0x802ECA98
+
+main/objects.c:
+	.text       start:0x800826F8 end:0x80085F14
+	.data       start:0x802ECA98 end:0x802ED268
+	.bss        start:0x80357720 end:0x80357728
+
+main/objlib.c:
+	.data       start:0x802ED728 end:0x802EDD20
+
+main/objprint.c:
+	.text       start:0x8009471C end:0x800961A0
+	.rodata     start:0x802CF028 end:0x802CF460
+	.data       start:0x802EDDE0 end:0x802EE510
+
+main/pi_dolphin.c:
+	.rodata     start:0x802CF460 end:0x802CF500
+	.data       start:0x802EEE40 end:0x802F0018
+
+main/rcp_dolphin.c:
+	.text       start:0x8009E5F0 end:0x8009FE30
+	.data       start:0x802F07C0 end:0x802F0840
+
+main/shader.c:
+	.text       start:0x800A138C end:0x800A3270
+	.rodata     start:0x802CF500 end:0x802CF518
+	.data       start:0x802F09D8 end:0x802F0BE0
+
+newday.c:
+	.rodata     start:0x802CF570 end:0x802CF638
 
 newfog.c:
-	.rodata	start:0x802CF638 end:0x802CF650
+	.rodata     start:0x802CF638 end:0x802CF650
 
-DIMwooddoor.c:
+dll_08.c:
+	.rodata     start:0x802CF650 end:0x802CF668
+
+newstars.c:
+	.rodata     start:0x802CF668 end:0x802CF788
+
+modgfx.c:
+	.rodata     start:0x802CF788 end:0x802CF7A0
+
+main/lightmap.c:
+	.text       start:0x800A32DC end:0x800A46F8
+	.data       start:0x802F0C10 end:0x802F0E08
+
+main/tex_dolphin.c:
+	.data       start:0x802F1F38 end:0x802F2078
+
+main/track_dolphin.c:
+	.text       start:0x800ADEA4 end:0x800B20DC
+	.data       start:0x802F2208 end:0x802F34E0
+	.bss        start:0x803761C0 end:0x80382D70
+
+modelfx.c:
+	.bss        start:0x80385CC0 end:0x80385CE0
+
+partfx1F.c:
+	.bss        start:0x80385D20 end:0x80385D38
+
+partfx20.c:
+	.bss        start:0x80385D38 end:0x80385D50
+
+dim_partfx.c:
+	.bss        start:0x80385D50 end:0x80385D68
+
+partfx_swcning.c:
+	.bss        start:0x80385D68 end:0x80385D80
+
+partfx_shpning.c:
+	.bss        start:0x80385D80 end:0x80385D98
+
+partfx_clfning.c:
+	.bss        start:0x80385D98 end:0x80385DB0
+
+main/maketex.c:
+	.data       start:0x802F3858 end:0x802F3988
+
+anim.c:
+	.data       start:0x802F3E58 end:0x802F46A0
+
+waterfx.c:
+	.data       start:0x802F4A88 end:0x802F4AC0
+
+projgfx.c:
+	.text       start:0x800E5F70 end:0x800E9FB4
+	.rodata     start:0x802CF7A0 end:0x802CF7B8
+	.data       start:0x802F5848 end:0x802F5A88
+
+partfx_nwaning.c:
+	.text       start:0x801057C0 end:0x80106B30
+	.data       start:0x802F7BB0 end:0x802F7CB8
+
+partfx_bayning.c:
+	.text       start:0x8010BB64 end:0x8010D490
+	.data       start:0x802F8210 end:0x802F8338
+	.bss        start:0x80385DB0 end:0x80385DC8
+
+partfx_badning.c:
+	.bss        start:0x80385DC8 end:0x80385DE0
+
+partfx_icening.c:
+	.bss        start:0x80385DE0 end:0x80385DF8
+
+partfx_rexning.c:
+	.bss        start:0x80385DF8 end:0x80385E10
+
+partfx_rexning2.c:
+	.text       start:0x801116C0 end:0x80112F90
+	.data       start:0x802F8770 end:0x802F88A8
+	.bss        start:0x80385E10 end:0x80385E28
+
+partfx_dakning.c:
+	.bss        start:0x80385E28 end:0x80385E40
+
+partfx_rexning3.c:
+	.bss        start:0x80385E40 end:0x80385E58
+
+df_partfx.c:
+	.bss        start:0x80385E58 end:0x80385E70
+
+partfx_wcning.c:
+	.bss        start:0x80385E70 end:0x80385E88
+
+partfx_wcning2.c:
+	.data       start:0x802F8F00 end:0x802F8FC8
+
+dll_1A.c:
+	.text       start:0x8011AF34 end:0x8011B2C0
+
+Dummy04.c:
+	.text       start:0x8011BC5C end:0x8011BD20
+
+Checkpoint.c:
+	.bss        start:0x80385E88 end:0x80385EE8
+
+subtitles.c:
+	.text       start:0x8011E200 end:0x8011FD68
+	.data       start:0x802F93C0 end:0x802F9510
+	.bss        start:0x80386518 end:0x80386C90
+
+Dummy15.c:
+	.text       start:0x8011FD74 end:0x8011FDA4
+
+TrickyWalk.c:
+	.text       start:0x8011FDA8 end:0x80124090
+	.rodata     start:0x802CF7B8 end:0x802CFBB8
+
+curves.c:
+	.text       start:0x8012436C end:0x8012A6B8
+	.data       start:0x802F9A78 end:0x802F9C68
+	.bss        start:0x80386D70 end:0x803881C0
+
+dll_19.c:
+	.bss        start:0x803881C0 end:0x803881D8
+
+gameplay.c:
+	.rodata     start:0x802CFBB8 end:0x802CFBC8
+	.bss        start:0x80388328 end:0x80389B80
+
+foodbag.c:
+	.rodata     start:0x802CFBC8 end:0x802CFC28
+
+baddieControl.c:
+	.rodata     start:0x802CFC80 end:0x802CFC90
+
+camcontrol.c:
+	.data       start:0x80301F20 end:0x80301F48
+	.bss        start:0x80389D60 end:0x80389ED0
+
+camDebug.c:
+	.bss        start:0x80389ED0 end:0x80389F28
+
+dll_3A.c:
+	.bss        start:0x80389F28 end:0x80389F88
+
+dll_3B.c:
+	.bss        start:0x80389FD0 end:0x80389FE0
+
+dll_52.c:
+	.data       start:0x803020D0 end:0x80302108
+
+screens.c:
+	.text       start:0x8012F3A4 end:0x8012F530
+
+pickup.c:
+	.text       start:0x8012F578 end:0x8012FA8C
+
+modgfx67.c:
+	.text       start:0x80130564 end:0x8013056C
+
+dll_69.c:
+	.text       start:0x80131C38 end:0x80131C40
+
+dll_6A.c:
+	.text       start:0x801320C0 end:0x801320C8
+
+dll_6D.c:
+	.text       start:0x80132FF8 end:0x80133000
+
+dll_6F.c:
+	.text       start:0x80133B5C end:0x80133B64
+
+dll_71.c:
+	.text       start:0x801348B4 end:0x801348BC
+
+dll_AF.c:
+	.text       start:0x80134DEC end:0x80134DF4
+
+dll_73.c:
+	.text       start:0x801359D8 end:0x801359E0
+
+dll_76.c:
+	.text       start:0x8013678C end:0x80136794
+
+dll_78.c:
+	.text       start:0x80136F7C end:0x80136F84
+
+dll_7B.c:
+	.text       start:0x80137630 end:0x80137638
+
+dll_7D.c:
+	.text       start:0x80138758 end:0x80138760
+
+dll_7E.c:
+	.text       start:0x80138C94 end:0x80138C9C
+
+dll_82.c:
+	.text       start:0x8013A194 end:0x8013A19C
+
+dll_84.c:
+	.text       start:0x8013A84C end:0x8013A854
+
+modcloudrunner2.c:
+	.text       start:0x8013B838 end:0x8013B840
+
+dll_87.c:
+	.text       start:0x8013BD50 end:0x8013BD58
+
+dll_89.c:
+	.text       start:0x8013CAEC end:0x8013CAF4
+
+dll_8C.c:
+	.text       start:0x8013D954 end:0x8013D95C
+
+dll_8E.c:
+	.text       start:0x8013E388 end:0x8013E390
+
+dll_8F.c:
+	.text       start:0x8013E934 end:0x8013E93C
+
+dll_91.c:
+	.text       start:0x8013F680 end:0x8013F688
+
+dll_95.c:
+	.text       start:0x80140A38 end:0x80140A40
+
+dll_97.c:
+	.text       start:0x801410B4 end:0x801410BC
+
+dll_98.c:
+	.text       start:0x80141734 end:0x8014173C
+
+dll_9D.c:
+	.text       start:0x80143C54 end:0x80143C5C
+
+dll_9F.c:
+	.text       start:0x801447B4 end:0x801447BC
+
+dll_A0.c:
+	.text       start:0x80144B40 end:0x80144B48
+
+dll_A2.c:
+	.text       start:0x8014543C end:0x80145444
+
+dll_A5.c:
+	.text       start:0x801461F4 end:0x801461FC
+
+dll_A7.c:
+	.text       start:0x80147124 end:0x8014712C
+
+dll_A9.c:
+	.text       start:0x80147BAC end:0x80147BB4
+
+dll_AA.c:
+	.text       start:0x801480AC end:0x801480B4
+
+dll_AC.c:
+	.text       start:0x80148BFC end:0x80148C04
+
+dll_AD.c:
+	.text       start:0x8014908C end:0x80149094
+
+dll_B1.c:
+	.text       start:0x80149A98 end:0x80149AA0
+
+dll_B3.c:
+	.text       start:0x8014A858 end:0x8014A860
+
+dll_B6.c:
+	.text       start:0x8014B820 end:0x8014B828
+
+dll_B8.c:
+	.text       start:0x8014BAB8 end:0x8014BAC0
+
+dll_BB.c:
+	.text       start:0x8014CDBC end:0x8014CDC4
+
+dll_BD.c:
+	.text       start:0x8014D7B8 end:0x8014D7C0
+
+dll_C4.c:
+	.text       start:0x8014E438 end:0x8014E440
+
+dll_C6.c:
+	.text       start:0x8014EF48 end:0x8014EF50
+
+dll_BE.c:
+	.text       start:0x8014FB90 end:0x8014FB98
+
+dll_C2.c:
+	.text       start:0x8014FFFC end:0x80150004
+
+dll_C7.c:
+	.text       start:0x80150748 end:0x80150750
+
+dll_C9.c:
+	.text       start:0x801511CC end:0x801511D4
+
+dll_CC.c:
+	.text       start:0x801528B4 end:0x801528BC
+
+dll_CE.c:
+	.text       start:0x80152FF4 end:0x80152FFC
+
+dll_56.c:
+	.text       start:0x8015D7C8 end:0x801624C8
+	.data       start:0x803022B0 end:0x803022E8
+
+dll_58.c:
+	.data       start:0x80302328 end:0x80302360
+
+dll_5C.c:
+	.data       start:0x80302438 end:0x80302448
+
+projLib.c:
+	.text       start:0x80165A40 end:0x80165F54
+	.data       start:0x80302A20 end:0x80302A48
+
+n_options.c:
+	.data       start:0x80303A30 end:0x803042A0
+	.bss        start:0x80389FE0 end:0x8038A108
+
+dll_11.c:
+	.bss        start:0x8038A198 end:0x8038A6E8
+
+picmenu.c:
+	.bss        start:0x8038B0C0 end:0x8038B0F8
+
+frontend_control.c:
+	.bss        start:0x8038BA20 end:0x8038BA40
+
+dll_3E.c:
+	.data       start:0x80304398 end:0x80304488
+
+dll_47.c:
+	.text       start:0x801759EC end:0x80177AF4
+	.data       start:0x80305838 end:0x80305848
+	.bss        start:0x8038BA40 end:0x8038BA58
+
+prof.c:
+	.bss        start:0x80390260 end:0x803904F8
+
+fox.c:
+	.rodata     start:0x802CFDB0 end:0x802CFE70
+	.bss        start:0x80395740 end:0x803957A8
+
+tricky.c:
+	.rodata     start:0x802CFE70 end:0x802CFFA8
+	.bss        start:0x803957A8 end:0x803957F8
+
+maybeTemplate.c:
+	.rodata     start:0x802D0238 end:0x802D0248
+	.bss        start:0x803957F8 end:0x80395850
+
+weaponE6.c:
+	.rodata     start:0x802D0248 end:0x802D0288
+
+crate.c:
+	.rodata     start:0x802D0288 end:0x802D0298
 
 pushpullObj.c:
-	.rodata	start:0x802D0298 end:0x802D02A8
-
-DRCloudball.c:
-
-GXFrameBuf.c:
-
-unk80177AF4:
+	.rodata     start:0x802D0298 end:0x802D02A8
 
 magicPlant.c:
-	.rodata	start:0x802D02A8 end:0x802D02B8
+	.rodata     start:0x802D02A8 end:0x802D02B8
 
-diMenu.c:
+core_snowworm.c:
+	.data       start:0x80310138 end:0x803102E8
+	.bss        start:0x80395850 end:0x803958A8
 
-dll_0E.c:
+baby_snowworm.c:
+	.bss        start:0x803958A8 end:0x803958F8
+
+wall_crawler.c:
+	.bss        start:0x803958F8 end:0x80395920
+
+dll_DB.c:
+	.bss        start:0x80395920 end:0x80395960
+
+skeetla.c:
+	.data       start:0x803108C0 end:0x803109F8
+	.bss        start:0x80395960 end:0x80395990
+
+MMP_cratercritter.c:
+	.bss        start:0x80395990 end:0x803959D8
+
+TrickyCurve.c:
+	.bss        start:0x80395A00 end:0x80395A10
+
+MMP_critterspit.c:
+	.data       start:0x80310B38 end:0x80310B88
+
+OBJ_InvHit.c:
+	.data       start:0x80311540 end:0x803115B8
+	.bss        start:0x80395A20 end:0x80395A30
+
+smallbasket.c:
+	.bss        start:0x80395A30 end:0x80395A40
+
+projswitch.c:
+	.data       start:0x80311888 end:0x80311898
+
+pressureSwitch.c:
+	.data       start:0x80311908 end:0x80311950
+
+dll_118.c:
+	.data       start:0x803119C0 end:0x80311A28
+
+talkObj.c:
+	.data       start:0x803123B0 end:0x803123F8
+
+interactObj.c:
+	.data       start:0x80312430 end:0x80312480
+
+mediumbasket.c:
+	.rodata     start:0x802D02B8 end:0x802D02E0
+	.data       start:0x803126C8 end:0x803126D8
+
+scarab.c:
+	.rodata     start:0x802D02E0 end:0x802D02F8
+	.data       start:0x80312710 end:0x80312758
+	.bss        start:0x80395A40 end:0x80395A50
+
+backpack.c:
+	.bss        start:0x80395A50 end:0x80395A60
+
+dll_13D.c:
+	.bss        start:0x80395A60 end:0x80395A70
+
+dll_159.c:
+	.bss        start:0x80395A88 end:0x80395B18
+
+dll_15A.c:
+	.bss        start:0x80395BB0 end:0x80395D00
+
+MMP_asteroid.c:
+	.bss        start:0x80395D18 end:0x80395D30
+
+MMP_moonrock.c:
+	.bss        start:0x80395D30 end:0x80395D48
+
+dll_1A7.c:
+	.bss        start:0x80395D48 end:0x80395D60
+
+IMspacecraft.c:
+	.bss        start:0x80395D60 end:0x80395D78
+
+dll_219.c:
+	.bss        start:0x80395D78 end:0x80395D88
+
+landedArwing.c:
+	.data       start:0x80312C38 end:0x80312C60
+
+staffAction.c:
+	.text       start:0x801ED218 end:0x801EE420
+	.rodata     start:0x802D02F8 end:0x802D0318
+	.data       start:0x80312C98 end:0x80312CA8
+
+alphaanim.c:
+	.data       start:0x803134F0 end:0x80313508
+
+crackanim.c:
+	.data       start:0x803135C0 end:0x803135E0
+
+SimpleExploder.c:
+	.data       start:0x803153A0 end:0x80315558
+
+treasurechest.c:
+	.rodata     start:0x802D0318 end:0x802D0328
+
+dll_13C.c:
+	.rodata     start:0x802D0328 end:0x802D0340
+
+dll_141.c:
+	.rodata     start:0x802D0340 end:0x802D0350
+
+dll_2D5.c:
+	.text       start:0x802C187C end:0x802C18F8
+
+CFguardian.c:
+	.rodata     start:0x802D0350 end:0x802D03E0
+
+robotpatrol.c:
+	.rodata     start:0x802D03E0 end:0x802D0410
+
+DRbarrelplace.c:
+	.rodata     start:0x802D0410 end:0x802D0420
+
+robot.c:
+	.rodata     start:0x802D0420 end:0x802D0430
+
+CFwalltorch.c:
+	.rodata     start:0x802D0430 end:0x802D0440
+
+CFTreasSharpy.c:
+	.data       start:0x80315BE8 end:0x80315C88
+
+holoPoint.c:
+	.data       start:0x80315EC8 end:0x80315F30
+
+dll_182.c:
+	.data       start:0x80315F30 end:0x80315F80
+
+dll_1A0.c:
+	.rodata     start:0x802D0440 end:0x802D0470
+	.data       start:0x80315FB8 end:0x80315FE8
+
+mmp_barrel.c:
+	.data       start:0x80316098 end:0x803160C0
+
+mmp_levelcontrol.c:
+	.data       start:0x803160F8 end:0x80316148
+
+DIMlevcontrol.c:
+	.data       start:0x80318848 end:0x80318858
+
+DIM2generator.c:
+	.data       start:0x80318A08 end:0x80318AA0
+
+riverFlowRelated018D.c:
+	.data       start:0x803191B0 end:0x803191D8
+
+mmshrine.c:
+	.data       start:0x80319790 end:0x80319840
+
+colrise.c:
+	.data       start:0x80319BE8 end:0x80319C30
+
+dll_1CA.c:
+	.data       start:0x80319C68 end:0x80319CC8
+
+creator1CF.c:
+	.data       start:0x80319E70 end:0x80319EB8
+
+dll_1D3.c:
+	.data       start:0x80319F78 end:0x80319FD0
+
+creator1D4.c:
+	.data       start:0x8031A008 end:0x8031A050
+
+dll_1D5.c:
+	.data       start:0x8031A050 end:0x8031A078
+
+dll_1E8.c:
+	.data       start:0x8031AA28 end:0x8031AA48
+
+SClantern.c:
+	.data       start:0x8031B908 end:0x8031B950
+
+SCcollectables.c:
+	.data       start:0x8031B950 end:0x8031B9A8
+
+SPdrape.c:
+	.data       start:0x8031C6B8 end:0x8031C6E0
+
+DFlog.c:
+	.data       start:0x8031CA38 end:0x8031CAD8
+
+cannontargetControl.c:
+	.rodata     start:0x802D0470 end:0x802D04D0
+
+DIMlavaball.c:
+	.rodata     start:0x802D04E0 end:0x802D04F0
+
+DIMExplosion.c:
+	.rodata     start:0x802D04F0 end:0x802D0500
+
+dll_210.c:
+	.rodata     start:0x802D0500 end:0x802D0620
+
+DIMboss.c:
+	.rodata     start:0x802D0620 end:0x802D0650
+	.bss        start:0x80395D88 end:0x803962C8
+
+DIMbosstonsil.c:
+	.bss        start:0x803962C8 end:0x803962E0
+
+DFmole.c:
+	.bss        start:0x803962E0 end:0x80396320
+
+dll_1C5.c:
+	.bss        start:0x80396328 end:0x80396338
+
+SClightfoot.c:
+	.bss        start:0x80396338 end:0x80396378
+
+SCchieflightfoot.c:
+	.bss        start:0x80396378 end:0x80396388
+
+SCanimobj.c:
+	.bss        start:0x80396388 end:0x803963A0
+
+SPshopkeeper.c:
+	.bss        start:0x803963A0 end:0x803963C0
+
+rope.c:
+	.rodata     start:0x802D0650 end:0x802D06B0
+
+torch1C1.c:
+	.rodata     start:0x802D0710 end:0x802D0720
+
+cup1C3.c:
+	.rodata     start:0x802D0730 end:0x802D0740
+
+torch1CD.c:
+	.rodata     start:0x802D0740 end:0x802D0750
+
+torch1D9.c:
+	.rodata     start:0x802D0760 end:0x802D0770
 
 dll_234.c:
-	.rodata	start:0x802D0780 end:0x802D0790
+	.rodata     start:0x802D0780 end:0x802D0790
 
-dll_92.c:
+scalesanim.c:
+	.rodata     start:0x802D0790 end:0x802D08B0
 
-cutCam.c:
+IMsnowbike.c:
+	.rodata     start:0x802D08B0 end:0x802D08C0
+	.bss        start:0x803963C0 end:0x803963D8
+
+dll_29F.c:
+	.bss        start:0x803963D8 end:0x80396450
+
+DRearthwalk.c:
+	.rodata     start:0x802D08C0 end:0x802D08D8
+	.bss        start:0x80396450 end:0x803964B0
+
+CRsnowbike.c:
+	.rodata     start:0x802D08D8 end:0x802D08E8
+	.bss        start:0x803964B0 end:0x803964C8
+
+BWlog.c:
+	.data       start:0x8031CC60 end:0x8031CC88
+
+DRcloudrunner.c:
+	.rodata     start:0x802D08E8 end:0x802D0928
+	.data       start:0x8031CF48 end:0x8031CFE8
+	.bss        start:0x803964C8 end:0x80396528
+
+snowWorm.c:
+	.bss        start:0x80396528 end:0x803965A0
+
+deaddino.c:
+	.data       start:0x8031D190 end:0x8031D408
+
+pswitch.c:
+	.data       start:0x8031D460 end:0x8031D4A8
+
+dll_242.c:
+	.rodata     start:0x802D0928 end:0x802D0940
+	.data       start:0x8031D518 end:0x8031D6B0
+
+WMgeneralscales.c:
+	.rodata     start:0x802D0940 end:0x802D0A60
+
+WMcrystal.c:
+	.rodata     start:0x802D0A60 end:0x802D0A78
+	.data       start:0x8031DFE8 end:0x8031E000
+
+doorswitch261.c:
+	.data       start:0x8031E4C8 end:0x8031E4D8
+
+lavaflow.c:
+	.data       start:0x8031E640 end:0x8031E688
+
+DBrockfall.c:
+	.data       start:0x8031E720 end:0x80320D10
+
+rockGenerator.c:
+	.data       start:0x80320D48 end:0x80320D60
+
+DBspike.c:
+	.data       start:0x80321118 end:0x80321160
+
+dll_252.c:
+	.rodata     start:0x802D0A78 end:0x802D0A88
+
+dll_256.c:
+	.rodata     start:0x802D0A88 end:0x802D0BA8
+
+draghead.c:
+	.rodata     start:0x802D0BA8 end:0x802D0BC0
+
+DBpointmum.c:
+	.rodata     start:0x802D0BC0 end:0x802D0BD0
+
+dll_273.c:
+	.rodata     start:0x802D0BD0 end:0x802D0BE0
+
+DBlightgo.c:
+	.rodata     start:0x802D0BE0 end:0x802D0C10
+	.data       start:0x80321DD8 end:0x80321E10
+
+DBbullet.c:
+	.data       start:0x80321F38 end:0x80321F90
+
+DBbonedust.c:
+	.data       start:0x80322108 end:0x80322118
+
+useobj28C.c:
+	.data       start:0x80322AD8 end:0x80322BA0
+
+zBomb02A7.c:
+	.data       start:0x80323270 end:0x803232E8
+
+DRexplodeDoor.c:
+	.data       start:0x80323AC0 end:0x80323AD0
+
+TREX_trex.c:
+	.rodata     start:0x802D0C20 end:0x802D0C30
+	.bss        start:0x803965A0 end:0x80396610
+
+DRlavacontrol.c:
+	.rodata     start:0x802D0C30 end:0x802D0C48
+
+DRgeezer.c:
+	.rodata     start:0x802D0C70 end:0x802D0C80
+	.data       start:0x80323B08 end:0x80323B20
+
+DRshackle.c:
+	.data       start:0x80323CF0 end:0x80323D50
+
+DRcloudcage.c:
+	.rodata     start:0x802D0C80 end:0x802D0C90
+
+DRhightop.c:
+	.rodata     start:0x802D0C90 end:0x802D0CB8
+	.data       start:0x80323D60 end:0x80323E10
+	.bss        start:0x80396610 end:0x80396638
+
+dll_2D1.c:
+	.bss        start:0x80396638 end:0x80396648
+
+DRbells.c:
+	.data       start:0x80323E48 end:0x80323E90
+
+DRicefire.c:
+	.data       start:0x80323EE0 end:0x80323F28
+
+DRprojswitch.c:
+	.data       start:0x80324040 end:0x80324050
+
+DRcavein.c:
+	.data       start:0x80324160 end:0x80324188
+
+dll_2C4.c:
+	.data       start:0x803241C0 end:0x80324208
+
+dll_2CA.c:
+	.rodata     start:0x802D0CB8 end:0x802D0CC8
+
+dll_2D3.c:
+	.rodata     start:0x802D0CC8 end:0x802D0CE8
+	.bss        start:0x80396648 end:0x80396668
+
+BWalphaanim.c:
+	.data       start:0x803244B0 end:0x803244E0
+
+WCpushblock.c:
+	.data       start:0x80324650 end:0x80324680
+
+WClevcontrol.c:
+	.text       start:0x802C1984 end:0x802C3054
+	.data       start:0x80324728 end:0x80324910
+	.bss        start:0x80396668 end:0x803966A8
+
+WCbeacon.c:
+	.text       start:0x802C3054 end:0x802C34AC
+	.data       start:0x80324980 end:0x803249C8
+
+WCpressureSwitch.c:
+	.data       start:0x80324A00 end:0x80324A58
+
+dll_2DB.c:
+	.text       start:0x802C34B4 end:0x802C3994
+
+USEOBJ.c:
+	.text       start:0x802C4368 end:0x802C48B4
+	.data       start:0x80324AC8 end:0x80324B30
+
+dll_2E4.c:
+	.text       start:0x802C4C40 end:0x802C4F08
+
+dll_2DF.c:
+	.text       start:0x802C4F10 end:0x802C5578
+
+WCdial.c:
+	.text       start:0x802C5578 end:0x802C5A28
+	.data       start:0x80324BE8 end:0x80324C48
+
+WClaser.c:
+	.data       start:0x80324C48 end:0x80324C90
+
+WCfloortile.c:
+	.data       start:0x80324CC8 end:0x80324CD8
+
+dll_2E2.c:
+	.text       start:0x802C62C8 end:0x802C6630
+
+dll_2E8.c:
+	.text       start:0x802C6D38 end:0x802C6EB4
+	.data       start:0x80324D10 end:0x80324DA0
+
+ARWarwingattachment.c:
+	.text       start:0x802C6ECC end:0x802CA654
+	.data       start:0x80324DA0 end:0x803256F8
+
+LGTpointlight.c:
+	.rodata     start:0x802D0CF8 end:0x802D0D08
+	.data       start:0x803258F0 end:0x80325988
+
+LGTdirectionallight.c:
+	.rodata     start:0x802D0D08 end:0x802D0D18
+	.data       start:0x803259C0 end:0x80325B00
+
+LGTprojectedlight.c:
+	.rodata     start:0x802D0D18 end:0x802D0D28
+	.data       start:0x80325B38 end:0x80325BA0
+
+tree.c:
+	.rodata     start:0x802D0D28 end:0x802D0D38
+
+dll_2EE.c:
+	.text       start:0x802CA680 end:0x802CA6EC
+
+dll_2F1.c:
+	.text       start:0x802CA990 end:0x802CABC8
+
+dll_2F3.c:
+	.text       start:0x802CAFF4 end:0x802CB2AC
+
+LGTcontrollight.c:
+	.text       start:0x802CD3F8 end:0x802CD620
+	.data       start:0x80325BD8 end:0x80325C68
+
+boulder.c:
+	.rodata     start:0x802D0D38 end:0x802D0D48
+	.data       start:0x80325CD8 end:0x80325D1C

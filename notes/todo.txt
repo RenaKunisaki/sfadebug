@@ -1,3 +1,3 @@
-we should make a script to import the file tags from the spreadsheet
-then re-run the assign-names-for-DLLs script
-then make a script that reports any overlaps (two funcs with the same tag and another between them with another tag)
+[ ] when outputting code we should check if a function is using a variable whose namespace is that function, and emit a 'static' definition for it.
+[ ] create data sections for DLLs
+    - it looks like all DLL data sections are one after the other, and each one ends with its function table.

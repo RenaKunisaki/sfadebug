@@ -1,0 +1,1 @@
+/home/rena/ghidra_scripts/import-dtk-symbols.py

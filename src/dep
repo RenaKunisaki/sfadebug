@@ -1,0 +1,4 @@
+./src/config.json: \
+  orig/GSAP01-DEBUG/default.dol \
+  config/GSAP01-DEBUG/splits.txt \
+  config/GSAP01-DEBUG/symbols.txt

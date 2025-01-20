@@ -1,0 +1,12 @@
+08 newclouds
+3A n_filemenu
+52 camslide
+54 pathcam
+55 camstatic
+56 camlockon
+57 camshipbattle
+58 camclimb
+5C camshipbattle5C
+5D attentioncam
+5E camcannon
+61 camdrakor

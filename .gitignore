@@ -4,6 +4,8 @@ __pycache__
 .ninja_*
 .mypy_cache
 *.exe
+*.o
+*.log
 build
 build.ninja
 objdiff.json
@@ -12,3 +14,5 @@ orig/*/*
 /*.txt
 ctx.c
 **/*.~lock.*
+src/asm/*
+src/generated/*
