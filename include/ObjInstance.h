@@ -29,10 +29,6 @@ typedef struct {
 
 typedef struct {
     int TODO;
-} ObjDef;
-
-typedef struct {
-    int TODO;
 } ObjData;
 
 typedef struct {

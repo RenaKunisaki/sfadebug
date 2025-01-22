@@ -274,7 +274,8 @@ config.libs = [
         "host": False,
         "objects": [
             Object(NonMatching, "debug.c"),
-            Object(NonMatching, "main.c"),
+            Object(Matching, "main/main.c"),
+            Object(Matching, "main/pi.c"),
         ],
     },
 ]

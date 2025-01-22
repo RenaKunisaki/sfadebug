@@ -325,6 +325,11 @@ def readString(addr, length=None, maxLength=1000):
 def getCodeUnitContaining(address):
     return currentProgram.getListing().getCodeUnitAt(address)
 
+def getLabelAt(address):
+	result = currentProgram.getListing().getCodeUnitAt(address)
+	if result is None: return None
+	return result.getLabel()
+
 def getConstantAnalyzer(program):
     mgr = AutoAnalysisManager.getAnalysisManager(program)
     analyzers = ClassSearcher.getInstances(ConstantPropagationAnalyzer)
@@ -517,6 +522,10 @@ def fillFuncTagGaps():
                     printf("Func 0x%X '%s' is in '%s'", addrToInt(addr),
                         func.getName(), name)
                     func.addTag(name)
+                else:
+                    # add it again anyway because ghidra is dumb and
+                    # will report it having a tag when it doesn't
+                    func.addTag(name)
                 addr = func.body.maxAddress
             prevFunc = func
             addr = addr.add(4)
@@ -674,7 +683,20 @@ def readSymbolsTxt(path):
             addr   = int(addr, 0)
             params = params.split()
             if name in symbols:
-                printf("Duplicate symbol name: %s", name)
+                printf("symtxt: Duplicate symbol name: %s", name)
+            lbl = getLabelAt(intToAddr(addr))
+            if lbl is not None and lbl != name:
+                obj = getFunctionAt(intToAddr(addr))
+                if obj is not None:
+                    try:
+                        ns = obj.getParentNamespace()
+                    except AttributeError:
+                        ns = None
+                    if ns is not None:
+                        lbl = ns.getName() + '_' + lbl
+                printf("symtxt: using ghidra name '%s' instead of symtxt name '%s' at 0x%X",
+                    lbl, name, addr)
+                name = lbl
             sym = {
                 'name':    name,
                 'address': addr,
@@ -896,6 +918,9 @@ def writeSymbolsTxt(outPath, files, symbols):
         if '[' in symName: continue
         if '.' in symName: continue
         if '+' in symName: continue
+        # change to match dtk naming scheme for unnamed funcs
+        if symName.startswith('FUN_'):
+            symName = 'fn' + symName[3:] # 'FUN_' -> 'fn_'
         symName = symName.replace('::', '_').replace('[', '_') \
             .replace(']', '').replace('.', '_')
         prevAddr = addrToInt(nextAddr)
@@ -1134,8 +1159,13 @@ def listFuncs():
         yield result
 
 def updateFuncFile(files, func):
-    fileName = func['file'] or 'unknown'
+    # do not populate for unknowns
+    # or else they end up covering everything
+    if 'file' not in func: return
+    fileName = func['file']
+    if fileName is None: return
     secName  = getSectionTypeAt(func['start'])
+    if secName is None: return
     if fileName not in files:
         files[fileName] = {
             'text': {'min':0xFFFFFFFF, 'max':0},
@@ -1315,6 +1345,9 @@ def findDataSections(files):
     # find the range of variable addresses referenced by each file.
     for addr in singleFileVars:
         fileName = DATA_REFS[addr][0] # which file?
+        # ignore unknowns to avoid stupid things like
+        # "unknown text 0x80007480 - 0x802CE9E8"
+        if fileName == 'unknown': continue
         file = files[fileName]
         for secName in SECTION_NAMES:
             if secName not in file:
@@ -1328,7 +1361,7 @@ def findDataSections(files):
     for name, file in files.items():
         for sec in SECTION_NAMES:
             if sec not in file: continue
-            printf("%s %s 0x%X - 0x%X", name, sec,
+            printf("range: %s %s 0x%X - 0x%X", name, sec,
                 file[sec]['min'], file[sec]['max'])
 
 def fillSectionGaps(files):
@@ -1552,11 +1585,22 @@ def writeSplitsTxt(inPath, outPath, files, symbols, headerItems):
                 item['name'], item['type'], item['align']))
         for name, srcFile in sortedFiles:
             monitor.incrementProgress(1)
+            if name == 'main/main.c':
+                printf("Splits for %s:", name)
+                for secName in SECTION_NAMES:
+                    if secName in srcFile:
+                        sec = srcFile[secName]
+                        printf("%s: 0x%X - 0x%x", secName,
+                            sec['min'], sec['max'])
+                    else: printf("%s: not present", secName)
             if name == 'unknown': continue
             if name.endswith('.h'): continue
             if name.startswith('unk'): continue
             if name in IGNORE_FILES: continue
-            if not fileHasAnySplits(srcFile): continue
+            if not fileHasAnySplits(srcFile):
+                printf("Skipping %s (no splits)", name)
+                continue
+            printf("Writing splits for %s", name)
             outFile.write('\n%s:\n' % name)
             for secName in SECTION_NAMES:
                 if secName not in srcFile: continue
@@ -1621,20 +1665,21 @@ def run():
     writeSymbolsTxt(outPath, files, symbols)
 
     # write the functions (disabled until the splits are right)
-    #monitor.setIndeterminate(False)
-    #monitor.setMaximum(nFuncs)
-    #monitor.setMessage("Writing functions...")
-    #for name, srcFile in files.items():
-    #    path  = outPath + '/' + name
-    #    parts = path.split('/')
-    #    parts.pop()
-    #    try:
-    #        os.makedirs('/'.join(parts))
-    #    except OSError as ex: # lol no exist_ok param
-    #        if ex.errno != 17: raise # file exists
-    #    with open(outPath + '/' + name, 'wt') as file:
-    #        for func in srcFile['funcs']:
-    #            writeFunction(func, file, name)
+    monitor.setIndeterminate(False)
+    monitor.setProgress(0)
+    monitor.setMaximum(nFuncs)
+    monitor.setMessage("Writing functions...")
+    for name, srcFile in files.items():
+        path  = outPath + '/' + name
+        parts = path.split('/')
+        parts.pop()
+        try:
+            os.makedirs('/'.join(parts))
+        except OSError as ex: # lol no exist_ok param
+            if ex.errno != 17: raise # file exists
+        with open(outPath + '/' + name, 'wt') as file:
+            for func in srcFile['funcs']:
+                writeFunction(func, file, name)
 
 try:
     run()

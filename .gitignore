@@ -16,3 +16,4 @@ ctx.c
 **/*.~lock.*
 src/asm/*
 src/generated/*
+src/generated/log.txt

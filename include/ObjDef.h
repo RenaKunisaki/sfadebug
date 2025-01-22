@@ -1477,4 +1477,30 @@
 #define ObjDefNo_WC_LandingP 2185
 #define ObjDefNo_None -1
 
+enum RomListObjLoadFlags {
+    RomListLoadFlag_isLevelObject = 1,
+    RomListLoadFlag_isManualLoad = 2,
+    RomListLoadFlag_OnlyLoadIfNearPlayer = 4,
+    RomListLoadFlag_AllocatedByCode = 8,
+    RomListLoadFlag_loadForOtherMap = 16,
+    RomListLoadFlag_isBlockObject = 32
+};
+
+enum objSetupObjectActual_flags {
+    objSetupObjectActual_SkipObjInd = 2
+};
+
+typedef struct {
+    //this is the common header for all ObjDef structs
+    /* 0x00 */ s16 objType; //ObjDefEnum (ObjDefNo_*)
+    /* 0x02 */ s8 allocatedSize; //size of this entry in words
+    /* 0x03 */ u8 mapStates1; //whether to NOT load in states 1-8
+    /* 0x04 */ u8 loadFlags; //RomListObjLoadFlags
+    /* 0x05 */ u8 mapStates2; //whether to NOT load in states 15-9 (low bit unused?)
+    /* 0x06 */ s8 bound; //load if in range (bound<<3) of player
+    /* 0x07 */ s8 cullDist;
+    /* 0x08 */ Vec pos;
+    /* 0x14 */ int id; //unique ID
+} ObjDef;
+
 typedef s16 ObjDefNo_t;

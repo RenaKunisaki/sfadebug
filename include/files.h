@@ -1,82 +1,93 @@
-#define FILE_AUDIO_TAB 0
-#define FILE_AUDIO_BIN 1
-#define FILE_SFX_TAB 2
-#define FILE_SFX_BIN 3
-#define FILE_AMBIENT_TAB 4
-#define FILE_AMBIENT_BIN 5
-#define FILE_MUSIC_TAB 6
-#define FILE_MUSIC_BIN 7
-#define FILE_MPEG_TAB 8
-#define FILE_MPEG_BIN 9
-#define FILE_MUSICACT_BIN 10
-#define FILE_CAMACTIO_BIN 11
-#define FILE_LACTIONS_BIN 12
-#define FILE_ANIMCURV_BIN 13
-#define FILE_ANIMCURV_TAB 14
-#define FILE_OBJSEQ2C_TAB 15
-#define FILE_FONTS_BIN 16
-#define FILE_CACHEFON_BIN 17
-#define FILE_CACHEFON_BIN_12 18
-#define FILE_GAMETEXT_BIN 19
-#define FILE_GAMETEXT_TAB 20
-#define FILE_globalma_BIN 21
-#define FILE_TABLES_BIN 22
-#define FILE_TABLES_TAB 23
-#define FILE_SCREENS_BIN 24
-#define FILE_SCREENS_TAB 25
-#define FILE_VOXMAP_TAB 26
-#define FILE_VOXMAP_BIN 27
-#define FILE_WARPTAB_BIN 28
-#define FILE_MAPS_BIN 29
-#define FILE_MAPS_TAB 30
-#define FILE_MAPINFO_BIN 31
-#define FILE_TEX1_BIN 32
-#define FILE_TEX1_TAB 33
-#define FILE_TEXTABLE_BIN 34
-#define FILE_TEX0_BIN 35
-#define FILE_TEX0_TAB 36
-#define FILE_BLOCKS_BIN 37
-#define FILE_BLOCKS_TAB 38
-#define FILE_TRKBLK_TAB 39
-#define FILE_HITS_BIN 40
-#define FILE_HITS_TAB 41
-#define FILE_MODELS_TAB 42
-#define FILE_MODELS_BIN 43
-#define FILE_MODELIND_BIN 44
-#define FILE_MODANIM_TAB 45
-#define FILE_MODANIM_BIN 46
-#define FILE_ANIM_TAB 47
-#define FILE_ANIM_BIN 48
-#define FILE_AMAP_TAB 49
-#define FILE_AMAP_BIN 50
-#define FILE_BITTABLE_BIN 51
-#define FILE_WEAPONDA_BIN 52
-#define FILE_VOXOBJ_TAB 53
-#define FILE_VOXOBJ_BIN 54
-#define FILE_MODLINES_BIN 55
-#define FILE_MODLINES_TAB 56
-#define FILE_SAVEGAME_BIN 57
-#define FILE_SAVEGAME_TAB 58
-#define FILE_OBJSEQ_BIN 59
-#define FILE_OBJSEQ_TAB 60
-#define FILE_OBJECTS_TAB 61
-#define FILE_OBJECTS_BIN 62
-#define FILE_OBJINDEX_BIN 63
-#define FILE_OBJEVENT_BIN 64
-#define FILE_OBJHITS_BIN 65
-#define FILE_DLLS_BIN 66
-#define FILE_DLLS_TAB 67
-#define FILE_DLLSIMPO_BIN 68
-#define FILE_MODELS_TAB_45 69
-#define FILE_MODELS_BIN_46 70
-#define FILE_BLOCKS_BIN_47 71
-#define FILE_BLOCKS_TAB_48 72
-#define FILE_ANIM_TAB_49 73
-#define FILE_ANIM_BIN_4A 74
-#define FILE_TEX1_BIN_4B 75
-#define FILE_TEX1_TAB_4C 76
-#define FILE_TEX0_BIN_4D 77
-#define FILE_TEX0_TAB_4E 78
-#define FILE_ENVFXACT_BIN 79
-#define FILE_NULL 80
-#define FILE_NULL_51 81
+enum DataFileEnum32 {
+    FILE_AUDIO_tab = 0,
+    FILE_AUDIO_bin = 1,
+    FILE_SFX_tab = 2,
+    FILE_SFX_bin = 3,
+    FILE_AMBIENT_tab = 4,
+    FILE_AMBIENT_bin = 5,
+    FILE_MUSIC_tab = 6,
+    FILE_MUSIC_bin = 7,
+    FILE_MPEG_tab = 8,
+    FILE_MPEG_bin = 9,
+    FILE_MUSICACT_bin = 10,
+    FILE_CAMACTIO_bin = 11,
+    FILE_LACTIONS_bin = 12,
+    FILE_ANIMCURV_bin = 13,
+    FILE_ANIMCURV_tab = 14,
+    FILE_OBJSEQ2C_tab = 15,
+    FILE_FONTS_bin = 16,
+    FILE_CACHEFON_bin = 17,
+    FILE_CACHEFON_bin_12 = 18,
+    FILE_GAMETEXT_bin = 19,
+    FILE_GAMETEXT_tab = 20,
+    FILE_globalma_bin = 21,
+    FILE_TABLES_bin = 22,
+    FILE_TABLES_tab = 23,
+    FILE_SCREENS_bin = 24,
+    FILE_SCREENS_tab = 25,
+    FILE_VOXMAP_tab = 26,
+    FILE_VOXMAP_bin = 27,
+    FILE_WARPTAB_bin = 28,
+    FILE_MAPS_bin = 29,
+    FILE_MAPS_tab = 30,
+    FILE_MAPINFO_bin = 31,
+    FILE_TEX1_bin = 32,
+    FILE_TEX1_tab = 33,
+    FILE_TEXTABLE_bin = 34,
+    FILE_TEX0_bin = 35,
+    FILE_TEX0_tab = 36,
+    FILE_BLOCKS_bin = 37,
+    FILE_BLOCKS_tab = 38,
+    FILE_TRKBLK_tab = 39,
+    FILE_HITS_bin = 40,
+    FILE_HITS_tab = 41,
+    FILE_MODELS_tab = 42,
+    FILE_MODELS_bin = 43,
+    FILE_MODELIND_bin = 44,
+    FILE_MODANIM_TAB = 45,
+    FILE_MODANIM_BIN = 46,
+    FILE_ANIM_TAB = 47,
+    FILE_ANIM_BIN = 48,
+    FILE_AMAP_TAB = 49,
+    FILE_AMAP_BIN = 50,
+    FILE_BITTABLE_bin = 51,
+    FILE_WEAPONDA_bin = 52,
+    FILE_VOXOBJ_tab = 53,
+    FILE_VOXOBJ_bin = 54,
+    FILE_MODLINES_bin = 55,
+    FILE_MODLINES_tab = 56,
+    FILE_SAVEGAME_bin = 57,
+    FILE_SAVEGAME_tab = 58,
+    FILE_OBJSEQ_bin = 59,
+    FILE_OBJSEQ_tab = 60,
+    FILE_OBJECTS_tab = 61,
+    FILE_OBJECTS_bin = 62,
+    FILE_OBJINDEX_bin = 63,
+    FILE_OBJEVENT_bin = 64,
+    FILE_OBJHITS_bin = 65,
+    FILE_DLLS_bin = 66,
+    FILE_DLLS_tab = 67,
+    FILE_DLLSIMPO_bin = 68,
+    FILE_MODELS_tab_45 = 69,
+    FILE_MODELS_bin_46 = 70,
+    FILE_BLOCKS_bin_47 = 71,
+    FILE_BLOCKS_tab_48 = 72,
+    FILE_ANIM_TAB_49 = 73,
+    FILE_ANIM_BIN_4A = 74,
+    FILE_TEX1_bin_4B = 75,
+    FILE_TEX1_tab_4C = 76,
+    FILE_TEX0_bin_4D = 77,
+    FILE_TEX0_tab_4E = 78,
+    FILE_TEXPRE_bin = 79,
+    FILE_TEXPRE_tab = 80,
+    FILE_PREANIM_bin = 81,
+    FILE_PREANIM_tab = 82,
+    FILE_VOXMAP_tab_53 = 83,
+    FILE_VOXMAP_bin_54 = 84,
+    FILE_ANIMCURV_bin_55 = 85,
+    FILE_ANIMCURV_tab_56 = 86,
+    FILE_ENVFXACT_bin = 87,
+    FILE_NULL = 88,
+    FILE_NULL_59 = 89,
+    FILE_NONE = 4294967295,
+};

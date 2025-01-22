@@ -1,0 +1,210 @@
+#include "dolphin.h"
+#include "types.h"
+#include "debug.h"
+#include "alloc.h"
+#include "gbi.h"
+#include "n64pad.h"
+#include "render.h"
+#include "dll.h"
+#include "ObjDef.h"
+#include "ObjInstance.h"
+#include "Map.h"
+#include "GameBits.h"
+#include "SaveGame.h"
+#include "files.h"
+
+enum AssetTypeEnum {
+    ASSET_TYPE_FILE = 0,
+    ASSET_TYPE_FILE_WITH_OFFSET = 1,
+    ASSET_TYPE_FILE_WITH_ID_SIZE = 2,
+    ASSET_TYPE_TEXTURE = 3,
+    ASSET_TYPE_CHARACTER = 4,
+    ASSET_TYPE_DLL = 5,
+    ASSET_TYPE_MODEL_INSTANCE = 6,
+    ASSET_TYPE_ANIMATION = 7,
+};
+
+typedef struct { //XXX move, populate
+    /* 0x00 */ s8 usage; //reference count
+    //...more...
+} Animation;
+typedef struct {
+    int TODO;
+} Texture;
+
+void* loadDataFile(int /*DataFileId32*/ file);
+Texture* textureLoad(int id);
+ObjInstance* Object_objSetupObjectActual(ObjDef *objDef,
+    u8 /*objSetupObjectActual_flags*/ flags,
+    u8 /*MapId8*/ mapId,
+    s32 romDefNo,
+    ObjInstance *pMatrix,
+    undefined param6);
+
+typedef struct {
+    /* 0x00 */ bool unk00;
+    /* 0x01 */ u8 type; //AssetTypeEnum
+    /* 0x02 */ u8 unk02;
+    /* 0x03 */ u8 unk03;
+    /* 0x04 */ u32 dataFileId; //DataFileEnum32
+    /* 0x08 */ void *obj; //type varies
+    /* 0x0c */ int *buffer;
+    /* 0x10 */ uint size;
+    /* 0x14 */ uint offset;
+    /* 0x18 */ int gameObj;
+    /* 0x1c */ ObjDef *object;
+    /* 0x20 */ uint objFlags;
+    /* 0x24 */ u32 dest;
+    /* 0x28 */ u32 buffer2;
+} AssetDef;
+
+AssetDef AssetDef_80352f00;
+
+void loadAsset_file(void *dest, u32 /*DataFileId32*/ file) { //800777F0
+    AssetDef_80352f00.unk00 = true;
+    AssetDef_80352f00.type = ASSET_TYPE_FILE;
+    AssetDef_80352f00.dataFileId = file;
+    AssetDef_80352f00.obj = dest;
+    loadAsset(&AssetDef_80352f00);
+}
+
+
+void loadAsset_fileWithOffset(void *objTypes, u32 /*DataFileEnum32*/ param2) { //8007784C
+    AssetDef_80352f00.unk00 = true;
+    AssetDef_80352f00.type = ASSET_TYPE_FILE_WITH_OFFSET;
+    AssetDef_80352f00.dataFileId = param2;
+    AssetDef_80352f00.obj = objTypes;
+    loadAsset(&AssetDef_80352f00);
+}
+
+void loadAsset_fileWithOffsetLength(
+    void *dest,u32 /*DataFileId32*/ file,int offset,int length) { //800778A8
+    AssetDef_80352f00.unk00 = true;
+    AssetDef_80352f00.type = ASSET_TYPE_FILE_WITH_ID_SIZE;
+    AssetDef_80352f00.dataFileId = file;
+    AssetDef_80352f00.obj = dest;
+    AssetDef_80352f00.buffer = (int *)length;
+    AssetDef_80352f00.size = offset;
+    loadAsset(&AssetDef_80352f00);
+}
+
+void loadAsset_Character(ObjInstance **result,ObjDef *def,uint flags,
+int mapId,int objNo,float *pMatrix,undefined4 param7) { //8007791C
+    AssetDef_80352f00.unk00 = true;
+    AssetDef_80352f00.type = ASSET_TYPE_CHARACTER;
+    AssetDef_80352f00.obj = result;
+    AssetDef_80352f00.offset = (uint)pMatrix;
+    AssetDef_80352f00.gameObj = (int)def;
+    AssetDef_80352f00.object = (ObjDef *)flags;
+    AssetDef_80352f00.objFlags = objNo;
+    AssetDef_80352f00.dest = mapId;
+    AssetDef_80352f00.buffer2 = param7;
+    loadAsset(&AssetDef_80352f00);
+}
+
+void loadAsset_Texture(void *param1,u32 /*DataFileEnum32*/ param2) { //800779B4
+    AssetDef_80352f00.unk00 = true;
+    AssetDef_80352f00.type = ASSET_TYPE_TEXTURE;
+    AssetDef_80352f00.dataFileId = param2;
+    AssetDef_80352f00.obj = param1;
+    loadAsset(&AssetDef_80352f00);
+}
+
+void loadAsset_DLL(DLL_func **dll,u32 /*DLL_ID*/ dllId,int *param3) { //80077A10
+    AssetDef_80352f00.unk00 = true;
+    AssetDef_80352f00.type = ASSET_TYPE_DLL;
+    AssetDef_80352f00.dataFileId = dllId;
+    AssetDef_80352f00.obj = dll;
+    AssetDef_80352f00.buffer = param3;
+    loadAsset(&AssetDef_80352f00);
+}
+
+
+void loadAsset_modelInstance(void *dest,u32 /*DataFileEnum32*/ id,int *param3) { //80077A78
+    AssetDef_80352f00.unk00 = true;
+    AssetDef_80352f00.type = ASSET_TYPE_MODEL_INSTANCE;
+    AssetDef_80352f00.dataFileId = id;
+    AssetDef_80352f00.obj = dest;
+    AssetDef_80352f00.buffer = param3;
+    loadAsset(&AssetDef_80352f00);
+}
+
+
+void loadAsset_Animation(void *param1,short param2,short param3,uint param4,undefined4 param5) { //80077AE0
+    AssetDef_80352f00.unk00 = true;
+    AssetDef_80352f00.type = ASSET_TYPE_ANIMATION;
+    AssetDef_80352f00.dataFileId = param2;
+    AssetDef_80352f00.buffer = (int *)(int)param3;
+    AssetDef_80352f00.obj = param1;
+    AssetDef_80352f00.objFlags = param4;
+    AssetDef_80352f00.dest = param5;
+    loadAsset(&AssetDef_80352f00);
+}
+
+
+void nop_80077B60(void) { //80077B60
+}
+
+
+void nop_onUnloadMap(void) { //80077B64
+}
+
+int loadAsset(AssetDef *load) { //80077B68
+    void *pvVar1;
+    ObjInstance *pOVar2;
+    Texture *pTVar3;
+    DLL_func **ppDVar4;
+    char *pcVar5;
+    Animation *pAVar6;
+    int iVar7;
+
+    /* {@symbol 80077ba0} */
+    switch(load->type) {
+        case ASSET_TYPE_FILE:
+            *(void **)load->obj = loadDataFile(load->dataFileId);
+            break;
+
+        case ASSET_TYPE_FILE_WITH_OFFSET:
+            loadDataFileToBuf(load->dataFileId,load->obj);
+            break;
+
+        case ASSET_TYPE_FILE_WITH_ID_SIZE:
+            loadDataFileWithLength(load->dataFileId,load->obj,
+                load->size,(u32)load->buffer);
+            break;
+
+        case ASSET_TYPE_TEXTURE:
+            *(Texture **)load->obj = textureLoad(load->dataFileId);
+            break;
+
+        case ASSET_TYPE_CHARACTER:
+            *(ObjInstance **)load->obj = Object_objSetupObjectActual(
+                (ObjDef *)load->gameObj,
+                load->object, //objSetupObjectActual_flags
+                load->dest, //MapId
+                load->objFlags,
+                (ObjInstance *)load->offset,
+                (char)load->buffer2);
+            break;
+
+        case ASSET_TYPE_DLL:
+            *(DLL_func ***)load->obj = DLL_setup(load->dataFileId & 0xffff,
+                (ushort)load->buffer,
+                FALSE);
+            break;
+
+        case ASSET_TYPE_MODEL_INSTANCE:
+            *(char **)load->obj = loadModelInstance(load->dataFileId,
+                (uint)load->buffer);
+            break;
+
+        case ASSET_TYPE_ANIMATION:
+            *(Animation **)load->obj = loadAnimation(load->dest, //Model*
+                (short)load->dataFileId,
+                (short)load->buffer,
+                (void *)load->objFlags);
+            break;
+    }
+    return retM1_afterLoadAsset_ret0xFFFF();
+}
+
