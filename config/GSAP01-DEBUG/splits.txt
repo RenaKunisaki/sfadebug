@@ -14,7 +14,6 @@ Sections:
 
 dolphin/db.c:
 	.text       start:0x8000E818 end:0x8000E938
-	.data       start:0x802D4268 end:0x802D4280
 
 mtx.c:
 	.text       start:0x8000E938 end:0x8000FA60
@@ -48,12 +47,11 @@ dolphin/dvd.c:
 dolphin/dvdqueue.c:
 	.text       start:0x80013F4C end:0x80014258
 	.data       start:0x802D6740 end:0x802D6770
-	.bss        start:0x80326A30 end:0x80326A90
 
 dolphin/vi.c:
 	.text       start:0x80014530 end:0x80016230
 	.data       start:0x802D67E0 end:0x802D6D28
-	.bss        start:0x80326AC0 end:0x80326C08
+	.bss        start:0x80326AC0 end:0x80326BB0
 
 dolphin/Pad.c:
 	.text       start:0x80016AD0 end:0x8001885C
@@ -80,7 +78,6 @@ musyx/snd_midictrl.c:
 	extab       start:0x80005C00 end:0x80005CD8
 	extabindex  start:0x80006910 end:0x80006A54
 	.text       start:0x80055744 end:0x80057590
-	.rodata     start:0x802CEA40 end:0x802CEAC8
 	.data       start:0x802E1FD8 end:0x802E2058
 
 musyx/snd_service.c:
@@ -92,14 +89,13 @@ musyx/hardware.c:
 	extab       start:0x80005CE8 end:0x80005D80
 	extabindex  start:0x80006A6C end:0x80006B50
 	.text       start:0x80057744 end:0x80058944
-	.rodata     start:0x802CEB50 end:0x802CEC50
 	.data       start:0x802E2858 end:0x802E2980
 
 musyx/hw_aramdma.c:
 	extab       start:0x80005D80 end:0x80005DA8
 	extabindex  start:0x80006B50 end:0x80006B8C
 	.text       start:0x80058944 end:0x80058E64
-	.data       start:0x802E2980 end:0x802E2B00
+	.data       start:0x802E2980 end:0x802E2AE8
 	.bss        start:0x8034B7E0 end:0x8034B9F8
 
 musyx/hw_dolphin.c:
@@ -190,7 +186,6 @@ expr.c:
 
 main/objprint.c:
 	.text       start:0x8009471C end:0x800961A0
-	.rodata     start:0x802CF028 end:0x802CF460
 	.data       start:0x802EDDE0 end:0x802EE510
 
 main/objprint_dolphin.c:
@@ -262,7 +257,6 @@ waterfx.c:
 
 modgfx.c:
 	.text       start:0x800E0870 end:0x800E5F68
-	.rodata     start:0x802CF788 end:0x802CF7A0
 	.bss        start:0x80385128 end:0x80385C48
 
 projgfx.c:
@@ -279,15 +273,12 @@ partfx.c:
 
 partfx1F.c:
 	.text       start:0x800F7ED0 end:0x800FBB28
-	.bss        start:0x80385D20 end:0x80385D38
 
 partfx20.c:
 	.text       start:0x800FBB28 end:0x800FFED0
-	.bss        start:0x80385D38 end:0x80385D50
 
 dim_partfx.c:
 	.text       start:0x800FFED0 end:0x801022A0
-	.bss        start:0x80385D50 end:0x80385D68
 
 partfx22.c:
 	.text       start:0x801022A0 end:0x801057C0
@@ -298,56 +289,44 @@ partfx_nwaning.c:
 
 partfx_swcning.c:
 	.text       start:0x80106B30 end:0x80107DBC
-	.bss        start:0x80385D68 end:0x80385D80
 
 partfx_shpning.c:
 	.text       start:0x80107DBC end:0x8010A14C
-	.bss        start:0x80385D80 end:0x80385D98
 
 partfx_clfning.c:
 	.text       start:0x8010A14C end:0x8010BB64
-	.bss        start:0x80385D98 end:0x80385DB0
 
 partfx_bayning.c:
 	.text       start:0x8010BB64 end:0x8010D490
 	.data       start:0x802F8210 end:0x802F8338
-	.bss        start:0x80385DB0 end:0x80385DC8
 
 partfx_badning.c:
 	.text       start:0x8010D490 end:0x8010F768
-	.bss        start:0x80385DC8 end:0x80385DE0
 
 partfx_icening.c:
 	.text       start:0x8010F768 end:0x8011071C
-	.bss        start:0x80385DE0 end:0x80385DF8
 
 partfx_rexning.c:
 	.text       start:0x8011071C end:0x801116C0
-	.bss        start:0x80385DF8 end:0x80385E10
 
 partfx_rexning2.c:
 	.text       start:0x801116C0 end:0x80112F90
 	.data       start:0x802F8770 end:0x802F88A8
-	.bss        start:0x80385E10 end:0x80385E28
 
 partfx_dakning.c:
 	.text       start:0x80112F90 end:0x80114288
-	.bss        start:0x80385E28 end:0x80385E40
 
 partfx_rexning3.c:
 	.text       start:0x80114288 end:0x801154FC
-	.bss        start:0x80385E40 end:0x80385E58
 
 partfx_dfnning.c:
 	.text       start:0x801154FC end:0x80115508
 
 df_partfx.c:
 	.text       start:0x8011550C end:0x80115B60
-	.bss        start:0x80385E58 end:0x80385E70
 
 partfx_wcning.c:
 	.text       start:0x80115B60 end:0x801169B4
-	.bss        start:0x80385E70 end:0x80385E88
 
 partfx_mmpning.c:
 	.text       start:0x801169B4 end:0x801184FC
@@ -375,6 +354,9 @@ subtitles.c:
 	.data       start:0x802F93C0 end:0x802F9510
 	.bss        start:0x80386518 end:0x80386C90
 
+dll_19.c:
+	.bss        start:0x803881C0 end:0x803881D8
+
 Dummy15.c:
 	.text       start:0x8011FD74 end:0x8011FDA4
 
@@ -385,10 +367,6 @@ TrickyWalk.c:
 curves.c:
 	.text       start:0x8012436C end:0x8012A6B8
 	.data       start:0x802F9A78 end:0x802F9C68
-	.bss        start:0x80386D70 end:0x803881C0
-
-dll_19.c:
-	.bss        start:0x803881C0 end:0x803881D8
 
 gameplay.c:
 	.text       start:0x8012CF08 end:0x8012E6F8
@@ -408,12 +386,18 @@ n_filemenu.c:
 picmenu.c:
 	.bss        start:0x8038B0C0 end:0x8038B0F8
 
+maybeTemplate.c:
+	.bss        start:0x803957F8 end:0x80395850
+
 foodbag.c:
 	.text       start:0x8012E6F8 end:0x8012F00C
 	.rodata     start:0x802CFBC8 end:0x802CFC28
 
 baddieControl.c:
 	.rodata     start:0x802CFC80 end:0x802CFC90
+
+tricky.c:
+	.rodata     start:0x802CFE70 end:0x802CFFA8
 
 savegame.c:
 	.text       start:0x8012F00C end:0x8012F358
@@ -750,7 +734,7 @@ camshipbattle5C.c:
 
 projLib.c:
 	.text       start:0x80165A40 end:0x80165F54
-	.data       start:0x80302A20 end:0x80302A48
+	.data       start:0x80302A20 end:0x80302A38
 
 n_options.c:
 	.data       start:0x80303A30 end:0x803042A0
@@ -762,14 +746,6 @@ dll_3E.c:
 dll_47.c:
 	.text       start:0x801759EC end:0x80177AF4
 	.data       start:0x80305838 end:0x80305848
-	.bss        start:0x8038BA40 end:0x8038BA58
-
-tricky.c:
-	.rodata     start:0x802CFE70 end:0x802CFFA8
-	.bss        start:0x803957A8 end:0x803957F8
-
-maybeTemplate.c:
-	.bss        start:0x803957F8 end:0x80395850
 
 core_snowworm.c:
 	.data       start:0x80310138 end:0x803102E8
@@ -1063,7 +1039,7 @@ dll_12B.c:
 
 landedArwing.c:
 	.text       start:0x801ED174 end:0x801ED218
-	.data       start:0x80312C38 end:0x80312C60
+	.data       start:0x80312C38 end:0x80312C48
 
 staffAction.c:
 	.text       start:0x801ED218 end:0x801ED6B0
@@ -1208,7 +1184,7 @@ dll_15B.c:
 
 CFguardian.c:
 	.text       start:0x802025D0 end:0x80202B08
-	.rodata     start:0x802D0350 end:0x802D03C8
+	.rodata     start:0x802D0350 end:0x802D03B8
 
 windlift.c:
 	.text       start:0x80204860 end:0x80204E70
@@ -1280,7 +1256,7 @@ dll_179.c:
 
 CFTreasSharpy.c:
 	.text       start:0x80212D48 end:0x80213384
-	.data       start:0x80315BE8 end:0x80315C18
+	.data       start:0x80315BE8 end:0x80315BF8
 
 dll_17F.c:
 	.text       start:0x80214D34 end:0x802153D0
@@ -1464,7 +1440,7 @@ dll_195.c:
 
 DFmole.c:
 	.text       start:0x80239100 end:0x80239434
-	.bss        start:0x803962E0 end:0x80396320
+	.bss        start:0x803962E0 end:0x80396308
 
 dll_1C5.c:
 	.bss        start:0x80396328 end:0x80396338
@@ -1620,12 +1596,6 @@ SPshopkeeper.c:
 	.text       start:0x80267AD0 end:0x80267DC8
 	.bss        start:0x803963A0 end:0x803963C0
 
-IMsnowbike.c:
-	.bss        start:0x803963C0 end:0x803963D8
-
-CRsnowbike.c:
-	.bss        start:0x803964B0 end:0x803964C8
-
 SPdrape.c:
 	.text       start:0x80269B28 end:0x80269FA8
 	.data       start:0x8031C6B8 end:0x8031C6E0
@@ -1764,14 +1734,14 @@ dll_273.c:
 
 dbayMap.c:
 	.text       start:0x80297004 end:0x8029773C
-	.data       start:0x80321488 end:0x803215B8
+	.data       start:0x80321488 end:0x803215B0
 
 dll_275.c:
 	.text       start:0x80297D3C end:0x8029802C
 
 dll_277.c:
 	.text       start:0x8029850C end:0x8029900C
-	.data       start:0x80321680 end:0x80321AD8
+	.data       start:0x80321680 end:0x80321A78
 
 dbayExp.c:
 	.text       start:0x80299CFC end:0x8029A120
@@ -1856,11 +1826,11 @@ DRcloudcage.c:
 
 DRshackle.c:
 	.text       start:0x802B7E4C end:0x802B846C
-	.data       start:0x80323CF0 end:0x80323D50
+	.data       start:0x80323CF0 end:0x80323D00
 
 DRhightop.c:
 	.text       start:0x802B8528 end:0x802BA094
-	.rodata     start:0x802D0C90 end:0x802D0CB8
+	.rodata     start:0x802D0C90 end:0x802D0CA8
 	.data       start:0x80323D60 end:0x80323E48
 	.bss        start:0x80396610 end:0x80396638
 
@@ -2006,7 +1976,7 @@ dll_2F3.c:
 LGTpointlight.c:
 	.text       start:0x802CB828 end:0x802CC360
 	.rodata     start:0x802D0CF8 end:0x802D0D08
-	.data       start:0x803258F0 end:0x80325988
+	.data       start:0x803258F0 end:0x80325968
 
 LGTdirectionallight.c:
 	.text       start:0x802CC360 end:0x802CC938
@@ -2016,7 +1986,7 @@ LGTdirectionallight.c:
 LGTprojectedlight.c:
 	.text       start:0x802CC938 end:0x802CD3F8
 	.rodata     start:0x802D0D18 end:0x802D0D28
-	.data       start:0x80325B38 end:0x80325BA0
+	.data       start:0x80325B38 end:0x80325B80
 
 LGTcontrollight.c:
 	.text       start:0x802CD3F8 end:0x802CD620

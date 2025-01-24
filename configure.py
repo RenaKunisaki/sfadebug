@@ -157,7 +157,7 @@ config.ldflags = [
     "-nodefaults",
     "-g",
     "-sym on",
-    # "-warn off",
+    "-warn off", # remove 8 zillion lines about .note.split
     # "-listclosure", # Uncomment for Wii linkers
 ]
 # Use for any additional files that should cause a re-configure when modified

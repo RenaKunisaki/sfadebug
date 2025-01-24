@@ -186,7 +186,7 @@ void diProfPrint(uint mask) { //80179D60
 }
 
 //equiv except string offsets
-void perfInitFn_80179ec0(void) { //80179ec0
+void perfInit(void) { //80179ec0
     UNKTYPE *ptr = &DAT_8038ba60;
     DAT_80399828 = 0;
     bEnableRspStatusDisplay = FALSE;

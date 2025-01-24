@@ -1,4 +1,4 @@
-enum DataFileEnum32 {
+typedef enum {
     FILE_AUDIO_tab = 0,
     FILE_AUDIO_bin = 1,
     FILE_SFX_tab = 2,
@@ -90,4 +90,4 @@ enum DataFileEnum32 {
     FILE_NULL = 88,
     FILE_NULL_59 = 89,
     FILE_NONE = 4294967295,
-};
+} DataFileId32;

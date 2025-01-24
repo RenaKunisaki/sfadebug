@@ -1477,18 +1477,18 @@
 #define ObjDefNo_WC_LandingP 2185
 #define ObjDefNo_None -1
 
-enum RomListObjLoadFlags {
+typedef enum {
     RomListLoadFlag_isLevelObject = 1,
     RomListLoadFlag_isManualLoad = 2,
     RomListLoadFlag_OnlyLoadIfNearPlayer = 4,
     RomListLoadFlag_AllocatedByCode = 8,
     RomListLoadFlag_loadForOtherMap = 16,
     RomListLoadFlag_isBlockObject = 32
-};
+} RomListObjLoadFlags;
 
-enum objSetupObjectActual_flags {
+typedef enum {
     objSetupObjectActual_SkipObjInd = 2
-};
+} objSetupObjectActual_flags;
 
 typedef struct {
     //this is the common header for all ObjDef structs

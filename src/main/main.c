@@ -13,11 +13,19 @@
 #include "files.h"
 
 //.data (0x802D0D60)
-/* 802eadc8 */ const char *buildDate = "03/01/01 16:09";
-/* 802eadd8 */ const char *buildName = "ptossell";
-/* 802eade3 */ const char *buildVersion = "Version 2.8 14/12/98 15.30 L.Schuneman";
+/* 802eb0a0 */ Mtx44 mtx44_identity = {
+    1.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 1.0f};
+//these belong here, but are also defined in some of
+//the generated asm files, so they've been temporarily
+//made extern until we can sort out the sections.
+/* 802eadc8 */ const char /* *buildDate */ *s_802EADC8 = "03/01/01 16:09";
+/* 802eadd8 */ const char /* *buildName */ *s_802EADD8 = "ptossell";
+/* 802eade3 */ extern const char *buildVersion ;// = "Version 2.8 14/12/98 15.30 L.Schuneman";
 /* 802eae0c */ int tempDllIds[3] = {-1, 0x33, 0x35};
-/* 802eae18 */ DLL *tempDlls[3];
+/* 802eae18 */ LoadedDLL *tempDlls[3];
 /* 802eae24 */ float frameTimes[10];
 
 //this must belong to some other file...
@@ -28,103 +36,103 @@ extern char _defaultBits[];
 /* 80355238 */ PlayerPrevPosition playerPrevPositions[NUM_PLAYER_PREV_POSITIONS];
 
 //.sdata (0x80396700)
-/* 80396c14 */ s8 debugMenuPrevState;
-/* 80396c15 */ u8 framesThisStep;
-/* 80396c16 */ u8 framesLastStep;
-/* 80396c18 */ float timeDelta;
-/* 80396c1c */ float prevTimeDelta;
-/* 80396c20 */ float prevOneOverTimeDelta;
-/* 80396c24 */ float prevOneOverTimeDelta2;
-/* 80396c28 */ int mapParam_80396c28; //related to gfx dlls
-/* 80396c2c */ u8 main_dt;
-/* 80396c30 */ float main_fdt;
-/* 80396e28 */ RSPState *RSP_pState;
+/* 80396c14 */ extern s8 debugMenuPrevState;
+/* 80396c15 */ extern u8 framesThisStep;
+/* 80396c16 */ extern u8 framesLastStep;
+/* 80396c18 */ extern float timeDelta;
+/* 80396c1c */ extern float prevTimeDelta;
+/* 80396c20 */ extern float prevOneOverTimeDelta;
+/* 80396c24 */ extern float prevOneOverTimeDelta2;
+/* 80396c28 */ extern int mapParam_80396c28; //related to gfx dlls
+/* 80396c2c */ extern u8 main_dt;
+/* 80396c30 */ extern float main_fdt;
+/* 80396e28 */ extern RSPState *RSP_pState;
 /* 80396E88 */ int DAT_80396E88;
-/* 80396E8C */ int N64_RAM_SIZE = 0x800000;
-/* 80396E90 */ int unk_80396E90 = 0x80000000;
+/* 80396E8C */ extern int N64_RAM_SIZE ;//= 0x800000;
+/* 80396E90 */ extern int unk_80396E90 ;//= 0x80000000;
 
 //.sbss (0x80398240)
-/* 803988e0 */ N64Vertex *main_vtx[2];
-/* 803988e8 */ N64Vertex *cur_vtx;
-/* 803988ec */ Pol *main_pol[2];
-/* 803988f4 */ Pol *cur_pol;
-/* 803988f8 */ short main_gfx_count;
-/* 803988fa */ short main_mtx_count;
-/* 803988fc */ short main_vtx_count;
-/* 803988fe */ short main_pol_count;
-/* 80398900 */ short di_vtx_count;
-/* 80398902 */ short di_pol_count;
-/* 80398905 */ s8 anyQueuedLoads; //maybe "isMapChangePending"
-/* 80398906 */ u8 main_framebuf_idx;
-/* 80398907 */ s8 screenBlankFrameCount;
-/* 80398909 */ s8 e3MenuFrameCount_80398909; //probably not actually E3 related
-/* 8039890a */ u8 DAT_8039890a;
-/* 8039890b */ u8 DAT_8039890b;
-/* 8039890c */ s8 alSynFlag = 1;
-/* 80398910 */ Pol *main_dipol[2];
-/* 80398918 */ Pol *cur_di_pol;
-/* 8039891c */ N64Vertex *main_divtx[2];
-/* 80398924 */ N64Vertex *cur_di_vtx;
-/* 80398928 */ u8 no_diprintf;
-/* 8039892c */ u32 piLockedFlags;
-/* 80398930 */ bool isProgressiveScan;
-/* 80398934 */ LoadedDLL *pDll_gplay;
-/* 80398938 */ LoadedDLL *pDll_ObjSeq;
-/* 8039893c */ LoadedDLL *pDll_checkpoint;
-/* 80398940 */ LoadedDLL *pDll_newfog;
-/* 80398944 */ LoadedDLL *pDll08;
-/* 80398948 */ LoadedDLL *pDll_newstars;
-/* 8039894C */ LoadedDLL *pDll0A;
-/* 80398950 */ LoadedDLL *pDll_expgfx;
-/* 80398954 */ LoadedDLL *pdll_camcontrol;
-/* 80398958 */ LoadedDLL *pDll_Dummy04;
-/* 8039895c */ LoadedDLL *pDll05;
-/* 80398960 */ LoadedDLL *pDll05_2;
-/* 80398964 */ LoadedDLL *pDll_modgfx;
-/* 80398968 */ LoadedDLL *pDll_projgfx;
-/* 8039896c */ LoadedDLL *pDll_0E;
-/* 80398970 */ LoadedDLL *pDll_partfx;
-/* 80398974 */ LoadedDLL *pDll_objfsa;
-/* 80398978 */ LoadedDLL *pDll11;
-/* 8039897c */ LoadedDLL *pDll_gametext;
-/* 80398980 */ LoadedDLL *pDll_subtitles;
-/* 80398984 */ LoadedDLL *pDll_Dummy15;
-/* 80398988 */ LoadedDLL *pDll_waterfx;
-/* 8039898c */ LoadedDLL *pDll_TrickyWalk;
-/* 80398990 */ LoadedDLL *pDll_curve;
-/* 80398994 */ LoadedDLL *pDll_RomCurve;
-/* 80398998 */ LoadedDLL *pDll_frontend_control;
-/* 8039899c */ LoadedDLL *pDLL_47;
-/* 803989a0 */ LoadedDLL *pDll1A;
-/* 803989a4 */ LoadedDLL *pDll_SaveGame;
-/* 803989a8 */ LoadedDLL *pDll36;
-/* 803989ac */ LoadedDLL *pDll_modelfx;
-/* 803989b0 */ LoadedDLL *pDLL_48;
-/* 803989b4 */ LoadedDLL *pDll_baddieControl;
-/* 803989b8 */ LoadedDLL *pDll_partfx1F;
-/* 803989bc */ LoadedDLL *pDll_n_POST;
-/* 803989c0 */ LoadedDLL *pDll_projLib;
-/* 803989c4 */ int frameTimeArrayIdx;
-/* 803989c8 */ u32 rspFramesLastStep;
-/* 803989cc */ BOOL bEnablePartdev;
-/* 803989d0 */ bool DAT_803989d0;
-/* 803989d4 */ SaveGame *pLastSavedGame;
-/* 803989d8 */ BitTableEntry *bitTable;
-/* 803989dc */ s16 numGameBits;
-/* 803989E0 */ int playerPrevPosidx;
-/* 803989E4 */ int frameCount_playerPosLog;
-/* 803989e8 */ Mtx44 *mtx;
-/* 803989ec */ Mtx44 *main_mtx[2];
-/* 803989f4 */ Gfx *cur_gfx;
-/* 803989f8 */ Gfx *gfx;
-/* 803989fc */ Gfx *main_gfx[2];
-/* 80398e44 */ UNKTYPE *currentScreen;
-/* 80398e48 */ UNKTYPE *otherZbuf;
-/* 803997d0 */ int diFlag_803997d0;
-/* 803999d0 */ int DAT_803999d0;
-/* 80399a74 */ s8 DAT_80399a74;
+/* 803988e0 */ extern N64Vertex *main_vtx[2];
+/* 803988e8 */ extern N64Vertex *cur_vtx;
+/* 803988ec */ extern Pol *main_pol[2];
+/* 803988f4 */ extern Pol *cur_pol;
+/* 803988f8 */ extern short main_gfx_count;
+/* 803988fa */ extern short main_mtx_count;
+/* 803988fc */ extern short main_vtx_count;
+/* 803988fe */ extern short main_pol_count;
+/* 80398900 */ extern short di_vtx_count;
+/* 80398902 */ extern short di_pol_count;
+/* 80398905 */ extern s8 anyQueuedLoads; //maybe "isMapChangePending"
+/* 80398906 */ extern u8 main_framebuf_idx;
+/* 80398907 */ extern s8 screenBlankFrameCount;
+/* 80398909 */ extern s8 e3MenuFrameCount_80398909; //probably not actually E3 related
+/* 8039890a */ extern u8 newGameCounter8039890a;
+/* 8039890b */ extern u8 newGameFlag8039890b;
+/* 8039890c */ extern s8 alSynFlag;
+/* 80398910 */ extern Pol *main_dipol[2];
+/* 80398918 */ extern Pol *cur_di_pol;
+/* 8039891c */ extern N64Vertex *main_divtx[2];
+/* 80398924 */ extern N64Vertex *cur_di_vtx;
+/* 80398928 */ extern u8 no_diprintf;
+/* 8039892c */ extern u32 piLockedFlags;
+/* 80398930 */ extern bool isProgressiveScan;
+/* 80398934 */ extern LoadedDLL *pDll_gplay;
+/* 80398938 */ extern LoadedDLL *pDll_ObjSeq;
+/* 8039893c */ extern LoadedDLL *pDll_checkpoint;
+/* 80398940 */ extern LoadedDLL *pDll_newfog;
+/* 80398944 */ extern LoadedDLL *pDll08;
+/* 80398948 */ extern LoadedDLL *pDll_newstars;
+/* 8039894C */ extern LoadedDLL *pDll0A;
+/* 80398950 */ extern LoadedDLL *pDll_expgfx;
+/* 80398954 */ extern LoadedDLL *pdll_camcontrol;
+/* 80398958 */ extern LoadedDLL *pDll_Dummy04;
+/* 8039895c */ extern LoadedDLL *pDll05;
+/* 80398960 */ extern LoadedDLL *pDll05_2;
+/* 80398964 */ extern LoadedDLL *pDll_modgfx;
+/* 80398968 */ extern LoadedDLL *pDll_projgfx;
+/* 8039896c */ extern LoadedDLL *pDll_0E;
+/* 80398970 */ extern LoadedDLL *pDll_partfx;
+/* 80398974 */ extern LoadedDLL *pDll_objfsa;
+/* 80398978 */ extern LoadedDLL *pDll11;
+/* 8039897c */ extern LoadedDLL *pDll_gametext;
+/* 80398980 */ extern LoadedDLL *pDll_subtitles;
+/* 80398984 */ extern LoadedDLL *pDll_Dummy15;
+/* 80398988 */ extern LoadedDLL *pDll_waterfx;
+/* 8039898c */ extern LoadedDLL *pDll_TrickyWalk;
+/* 80398990 */ extern LoadedDLL *pDll_curve;
+/* 80398994 */ extern LoadedDLL *pDll_RomCurve;
+/* 80398998 */ extern LoadedDLL *pDll_frontend_control;
+/* 8039899c */ extern LoadedDLL *pDLL_47;
+/* 803989a0 */ extern LoadedDLL *pDll1A;
+/* 803989a4 */ extern LoadedDLL *pDll_SaveGame;
+/* 803989a8 */ extern LoadedDLL *pDll36;
+/* 803989ac */ extern LoadedDLL *pDll_modelfx;
+/* 803989b0 */ extern LoadedDLL *pDLL_48;
+/* 803989b4 */ extern LoadedDLL *pDll_baddieControl;
+/* 803989b8 */ extern LoadedDLL *pDll_partfx1F;
+/* 803989bc */ extern LoadedDLL *pDll_n_POST;
+/* 803989c0 */ extern LoadedDLL *pDll_projLib;
+/* 803989c4 */ extern int frameTimeArrayIdx;
+/* 803989c8 */ extern u32 rspFramesLastStep;
+/* 803989cc */ extern BOOL bEnablePartdev;
+/* 803989d0 */ extern bool BYTE_803989d0;
+/* 803989d4 */ extern SaveGame *pLastSavedGame;
+/* 803989d8 */ extern BitTableEntry *bitTable;
+/* 803989dc */ extern s16 numGameBits;
+/* 803989E0 */ extern int playerPrevPosidx;
+/* 803989E4 */ extern int frameCount_playerPosLog;
+/* 803989e8 */ extern Mtx44 *mtx;
+/* 803989ec */ extern Mtx44 *main_mtx[2];
+/* 803989f4 */ extern Gfx *cur_gfx;
+/* 803989f8 */ extern Gfx *gfx;
+/* 803989fc */ extern Gfx *main_gfx[2];
+/* 80398e44 */ extern UNKTYPE *currentScreen;
+/* 80398e48 */ extern UNKTYPE *otherZbuf;
+/* 803997d0 */ extern int diFlag_803997d0;
+/* 803999d0 */ extern int mapEditFlag803999d0;
+/* 80399a74 */ extern s8 objSeqEditFlag80399a74;
 
-ObjInstance* objGetMain(void);
+ObjInstance* Object_objGetMain(void);
 BOOL videoBackendRun(void);
 bool checkSomeDebugFlags_8017c4f8(); //8017c4f8
 u16 getEnabledButtonsHeld(int pad);
@@ -169,7 +177,7 @@ void nop_8017a328(void);
 void mainLoopGxSetupFn_8009e320(void);
 void RSP_segSetBase(Gfx**, int, void*);
 void freakFn_800a58d0(Gfx**, int);
-void fn_8018f55c(void);
+void fn_8018F55C(void);
 void RSP_rcpInitSp(void);
 void RSP_rcpInitDp(void);
 int getRenderFlags(void);
@@ -196,12 +204,12 @@ void dprintSetBgColor(u8, u8, u8, u8);
 void diPrintf(const char*, ...);
 BOOL shouldShowMemUsed(void);
 BOOL shouldShowTexCacheUsed(void);
-void fn_800a58bc(int*, int*, int*);
+void fn_800A58BC(int*, int*, int*);
 s32 viFrameSync(int);
 void doQueuedLoads(void);
 u32 getEnabledButtonsPressed(int);
 void diMenu_main(void);
-void fn_8018f8dc(void);
+void fn_8018F8DC(void);
 u32 n64GetEnabledButtonsPressed(int);
 
 void OSInit(void);
@@ -217,8 +225,8 @@ void initHeaps(void);
 void audioInit(void);
 void diProfReset(void);
 void allocRzipHeaderBuf(void);
-void fn_800777d8(void);
-void perfInitFn_80179ec0(void);
+void fn_800777D8(void);
+void perfInit(void);
 void initPerfMon(void);
 void nop_800C850C(UNKTYPE *param_1,UNKTYPE *param_2,
     int param_3,u8 param_4, int param_5);
@@ -298,8 +306,8 @@ GXRenderModeObj gxRenderModeInterlaced = { //802d8e3c
 };
 GXRenderModeObj *curGxRenderMode; //80398b78
 u8 DAT_80352f30[0x7EF]; //80352f30, unk type
-s8 padSetupOk = -1; //80398908
-s8 debugMenuState; //80398904
+extern s8 padSetupOk; // = -1; //80398908
+extern s8 debugMenuState; //80398904
 
 
 //a copy of this exists in the binary even though
@@ -381,8 +389,8 @@ void init(void) { //80077d14
     audioInit();
     diProfReset();
     allocRzipHeaderBuf();
-    fn_800777d8();
-    perfInitFn_80179ec0();
+    fn_800777D8();
+    perfInit();
     initPerfMon();
 
     if(DAT_80396E88 == 0) iVar3 = 0x10;
@@ -563,7 +571,7 @@ void gameLoop(void) { //800781d4
     RSP_segSetBase(&gfx, 1, currentScreen);
     RSP_segSetBase(&gfx, 2, otherZbuf);
     freakFn_800a58d0(&gfx, framesThisStep);
-    fn_8018f55c();
+    fn_8018F55C();
     RSP_rcpInitSp();
     RSP_rcpInitDp();
     if (RSP_pState->bNeedPipeSync != false) {
@@ -606,13 +614,13 @@ void gameLoop(void) { //800781d4
         dprintSetPos(0x28, 0xd4);
         dprintSetColor(0xff, 0xff, 0xff, 0xff);
         dprintSetBgColor(0, 0, 0, 0x80);
-        diPrintf("%dk\n", fn_8007c54c(0) >> 10);
+        diPrintf("%dk\n", fn_8007C54C(0) >> 10);
     }
     if (shouldShowTexCacheUsed()) {
         dprintSetPos(0x1e, 0xe0);
         dprintSetColor(0xff, 0xff, 0xff, 0xff);
         dprintSetBgColor(0, 0, 0, 0x80);
-        fn_800a58bc(&local_50, &local_54, &local_58);
+        fn_800A58BC(&local_50, &local_54, &local_58);
         diPrintf("texcache: %d %d/%d\n", local_50, local_54 >> 10,
             local_58 >> 10);
     }
@@ -667,7 +675,7 @@ void gameLoop(void) { //800781d4
         framesThisStep = rspFramesLastStep;
     }
     diMenu_main();
-    fn_8018f8dc();
+    fn_8018F8DC();
     if ((n64GetEnabledButtonsPressed(3) & N64_BUTTON_Z) != 0) {
         bEnablePartdev = 1 - bEnablePartdev;
     }
@@ -712,7 +720,7 @@ int gameUpdate(void) { //80078BBC
     u16 bPressed;
     ObjInstance *player;
 
-    player = objGetMain();
+    player = Object_objGetMain();
     pDll_ObjSeq->funcs->func[19]();
     pDll_Dummy15->funcs->func[4]();
     if(videoBackendRun() == FALSE) {
@@ -721,7 +729,7 @@ int gameUpdate(void) { //80078BBC
         if(screenBlankFrameCount) nop_8009FA00(&gfx);
         if(!screenBlankFrameCount) {
             if(getDebugMenuState() == 1) objUpdateFn_80081f94();
-            else if (fn_8017afc4() == 0) objUpdateFn_80081f94();
+            else if (fn_8017AFC4() == 0) objUpdateFn_80081f94();
             else objUpdateFn_80082238();
             updateEnvironment(FALSE);
 
@@ -730,11 +738,11 @@ int gameUpdate(void) { //80078BBC
             && e3MenuFrameCount_80398909 == 0) {
                 if((screenBlankFrameCount == 0)
                 && ((bPressed & PAD_BUTTON_START) != 0)) {
-                    player = objGetMain();
+                    player = Object_objGetMain();
                     if (player
                     && ((player->flags_0xb0 & ObjInstance_FlagsB0_SeqActive) == 0)) {
                         setShowCommandMenu(2);
-                        fn_8016eb9c(5,1);
+                        fn_8016EB9C(5,1);
                         screenBlankFrameCount = 1;
                     }
                 }
@@ -758,8 +766,8 @@ int gameUpdate(void) { //80078BBC
                 cameraFn_800698b4(&gfx,&mtx);
                 updateViewMatrix();
                 if (checkSomeDebugFlags_8017c4f8()) {
-                    if (DAT_803999d0 == 0) {
-                        if (DAT_80399a74 == 0) {
+                    if (mapEditFlag803999d0 == 0) {
+                        if (objSeqEditFlag80399a74 == 0) {
                             pDll_Dummy04->funcs->func[14](
                                 &gfx,&cur_di_vtx,&cur_di_pol); //checkpoint related
                         }
@@ -792,7 +800,7 @@ int gameUpdate(void) { //80078BBC
 
 void mapChangeFn_80078e98(void) { //80078e98
     nop_800BF4AC(14, 0, 0);
-    fn_800a6ffc(0);
+    fn_800A6FFC(0);
     setDrawTrackSky(FALSE);
     pDll05->funcs->func[5](3);
     pDll05->funcs->func[5](0);
@@ -806,7 +814,7 @@ void doQueuedLoads(void) { //80078f48
     if (anyQueuedLoads) {
         OSReport("$$$$$  CHANGEMAP \n");
         mmSetDelay(0);
-        if (DAT_803989d0 != false) {
+        if (BYTE_803989d0 != false) {
             setColor_8009e5d0(0,0,0);
             nop_800C8504();
             trackFreeAll();
@@ -816,7 +824,7 @@ void doQueuedLoads(void) { //80078f48
         }
         anyQueuedLoads = false;
         mmSetDelay(0);
-        fn_80068e00();
+        fn_80068E00();
         if (-1 < mapParam_80396c28) {
             gfxDllFn_8007399c(mapParam_80396c28);
             mapParam_80396c28 = -1;
@@ -826,7 +834,7 @@ void doQueuedLoads(void) { //80078f48
             pDll_waterfx->funcs->func[1](1);
         }
         mmSetDelay(2);
-        DAT_803989d0 = true;
+        BYTE_803989d0 = true;
     }
 }
 
@@ -1060,8 +1068,8 @@ uint mainDecBit(int bitNo) { //80079880
 }
 
 
-int debugSetupPoint; //80399904
-int debugSetupPointMapNo; //80399924
+extern int debugSetupPoint; //80399904
+extern int debugSetupPointMapNo; //80399924
 
 void mapDoDebugSetupPoint(void) { //800798D8
     switch(debugSetupPointMapNo) {
@@ -1118,7 +1126,7 @@ void mapDoDebugSetupPoint(void) { //800798D8
 
 }
 
-N64Vertex** getcur_di_vtx(void) { //80079AD0
+N64Vertex** getCurDiVtx(void) { //80079AD0
     return &cur_di_vtx;
 }
 
@@ -1136,7 +1144,7 @@ BOOL DLL_createTempDll(int id) { //80079AD8
     if(tempDlls[idx]) {
         printf(" WARNING : temp dll no %i is alreadly created \n",id);
     }
-    tempDlls[idx] = (DLL *)runlinkDownloadCode((ushort)id,1);
+    tempDlls[idx] = runlinkDownloadCode((ushort)id,1);
     return TRUE;
 }
 
@@ -1153,7 +1161,7 @@ BOOL DLL_removeTempDll(int id) { //80079B80
         printf(" WARNING : temp dll no %i is alreadly removed \n",id);
         return FALSE;
     }
-    if(free((int)tempDlls[idx])) {
+    if(DLL_free(tempDlls[idx])) {
         tempDlls[idx] = NULL;
     }
     return TRUE;
@@ -1176,22 +1184,22 @@ void freeDlls47_48(void) { //80079C88
 }
 
 void fn_80079CD0(void) { //80079CD0
-    DAT_8039890a = 0;
-    DAT_8039890b = 0;
+    newGameCounter8039890a = 0;
+    newGameFlag8039890b = 0;
 }
 
 void newGameFn_80079CE4(float x,float y, float z,
 int playerNo) { //80079CE4
-    if(++DAT_8039890a >= 5) {
-        DAT_8039890a = 0;
-        DAT_8039890b = 1;
+    if(++newGameCounter8039890a >= 5) {
+        newGameCounter8039890a = 0;
+        newGameFlag8039890b = 1;
     }
     newGameAtPos(x, y, z, playerNo);
 }
 
 int fn_80079D4C(void) { //80079D4C
     int uVar1;
-    uVar1 = DAT_8039890a + 1;
+    uVar1 = newGameCounter8039890a + 1;
     if (uVar1 >= 5) {
         uVar1 = 0;
     }
@@ -1199,11 +1207,11 @@ int fn_80079D4C(void) { //80079D4C
 }
 
 s8 fn_80079D78(void) { //80079D78
-    return DAT_8039890a;
+    return newGameCounter8039890a;
 }
 
 s8 fn_80079D80(void) { //80079D80
-    return DAT_8039890b;
+    return newGameFlag8039890b;
 }
 
 u32 getPiLockedFlags(void) { //80079D88
@@ -1219,7 +1227,7 @@ void updatePlayerPosLog(void) { //80079DC4
     ObjInstance *player;
     PlayerPrevPosition *pos;
 
-    player = objGetMain();
+    player = Object_objGetMain();
     pos = &playerPrevPositions[playerPrevPosidx];
     frameCount_playerPosLog += framesThisStep;
     if(player) {
