@@ -224,6 +224,7 @@ AUTO_SYMBOLS = (
     'dataSections',
     'gTRKInterruptVectorTable', # ???
     'gTRKInterruptVectorTableEnd', # ???
+    'SystemCallVector', # ???
 
     # these are part of a mod and don't exist in the dol
     'patchStart',
@@ -879,7 +880,7 @@ VALID_DATA_TYPES = ('byte', '2byte', '4byte', '8byte',
     'int', 'short', 'float', 'double', 'string', 'wstring',
     'string_table', 'wstring_table')
 COMMON_PREFIXES = ('@', 'LAB_', 'FLOAT_', 'DOUBLE_',
-    'DAT_', 'f_', 'PTR_', 'DWORD_')
+    'DAT_', 'f_', 'PTR_', 'DWORD_', 'jumptable_')
 def writeSymbolsTxt(outPath, files, symbols):
     # build a map of address => file/section
     addrMap = [] # (start, end, file, sectionName)

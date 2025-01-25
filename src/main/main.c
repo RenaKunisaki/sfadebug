@@ -12,21 +12,13 @@
 #include "SaveGame.h"
 #include "files.h"
 
-//.data (0x802D0D60)
-/* 802eb0a0 */ Mtx44 mtx44_identity = {
-    1.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f};
-//these belong here, but are also defined in some of
-//the generated asm files, so they've been temporarily
-//made extern until we can sort out the sections.
+//.data
 /* 802eadc8 */ const char /* *buildDate */ *s_802EADC8 = "03/01/01 16:09";
 /* 802eadd8 */ const char /* *buildName */ *s_802EADD8 = "ptossell";
-/* 802eade3 */ extern const char *buildVersion ;// = "Version 2.8 14/12/98 15.30 L.Schuneman";
+/* 802eade3 */ const char /* *buildVersion */ *s_802EADE3 = "Version 2.8 14/12/98 15.30 L.Schuneman";
 /* 802eae0c */ int tempDllIds[3] = {-1, 0x33, 0x35};
-/* 802eae18 */ LoadedDLL *tempDlls[3];
-/* 802eae24 */ float frameTimes[10];
+/* 802eae18 */ LoadedDLL *tempDlls[3] = {0};
+/* 802eae24 */ float frameTimes[10] = {0};
 
 //this must belong to some other file...
 /* 80321198 */ //char _defaultBits[] = " Stolen "; //likely part of larger struct
@@ -47,7 +39,7 @@ extern char _defaultBits[];
 /* 80396c2c */ extern u8 main_dt;
 /* 80396c30 */ extern float main_fdt;
 /* 80396e28 */ extern RSPState *RSP_pState;
-/* 80396E88 */ int DAT_80396E88;
+/* 80396E88 */ extern int DAT_80396E88;
 /* 80396E8C */ extern int N64_RAM_SIZE ;//= 0x800000;
 /* 80396E90 */ extern int unk_80396E90 ;//= 0x80000000;
 
@@ -264,7 +256,8 @@ void setDebugMenuState(int state);
 void mapDoDebugSetupPoint(void);
 int rand(void);
 
-GXRenderModeObj gxRenderModeProgScan = { //802d8d88
+#if 0
+GXRenderModeObj tvParamsProgScan = { //802d8d88
     /* viTVmode; */ VI_TVMODE_NTSC_PROG,
     /* fbWidth; */ 640,
     /* efbHeight; */ 480,
@@ -284,7 +277,7 @@ GXRenderModeObj gxRenderModeProgScan = { //802d8d88
     /* vfilter[7]; */
         0x00, 0x00, 0x15, 0x16, 0x15, 0x00, 0x00,
 };
-GXRenderModeObj gxRenderModeInterlaced = { //802d8e3c
+GXRenderModeObj tvParamsNotProgScan = { //802d8e3c
     /* viTVmode; */ VI_TVMODE_NTSC_INT,
     /* fbWidth; */ 640,
     /* efbHeight; */ 480,
@@ -304,38 +297,16 @@ GXRenderModeObj gxRenderModeInterlaced = { //802d8e3c
     /* vfilter[7]; */
         0x08, 0x08, 0x0A, 0x0C, 0x0A, 0x08, 0x08,
 };
-GXRenderModeObj *curGxRenderMode; //80398b78
-u8 DAT_80352f30[0x7EF]; //80352f30, unk type
+#else
+extern GXRenderModeObj tvParamsProgScan;
+extern GXRenderModeObj tvParamsNotProgScan;
+#endif
+
+extern GXRenderModeObj *curTvParams; //80398b78
+extern GXRenderModeObj *curTvParams; //80398b78
+extern u8 DAT_80352f30[0x7EF]; //80352f30, unk type
 extern s8 padSetupOk; // = -1; //80398908
 extern s8 debugMenuState; //80398904
-
-
-//a copy of this exists in the binary even though
-//it's also inlined in the headers
-#define OS_GQR_F32 0x0000
-#define OS_GQR_U8 0x0004
-#define OS_GQR_U16 0x0005
-#define OS_GQR_S8 0x0006
-#define OS_GQR_S16 0x0007
-void OSInitFastCast(void) {
-  asm {
-        li      r3, OS_GQR_U8
-        oris    r3, r3, OS_GQR_U8
-        mtspr   GQR2, r3
-
-        li      r3, OS_GQR_U16
-        oris    r3, r3, OS_GQR_U16
-        mtspr   GQR3, r3
-
-        li      r3, OS_GQR_S8
-        oris    r3, r3, OS_GQR_S8
-        mtspr   GQR4, r3
-
-        li      r3, OS_GQR_S16
-        oris    r3, r3, OS_GQR_S16
-        mtspr   GQR5, r3
-  }
-}
 
 int main(int argc, char **argv) { //80077ca8
   if (argc > 1 && strcmp(argv[1], "prog") == 0u) {
@@ -377,10 +348,10 @@ void init(void) { //80077d14
     padUpdate(pad);
     if(isProgressiveScan) {
         __VIInit(2);
-        curGxRenderMode = &gxRenderModeProgScan;
+        curTvParams = &tvParamsProgScan;
     }
     else {
-        curGxRenderMode = &gxRenderModeInterlaced;
+        curTvParams = &tvParamsNotProgScan;
     }
     viInit();
     piInit();
@@ -1432,3 +1403,9 @@ int randInt(int min,int max) { //8007A228
     uVar1 += min;
     return uVar1;
 }
+
+/* 802eb0a0 */ Mtx44 mtx44_identity = {
+    1.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 1.0f};
