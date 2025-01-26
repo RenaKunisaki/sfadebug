@@ -151,7 +151,7 @@ main/main.c:
 
 main/mm_dolphin.c:
 	.text       start:0x8007B3A4 end:0x8007C4AC
-	.data       start:0x802EB318 end:0x802EB348
+	.data       start:0x802EB0E0 end:0x802EB348
 	.bss        start:0x803555F8 end:0x80357698
 
 main/models_dolphin.c:
@@ -175,6 +175,7 @@ objanim.c:
 main/objhits.c:
 	.text       start:0x80088CE0 end:0x8009063C
 	.rodata     start:0x802CF018 end:0x802CF028
+	.data       start:0x802ED330 end:0x802ED6A0
 	.bss        start:0x80357770 end:0x80358E78
 
 main/objlib.c:
@@ -206,27 +207,28 @@ main/shader.c:
 	.rodata     start:0x802CF500 end:0x802CF518
 	.data       start:0x802F09D8 end:0x802F0BE0
 
-newday.c:
-	.rodata     start:0x802CF570 end:0x802CF638
-
-newfog.c:
-	.rodata     start:0x802CF638 end:0x802CF650
-
 main/lightmap.c:
 	.text       start:0x800A32DC end:0x800A46F8
 	.data       start:0x802F0C10 end:0x802F0E08
 
 main/tex_dolphin.c:
 	.text       start:0x800A46F8 end:0x800A4F38
-	.data       start:0x802F1F38 end:0x802F2078
+	.data       start:0x802F1F38 end:0x802F2060
 
 main/track_dolphin.c:
 	.text       start:0x800ADEA4 end:0x800B20DC
 	.data       start:0x802F2208 end:0x802F34E0
 	.bss        start:0x803761C0 end:0x80382D70
 
-main/intersect.c:
-	.text       start:0x800BACD8 end:0x800BCE04
+newshadows.c:
+	.text       start:0x800B3094 end:0x800B4AE0
+
+track/pllist.c:
+	.text       start:0x800B4BF0 end:0x800B72BC
+	.data       start:0x802F3548 end:0x802F3738
+
+track/intersect.c:
+	.text       start:0x800B72BC end:0x800BCE04
 
 main/maketex.c:
 	.text       start:0x800BD2C4 end:0x800BEF64
@@ -234,11 +236,19 @@ main/maketex.c:
 
 timer.c:
 	.text       start:0x800C8510 end:0x800C8760
+	.data       start:0x802F3D30 end:0x802F3DC8
 
 anim.c:
 	.text       start:0x800C8760 end:0x800D16B0
 	.data       start:0x802F3DC8 end:0x802F46A0
 	.bss        start:0x80382DE0 end:0x803834A8
+
+newday.c:
+	.rodata     start:0x802CF570 end:0x802CF638
+	.data       start:0x802F46A0 end:0x802F4868
+
+newfog.c:
+	.rodata     start:0x802CF638 end:0x802CF650
 
 newclouds.c:
 	.text       start:0x800D8180 end:0x800D8370
@@ -373,31 +383,9 @@ gameplay.c:
 	.rodata     start:0x802CFBB8 end:0x802CFBC8
 	.bss        start:0x80388328 end:0x80389B80
 
-camcontrol.c:
-	.data       start:0x80301F20 end:0x80301F48
-	.bss        start:0x80389D60 end:0x80389E80
-
-camDebug.c:
-	.bss        start:0x80389ED0 end:0x80389F28
-
-n_filemenu.c:
-	.bss        start:0x80389F68 end:0x80389F98
-
-picmenu.c:
-	.bss        start:0x8038B0C0 end:0x8038B0F8
-
-maybeTemplate.c:
-	.bss        start:0x803957F8 end:0x80395850
-
 foodbag.c:
 	.text       start:0x8012E6F8 end:0x8012F00C
 	.rodata     start:0x802CFBC8 end:0x802CFC28
-
-baddieControl.c:
-	.rodata     start:0x802CFC80 end:0x802CFC90
-
-tricky.c:
-	.rodata     start:0x802CFE70 end:0x802CFFA8
 
 savegame.c:
 	.text       start:0x8012F00C end:0x8012F358
@@ -714,11 +702,46 @@ dll_C8.c:
 dll_C9.c:
 	.text       start:0x801511CC end:0x801511D4
 
+dll_CB.c:
+	.text       start:0x8015257C end:0x80152584
+
 dll_CC.c:
 	.text       start:0x801528B4 end:0x801528BC
 
+dll_CD.c:
+	.text       start:0x80152BFC end:0x80152C04
+
 dll_CE.c:
 	.text       start:0x80152FF4 end:0x80152FFC
+
+camcontrol.c:
+	.text       start:0x801534B8 end:0x80154598
+	.data       start:0x80301F20 end:0x80301F48
+	.bss        start:0x80389D60 end:0x80389E80
+
+cutCam.c:
+	.text       start:0x801553C4 end:0x80156DDC
+
+attention.c:
+	.text       start:0x80157AA4 end:0x80158380
+
+camslide.c:
+	.text       start:0x80158B68 end:0x80158EA4
+
+firstperson.c:
+	.text       start:0x8015912C end:0x80159B08
+
+dll_53.c:
+	.text       start:0x8015A6AC end:0x8015AA28
+
+camstatic.c:
+	.text       start:0x8015AA2C end:0x8015AE9C
+
+pathcam.c:
+	.text       start:0x8015B5CC end:0x8015C0F8
+
+camlockon.c:
+	.text       start:0x8015D7C8 end:0x8015E174
 
 camshipbattle.c:
 	.text       start:0x8015E4C4 end:0x8015E994
@@ -728,30 +751,144 @@ camclimb.c:
 	.text       start:0x8015E9A0 end:0x8015EF2C
 	.data       start:0x80302328 end:0x80302360
 
+dll_59.c:
+	.text       start:0x8015F0B8 end:0x8015F120
+
+camTalk.c:
+	.text       start:0x8015F124 end:0x8015F644
+
+dll_5B.c:
+	.text       start:0x8015F648 end:0x8016035C
+
 camshipbattle5C.c:
 	.text       start:0x801603F0 end:0x8016062C
 	.data       start:0x80302438 end:0x80302448
+
+attentioncam.c:
+	.text       start:0x80160630 end:0x801607F4
+
+camcannon.c:
+	.text       start:0x801607F8 end:0x801609E8
+
+dll_5F.c:
+	.text       start:0x801609EC end:0x80160CFC
+
+dll_60.c:
+	.text       start:0x80160E88 end:0x80161154
+
+camdrakor.c:
+	.text       start:0x80161158 end:0x80161718
+
+dll_62.c:
+	.text       start:0x8016171C end:0x801618B8
+
+camDebug.c:
+	.text       start:0x801618BC end:0x80161A00
+
+baddieControl.c:
+	.text       start:0x80161DA8 end:0x80163E78
+	.rodata     start:0x802CFC80 end:0x802CFC90
+
+moveLib.c:
+	.text       start:0x80163F04 end:0x80165A38
 
 projLib.c:
 	.text       start:0x80165A40 end:0x80165F54
 	.data       start:0x80302A20 end:0x80302A38
 
+POST.c:
+	.text       start:0x801660E4 end:0x801663B8
+
+n_rareware.c:
+	.text       start:0x80166634 end:0x80166828
+
+dll_39.c:
+	.text       start:0x80166AB8 end:0x80167094
+
+n_filemenu.c:
+	.text       start:0x801670D4 end:0x80167938
+	.bss        start:0x80389F68 end:0x80389F98
+
+dll_3B.c:
+	.text       start:0x80168B3C end:0x80168DEC
+
 n_options.c:
-	.data       start:0x80303A30 end:0x803042A0
+	.text       start:0x80169150 end:0x80169FE4
+	.data       start:0x803040E8 end:0x803042A0
+	.bss        start:0x80389FE0 end:0x8038A108
+
+n_pausemenu.c:
+	.text       start:0x8016B948 end:0x8016BD20
 
 dll_3E.c:
 	.text       start:0x8016C2B4 end:0x8016C8A0
 	.data       start:0x80304398 end:0x803043A0
 
+dll_40.c:
+	.text       start:0x8016CDB0 end:0x8016CDC4
+
+dll_44.c:
+	.text       start:0x80173484 end:0x80173A50
+
+picmenu.c:
+	.text       start:0x80173A5C end:0x80174938
+	.bss        start:0x8038B0C0 end:0x8038B0F8
+
+frontend_control.c:
+	.text       start:0x80174D74 end:0x80175448
+	.bss        start:0x8038BA20 end:0x8038BA40
+
+dll_43.c:
+	.text       start:0x801758CC end:0x801759A4
+
 dll_47.c:
 	.text       start:0x801759EC end:0x80177AF4
 	.data       start:0x80305838 end:0x80305848
 
-core_snowworm.c:
-	.data       start:0x80310138 end:0x803102E8
-
 dll_36.c:
 	.text       start:0x80177AF4 end:0x80177BE4
+
+dll_48.c:
+	.text       start:0x80178558 end:0x801785B0
+
+dll_49.c:
+	.text       start:0x80178740 end:0x80178B10
+
+dll_4A.c:
+	.text       start:0x80178D10 end:0x80179648
+
+dll_4B.c:
+	.text       start:0x80179650 end:0x80179664
+
+swaphol.c:
+	.text       start:0x80179668 end:0x80179670
+
+dll_4E.c:
+	.text       start:0x80179A48 end:0x80179A50
+
+dll_4D.c:
+	.text       start:0x80179B08 end:0x80179B10
+
+debug.c:
+	.text       start:0x80179B60 end:0x8017A870
+	.bss        start:0x8038BA58 end:0x803904F8
+
+tricky.c:
+	.text       start:0x801A9128 end:0x801AA540
+	.rodata     start:0x802CFE70 end:0x802CFFA8
+
+maybeTemplate.c:
+	.text       start:0x801B110C end:0x801B19EC
+	.bss        start:0x803957F8 end:0x80395850
+
+balloonBaddie.c:
+	.text       start:0x801B4054 end:0x801B48D8
+
+swarmBaddie.c:
+	.text       start:0x801B4E5C end:0x801B53A8
+
+wispBaddie.c:
+	.text       start:0x801B5720 end:0x801B5E24
 
 baby_snowworm.c:
 	.text       start:0x801BBB50 end:0x801BDA94
