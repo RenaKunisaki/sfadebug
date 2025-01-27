@@ -5,6 +5,11 @@
 #include "render.h"
 #include "dll.h"
 
+#define CODE_VERSION "1.3705"
+#define BUILD_DATE "03/01/01 16:09"
+#define BUILD_AUTHOR "ptossell"
+#define VERSION_STRING "Version 2.8 14/12/98 15.30 L.Schuneman"
+
 // there are multiple instances of:
 // li  r0,0x0
 // stb r0,0x0(0)
@@ -55,6 +60,24 @@ typedef struct {
     /* 0x123 */ undefined unk123;
 } DebugSaveStruct;
 
+union {
+  struct {
+    int rspTotalTime;
+    int rdpWorkingTime;
+    int rdpPipeNotStalledTime;
+    int tmemLoadingTime;
+  };
+  int times[4];
+} rspTimes;
+
+/* 80390260 */ int DAT_80390260[4];
+/* 80390270 */ int DAT_80390270[4];
+/* 803904C0 */ u8 lbl_803904C0[0x18]; // unknown type/size
+/* 803904D8 */ int lbl_803904D8[0x18];
+/* 803973C0 */ int lbl_803973C0;
+/* 803973C4 */ int lbl_803973C4;
+
+
 //.bss (0x80325D20)
 /* 8038ba60 */ DiProfStruct DiProfStruct_8038ba60[DIPROFSTRUCT_MAX_NUM];
 /* 8038ba60 */ u8 DAT_8038ba60[64]; // no idea the size, just picked something
@@ -67,52 +90,61 @@ typedef struct {
 /* 80396e88 */ extern int DAT_80396e88;
 
 //.sbss (0x80398240)
-/* 803997b8 */ int DAT_803997b8;
-/* 803997c4 */ int DAT_803997c4;
-/* 803997c8 */ int DAT_803997c8;
-/* 803997cc */ int DAT_803997cc;
-/* 803997d4 */ DiStack *diStack;
-/* 803997d8 */ uint diProfCount;
-/* 803997dc */ int diStackCount;
-/* 803997dc */ u32 diProfVar_803997dc;
-/* 803997e0 */ UNKTYPE *meter_times;
-/* 803997e8 */ UNKTYPE *meter_rcptimes;
-/* 803997ec */ UNKTYPE *PTR_DAT_803997ec;
-/* 803997f0 */ UNKTYPE *PTR_DAT_803997f0;
-/* 803997f4 */ UNKTYPE *meter_cputimes;
-/* 803997f8 */ UNKTYPE *PTR_DAT_803997f8;
-/* 803997fc */ UNKTYPE *PTR_DAT_803997fc;
+/* 803989A4 */ extern LoadedDLL *pDll_SaveGame;
+/* 803997B8 */ int DWORD_803997b8;
+/* 803997BC */ void *DWORD_803997bc;
+/* 803997C0 */ DebugSaveStruct *debugSaveBuf_803997c0;
+/* 803997C4 */ int DAT_803997c4;
+/* 803997C8 */ int DWORD_803997c8;
+/* 803997CC */ int DAT_803997cc;
+/* 803997D0 */ int diFlag_803997d0;
+/* 803997D4 */ DiStack *diStack;
+/* 803997D8 */ uint diProfCount;
+/* 803997DC */ int diStackCount;
+/* 803997E0 */ UNKTYPE *meter_times;
+/* 803997E4 */ undefined4 *DAT_803997e4;
+/* 803997E8 */ UNKTYPE *meter_rcptimes;
+/* 803997EC */ UNKTYPE *PTR_DAT_803997ec;
+/* 803997F0 */ UNKTYPE *PTR_DAT_803997f0;
+/* 803997F4 */ UNKTYPE *meter_cputimes;
+/* 803997F8 */ int *DAT_803997f8;
+/* 803997FC */ int *PTR_DAT_803997fc;
 /* 80399800 */ UNKTYPE *meter_actimes;
 /* 80399804 */ UNKTYPE *PTR_DAT_80399804;
 /* 80399808 */ UNKTYPE *PTR_DAT_80399808;
-/* 8039980c */ UNKTYPE *meter_sctimes;
+/* 8039980C */ UNKTYPE *meter_sctimes;
 /* 80399810 */ UNKTYPE *PTR_DAT_80399810;
 /* 80399814 */ UNKTYPE *PTR_DAT_80399814;
 /* 80399818 */ UNKTYPE *meter_gfx;
+/* 8039981C */ UNKTYPE *DAT_8039981c;
 /* 80399820 */ int DAT_80399820;
 /* 80399824 */ int DAT_80399824;
-/* 80399828 */ int DAT_80399828;
-/* 8039982c */ BOOL bEnableRspStatusDisplay;
+/* 80399828 */ BOOL DWORD_80399828; // assumed type
+/* 8039982C */ BOOL bEnableRspStatusDisplay;
 /* 80399830 */ UNKTYPE *meter_cmdbuf;
 /* 80399834 */ UNKTYPE *PTR_80399834;
 /* 80399838 */ UNKTYPE *PTR_80399838;
-/* 8039983c */ UNKTYPE *meter_distack;
+/* 8039983C */ UNKTYPE *meter_distack;
 /* 80399840 */ UNKTYPE *meter_cpustack;
-/* 8039984c */ int DAT_8039984c;
+/* 80399844 */ int DAT_80399844;
+/* 80399848 */ u8 BYTE_80399848;
+/* 8039984C */ int DAT_8039984c;
 /* 80399850 */ int DAT_80399850;
 /* 80399854 */ int DAT_80399854;
 
+int fn_8017AFC4();
+int diPrintf(const char *fmt, ...);
 DiStack *diStackCreate(int param1, int param2); // 80070320
 int diStackGetNumItems(DiStack *stack);         // 800704d4
 int diStackIsOverflow(DiStack *param_1);        // 800704b8
 void diFn_800703c4(DiStack *stack, int *);      // 800703c4
 void diStackPop(DiStack *stack, void *out);     // 80070440
-
 int ret0_800BFC8C(void) { return 0; } // 800BFC8C
 void nop_800BFBF0(UNKTYPE *, UNKTYPE *, int);
 void *mmAlloc2(uint size, uint tag, char *name); // 8007badc
 void debugSaveFn_8017a688(void);
 
+//XXX doesn't belong in this file
 void memcpy_src_dst_len(void *src, void *dst, size_t len) { // 800bfc20
   // extremely necessary function
   memcpy(dst, src, len);
@@ -165,9 +197,9 @@ void diProfEnd(undefined4 param1, char *name) { // 80179C50
     DiProfStruct_8038ba60[diProfCount].name[DIPROFSTRUCT_NAME_LEN] = '\0';
     DiProfStruct_8038ba60[diProfCount]._18 = param1;
     DiProfStruct_8038ba60[diProfCount].time = iVar1 - local_10;
-    DiProfStruct_8038ba60[diProfCount]._20 = diProfVar_803997dc;
+    DiProfStruct_8038ba60[diProfCount]._20 = diStackCount;
     diProfCount += 1;
-    diProfVar_803997dc += -1;
+    diStackCount += -1;
   }
 }
 
@@ -209,11 +241,11 @@ void diProfPrint(uint mask) { // 80179D60
 // equiv except string offsets
 void perfInit(void) { // 80179ec0
   UNKTYPE *ptr = &DAT_8038ba60;
-  DAT_80399828 = 0;
+  DWORD_80399828 = FALSE;
   bEnableRspStatusDisplay = FALSE;
-  DAT_803997b8 = 0;
+  DWORD_803997b8 = 0;
   DAT_803997c4 = 0;
-  DAT_803997c8 = 0;
+  DWORD_803997c8 = 0;
   DAT_803997cc = 0;
   DAT_80399820 = DAT_80399824 = 0;
   meter_distack = mmAlloc2(16384, 0xff00ff, "meter:distack");
@@ -237,7 +269,7 @@ void perfInit(void) { // 80179ec0
   }
   debugSaveFn_8017a688();
   FUN_8017a638();
-  PTR_DAT_803997f8 = meter_cputimes;
+  DAT_803997f8 = meter_cputimes;
   PTR_DAT_803997fc = (void *)((int)meter_cputimes + 16000);
   PTR_DAT_80399804 = meter_actimes;
   PTR_DAT_80399808 = (void *)((int)meter_actimes + 3200);
@@ -249,13 +281,6 @@ void perfInit(void) { // 80179ec0
   nop_800BFBF0((void *)((int)ptr + 0x4A90), &PTR_80399838, 1);
   nop_800BFBF0((void *)((int)ptr + 0x4A78), &PTR_80399834, 1);
 }
-
-DebugSaveStruct *debugSaveBuf_803997c0;
-int DWORD_803997b8;
-int DWORD_803997c8;
-void *DWORD_803997bc;
-int diFlag_803997d0;
-extern LoadedDLL *pDll_SaveGame;
 
 void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8
   int dVar1;
@@ -304,10 +329,6 @@ void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8
   DWORD_803997b8 = dVar1;
 }
 
-u8 lbl_803904C0[0x18]; // unknown type/size
-int lbl_803904D8[0x18];
-int lbl_803973C0;
-
 void FUN_8017A2B0(void) { // 8017A2B0
   if (DWORD_803997b8 != 0) {
     retM1_afterLoadAsset_ret0xFFFF(&lbl_803904C0, &lbl_803973C0, 1);
@@ -328,7 +349,6 @@ BOOL getEnableRspStatusDisplay(void) { // 8017A310
   return bEnableRspStatusDisplay;
 }
 
-BOOL DWORD_80399828;             // assumed type
 void fn_8017A318(BOOL param_1) { // 8017A318
   DWORD_80399828 = param_1;
 }
@@ -343,22 +363,6 @@ void nop_8017a328(void) { // 8017A328
   retM1_afterLoadAsset_ret0xFFFF(&lbl_803904C0, &lbl_80399858, 1);
   retM1_800BFBFC_ret0xFFFF(&lbl_803904D8, 0, 1);
 }
-
-union {
-  struct {
-    int rspTotalTime;
-    int rdpWorkingTime;
-    int rdpPipeNotStalledTime;
-    int tmemLoadingTime;
-  };
-  int times[4];
-} rspTimes;
-
-int DAT_80390270[4];
-int DAT_80390260[4];
-int lbl_803973C4;
-int fn_8017AFC4();
-int diPrintf(const char *fmt, ...);
 
 void printRspStatus(void) { // 8017A37C reloc
   int iVar2;
@@ -395,8 +399,6 @@ void printRspStatus(void) { // 8017A37C reloc
   }
 }
 
-undefined4 *DAT_803997f8;
-undefined4 *DWORD_803997fc;
 void store_0_to_stackC(int);
 
 void dummiedProfFn_8017a59c(undefined4 param1) { // 8017A59C
@@ -408,15 +410,10 @@ void dummiedProfFn_8017a59c(undefined4 param1) { // 8017A59C
   *(DAT_803997f8++) = param1;
 
   retM1_afterLoadAsset_ret0xFFFF(lbl_803904C0, DAT_803997f8 - 3, 0);
-  if (DWORD_803997fc + 3 >= DAT_803997f8) {
+  if (PTR_DAT_803997fc + 3 >= DAT_803997f8) {
     DAT_803997f8 = (undefined4 *)meter_cputimes;
   }
 }
-
-UNKTYPE *DAT_8039981c;
-int DAT_80399844;
-u8 BYTE_80399848;
-undefined4 *DAT_803997e4;
 
 void fn_8017A638(void) { // 8017A638
   DAT_8039981c = meter_gfx;
@@ -456,10 +453,10 @@ void debugSaveFn_8017a688(void) { // 8017A688
     memset_(debugSaveBuf_803997c0->buildDate,0,0x40);
     memset_(debugSaveBuf_803997c0->buildAuthor,0,0x40);
     memset_(debugSaveBuf_803997c0->fullVersionString,0,0x40);
-    strcpy(debugSaveBuf_803997c0->codeVersion,"1.3705");
-    strcpy(debugSaveBuf_803997c0->buildDate,"03/01/01 16:09");
-    strcpy(debugSaveBuf_803997c0->buildAuthor,"ptossell");
-    strcpy(debugSaveBuf_803997c0->fullVersionString,"Version 2.8 14/12/98 15.30 L.Schuneman");
+    strcpy(debugSaveBuf_803997c0->codeVersion,CODE_VERSION);
+    strcpy(debugSaveBuf_803997c0->buildDate,BUILD_DATE);
+    strcpy(debugSaveBuf_803997c0->buildAuthor,BUILD_AUTHOR);
+    strcpy(debugSaveBuf_803997c0->fullVersionString,VERSION_STRING);
     if (DWORD_803997b8 == 1) {
       DWORD_803997c8 = 1;
     } else if (DWORD_803997b8 == 2) {

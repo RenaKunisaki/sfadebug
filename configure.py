@@ -273,7 +273,7 @@ config.libs = [
         "cflags": cflags_base,
         "host": False,
         "objects": [
-            Object(Matching, "debug.c"),
+            Object(NonMatching, "debug.c"),
             # matching except for strings
             Object(NonMatching, "main/main.c"),
             # matching except for mystery padding
