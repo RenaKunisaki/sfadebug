@@ -116,5 +116,5 @@ typedef enum {
     MapId_KamColumn = 114,
     MapId_dbstepstone = 115,
     MapId_vfppushblock = 116,
-    #define MapId_None -1
+    MapId_None = -1,
 } MapId;
