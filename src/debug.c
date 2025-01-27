@@ -1,7 +1,7 @@
 #include "dolphin.h"
 #include "types.h"
 #include "gbi.h"
-#include "n64pad.h"
+#include "n64.h"
 #include "render.h"
 #include "dll.h"
 

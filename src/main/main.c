@@ -3,7 +3,7 @@
 #include "debug.h"
 #include "alloc.h"
 #include "gbi.h"
-#include "n64pad.h"
+#include "n64.h"
 #include "render.h"
 #include "dll.h"
 #include "ObjDef.h"
