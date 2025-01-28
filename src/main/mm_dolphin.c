@@ -56,8 +56,8 @@
 
 /* 80398B78 */ TVParams *curTvParams; //probably doesn't belong here
 
-void * heapInit(void *addr,int size,int nSlots);
-void *heapAlloc(int heap, uint size, AllocTag tag, char *name);
+void* heapInit(HeapEntry *addr,int size,int nSlots);
+void* heapAlloc(int heap, uint size, AllocTag tag, char *name);
 void mmSetDelay(int param1);
 void _mmAddToFreeList(void *ptr);
 void _mmHeapFree(void *ptr);
@@ -96,12 +96,12 @@ void initHeaps(void) { // 8007B3A4
   pvVar2 = OSAllocFromHeap(__OSCurrHeap, size);
   memset_(pvVar2, 0, size);
   DCFlushRange(pvVar2, size);
-  heapInit(pvVar2, size, 0x2ee);
+  heapInit((HeapEntry*)pvVar2, size, 0x2ee);
 
   pvVar2 = OSAllocFromHeap(__OSCurrHeap, 0x500000);
   memset_(pvVar2, 0, 0x500000);
   DCFlushRange(pvVar2, 0x500000);
-  heapInit(pvVar2, 0x500000, 0x5aa);
+  heapInit((HeapEntry*)pvVar2, 0x500000, 0x5aa);
 
   pvVar2 = OSAllocFromHeap(__OSCurrHeap, 0x9ffa0);
   if (!pvVar2) {
@@ -109,44 +109,48 @@ void initHeaps(void) { // 8007B3A4
   }
   memset_(pvVar2, 0, 0x9ffa0);
   DCFlushRange(pvVar2, 0x9ffa0);
-  heapInit(pvVar2, 0x9ffa0, 0x76c);
+  heapInit((HeapEntry*)pvVar2, 0x9ffa0, 0x76c);
   mmSetDelay(2);
   freeListEntries = 0;
   return;
 }
 
-void * heapInit(void *addr,int size,int nSlots) { //8007B580
-  void *pvVar1;
+void* heapInit(HeapEntry *addr,int size,int nSlots) { //8007B580
   int iVar2;
-  HeapEntry *pHVar3;
-  uint uVar5;
+  HeapEntry *entry;
+  uint iHeap;
+  uint size2;
+  uint size3;
 
-  uVar5 = numHeaps;
-  numHeaps = numHeaps + 1;
-  heaps[uVar5].avail = (nSlots * sizeof(HeapEntry)) - size;
-  heaps[uVar5].used = 0;
-  heaps[uVar5].data = (HeapEntry *)addr;
-  heaps[uVar5].size = size;
-  heaps[uVar5].used2 = 0;
-  pHVar3 = heaps[uVar5].data;
+  iHeap = numHeaps;
+  numHeaps++;
+  size2 = nSlots * sizeof(HeapEntry);
+  size3 = size - size2;
 
-  for(iVar2 = 0; (int)heaps[uVar5].avail < iVar2; iVar2++) {
-    (pHVar3++)->stack = (s16)iVar2;
+  heaps[iHeap].avail = nSlots;
+  heaps[iHeap].used  = 0;
+  heaps[iHeap].data  = addr;
+  heaps[iHeap].size  = size;
+  heaps[iHeap].used2 = 0;
+  entry = heaps[iHeap].data;
+
+  for(iVar2 = 0; iVar2 < (int)heaps[iHeap].avail; iVar2++) {
+    (entry++)->stack = iVar2;
   }
-  pHVar3 = heaps[(int)uVar5].data;
-  pvVar1 = (void *)((int)addr + nSlots * sizeof(HeapEntry));
-  if (((uint)pvVar1 & 0x1f)) {
-    (pHVar3->entry).loc = pvVar1;
+  entry = heaps[iHeap].data;
+  addr = (HeapEntry*)((int)addr + size2);
+  if((uint)addr & 0x1f) {
+    entry->entry.loc = (void*)(((u32)addr & ~0x1F) + 0x20);
   }
   else {
-    (pHVar3->entry).loc = (void *)OSRoundUp32B(pvVar1);
+    entry->entry.loc = addr;
   }
-  (pHVar3->entry).size = size + nSlots * -sizeof(HeapEntry);
-  pHVar3->type = 0;
-  pHVar3->prev = -1;
-  pHVar3->next = -1;
-  heaps[(int)uVar5].used = heaps[(int)uVar5].used + 1;
-  return heaps[(int)uVar5].data;
+  entry->entry.size = size3;
+  entry->type = 0;
+  entry->prev = -1;
+  entry->next = -1;
+  heaps[iHeap].used++;
+  return heaps[iHeap].data;
 }
 
 
