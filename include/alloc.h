@@ -1,68 +1,118 @@
-#define LISTS_COL                1
-#define SCREEN_COL               2
-#define CODE_COL                 3
-#define DLL_COL                  4
-#define TRACK_COL                5
-#define TEX_COL                  6
-#define TRACKTEX_COL             7
-#define SPRITETEX_COL            8
-#define MODELS_COL               9
-#define ANIMS_COL               10
-#define AUDIO_COL               11
-#define SEQ_COL                 12
-#define SFX_COL                 13
-#define OBJECTS_COL             14
-#define CAM_COL                 15
-#define VOX_COL                 16
-#define ANIMSEQ_COL             17
-#define LFX_COL                 18
-#define GFX_COL                 19
-#define EXPGFX_COL              20
-#define MODGFX_COL              21
-#define PROJGFX_COL             22
-#define SKY_COL                 23
-#define SHAD_COL                24
-#define GAME_COL                25
-#define TEST_COL                26
-#define BLACK_COL               27
-#define RED_COL                 28
-#define GREEN_COL               29
-#define BLUE_COL                30
-#define CYAN_COL                31
-#define MAGENTA_COL             32
-#define YELLOW_COL              33
-#define WHITE_COL               34
-#define GREY_COL                35
-#define ORANGE_COL              36
-#define MODELINSTANCE_COL       37 //was 137, probably my typo
-#define OBJECTS_COL_RGB         0x0000EEFF
-#define VOX_COL_RGB             0x00880099
-#define ANIMS_COL_RGB           0x008888FF
-#define TRACK_COL_RGB           0x00EE00FF
-#define MODELS_COL_RGB          0x00EEEEFF
-#define GAME_COL_RGB            0x12345678
-#define ANIMSEQ_COL_RGB         0x4050FFFF
-#define FILE_COL_RGB            0x7D7D7D7D
-#define CODE_COL_RGB            0x7E7E7EFE
-#define SHAD_COL_RGB            0x7F7F7F99
-#define COMPRESSED_FILE_COL_RGB 0x7F7F7FFF
-#define CAM_COL_RGB             0x88000099
-#define DLL_COL_RGB             0x8E8E8EFE
-#define LISTS_COL_RGB           0xCECECEFE
-#define SFX_COL_RGB             0xEE0000BB
-#define SEQ_COL_RGB             0xEE0000DD
-#define AUDIO_COL_RGB           0xEE0000FF
-#define SPRITETEX_COL_RGB       0xEE00EE99
-#define TRACKTEX_COL_RGB        0xEE00EECC
-#define TEX_COL_RGB             0xEE00EEFF
-#define SCREEN_COL_RGB          0xEEEEEEFE
-#define FACEFEED_COL_RGB        0xFACEFEED
-#define SKY_COL_RGB             0xFF3300FF
-#define PROJGFX_COL_RGB         0xFF5500FF
-#define MODGFX_COL_RGB          0xFF7700FF
-#define EXPGFX_COL_RGB          0xFF9900FF
-#define GFX_COL_RGB             0xFFAA00FF
-#define LFX_COL_RGB             0xFFCC00FF
-#define TEST_COL_RGB            0xFFDD00FF
-#define INTERSECT_POINT_COL_RGB 0xFFFF00FF
-#define SAVEGAME_COL_RGB        0xFFFFFFFF
+typedef enum {
+    ALLOC_TAG_ZERO               = 0x00000000,
+    ALLOC_TAG_LISTS_COL          = 0x00000001,
+    ALLOC_TAG_SCREEN_COL         = 0x00000002,
+    ALLOC_TAG_CODE_COL           = 0x00000003,
+    ALLOC_TAG_DLL_COL            = 0x00000004,
+    ALLOC_TAG_TRACK_COL          = 0x00000005,
+    ALLOC_TAG_TEX_COL            = 0x00000006,
+    ALLOC_TAG_TRACKTEX_COL       = 0x00000007,
+    ALLOC_TAG_SPRITETEX_COL      = 0x00000008,
+    ALLOC_TAG_MODELS_COL         = 0x00000009,
+    ALLOC_TAG_ANIMS_COL          = 0x0000000A,
+    ALLOC_TAG_AUDIO_COL          = 0x0000000B,
+    ALLOC_TAG_SEQ_COL            = 0x0000000C,
+    ALLOC_TAG_SFX_COL            = 0x0000000D,
+    ALLOC_TAG_OBJECTS_COL        = 0x0000000E,
+    ALLOC_TAG_CAM_COL            = 0x0000000F,
+    ALLOC_TAG_VOX_COL            = 0x00000010,
+    ALLOC_TAG_ANIMSEQ_COL        = 0x00000011,
+    ALLOC_TAG_LFX_COL            = 0x00000012,
+    ALLOC_TAG_GFX_COL            = 0x00000013,
+    ALLOC_TAG_EXPGFX_COL         = 0x00000014,
+    ALLOC_TAG_MODGFX_COL         = 0x00000015,
+    ALLOC_TAG_PROJGFX_COL        = 0x00000016,
+    ALLOC_TAG_SKY_COL            = 0x00000017,
+    ALLOC_TAG_SHAD_COL           = 0x00000018,
+    ALLOC_TAG_GAME_COL           = 0x00000019,
+    ALLOC_TAG_TEST_COL           = 0x0000001A,
+    ALLOC_TAG_BLACK              = 0x0000001B,
+    ALLOC_TAG_RED                = 0x0000001C,
+    ALLOC_TAG_GREEN              = 0x0000001D,
+    ALLOC_TAG_BLUE               = 0x0000001E,
+    ALLOC_TAG_CYAN               = 0x0000001F,
+    ALLOC_TAG_MAGENTA            = 0x00000020,
+    ALLOC_TAG_YELLOW             = 0x00000021,
+    ALLOC_TAG_WHITE              = 0x00000022,
+    ALLOC_TAG_GREY               = 0x00000023,
+    ALLOC_TAG_ORANGE             = 0x00000024,
+    ALLOC_TAG_MODEL_INSTANCE     = 0x00000089,
+    ALLOC_TAG_OBJECTS            = 0x0000EEFF,
+    ALLOC_TAG_VOX                = 0x00880099,
+    ALLOC_TAG_ANIMS              = 0x008888FF,
+    ALLOC_TAG_TRACK              = 0x00EE00FF,
+    ALLOC_TAG_MODELS             = 0x00EEEEFF,
+    ALLOC_TAG_GAME               = 0x12345678,
+    ALLOC_TAG_ANIMSEQ            = 0x4050FFFF,
+    ALLOC_TAG_FILE               = 0x7D7D7D7D,
+    ALLOC_TAG_CODE               = 0x7E7E7EFE,
+    ALLOC_TAG_SHAD               = 0x7F7F7F99,
+    ALLOC_TAG_COMPRESSED_FILE    = 0x7F7F7FFF,
+    ALLOC_TAG_CAM                = 0x88000099,
+    ALLOC_TAG_DLL                = 0x8E8E8EFE,
+    ALLOC_TAG_LISTS              = 0xCECECEFE,
+    ALLOC_TAG_SFX                = 0xEE0000BB,
+    ALLOC_TAG_SEQ                = 0xEE0000DD,
+    ALLOC_TAG_AUDIO              = 0xEE0000FF,
+    ALLOC_TAG_SPRITETEX          = 0xEE00EE99,
+    ALLOC_TAG_TRACKTEX           = 0xEE00EECC,
+    ALLOC_TAG_TEX                = 0xEE00EEFF,
+    ALLOC_TAG_SCREEN             = 0xEEEEEEFE,
+    ALLOC_TAG_FACEFEED           = 0xFACEFEED,
+    ALLOC_TAG_SKY                = 0xFF3300FF,
+    ALLOC_TAG_PROJGFX            = 0xFF5500FF,
+    ALLOC_TAG_MODGFX             = 0xFF7700FF,
+    ALLOC_TAG_EXPGFX             = 0xFF9900FF,
+    ALLOC_TAG_GFX                = 0xFFAA00FF,
+    ALLOC_TAG_LFX                = 0xFFCC00FF,
+    ALLOC_TAG_TEST               = 0xFFDD00FF,
+    ALLOC_TAG_INTERSECT_POINT    = 0xFFFF00FF,
+    ALLOC_TAG_SAVEGAME           = 0xFFFFFFFF,
+} AllocTag;
+
+//in final this is 3 (XXX double check)
+#define MAX_HEAPS 8
+
+typedef struct {
+  /* 0x0 */ uint mode;
+  /* 0x4 */ ushort width;
+  /* 0x6 */ ushort height;
+  /* 0x8 */ short height2;
+  /* 0xa */ short unkA;
+  /* 0xc */ short unkC;
+  /* 0xe */ ushort width2;
+  /* 0x10 */ ushort height3;
+  /* 0x12 */ u8 unk12;
+  /* 0x13 */ u8 unk13;
+  /* 0x14 */ uint unk14;
+} TVParams; //XXX should be part of dolphin?
+
+typedef struct {
+  /* 0x0 */ void *loc;
+  /* 0x4 */ u32 size;
+} HeapEntryStruct80355698;
+
+typedef struct {
+  //IIRC in final this field is just void* and this
+  //sub-struct doesn't exist
+  /* 0x0 */ HeapEntryStruct80355698 entry;
+  /* 0x8 */ s16 type;
+  /* 0xa */ s16 prev;
+  /* 0xc */ s16 next;
+  /* 0xe */ s16 stack;
+  /* 0x10 */ int unk10;
+} HeapEntry;
+
+typedef struct {
+  /* 0x0 */ uint avail;
+  /* 0x4 */ uint used;
+  /* 0x8 */ HeapEntry *data;
+  /* 0xc */ uint size;
+  /* 0x10 */ uint used2;
+} Heap;
+
+typedef struct {
+    /* 0x0 */ void *ptr;
+    /* 0x4 */ s8 delay;
+} FreeListEntry;
+#define MAX_FREELIST_SIZE 1024

@@ -274,10 +274,9 @@ config.libs = [
         "host": False,
         "objects": [
             Object(NonMatching, "debug.c"),
-            # matching except for strings
-            Object(NonMatching, "main/main.c"),
-            # matching except for mystery padding
-            Object(NonMatching, "main/pi.c"),
+            Object(NonMatching, "main/main.c"), # matching except for strings
+            Object(Matching, "main/mm_dolphin.c"),
+            Object(NonMatching, "main/pi.c"), # matching except for mystery padding
         ],
     },
 ]
