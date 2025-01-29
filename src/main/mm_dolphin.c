@@ -188,73 +188,87 @@ void* mmAlloc(volatile int size,volatile u32 tag,volatile u32 name) { //8007B690
   return result;
 }
 
-void* realloc(volatile void *offset,volatile int size, const char *name) { //8007B7F4
-  int iHeap;
-  int uVar4;
-  u32 uVar5;
-  u32 uVar6;
-  int iVar7;
-  int iEntry;
-  HeapEntry *entry;
-  void *crash;
-  volatile u32 crash2;
+void* realloc(void* volatile offset, volatile int size, const char* name) { // 8007B7F4
+    int iHeap;
+    int uVar4;
+    u32 uVar5;
+    int iVar7;
+    int iEntry;
+    HeapEntry* entry;
+    void* crash;
+    volatile u32 crash2;
 
-  if(size <= 0) {
-    crash = NULL;
-    crash2 = *(volatile u32*)((u32)crash + 0x14);
-    return NULL;
-  }
-  if(size & 0x1f) size = (size & ~0x1f) + 0x20;
+    if (size <= 0) {
+        crash = NULL;
+        crash2 = *(volatile u32*)((u32)crash + 0x14);
+        return NULL;
+    }
 
-  iHeap = _mmGetHeapIdx(offset);
-  if(iHeap == -1) return NULL;
+    if (size & 0x1f)
+        size = (size & ~0x1f) + 0x20;
 
-  entry = heaps[iHeap].data;
-  iEntry = 0;
-  do {
-    if(entry[iEntry].entry.loc == offset) break;
-    iEntry = entry[iEntry].next;
-  } while (iEntry != -1);
-  if (iEntry != -1) {
-    heaps[iHeap].used2 -= entry[iEntry].entry.size;
-    heaps[iHeap].used2 += size;
-  }
-  if ((int)size < (int)entry[iEntry].entry.size) {
-    if (heaps[iHeap].used + 1 == heaps[iHeap].avail) {
-      return NULL;
+    iHeap = _mmGetHeapIdx(offset);
+    if (iHeap == -1)
+        return NULL;
+
+    entry = heaps[iHeap].data;
+    iEntry = 0;
+    do {
+        if (entry[iEntry].entry.loc == offset)
+            break;
+        iEntry = entry[iEntry].next;
+    } while (iEntry != -1);
+
+    if (iEntry != -1) {
+        heaps[iHeap].used2 -= entry[iEntry].entry.size;
+        heaps[iHeap].used2 += size;
     }
-    heapSetEntry(iHeap,iEntry,size,1,0,entry[iEntry].tag,name);
-  }
-  else if((int)size > (int)entry[iEntry].entry.size) {
-    iVar7 = entry[iEntry].next;
-    uVar5 = entry[iEntry].entry.size;
-    uVar6 = 0;
-    while(iVar7 != -1) {
-      if(entry[iVar7].type != 0) break;
-      uVar4 = uVar5; //unsure which two vars this is
-      uVar5 = uVar5 + entry[iVar7].entry.size;
-      if((int)uVar5 >= (int)size) break;
-      iVar7 = entry[iVar7].next;
+
+    if ((int)size < (int)entry[iEntry].entry.size) {
+        if (heaps[iHeap].used + 1 == heaps[iHeap].avail) {
+            return NULL;
+        }
+
+        heapSetEntry(iHeap, iEntry, size, 1, 0, entry[iEntry].tag, name);
+    } else if ((int)size > (int)entry[iEntry].entry.size) {
+        iVar7 = entry[iEntry].next;
+        uVar5 = entry[iEntry].entry.size;
+        uVar4 = 0;
+
+        while (iVar7 != -1) {
+            if (entry[iVar7].type != 0)
+                break;
+            uVar4 = uVar5; // unsure which two vars this is
+            uVar5 += entry[iVar7].entry.size;
+            if ((int)uVar5 >= (int)size)
+                break;
+
+            iVar7 = entry[iVar7].next;
+        }
+
+        if ((int)uVar5 < size)
+            return NULL;
+
+        if ((int)uVar5 > size) {
+            heapSetEntry(iHeap, iVar7, size - uVar4, 1, 0, entry[iEntry].tag, name);
+        }
+
+        iVar7 = (int)entry[iEntry].next;
+        uVar5 = entry[iEntry].entry.size;
+        while ((int)uVar5 < size) {
+            uVar5 += entry[iVar7].entry.size;
+            uVar4 = entry[iVar7].next;
+            entry[iEntry].next = uVar4;
+            if (uVar4 != -1) {
+                entry[uVar4].prev = iEntry;
+            }
+            entry[--heaps[iHeap].used].stack = (s16)iVar7;
+            iVar7 = uVar4;
+        }
+
+        entry[iEntry].entry.size = size;
     }
-    if(uVar4 < (int)size) return NULL;
-    if (size > uVar4) {
-      heapSetEntry(iHeap,iVar7,size - uVar6,1,0,entry[iEntry].tag,name);
-    }
-    iVar7 = (int)entry[iEntry].next;
-    uVar6 = entry[iEntry].entry.size;
-    while((int)uVar6 < size) {
-      uVar6 += entry[iVar7].entry.size;
-      uVar4 = entry[iVar7].next;
-      entry[iEntry].next = uVar4;
-      if(uVar4 != -1) {
-        entry[uVar4].prev = iEntry;
-      }
-      entry[--heaps[iHeap].used].stack = (s16)iVar7;
-      iVar7 = uVar4;
-    }
-    entry[iEntry].entry.size = size;
-  }
-  return offset;
+    return offset;
 }
 
 
