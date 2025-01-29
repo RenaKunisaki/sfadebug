@@ -100,15 +100,15 @@ typedef struct {
   /* 0xa */ s16 prev;
   /* 0xc */ s16 next;
   /* 0xe */ s16 stack;
-  /* 0x10 */ int unk10;
+  /* 0x10 */ u32 tag;
 } HeapEntry;
 
 typedef struct {
-  /* 0x0 */ uint avail;
-  /* 0x4 */ uint used;
+  /* 0x0 */ int avail;
+  /* 0x4 */ int used;
   /* 0x8 */ HeapEntry *data;
-  /* 0xc */ uint size;
-  /* 0x10 */ uint used2;
+  /* 0xc */ int size;
+  /* 0x10 */ int used2;
 } Heap;
 
 typedef struct {

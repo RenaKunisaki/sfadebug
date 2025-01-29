@@ -61,7 +61,7 @@ void* heapAlloc(int heap, uint size, u32 tag, const char *name);
 void mmSetDelay(int param1);
 void _mmAddToFreeList(void *ptr);
 void _mmHeapFree(void *ptr);
-int heapSetEntry(int iHeap,int iEntry,u32 size,s16 type,int type2,undefined4 param6);
+int heapSetEntry(int iHeap,int iEntry,u32 size,s16 type,int type2,u32 tag,const char *name);
 void _mmActuallyFree(int iHeap,int iEntry);
 
 void initHeaps(void) { // 8007B3A4
@@ -188,85 +188,71 @@ void* mmAlloc(volatile int size,volatile u32 tag,volatile u32 name) { //8007B690
   return result;
 }
 
-
-undefined * realloc(undefined *offset,uint size) { //8007B7F4
-  short sVar1;
-  uint uVar2;
+void* realloc(volatile void *offset,volatile int size, const char *name) { //8007B7F4
   int iHeap;
-  int iVar3;
-  u32 uVar4;
+  int uVar4;
   u32 uVar5;
   u32 uVar6;
   int iVar7;
   int iEntry;
   HeapEntry *entry;
-  uint size2;
+  void *crash;
+  volatile u32 crash2;
 
-  if ((int)size < 1) {
-    offset = (undefined *)0x0;
+  if(size <= 0) {
+    crash = NULL;
+    crash2 = *(volatile u32*)((u32)crash + 0x14);
+    return NULL;
   }
-  else {
-    size2 = size;
-    if ((size & 0x1f) != 0) {
-      size2 = (size & 0xffffffe0) + 0x20;
+  if(size & 0x1f) size = (size & ~0x1f) + 0x20;
+
+  iHeap = _mmGetHeapIdx(offset);
+  if(iHeap == -1) return NULL;
+
+  entry = heaps[iHeap].data;
+  iEntry = 0;
+  do {
+    if(entry[iEntry].entry.loc == offset) break;
+    iEntry = entry[iEntry].next;
+  } while (iEntry != -1);
+  if (iEntry != -1) {
+    heaps[iHeap].used2 -= entry[iEntry].entry.size;
+    heaps[iHeap].used2 += size;
+  }
+  if ((int)size < (int)entry[iEntry].entry.size) {
+    if (heaps[iHeap].used + 1 == heaps[iHeap].avail) {
+      return NULL;
     }
-    iHeap = _mmGetHeapIdx(offset);
-    if (iHeap == -1) {
-      offset = (undefined *)0x0;
+    heapSetEntry(iHeap,iEntry,size,1,0,entry[iEntry].tag,name);
+  }
+  else if((int)size > (int)entry[iEntry].entry.size) {
+    iVar7 = entry[iEntry].next;
+    uVar5 = entry[iEntry].entry.size;
+    uVar6 = 0;
+    while(iVar7 != -1) {
+      if(entry[iVar7].type != 0) break;
+      uVar4 = uVar5; //unsure which two vars this is
+      uVar5 = uVar5 + entry[iVar7].entry.size;
+      if((int)uVar5 >= (int)size) break;
+      iVar7 = entry[iVar7].next;
     }
-    else {
-      entry = heaps[iHeap].data;
-      iEntry = 0;
-      do {
-        if ((undefined *)entry[iEntry].entry.loc == offset) break;
-        iEntry = (int)entry[iEntry].next;
-      } while (iEntry != -1);
-      if (iEntry != -1) {
-        heaps[iHeap].used2 = heaps[iHeap].used2 - entry[iEntry].entry.size;
-        heaps[iHeap].used2 = heaps[iHeap].used2 + size2;
-      }
-      if ((int)size2 < (int)entry[iEntry].entry.size) {
-        if (heaps[iHeap].used + 1 == heaps[iHeap].avail) {
-          offset = (undefined *)0x0;
-        }
-        else {
-          heapSetEntry(iHeap,iEntry,size2,1,0,entry[iEntry].unk10);
-        }
-      }
-      else if ((int)entry[iEntry].entry.size < (int)size2) {
-        sVar1 = entry[iEntry].next;
-        uVar6 = 0;
-        uVar5 = entry[iEntry].entry.size;
-        while (((iVar7 = (int)sVar1, uVar4 = uVar5, iVar7 != -1 && (entry[iVar7].type == 0)) &&
-               (uVar4 = uVar5 + entry[iVar7].entry.size, uVar6 = uVar5, (int)uVar4 < (int)size2))) {
-          sVar1 = entry[iVar7].next;
-          uVar5 = uVar4;
-        }
-        if ((int)uVar4 < (int)size2) {
-          offset = (undefined *)0x0;
-        }
-        else {
-          if ((int)size2 < (int)uVar4) {
-            heapSetEntry(iHeap,iVar7,size2 - uVar6,1,0,entry[iEntry].unk10);
-          }
-          uVar6 = entry[iEntry].entry.size;
-          iVar7 = (int)entry[iEntry].next;
-          while ((int)uVar6 < (int)size2) {
-            uVar6 = uVar6 + entry[iVar7].entry.size;
-            iVar3 = (int)entry[iVar7].next;
-            entry[iEntry].next = entry[iVar7].next;
-            if (iVar3 != -1) {
-              entry[iVar3].prev = (s16)iEntry;
-            }
-            uVar2 = heaps[iHeap].used - 1;
-            heaps[iHeap].used = uVar2;
-            entry[uVar2].stack = (s16)iVar7;
-            iVar7 = iVar3;
-          }
-          entry[iEntry].entry.size = size2;
-        }
-      }
+    if(uVar4 < (int)size) return NULL;
+    if (size > uVar4) {
+      heapSetEntry(iHeap,iVar7,size - uVar6,1,0,entry[iEntry].tag,name);
     }
+    iVar7 = (int)entry[iEntry].next;
+    uVar6 = entry[iEntry].entry.size;
+    while((int)uVar6 < size) {
+      uVar6 += entry[iVar7].entry.size;
+      uVar4 = entry[iVar7].next;
+      entry[iEntry].next = uVar4;
+      if(uVar4 != -1) {
+        entry[uVar4].prev = iEntry;
+      }
+      entry[--heaps[iHeap].used].stack = (s16)iVar7;
+      iVar7 = uVar4;
+    }
+    entry[iEntry].entry.size = size;
   }
   return offset;
 }
@@ -342,7 +328,7 @@ void * heapAlloc(int heap,uint size,u32 tag,const char *name) { //8007BB74
       pvVar1 = (void *)0x0;
     }
     else {
-      heapSetEntry(heap,iEntry,local_34,1,0,tag);
+      heapSetEntry(heap,iEntry,local_34,1,0,tag,name);
       n64EnableInterrupts(param1);
       pvVar1 = data[iEntry].entry.loc;
     }
@@ -563,7 +549,7 @@ undefined * getHeapData(int param_1) { //8007C310
 
    Library: KioskDefault 0 0 */
 
-int heapSetEntry(int iHeap,int iEntry,u32 size,s16 type,int type2,undefined4 param6) { //8007C328
+int heapSetEntry(int iHeap,int iEntry,u32 size,s16 type,int type2,u32 tag,const char *name) { //8007C328
   short sVar1;
   short sVar2;
   uint uVar3;
@@ -575,7 +561,7 @@ int heapSetEntry(int iHeap,int iEntry,u32 size,s16 type,int type2,undefined4 par
   entry[iEntry].type = type;
   uVar4 = entry[iEntry].entry.size;
   entry[iEntry].entry.size = size;
-  entry[iEntry].unk10 = param6;
+  entry[iEntry].tag = tag;
   idx = iEntry;
   if ((int)size < (int)uVar4) {
     idx = (int)entry[iEntry].next;
