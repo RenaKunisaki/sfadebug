@@ -40,7 +40,7 @@ extern char _defaultBits[];
 /* 80396c30 */ extern float main_fdt;
 /* 80396e28 */ extern RSPState *RSP_pState;
 /* 80396E88 */ extern int DAT_80396E88;
-/* 80396E8C */ extern int N64_RAM_SIZE ;//= 0x800000;
+/* 80396E8C */ extern int n64RamSize ;//= N64_RAM_SIZE;
 /* 80396E90 */ extern int unk_80396E90 ;//= 0x80000000;
 
 //.sbss (0x80398240)

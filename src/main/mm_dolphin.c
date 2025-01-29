@@ -57,7 +57,7 @@
 /* 80398B78 */ TVParams *curTvParams; //probably doesn't belong here
 
 void* heapInit(HeapEntry *addr,int size,int nSlots);
-void* heapAlloc(int heap, uint size, AllocTag tag, char *name);
+void* heapAlloc(int heap, uint size, u32 tag, const char *name);
 void mmSetDelay(int param1);
 void _mmAddToFreeList(void *ptr);
 void _mmHeapFree(void *ptr);
@@ -153,46 +153,38 @@ void* heapInit(HeapEntry *addr,int size,int nSlots) { //8007B580
   return heaps[iHeap].data;
 }
 
-
-/* Library Function - Single Match
-    allocTagged
-
-   Library: KioskDefault 0 0 */
-
-void * mmAlloc(uint size,AllocTag tag,char *name) { //8007B690
+void* mmAlloc(volatile int size,volatile u32 tag,volatile u32 name) { //8007B690
   void *result;
-  AllocTag tag_;
+  u32 *tags;
+  void *crash;
+  volatile u32 crash2;
 
-  if (size == 0) {
-                    /* crash? */
-    result = (void *)0x0;
+  tags = allocTagColorTbl;
+  if(!size) {
+    crash = NULL;
+    crash2 = *(volatile u32*)((u32)crash + 0x14);
+    return NULL;
+  }
+
+  if(tag <= ALLOC_TAG_TEST_COL) tag = tags[tag];
+  if(size >= 0x3000 || n64RamSize != 0x800000) {
+    result = heapAlloc(0,size,tag,(const char*)name);
+    if(!result) result = heapAlloc(1,size,tag,(const char*)name);
+  }
+  else if(size >= 0x400) {
+    result = heapAlloc(1,size,tag,(const char*)name);
+    if(!result) result = heapAlloc(2,size,tag,(const char*)name);
   }
   else {
-    tag_ = tag;
-    if (tag < ALLOC_TAG_BLACK) {
-      tag_ = allocTagColorTbl[tag];
-    }
-    if (((int)size < 0x3000) && (N64_RAM_SIZE == 0x800000)) {
-      if ((int)size < 0x400) {
-        result = heapAlloc(2,size,tag_,name);
-        if (result == (void *)0x0) {
-          result = heapAlloc(0,size,tag_,name);
-        }
-      }
-      else {
-        result = heapAlloc(1,size,tag_,name);
-        if (result == (void *)0x0) {
-          result = heapAlloc(2,size,tag_,name);
-        }
-      }
-    }
-    else {
-      result = heapAlloc(0,size,tag_,name);
-      if (result == (void *)0x0) {
-        result = heapAlloc(1,size,tag_,name);
-      }
-    }
+    result = heapAlloc(2,size,tag,(const char*)name);
+    if(!result) result = heapAlloc(0,size,tag,(const char*)name);
   }
+
+  if(!result) {
+    crash = NULL;
+    crash2 = *(volatile u32*)((u32)crash + 0x14);
+  }
+
   return result;
 }
 
@@ -306,7 +298,7 @@ void * mmAlloc2(uint size,uint tag,char *name) { //8007BADC
 
    Library: KioskDefault 0 0 */
 
-void * heapAlloc(int heap,uint size,AllocTag tag,char *name) { //8007BB74
+void * heapAlloc(int heap,uint size,u32 tag,const char *name) { //8007BB74
   u32 param1;
   void *pvVar1;
   HeapEntry *data;
