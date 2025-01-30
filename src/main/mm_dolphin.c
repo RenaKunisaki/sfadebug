@@ -256,7 +256,7 @@ void *realloc(void *volatile offset, volatile int size,
 
 void *mmAlloc2(volatile int size, u32 tag, const char *name) { // 8007BADC
     //eq except regswap
-    volatile void *result;
+    void *result;
     u32 *tags;
     void *crash;
     volatile u32 crash2;
