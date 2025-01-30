@@ -254,20 +254,28 @@ void *realloc(void *volatile offset, volatile int size,
     return offset;
 }
 
-void *mmAlloc2(volatile uint size, uint tag, const char *name) { // 8007BADC
-    void *pvVar1;
+void *mmAlloc2(volatile int size, u32 tag, const char *name) { // 8007BADC
+    //eq except regswap
+    volatile void *result;
     u32 *tags;
+    void *crash;
+    volatile u32 crash2;
 
     tags = allocTagColorTbl;
-    if (tag < 0x1b) {
+    if (tag <= ALLOC_TAG_TEST_COL)
         tag = tags[tag];
-    }
     if (size == 0) {
-        pvVar1 = (void *)0x0;
-    } else {
-        pvVar1 = heapAlloc(1, size, tag, name);
+        crash = NULL;
+        crash2 = *(volatile u32 *)((u32)crash + 0x14);
+        return NULL;
     }
-    return pvVar1;
+
+    result = heapAlloc(1, size, tag, name);
+    if(!result) {
+        crash = NULL;
+        crash2 = *(volatile u32 *)((u32)crash + 0x14);
+    }
+    return result;
 }
 
 void *heapAlloc(int heap, uint size, u32 tag, const char *name) { // 8007BB74
