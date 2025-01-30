@@ -36,7 +36,7 @@
 /* 80398B78 */ TVParams *curTvParams; // probably doesn't belong here
 
 void *heapInit(HeapEntry *addr, int size, int nSlots);
-void *heapAlloc(int heap, uint size, u32 tag, const char *name);
+void *heapAlloc(volatile int heap, volatile int size, u32 tag, const char *name);
 void mmSetDelay(int param1);
 void _mmAddToFreeList(void *ptr);
 void _mmHeapFree(void *ptr);
@@ -265,51 +265,50 @@ void *mmAlloc2(volatile int size, u32 tag, const char *name) { // 8007BADC
 	return result;
 }
 
-void *heapAlloc(int heap, uint size, u32 tag, const char *name) { // 8007BB74
-	u32 param1;
-	void *pvVar1;
+void *heapAlloc(volatile int iHeap, volatile int size, u32 tag,
+const char *name) { // 8007BB74
+	u32 irq;
+	void *result;
 	HeapEntry *data;
-	u32 uVar2;
+	int largest;
 	int iVar3;
 	int iEntry;
-	uint local_34;
-	u32 local_28;
+	int local_28;
 
 	local_28 = 0;
-	param1 = n64DisableInterrupts();
-	heaps[heap].used2 = heaps[heap].used2 + size;
-	if(heaps[heap].used + 1 == heaps[heap].avail) {
-		n64EnableInterrupts(param1);
-		pvVar1 = (void *)0x0;
-	} else {
-		local_34 = size;
-		if((size & 0x1f) != 0) { local_34 = (size & 0xffffffe0) + 0x20; }
-		iEntry = -1;
-		uVar2 = 0x7fffffff;
-		data = heaps[heap].data;
-		iVar3 = 0;
-		do {
-			if(data[iVar3].type == 0) {
-				if((int)data[iVar3].entry.size < (int)local_34) {
-					if((int)local_28 < (int)data[iVar3].entry.size) {
-						local_28 = data[iVar3].entry.size;
-					}
-				} else if((int)data[iVar3].entry.size < (int)uVar2) {
-					uVar2 = data[iVar3].entry.size;
-					iEntry = iVar3;
-				}
-			}
-			iVar3 = (int)data[iVar3].next;
-		} while(iVar3 != -1);
-		if(iEntry == -1) {
-			pvVar1 = (void *)0x0;
-		} else {
-			heapSetEntry(heap, iEntry, local_34, 1, 0, tag, name);
-			n64EnableInterrupts(param1);
-			pvVar1 = data[iEntry].entry.loc;
-		}
+	irq = n64DisableInterrupts();
+	heaps[iHeap].used2 += size;
+    if(!size) { }
+	if(heaps[iHeap].used + 1 == heaps[iHeap].avail) {
+		n64EnableInterrupts(irq);
+		return NULL;
 	}
-	return pvVar1;
+
+    if(size & 0x1f) size = (size & ~0x1F) + 0x20;
+    iEntry = -1;
+    largest = 0x7fffffff;
+    data = &heaps[iHeap].data[iVar3=0];
+    do {
+        if(data->type == 0) {
+            if((int)data->entry.size >= size) {
+                if((int)local_28 < (int)data->entry.size) {
+                    local_28 = data->entry.size;
+                }
+                iEntry = iVar3;
+            } else if((int)data->entry.size > largest) {
+                largest = data->entry.size;
+                iEntry = iVar3;
+            }
+        }
+    } while((iVar3 = data->next) != -1);
+    if(iEntry != -1) {
+        heapSetEntry(iHeap, iEntry, size, 1, 0, tag, name);
+        n64EnableInterrupts(irq);
+        result = data[iEntry].entry.loc;
+    } else {
+        result = NULL;
+    }
+	return result;
 }
 
 void mmSetDelay(int delay) { // 8007BD28
