@@ -453,42 +453,35 @@ int _mmGetHeapIdx(void *offset) { // 8007C0DC
 	return -1;
 }
 
-void _mmActuallyFree(int iHeap, int iEntry) { // 8007C154
-	short sVar1;
-	short sVar2;
-	short sVar3;
-	uint uVar4;
-	int iVar5;
-	int iVar6;
+void _mmActuallyFree(int iHeap, int iEntry) { // 8007C154 regswap
+	int sVar1;
+	int sVar2;
+	int sVar3;
 	HeapEntry *entry;
 
 	entry = heaps[iHeap].data;
 	sVar1 = entry[iEntry].next;
-	iVar6 = (int)sVar1;
 	sVar2 = entry[iEntry].prev;
-	iVar5 = (int)sVar2;
 	entry[iEntry].type = 0;
 	LAB_8018fa40(entry[iEntry].entry.loc);
-	heaps[iHeap].used2 = heaps[iHeap].used2 - entry[iEntry].entry.size;
-	if((iVar6 != -1) && (entry[iVar6].type == 0)) {
-		entry[iEntry].entry.size
-		    = entry[iEntry].entry.size + entry[iVar6].entry.size;
-		sVar3 = entry[iVar6].next;
+	heaps[iHeap].used2 -= entry[iEntry].entry.size;
+	if((sVar1 != -1) && (entry[sVar1].type == 0)) {
+		entry[iEntry].entry.size += entry[sVar1].entry.size;
+		sVar3 = entry[sVar1].next;
 		entry[iEntry].next = sVar3;
-		if(sVar3 != -1) { entry[sVar3].prev = (s16)iEntry; }
-		uVar4 = heaps[iHeap].used - 1;
-		heaps[iHeap].used = uVar4;
-		entry[uVar4].stack = sVar1;
+		if(sVar3 != -1) {
+            entry[sVar3].prev = (s16)iEntry;
+        }
+		entry[--heaps[iHeap].used].stack = sVar1;
 	}
-	if((iVar5 != -1) && (entry[iVar5].type == 0)) {
-		entry[iVar5].entry.size
-		    = entry[iVar5].entry.size + entry[iEntry].entry.size;
+	if((sVar2 != -1) && (entry[sVar2].type == 0)) {
+		entry[sVar2].entry.size += entry[iEntry].entry.size;
 		sVar1 = entry[iEntry].next;
-		entry[iVar5].next = sVar1;
-		if(sVar1 != -1) { entry[sVar1].prev = sVar2; }
-		uVar4 = heaps[iHeap].used - 1;
-		heaps[iHeap].used = uVar4;
-		entry[uVar4].stack = (s16)iEntry;
+		entry[sVar2].next = sVar1;
+		if(sVar1 != -1) {
+            entry[sVar1].prev = sVar2;
+        }
+		entry[--heaps[iHeap].used].stack = (s16)iEntry;
 	}
 	return;
 }
