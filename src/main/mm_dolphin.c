@@ -41,6 +41,7 @@ void _mmHeapFree(void *ptr);
 int heapSetEntry(int iHeap, int iEntry, u32 size, s16 type, int type2, u32 tag,
     const char *name);
 void _mmActuallyFree(int iHeap, int iEntry);
+int _mmGetHeapIdx(void *offset);
 
 void initHeaps(void) { // 8007B3A4
 	int iVar1;
@@ -400,25 +401,29 @@ void checkHeaps(void) { // 8007BDFC
     }
 }
 
-void _mmHeapFree(void *ptr) { // 8007BFD8
+inline void *dummy_0x8007c054(void *ptr) {
+    //generates a useless cmpwi
+    return ptr;
+}
+void _mmHeapFree(void *ptr) { // 8007BFD8 regswap
 	int idx;
 	HeapEntry *ent;
 	int ii;
 
-	idx = _mmGetHeapIdx(ptr);
-	if(idx != -1) {
-		ent = heaps[idx].data;
-		ii = 0;
-		do {
-			if(ent[ii].entry.loc == ptr) {
-				if((ent[ii].type != 1) && (ent[ii].type != 4)) { return; }
-				_mmActuallyFree(idx, ii);
-				return;
-			}
-			ii = (int)ent[ii].next;
-		} while(ii != -1);
-	}
-	return;
+    idx = _mmGetHeapIdx(ptr);
+	if(idx == -1) return;
+    ent = heaps[idx].data;
+    ii = 0;
+    do {
+        if(ent[ii].entry.loc == ptr) {
+            if((ent[ii].type == 1) || (ent[ii].type == 4)) {
+                if(idx) dummy_0x8007c054(&ptr);
+                _mmActuallyFree(idx, ii);
+            }
+            return;
+        }
+        ii = (int)ent[ii].next;
+    } while(ii != -1);
 }
 
 void _mmAddToFreeList(void *ptr) { // 8007C090
