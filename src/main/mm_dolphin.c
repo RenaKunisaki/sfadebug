@@ -28,9 +28,7 @@
 /* 80398A08 */ u8 numHeaps;
 /* 80398A0A */ s16 freeListEntries;
 /* 80398A0C */ int mmDelay;
-/* 80398A10 */ int DAT_80398a10;
-/* 80398A14 */ int INT_80398a14;
-/* 80398A18 */ int INT_80398a18;
+/* 80398A10 */ int heapUsed0, heapUsed1, heapUsed2;
 /* 80398A1C */ int memUsedPct;
 
 /* 80398B78 */ TVParams *curTvParams; // probably doesn't belong here
@@ -337,72 +335,69 @@ void mmSetDelay(int delay) { // 8007BD28
 }
 
 void mmFree(void *__ptr) { // 8007BDA4
-	u32 param1;
+	u32 irq;
 
-	param1 = n64DisableInterrupts();
+	irq = n64DisableInterrupts();
 	if(mmDelay == 0) {
 		_mmHeapFree(__ptr);
 	} else {
 		_mmAddToFreeList(__ptr);
 	}
-	n64EnableInterrupts(param1);
+	n64EnableInterrupts(irq);
 	return;
 }
 
-void checkHeaps(void) { // 8007BDFC
-	bool bVar1;
-	int dVar2;
-	u32 param1;
-	int iVar3;
-	HeapEntry *pHVar4;
-	HeapEntry *pHVar5;
+inline void countHeap(int idx, int *out) {
+    int iVar3;
+	HeapEntry *entry;
+    entry = heaps[idx].data;
+	do {
+		if(entry->type) {
+			*out += entry->entry.size;
+		}
+		iVar3 = entry->next;
+		if(iVar3 == -1) break;
+        entry = heaps[idx].data + iVar3;
+	} while(iVar3 != -1);
+}
 
-	param1 = n64DisableInterrupts();
+inline void handleFreeLists() {
+    u32 irq;
+    int iVar3;
+
+    irq = n64DisableInterrupts();
 	iVar3 = 0;
 	while(iVar3 < freeListEntries) {
-		freeList[iVar3].delay = freeList[iVar3].delay - 1;
+		freeList[iVar3].delay--;
 		if(freeList[iVar3].delay == 0) {
 			_mmHeapFree(freeList[iVar3].ptr);
 			freeList[iVar3].ptr = freeList[freeListEntries + -1].ptr;
 			freeList[iVar3].delay = freeList[freeListEntries + -1].delay;
-			freeListEntries = freeListEntries + -1;
+			freeListEntries--;
 		} else {
-			iVar3 = iVar3 + 1;
+			iVar3++;
 		}
 	}
-	n64EnableInterrupts(param1);
-	DAT_80398a10 = 0;
-	INT_80398a18 = 0;
-	INT_80398a14 = 0;
-	pHVar5 = heaps[0].data;
-	while(true) {
-		if(pHVar5->type != 0) {
-			DAT_80398a10 = DAT_80398a10 + (pHVar5->entry).size;
-		}
-		pHVar4 = heaps[1].data;
-		if(pHVar5->next == -1) break;
-		pHVar5 = heaps[0].data + pHVar5->next;
-	}
-	while(true) {
-		if(pHVar4->type != 0) {
-			INT_80398a14 = INT_80398a14 + (pHVar4->entry).size;
-		}
-		pHVar5 = heaps[2].data;
-		if(pHVar4->next == -1) break;
-		pHVar4 = heaps[1].data + pHVar4->next;
-	}
-	while(true) {
-		if(pHVar5->type != 0) {
-			INT_80398a18 = INT_80398a18 + (pHVar5->entry).size;
-		}
-		if(pHVar5->next == -1) break;
-		pHVar5 = heaps[2].data + pHVar5->next;
-	}
-	dVar2 = memUsedPct + 1;
-	bVar1 = memUsedPct == ((int)memUsedPct / 500) * 500;
-	memUsedPct = dVar2;
-	if(bVar1) { fn_8007C54C(); }
-	return;
+	n64EnableInterrupts(irq);
+}
+
+void checkHeaps(void) { // 8007BDFC
+	int dVar2;
+	int iVar3;
+
+	handleFreeLists();
+	heapUsed0 = 0;
+	heapUsed2 = 0; //out of order
+	heapUsed1 = 0;
+    countHeap(0, &heapUsed0);
+    countHeap(1, &heapUsed1);
+    countHeap(2, &heapUsed2);
+
+	dVar2 = memUsedPct++;
+    iVar3 = 500;
+	if(!(dVar2 - ((dVar2 / iVar3) * iVar3))) {
+        fn_8007C54C(0);
+    }
 }
 
 void _mmHeapFree(void *ptr) { // 8007BFD8

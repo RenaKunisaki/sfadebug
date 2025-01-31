@@ -113,6 +113,6 @@ typedef struct {
 
 typedef struct {
     /* 0x0 */ void *ptr;
-    /* 0x4 */ s8 delay;
+    /* 0x4 */ u8 delay;
 } FreeListEntry;
 #define MAX_FREELIST_SIZE 1024
