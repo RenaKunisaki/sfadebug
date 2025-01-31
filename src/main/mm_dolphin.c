@@ -442,15 +442,15 @@ int _mmGetHeapIdx(void *offset) { // 8007C0DC
 	int iHeap;
 
 	iHeap = 0;
-	while(true) {
-		if((int)(uint)numHeaps <= iHeap) { return -1; }
-		if((heaps[iHeap].data < offset)
-		    && (offset < (void *)((int)&((heaps[iHeap].data)->entry).loc
-		            + heaps[iHeap].size)))
-			break;
+	while(iHeap < numHeaps) {
+		if((offset > heaps[iHeap].data)
+		&& (offset < (void *)((int)&((heaps[iHeap].data)->entry).loc
+		    + heaps[iHeap].size))) {
+			return iHeap;
+        }
 		iHeap = iHeap + 1;
 	}
-	return iHeap;
+	return -1;
 }
 
 void _mmActuallyFree(int iHeap, int iEntry) { // 8007C154
