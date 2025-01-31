@@ -168,7 +168,7 @@ void *mmAlloc(volatile int size, volatile u32 tag,
 }
 
 void *realloc(void *volatile offset, volatile int size,
-    const char *name) { // 8007B7F4
+const char *name) { // 8007B7F4
 	int iHeap;
 	int uVar4;
 	u32 uVar5;
@@ -265,22 +265,28 @@ void *mmAlloc2(volatile int size, u32 tag, const char *name) { // 8007BADC
 	return result;
 }
 
-void *heapAlloc(volatile int iHeap, volatile int size, u32 tag,
-const char *name) { // 8007BB74
+inline void *dummy_0x8007bd00(void *ptr) {
+    //generates a useless cmpwi
+    return ptr;
+}
+void *heapAlloc(volatile int iHeap, volatile int size,
+u32 tag, const char *name) { // 8007BB74 regalloc
 	u32 irq;
 	void *result;
 	HeapEntry *data;
 	int largest;
+	int smallest;
 	int iVar3;
 	int iEntry;
-	int local_28;
+    int size2;
 
-	local_28 = 0;
-	irq = n64DisableInterrupts();
+	smallest = 0;
+    irq = n64DisableInterrupts();
+
 	heaps[iHeap].used2 += size;
-    if(!size) { }
+    if(size == 0) dummy_0x8007bd00(&smallest);
 	if(heaps[iHeap].used + 1 == heaps[iHeap].avail) {
-		n64EnableInterrupts(irq);
+        n64EnableInterrupts(irq);
 		return NULL;
 	}
 
@@ -290,25 +296,30 @@ const char *name) { // 8007BB74
     data = &heaps[iHeap].data[iVar3=0];
     do {
         if(data->type == 0) {
-            if((int)data->entry.size >= size) {
-                if((int)local_28 < (int)data->entry.size) {
-                    local_28 = data->entry.size;
+            size2 = (int)data->entry.size;
+            if(size2 >= smallest) {
+                if(smallest < size2) {
+                    largest = data->entry.size;
                 }
                 iEntry = iVar3;
-            } else if((int)data->entry.size > largest) {
+            } else if(largest > (int)data->entry.size) {
                 largest = data->entry.size;
                 iEntry = iVar3;
             }
         }
     } while((iVar3 = data->next) != -1);
+
     if(iEntry != -1) {
         heapSetEntry(iHeap, iEntry, size, 1, 0, tag, name);
+        result = &data[iEntry].entry.loc;
         n64EnableInterrupts(irq);
-        result = data[iEntry].entry.loc;
-    } else {
+        return result;
+    }
+    if((iHeap == 2 && size > 0x3000) || iHeap != 3) {
         result = NULL;
     }
-	return result;
+    if(iHeap == 1) result = dummy_0x8007bd00(result);
+    return result;
 }
 
 void mmSetDelay(int delay) { // 8007BD28
