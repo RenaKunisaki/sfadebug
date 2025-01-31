@@ -323,17 +323,16 @@ u32 tag, const char *name) { // 8007BB74 regalloc
 }
 
 void mmSetDelay(int delay) { // 8007BD28
-	u32 param1;
+	u32 irq;
 
-	param1 = n64DisableInterrupts();
+	irq = n64DisableInterrupts();
 	mmDelay = delay;
 	if(delay == 0) {
 		while(0 < freeListEntries) {
-			freeListEntries = freeListEntries + -1;
-			_mmHeapFree(freeList[freeListEntries].ptr);
+			_mmHeapFree(freeList[--freeListEntries].ptr);
 		}
 	}
-	n64EnableInterrupts(param1);
+	n64EnableInterrupts(irq);
 	return;
 }
 
