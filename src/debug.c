@@ -1,9 +1,9 @@
 #include "dolphin.h"
 #include "types.h"
-#include "gbi.h"
-#include "n64.h"
-#include "render.h"
-#include "dll.h"
+#include "sys/n64.h"
+#include "gfx/gbi.h"
+#include "gfx/render.h"
+#include "sys/dll.h"
 
 #define CODE_VERSION "1.3705"
 #define BUILD_DATE "03/01/01 16:09"

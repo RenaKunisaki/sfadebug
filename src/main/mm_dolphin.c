@@ -1,8 +1,8 @@
 #include "dolphin.h"
 #include "types.h"
 #include "debug.h"
-#include "alloc.h"
-#include "n64.h"
+#include "sys/alloc.h"
+#include "sys/n64.h"
 
 /* clang-format off */
 /* 802eb0e0 */ u32 allocTagColorTbl[] = {

@@ -1,4 +1,7 @@
 #include "textures.h"
+#include "skeleton.h"
+#include "bitstream.h"
+#include "hit.h"
 
 typedef enum {
     ModelDataFlags2_NoAnimations = 2,
@@ -11,29 +14,6 @@ typedef enum {
     ModelDataFlags2_AlphaZUpdateEnable = 8192,
     ModelDataFlags2_AltRenderInstrs = 32768,
 } ModelDataFlags2;
-
-typedef struct {
-    /* 0x00 */ s8 parent; //high bit is a flag?
-    /* 0x01 */ s8 idx[3]; //idx to write to?
-    /* 0x04 */ Vec translation;
-    /* 0x10 */ Vec bindTranslation;
-} Bone;
-
-typedef struct {
-    /* 0x00 */ int firstPolygon;
-    /* 0x04 */ vec3s *vtxs;
-    /* 0x08 */ ushort nTris;
-    /* 0x0a */ short unk0a;
-    /* 0x0c */ ushort unk0c;
-    /* 0x0e */ s8 unk0e;
-    /* 0x0f */ s8 unk0f;
-    /* 0x10 */ uint	flags;
-} PolygonGroup;
-
-typedef struct {
-    /* 0x0 */ float radius;
-    /* 0x4 */ Vec pos;
-} HitSpherePos;
 
 typedef struct {
     /* 0x00 */ void *displayList; //to raw GX commands
@@ -85,14 +65,6 @@ typedef struct {
     /* 0x32 */ s8 unk32;
     /* 0x33 */ s8 unk33;
 } DisplayList;
-
-typedef struct {
-    /* 0x00 */ u8 *data;
-    /* 0x04 */ int nBytes;
-    /* 0x08 */ uint len;
-    /* 0x0c */ uint len2;
-    /* 0x10 */ int pos;
-} BitStream;
 
 typedef struct {
     /* 0x00 */ s8 usage; //ref count

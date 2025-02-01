@@ -1,14 +1,14 @@
 #include "dolphin.h"
 #include "types.h"
 #include "debug.h"
-#include "alloc.h"
-#include "gbi.h"
-#include "n64.h"
-#include "render.h"
-#include "dll.h"
-#include "ObjDef.h"
-#include "ObjInstance.h"
-#include "files.h"
+#include "sys/alloc.h"
+#include "sys/n64.h"
+#include "gfx/gbi.h"
+#include "gfx/render.h"
+#include "sys/dll.h"
+#include "obj/ObjDef.h"
+#include "obj/ObjInstance.h"
+#include "sys/files.h"
 
 int DAT_80398a10;
 int DWORD_80398a14;

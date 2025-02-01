@@ -1,4 +1,4 @@
-#include "dolphin/mtx.h"
+#include "../dolphin/mtx.h"
 
 typedef enum {
     IsNotSubmap = 1,
