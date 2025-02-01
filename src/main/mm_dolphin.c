@@ -55,8 +55,8 @@ void initHeaps(void) { // 8007B3A4
 
 	numHeaps = 0;
 	pvVar2 = OSGetArenaLo();
-	iVar1 = (curTvParams->width + 0xf & 0xfff0) * (ushort)curTvParams->height2
-	    * 2;
+	iVar1 = (curTvParams->width + 0xf & 0xfff0) *
+        (ushort)curTvParams->height2 * 2;
 	pFrameBuffer_80398b74 = (void *)OSRoundUp32B(pvVar2);
 	pFrameBuffer_80398b70
 	    = (void *)OSRoundUp32B((u32)pFrameBuffer_80398b74 + iVar1);
@@ -78,18 +78,20 @@ void initHeaps(void) { // 8007B3A4
 	DCFlushRange(pvVar2, size);
 	heapInit((HeapEntry *)pvVar2, size, 0x2ee);
 
-	pvVar2 = OSAllocFromHeap(__OSCurrHeap, 0x500000);
-	memset_(pvVar2, 0, 0x500000);
-	DCFlushRange(pvVar2, 0x500000);
-	heapInit((HeapEntry *)pvVar2, 0x500000, 0x5aa);
+    size = 0x500000;
+	pvVar2 = OSAllocFromHeap(__OSCurrHeap, size);
+	memset_(pvVar2, 0, size);
+	DCFlushRange(pvVar2, size);
+	heapInit((HeapEntry *)pvVar2, size, 0x5aa);
 
-	pvVar2 = OSAllocFromHeap(__OSCurrHeap, 0x9ffa0);
+    size = 0x9ffa0;
+	pvVar2 = OSAllocFromHeap(__OSCurrHeap, size);
 	if(!pvVar2) {
 		OSPanic("mm_dolphin.c", 0x142, "Memory region setup is too big");
 	}
-	memset_(pvVar2, 0, 0x9ffa0);
-	DCFlushRange(pvVar2, 0x9ffa0);
-	heapInit((HeapEntry *)pvVar2, 0x9ffa0, 0x76c);
+	memset_(pvVar2, 0, size);
+	DCFlushRange(pvVar2, size);
+	heapInit((HeapEntry *)pvVar2, size, 0x76c);
 	mmSetDelay(2);
 	freeListEntries = 0;
 	return;
