@@ -275,7 +275,8 @@ config.libs = [
         "objects": [
             Object(NonMatching, "debug.c"),
             Object(NonMatching, "main/main.c"), # matching except for strings
-            Object(Matching, "main/mm_dolphin.c"),
+            Object(NonMatching, "main/mm_dolphin.c"), # mostly regswaps
+            Object(Matching, "main/models_dolphin.c"),
             Object(NonMatching, "main/pi.c"), # matching except for mystery padding
         ],
     },

@@ -531,3 +531,17 @@ int type2, u32 tag, const char *name) { // 8007C328 regswap
 	}
 	return iEntry;
 }
+
+
+uint aignTo2(uint param1) { //8007C524
+  if ((param1 & 1) != 0) {
+    param1 = param1 + (2 - (param1 & 1));
+  }
+  return param1;
+}
+
+
+int getTotalHeapUsed(void) { //8007C54C
+  return heapUsed0 + heapUsed1 + heapUsed2;
+}
+
