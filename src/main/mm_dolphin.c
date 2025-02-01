@@ -38,7 +38,7 @@ void *heapAlloc(volatile int heap, volatile int size, u32 tag, const char *name)
 void mmSetDelay(int param1);
 void _mmAddToFreeList(void *ptr);
 void _mmHeapFree(void *ptr);
-int heapSetEntry(int iHeap, int iEntry, u32 size, s16 type, int type2, u32 tag,
+int heapSetEntry(int iHeap, int iEntry, u32 size, int type, int type2, u32 tag,
     const char *name);
 void _mmActuallyFree(int iHeap, int iEntry);
 int _mmGetHeapIdx(void *offset);
@@ -490,42 +490,42 @@ void *getHeapData(int iHeap) { // 8007C310
 	return (void *)heaps[iHeap].data;
 }
 
-int heapSetEntry(int iHeap, int iEntry, u32 size, s16 type, int type2, u32 tag,
-    const char *name) { // 8007C328
-	short sVar1;
-	short sVar2;
-	uint uVar3;
-	u32 uVar4;
+int heapSetEntry(int iHeap, int iEntry, u32 size, int type,
+int type2, u32 tag, const char *name) { // 8007C328 regswap
+	int sVar2;
+	u32 oldSize;
 	int idx;
 	HeapEntry *entry;
+    int dummy;
 
 	entry = heaps[iHeap].data;
 	entry[iEntry].type = type;
-	uVar4 = entry[iEntry].entry.size;
+	oldSize = entry[iEntry].entry.size;
 	entry[iEntry].entry.size = size;
 	entry[iEntry].tag = tag;
 	idx = iEntry;
-	if((int)size < (int)uVar4) {
+	if((int)oldSize > (int)size) {
 		idx = (int)entry[iEntry].next;
-		if(((idx == -1) || (entry[idx].type != 0)) || (type2 != 0)) {
-			uVar3 = heaps[iHeap].used;
-			heaps[iHeap].used = uVar3 + 1;
-			sVar1 = entry[uVar3].stack;
-			idx = (int)sVar1;
+		if(((idx == -1) || (entry[idx].type != 0)) || (type2 == 0)) {
 			entry[idx].entry.loc
 			    = (void *)((int)entry[iEntry].entry.loc + size);
-			entry[idx].entry.size = uVar4 - size;
-			entry[idx].type = (s16)type2;
+			entry[idx].entry.size += (oldSize - size);
+            return idx;
+		} else {
+            idx = entry[++heaps[iHeap].used].stack;
+			entry[idx].entry.loc
+			    = (void *)((int)entry[iEntry].entry.loc + size);
+			entry[idx].entry.size = oldSize - size;
+			entry[idx].type = type2;
 			sVar2 = entry[iEntry].next;
 			entry[idx].next = sVar2;
-			entry[idx].prev = (s16)iEntry;
-			entry[iEntry].next = sVar1;
-			if(sVar2 != -1) { entry[sVar2].prev = sVar1; }
-		} else {
-			entry[idx].entry.loc
-			    = (void *)((int)entry[iEntry].entry.loc + size);
-			entry[idx].entry.size = entry[idx].entry.size + (uVar4 - size);
+			entry[idx].prev = iEntry;
+			entry[iEntry].next = idx;
+			if(sVar2 != -1) {
+                entry[sVar2].prev = idx;
+            }
+            return idx;
 		}
 	}
-	return idx;
+	return iEntry;
 }
