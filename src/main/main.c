@@ -937,15 +937,15 @@ void initBitTable(void) { //800794F0
     pLastSavedGame = (SaveGame*)pDll_SaveGame->funcs->func[32]();
 }
 
-void mainSetBits(int bitNo,uint value) { //80079544 regalloc
+void mainSetBits(int bitNo,uint value) { //80079544
     u32 mask;
     u8 *bits;
+    u32 iByte;
     u32 mask2;
-    s32 offsBit;
     int ii;
     u32 iBit;
     s32 nBits;
-    u32 iByte;
+    s32 offsBit;
 
     //bits = (u8*)&_defaultBits;
     if (((bitNo != GAMEBIT_ALWAYS_1)
@@ -962,6 +962,7 @@ void mainSetBits(int bitNo,uint value) { //80079544 regalloc
                 case 3: bits = pLastSavedGame->gameBits3; break;
             }
             if(bitTable[bitNo].flags & GAMEBIT_FLAG_HAS_HINT_TEXT) {
+                //this must be wrong DLL name
                 pDll_modelfx->funcs->func[0](
                     bitTable[bitNo].hintTextIdx);
             }
