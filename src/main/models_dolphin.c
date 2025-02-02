@@ -5,7 +5,7 @@
 #include "sys/n64.h"
 #include "gfx/gbi.h"
 #include "gfx/render.h"
-#include "gfx/models/animation.h"
+#include "gfx/models/models.h"
 #include "sys/dll.h"
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"
@@ -15,163 +15,164 @@ int DAT_80398a10;
 int DWORD_80398a14;
 int DWORD_80398a18;
 
-void * loadModelInstance(undefined4 id,undefined4 param2) { //8007C57C
-  void *result;
+void *loadModelInstance(undefined4 id, undefined4 param2) { // 8007C57C
+	void *result;
 
-  loadAsset_modelInstance(&result,id,param2);
-  return result;
+	loadAsset_modelInstance(&result, id, param2);
+	return result;
 }
 
-ModelInstance * ModelInstance_ModelInstance_createModelInstance(Model *model,uint flags) { //8007C5B4
-  s8 bVar1;
-  ModelInstance *minst;
-  uint size;
-  Mtx44 *buf;
-  AnimInstance *anim;
-  uint buf3;
-  uint uVar2;
-  float *pfVar3;
-  ShaderDef *pSVar4;
-  int iVar5;
-  AnimInstance *buf4;
-  AnimInstance *pAVar6;
-  short *psVar7;
-  void *pvVar8;
-  S16Vec *pvVar9;
-  undefined **param1;
-  float local_40;
-  float local_30;
-  uint local_2c;
+ModelInstance *ModelInstance_createModelInstance(
+Model *model, uint flags) { // 8007C5B4
+	s8 bVar1;
+	ModelInstance *minst;
+	uint size;
+	ModelInstanceField54 *field54;
+	AnimInstance *anim;
+	uint buf3;
+	uint uVar2;
+	float **pfVar3;
+	ShaderDef *pSVar4;
+	int iVar5;
+	AnimInstance *buf4;
+	AnimInstance *pAVar6;
+	S16Vec *psVar7;
+	void *pvVar8;
+	S16Vec *pvVar9;
+	Texture **param1;
+	float local_40;
+	float local_30;
+	uint local_2c;
 
-  if (model == (Model *)0x0) {
-    printf("WARNING _ createModelInstance called with NULL pointer");
-    minst = (ModelInstance *)0x0;
-  }
-  else {
-    size = Model_Model_setupAnimInstance(model,flags,(AnimInstance *)&stack0xffffffbc,0);
-    minst = (ModelInstance *)mmAlloc(size,ModelInstance,"minst");
-    if (minst == (ModelInstance *)0x0) {
-      minst = (ModelInstance *)0x0;
-    }
-    else {
-      memclr(minst,size);
-      buf = (Mtx44 *)alignTo16(&minst->field26_0x54);
-      minst->mtxs[0] = buf;
-      buf = (Mtx44 *)((int)&buf->m11 + ((int)local_2c >> 1));
-      minst->mtxs[1] = buf;
-      psVar7 = (short *)((int)&buf->m11 + ((int)local_2c >> 1));
-      minst->field21_0x4c = (s8 *)minst->mtxs[0];
-      if ((model->bCopyVtxsToModelInst == 0) && (model->skin2Matrices == (void *)0x0)) {
+	if(!model) {
+		printf("WARNING :: createModelInstance called with NULL pointer\n");
+		return NULL;
+	}
+    size = Model_setupAnimInstance(model, flags, anim, 0);
+    minst = (ModelInstance *)mmAlloc(size,
+        ALLOC_TAG_MODEL_INSTANCE, "minst");
+    if(!minst) return NULL;
+
+    memclr(minst, size);
+    field54 = (ModelInstanceField54 *)alignTo16(&minst->field54);
+    minst->mtxs[0] = field54->mtx[0];
+    minst->mtxs[1] = field54->mtx[1];
+    psVar7 = &field54->unk;
+    minst->unk4c = minst->mtxs[0];
+    if((model->bCopyVtxsToModelInst == 0)
+    && (model->skin2Matrices == NULL)) {
         minst->vertexPositions[0] = model->vertexPositions;
-        minst->vertexPositions2 = (int)model->vertexPositions;
-      }
-      else {
+        minst->vertexPositions2 = model->vertexPositions;
+    } else {
         pvVar9 = (S16Vec *)((int)psVar7 + 0x1fU & 0xffffffe0);
         minst->vertexPositions[0] = pvVar9;
-        psVar7 = &pvVar9->x + (uint)model->numPositions * 3;
-        minst->vertexPositions2 = (int)psVar7;
-        psVar7 = psVar7 + (uint)model->numPositions * 3;
-        memcpy(minst->vertexPositions[0],model->vertexPositions,(uint)model->numPositions * 6);
-        DCFlushRange(minst->vertexPositions[0],(uint)model->numPositions * 6);
-      }
-      anim = (AnimInstance *)alignTo4((uint)psVar7);
-      minst->animInstances[0] = anim;
-      pvVar9 = (S16Vec *)&anim->field_0x68;
-      if ((flags & 0x80) != 0) {
+        psVar7 = &pvVar9[model->numPositions * 3];
+        minst->vertexPositions2 = psVar7;
+        psVar7 = &psVar7[model->numPositions * 3];
+        memcpy(minst->vertexPositions[0],
+            model->vertexPositions,
+            (uint)model->numPositions * 6);
+        DCFlushRange(
+            minst->vertexPositions[0], (uint)model->numPositions * 6);
+    }
+    anim = (AnimInstance *)alignTo4((uint)psVar7);
+    minst->animInstances[0] = anim;
+    pvVar9 = &anim->unk68;
+    if((flags & 0x80) != 0) {
         minst->animInstances[1] = (AnimInstance *)pvVar9;
-        pvVar9 = (S16Vec *)&anim->field151_0xd0;
-      }
-      if ((model->flags & UseLocalModAnimTab) != 0) {
+        pvVar9 = &anim->unkd0;
+    }
+    if((model->flags & ModelDataFlags2_UseLocalModAnimTab) != 0) {
         buf3 = alignTo64((uint)pvVar9);
         buf4 = minst->animInstances[0];
-        buf4->field7_0x1c = (void *)buf3;
-        buf4->field8_0x20 = (void *)(buf3 + (int)local_30);
-        pvVar8 = (void *)((int)(void *)(buf3 + (int)local_30) + (int)local_30);
-        buf4->field9_0x24 = pvVar8;
+        buf4->unk1c = (void *)buf3;
+        buf4->unk20 = (void *)(buf3 + (int)local_30);
+        pvVar8 = (void *)((int)(void *)(buf3 + (int)local_30)
+            + (int)local_30);
+        buf4->unk24 = pvVar8;
         pvVar8 = (void *)((int)pvVar8 + (int)local_30);
-        buf4->field10_0x28 = pvVar8;
+        buf4->unk28 = pvVar8;
         pvVar9 = (S16Vec *)((int)pvVar8 + (int)local_30);
-        if (minst->animInstances[1] != (AnimInstance *)0x0) {
-          pAVar6 = minst->animInstances[1];
-          pAVar6->field7_0x1c = pvVar9;
-          pvVar8 = (void *)((int)&pvVar9->x + (int)local_30);
-          pAVar6->field8_0x20 = pvVar8;
-          pvVar8 = (void *)((int)pvVar8 + (int)local_30);
-          pAVar6->field9_0x24 = pvVar8;
-          pvVar8 = (void *)((int)pvVar8 + (int)local_30);
-          pAVar6->field10_0x28 = pvVar8;
-          pvVar9 = (S16Vec *)((int)pvVar8 + (int)local_30);
+        if(minst->animInstances[1] != (AnimInstance *)0x0) {
+            pAVar6 = minst->animInstances[1];
+            pAVar6->unk1c = pvVar9;
+            pvVar8 = (void *)((int)&pvVar9->x + (int)local_30);
+            pAVar6->unk20 = pvVar8;
+            pvVar8 = (void *)((int)pvVar8 + (int)local_30);
+            pAVar6->unk24 = pvVar8;
+            pvVar8 = (void *)((int)pvVar8 + (int)local_30);
+            pAVar6->unk28 = pvVar8;
+            pvVar9 = (S16Vec *)((int)pvVar8 + (int)local_30);
         }
-      }
-      if (model->bCopyVtxsToModelInst != 0) {
+    }
+    if(model->bCopyVtxsToModelInst != 0) {
         pvVar9 = (S16Vec *)alignTo4((uint)pvVar9);
         minst->vertexPositions[1] = pvVar9;
         pvVar9 = pvVar9 + 8;
-        for (iVar5 = 0; iVar5 < 3; iVar5 = iVar5 + 1) {
-          psVar7 = &minst->vertexPositions[1]->x + iVar5 * 8;
-          *(undefined *)(psVar7 + 6) = 0xff;
-          *(undefined *)((int)psVar7 + 0xd) = 0xff;
-          *(float *)psVar7 = 0.0;
-          *(float *)(psVar7 + 2) = 0.0;
-          *(float *)(psVar7 + 4) = 0.0;
+        for(iVar5 = 0; iVar5 < 3; iVar5 = iVar5 + 1) {
+            psVar7 = &minst->vertexPositions[1][iVar5 * 8];
+            *(undefined *)(psVar7 + 6) = 0xff;
+            *(undefined *)((int)psVar7 + 0xd) = 0xff;
+            *(float *)psVar7 = 0.0;
+            *(float *)(psVar7 + 2) = 0.0;
+            *(float *)(psVar7 + 4) = 0.0;
         }
-      }
-      if (0 < (int)local_40) {
-        uVar2 = alignTo4((uint)pvVar9);
-        minst->field16_0x38 = uVar2;
-        iVar5 = uVar2 + (uint)model->nHitSpheres * 0x10;
-        minst->field17_0x3c = iVar5;
-        pvVar9 = (S16Vec *)(iVar5 + (uint)model->nHitSpheres * 0x10);
-        minst->field18_0x40 = minst->field16_0x38;
-      }
-      if ((((model->joints == (Bone *)0x0) || (model->animLength == 0)) ||
-          (model->radi == (float *)0x0)) || (model->exT == (u32 *)0x0)) {
-        minst->field7_0x14 = (float *)0x0;
-      }
-      else {
-        pfVar3 = (float *)alignTo4((uint)pvVar9);
-        minst->field7_0x14 = pfVar3;
-        pfVar3 = pfVar3 + 7;
-        *minst->field7_0x14 = (float)pfVar3;
-        pfVar3 = pfVar3 + (uint)model->animLength * 3;
-        minst->field7_0x14[1] = (float)pfVar3;
-        pfVar3 = pfVar3 + model->animLength;
-        minst->field7_0x14[2] = (float)pfVar3;
-        pfVar3 = pfVar3 + model->animLength;
-        minst->field7_0x14[3] = (float)pfVar3;
-        pfVar3 = pfVar3 + model->animLength;
-        minst->field7_0x14[4] = (float)pfVar3;
-        bVar1 = model->animLength;
-        minst->field7_0x14[6] = (float)(pfVar3 + bVar1);
-        pvVar9 = (S16Vec *)((int)(pfVar3 + bVar1) + (uint)model->animLength);
-      }
-      if (model->skin2Matrices != (void *)0x0) {
-        uVar2 = alignTo4((uint)pvVar9);
-        minst->field15_0x34 = uVar2;
-        pvVar9 = (S16Vec *)(uVar2 + (uint)model->field48_0x72 * 4);
-      }
-      pSVar4 = (ShaderDef *)alignTo4((uint)pvVar9);
-      minst->shaderDefs = pSVar4;
-      param1 = &pSVar4->texture + (uint)model->nShaders * 2;
-      if ((flags & 0x8000) != 0) {
-        uVar2 = aignTo2((uint)param1);
-        minst->field19_0x44 = uVar2;
-        param1 = (undefined **)(uVar2 + 0x1a);
-        *(undefined *)(minst->field19_0x44 + 0x18) = 0;
-      }
-      if ((int)size <= (int)param1 - (int)minst) {
-        printf("DANGER: createModelInstance: Actual size exceeded totalsize!!!");
-      }
-      minst->field20_0x48 = (void *)0x0;
-      minst->model = model;
-      minst->field22_0x50 = 0;
     }
-  }
-  return minst;
+    if(0 < (int)local_40) {
+        uVar2 = alignTo4((uint)pvVar9);
+        minst->unk38 = uVar2;
+        iVar5 = uVar2 + (uint)model->nHitSpheres * 0x10;
+        minst->unk3c = iVar5;
+        pvVar9 = (S16Vec *)(iVar5 + (uint)model->nHitSpheres * 0x10);
+        minst->unk40 = minst->unk38;
+    }
+    if((((model->joints == (Bone *)0x0) || (model->animLength == 0))
+            || (model->radi == NULL))
+        || (model->exT == (u32 *)0x0)) {
+        minst->unk14 = NULL;
+    } else {
+        pfVar3 = (float **)alignTo4((uint)pvVar9);
+        minst->unk14 = pfVar3;
+        pfVar3 = pfVar3 + 7;
+        minst->unk14[0] = (float *)pfVar3;
+        pfVar3 = pfVar3 + (uint)model->animLength * 3;
+        minst->unk14[1] = (float *)pfVar3;
+        pfVar3 = pfVar3 + model->animLength;
+        minst->unk14[2] = (float *)pfVar3;
+        pfVar3 = pfVar3 + model->animLength;
+        minst->unk14[3] = (float *)pfVar3;
+        pfVar3 = pfVar3 + model->animLength;
+        minst->unk14[4] = (float *)pfVar3;
+        bVar1 = model->animLength;
+        minst->unk14[6] = (float *)(pfVar3 + bVar1);
+        pvVar9 = (S16Vec *)((int)(pfVar3 + bVar1)
+            + (uint)model->animLength);
+    }
+    if(model->skin2Matrices != NULL) {
+        uVar2 = alignTo4((uint)pvVar9);
+        minst->unk34 = uVar2;
+        pvVar9 = (S16Vec *)(uVar2 + (uint)model->unk72 * 4);
+    }
+    pSVar4 = (ShaderDef *)alignTo4((uint)pvVar9);
+    minst->shaderDefs = pSVar4;
+    param1 = &pSVar4->texture + (uint)model->nShaders * 2;
+    if((flags & 0x8000) != 0) {
+        uVar2 = aignTo2((uint)param1);
+        minst->unk44 = uVar2;
+        param1 = (Texture **)(uVar2 + 0x1a);
+        *(undefined *)(minst->unk44 + 0x18) = 0;
+    }
+    if((int)size <= (int)param1 - (int)minst) {
+        printf("DANGER: createModelInstance: Actual size exceeded totalsize!!!\n");
+    }
+    minst->unk48 = NULL;
+    minst->model = model;
+    minst->unk50 = 0;
+	return minst;
 }
 
-
-int Model_Model_setupAnimInstance(Model *model,uint flags,AnimInstance *anim,int param4) { //8007C9C0
+#if 0
+int Model_setupAnimInstance(Model *model,uint flags,AnimInstance *anim,int param4) { //8007C9C0
   int iVar1;
   s8 *result;
 
@@ -182,7 +183,7 @@ int Model_Model_setupAnimInstance(Model *model,uint flags,AnimInstance *anim,int
                     /* final: mtxSize = (model->nBones + model->nVtxGroups) * 0x80 */
     anim->mtxSize = (uint)model->animLength << 7;
   }
-  if ((model->bCopyVtxsToModelInst == 0) && (model->skin2Matrices == (void *)0x0)) {
+  if ((model->bCopyVtxsToModelInst == 0) && (model->skin2Matrices == NULL)) {
     anim->model = (Model *)0x0;
   }
   else {
@@ -190,33 +191,33 @@ int Model_Model_setupAnimInstance(Model *model,uint flags,AnimInstance *anim,int
     anim->model = (Model *)((uint)model->numPositions * 0xc + 0x20);
   }
   anim->hitboxSize = (float)((uint)model->nHitSpheres << 5);
-  anim->field3_0xc = 0;
+  anim->unkc = 0;
   if ((model->flags & UseLocalModAnimTab) != 0) {
-    anim->field5_0x14 = (float)(int)model->animCacheSize;
-    while (((uint)anim->field5_0x14 & 7) != 0) {
-      anim->field5_0x14 = (float)((int)anim->field5_0x14 + 1);
+    anim->unk14 = (float)(int)model->animCacheSize;
+    while (((uint)anim->unk14 & 7) != 0) {
+      anim->unk14 = (float)((int)anim->unk14 + 1);
     }
-    anim->field3_0xc = (int)anim->field5_0x14 << 2;
+    anim->unkc = (int)anim->unk14 << 2;
   }
-  anim->field4_0x10 = 0x68;
+  anim->unk10 = 0x68;
   if ((flags & 0x80) != 0) {
-    anim->field4_0x10 = anim->field4_0x10 << 1;
-    anim->field3_0xc = anim->field3_0xc << 1;
+    anim->unk10 = anim->unk10 << 1;
+    anim->unkc = anim->unkc << 1;
   }
   if ((((flags & 1) == 0) && (model->bCopyVtxsToModelInst == 0)) && (param4 == 0)) {
-    iVar1 = anim->field3_0xc + anim->mtxSize + (int)anim->hitboxSize + anim->field4_0x10 + 0x5c;
+    iVar1 = anim->unkc + anim->mtxSize + (int)anim->hitboxSize + anim->unk10 + 0x5c;
   }
   else {
-    anim->field4_0x10 = anim->field4_0x10 + 0x30;
-    iVar1 = anim->mtxSize + (int)anim->hitboxSize + anim->field3_0xc + anim->field4_0x10 + 0x5c;
+    anim->unk10 = anim->unk10 + 0x30;
+    iVar1 = anim->mtxSize + (int)anim->hitboxSize + anim->unkc + anim->unk10 + 0x5c;
   }
   result = &anim->model->usage + iVar1;
   if (((model->joints != (Bone *)0x0) && (model->animLength != 0)) && (model->radi != (float *)0x0))
   {
     result = result + (uint)model->animLength * 2 + (uint)model->animLength * 0x1c + 0x1c;
   }
-  if (model->skin2Matrices != (void *)0x0) {
-    result = result + (model->field48_0x72 + 1) * 4;
+  if (model->skin2Matrices != NULL) {
+    result = result + (model->unk72 + 1) * 4;
   }
   result = result + (uint)model->nShaders * 8;
   if ((flags & 0x8000) != 0) {
@@ -248,7 +249,7 @@ uint modelGetAmapSize(uint id,int noAmap,int nAnimations) { //8007CBD0
 
    Library: KioskDefault 0 0 */
 
-undefined4 Model_Model_makeModelAnimation(Model *model,uint animId,HitSpherePos *hits) { //8007CC94
+undefined4 Model_makeModelAnimation(Model *model,uint animId,HitSpherePos *hits) { //8007CC94
   uint uVar1;
   int iVar2;
   Animation *pAVar3;
@@ -292,13 +293,13 @@ undefined4 Model_Model_makeModelAnimation(Model *model,uint animId,HitSpherePos 
       hits = (HitSpherePos *)((int)&hits->radius + uVar7);
       loadDataFileWithLength(MODANIM.BIN,model->animIds,offset,uVar7);
     }
-    *(undefined2 *)&model->field29_0x58 = 0;
+    *(undefined2 *)&model->unk58 = 0;
     animBank = 1;
     for (iVar6 = 0; iVar6 < (int)(uint)model->animBufSize; iVar6 = iVar6 + 1) {
       iVar5 = animBank;
       if (*(short *)((int)&model->animIds->radius + iVar6 * 2) == -1) {
         iVar5 = animBank + 1;
-        *(short *)((int)&model->field29_0x58 + animBank * 2) = (short)iVar6 + 1;
+        *(short *)((int)&model->unk58 + animBank * 2) = (short)iVar6 + 1;
       }
       animBank = iVar5;
     }
@@ -307,7 +308,7 @@ undefined4 Model_Model_makeModelAnimation(Model *model,uint animId,HitSpherePos 
     }
     if ((model->flags & UseLocalModAnimTab) == 0) {
       model->animIds = (HitSpherePos *)0x0;
-      model->field26_0x4c = hits;
+      model->unk4c = hits;
       pHVar8 = (HitSpherePos *)(&hits->radius + model->animBufSize);
       for (uVar7 = uVar7 + (uint)model->animBufSize * 4; (uVar7 & 7) != 0; uVar7 = uVar7 + 1) {
         pHVar8 = (HitSpherePos *)((int)&pHVar8->radius + 1);
@@ -317,17 +318,17 @@ undefined4 Model_Model_makeModelAnimation(Model *model,uint animId,HitSpherePos 
       iVar2 = 0;
       do {
         if (*(short *)(globalModAnimBuffer + iVar2 * 2) == -1) {
-          (&model->field26_0x4c->radius)[iVar2] = 0.0;
+          (&model->unk4c->radius)[iVar2] = 0.0;
         }
         else {
           pAVar3 = loadAnimation(model,*(short *)(globalModAnimBuffer + iVar2 * 2),(short)iVar2,
-                                 (void *)0x0);
-          (&model->field26_0x4c->radius)[iVar2] = (float)pAVar3;
-          if ((&model->field26_0x4c->radius)[iVar2] == 0.0) {
+                                 NULL);
+          (&model->unk4c->radius)[iVar2] = (float)pAVar3;
+          if ((&model->unk4c->radius)[iVar2] == 0.0) {
             for (iVar4 = 0; iVar4 < iVar2; iVar4 = iVar4 + 1) {
-              unloadAnimation((s8 *)(&model->field26_0x4c->radius)[iVar4]);
+              unloadAnimation((s8 *)(&model->unk4c->radius)[iVar4]);
             }
-            model->field26_0x4c = (HitSpherePos *)0x0;
+            model->unk4c = (HitSpherePos *)0x0;
             return 1;
           }
         }
@@ -335,7 +336,7 @@ undefined4 Model_Model_makeModelAnimation(Model *model,uint animId,HitSpherePos 
       } while (iVar2 < (int)(uint)model->animBufSize);
     }
     else {
-      model->field26_0x4c = (HitSpherePos *)0x0;
+      model->unk4c = (HitSpherePos *)0x0;
     }
   }
   return 0;
@@ -346,45 +347,45 @@ void modelSetupAnims(ModelInstance *minst,AnimInstance *param2) { //8007CFA4
   float fVar1;
   Model *model;
 
-  param2->field20_0x44 = 0;
-  param2->field39_0x5e = 0;
-  param2->field36_0x58 = 0;
-  param2->field37_0x5a = 0;
-  param2->field38_0x5c = 0;
-  param2->field3_0xc = 0.0;
+  param2->unk44 = 0;
+  param2->unk5e = 0;
+  param2->unk58 = 0;
+  param2->unk5a = 0;
+  param2->unk5c = 0;
+  param2->unkc = 0.0;
   param2->hitboxSize = 0.0;
-  param2->field5_0x14 = 0.0;
-  param2->field40_0x60 = 0;
+  param2->unk14 = 0.0;
+  param2->unk60 = 0;
   model = minst->model;
   if (model->animBufSize != 0) {
     if ((model->flags & UseLocalModAnimTab) == 0) {
-      fVar1 = (&model->field26_0x4c->radius)[param2->field20_0x44];
+      fVar1 = (&model->unk4c->radius)[param2->unk44];
     }
     else {
-      loadAnimation(model,*(short *)&model->animIds->radius,0,param2->field7_0x1c);
-      loadAnimation(model,*(short *)&model->animIds->radius,0,param2->field8_0x20);
-      loadAnimation(model,*(short *)&model->animIds->radius,0,param2->field9_0x24);
-      loadAnimation(model,*(short *)&model->animIds->radius,0,param2->field10_0x28);
-      param2->field20_0x44 = 0;
-      fVar1 = (float)((int)(&param2->field7_0x1c)[param2->field20_0x44] + 0x80);
+      loadAnimation(model,*(short *)&model->animIds->radius,0,param2->unk1c);
+      loadAnimation(model,*(short *)&model->animIds->radius,0,param2->unk20);
+      loadAnimation(model,*(short *)&model->animIds->radius,0,param2->unk24);
+      loadAnimation(model,*(short *)&model->animIds->radius,0,param2->unk28);
+      param2->unk44 = 0;
+      fVar1 = (float)((int)(&param2->unk1c)[param2->unk44] + 0x80);
     }
     param2->y = (int)fVar1 + 6;
-    param2->field40_0x60 = *(s8 *)((int)fVar1 + 1) & 0xf0;
-    param2->field5_0x14 =
+    param2->unk60 = *(s8 *)((int)fVar1 + 1) & 0xf0;
+    param2->unk14 =
          (float)((double)CONCAT44(0x43300000,(uint)*(s8 *)(param2->y + 1)) - 4503599627370496.0);
-    if (param2->field40_0x60 == 0) {
-      param2->field5_0x14 = param2->field5_0x14 - 1.0;
+    if (param2->unk60 == 0) {
+      param2->unk14 = param2->unk14 - 1.0;
     }
-    param2->field41_0x61 = param2->field40_0x60;
+    param2->unk61 = param2->unk60;
     param2->z = param2->y;
-    param2->field21_0x46 = param2->field20_0x44;
-    param2->field2_0x8 = param2->hitboxSize;
-    param2->mtxSize = (uint)param2->field5_0x14;
-    param2->field4_0x10 = param2->field3_0xc;
-    param2->field18_0x3c = param2->y;
-    param2->field22_0x48 = param2->field20_0x44;
-    param2->field19_0x40 = param2->y;
-    param2->field23_0x4a = param2->field20_0x44;
+    param2->unk46 = param2->unk44;
+    param2->unk8 = param2->hitboxSize;
+    param2->mtxSize = (uint)param2->unk14;
+    param2->unk10 = param2->unkc;
+    param2->unk3c = param2->y;
+    param2->unk48 = param2->unk44;
+    param2->unk40 = param2->y;
+    param2->unk4a = param2->unk44;
   }
   return;
 }
@@ -422,40 +423,40 @@ void LAB_8007d540(double animTimer,float *modelMatrix,ModelInstance *modelInstan
 
   pMVar3 = modelInstance->model;
   local_34[0] = modelInstance->mtxs[modelInstance->flags & 1];
-  animInstance->hitboxSize = (float)animTimer * animInstance->field5_0x14;
+  animInstance->hitboxSize = (float)animTimer * animInstance->unk14;
   uVar2 = 0;
   if ((pMVar3->flags & 8) == 0) {
     for (iVar4 = 0; iVar4 < 2; iVar4 = iVar4 + 1) {
       if (iVar4 == 0) {
-        local_44 = animInstance->field37_0x5a;
+        local_44 = animInstance->unk5a;
       }
       else {
-        local_44 = animInstance->field38_0x5c;
+        local_44 = animInstance->unk5c;
       }
       if (local_44 != 0) {
-        if (animInstance->field36_0x58 == 0) {
+        if (animInstance->unk58 == 0) {
           uVar1 = 0;
         }
         else {
           uVar1 = 4 << iVar4;
         }
-        local_3c[0] = (&animInstance->field40_0x60)[iVar4];
-        local_88 = (void *)(&animInstance->field5_0x14)[iVar4];
+        local_3c[0] = (&animInstance->unk60)[iVar4];
+        local_88 = (void *)(&animInstance->unk14)[iVar4];
         local_98[0] = (&animInstance->hitboxSize)[iVar4];
         local_68[0] = (&animInstance->y)[iVar4];
-        local_3c[1] = (&animInstance->field40_0x60)[iVar4];
-        local_84 = (&animInstance->field5_0x14)[iVar4];
+        local_3c[1] = (&animInstance->unk60)[iVar4];
+        local_84 = (&animInstance->unk14)[iVar4];
         local_98[1] = (&animInstance->hitboxSize)[iVar4];
-        local_68[1] = (&animInstance->field18_0x3c)[iVar4];
+        local_68[1] = (&animInstance->unk3c)[iVar4];
         if ((pMVar3->flags & UseLocalModAnimTab) == 0) {
-          local_58[0] = (&animInstance->field20_0x44)[iVar4];
-          local_58[1] = (&animInstance->field22_0x48)[iVar4];
+          local_58[0] = (&animInstance->unk44)[iVar4];
+          local_58[1] = (&animInstance->unk48)[iVar4];
         }
         else {
           local_58[0] = 0;
           local_58[1] = 1;
-          local_80 = (&animInstance->field7_0x1c)[(&animInstance->field20_0x44)[iVar4]];
-          local_7c = (&animInstance->field9_0x24)[(ushort)(&animInstance->field22_0x48)[iVar4]];
+          local_80 = (&animInstance->unk1c)[(&animInstance->unk44)[iVar4]];
+          local_7c = (&animInstance->unk24)[(ushort)(&animInstance->unk48)[iVar4]];
         }
         LAB_8007da34((int)pMVar3,(int)auStack_9c,2);
         LAB_80066094((dword *)local_34,modelMatrix,(int)auStack_9c,(dword)pMVar3->joints,
@@ -465,28 +466,28 @@ void LAB_8007d540(double animTimer,float *modelMatrix,ModelInstance *modelInstan
         }
       }
     }
-    if (((animInstance->field37_0x5a == 0) && (animInstance->field38_0x5c == 0)) || (uVar2 != 0)) {
+    if (((animInstance->unk5a == 0) && (animInstance->unk5c == 0)) || (uVar2 != 0)) {
       iVar4 = 1;
-      if (animInstance->field36_0x58 != 0) {
+      if (animInstance->unk58 != 0) {
         iVar4 = 2;
       }
-      local_80 = animInstance->field7_0x1c;
-      local_7c = animInstance->field8_0x20;
-      local_78 = animInstance->field9_0x24;
-      local_74 = animInstance->field10_0x28;
+      local_80 = animInstance->unk1c;
+      local_7c = animInstance->unk20;
+      local_78 = animInstance->unk24;
+      local_74 = animInstance->unk28;
       for (iVar5 = 0; iVar5 < iVar4; iVar5 = iVar5 + 1) {
-        local_58[iVar5] = (&animInstance->field20_0x44)[iVar5];
-        local_3c[iVar5] = (&animInstance->field40_0x60)[iVar5];
-        (&local_88)[iVar5] = (void *)(&animInstance->field5_0x14)[iVar5];
+        local_58[iVar5] = (&animInstance->unk44)[iVar5];
+        local_3c[iVar5] = (&animInstance->unk60)[iVar5];
+        (&local_88)[iVar5] = (void *)(&animInstance->unk14)[iVar5];
         local_98[iVar5] = (&animInstance->hitboxSize)[iVar5];
         local_68[iVar5] = (&animInstance->y)[iVar5];
       }
-      local_44 = animInstance->field36_0x58;
+      local_44 = animInstance->unk58;
       LAB_8007da34((int)pMVar3,(int)auStack_9c,iVar4);
-      if ((animInstance->field43_0x63 & 1) != 0) {
+      if ((animInstance->unk63 & 1) != 0) {
         uVar2 = uVar2 | 0x10;
       }
-      if ((animInstance->field43_0x63 & 4) != 0) {
+      if ((animInstance->unk63 & 4) != 0) {
         uVar2 = uVar2 | 0x20;
       }
       LAB_80066094((dword *)local_34,modelMatrix,(int)auStack_9c,(dword)pMVar3->joints,
@@ -494,27 +495,27 @@ void LAB_8007d540(double animTimer,float *modelMatrix,ModelInstance *modelInstan
     }
   }
   else {
-    local_80 = animInstance->field7_0x1c;
-    local_7c = animInstance->field8_0x20;
-    local_78 = animInstance->field9_0x24;
-    local_74 = animInstance->field10_0x28;
+    local_80 = animInstance->unk1c;
+    local_7c = animInstance->unk20;
+    local_78 = animInstance->unk24;
+    local_74 = animInstance->unk28;
     for (iVar4 = 0; iVar4 < 2; iVar4 = iVar4 + 1) {
       iVar5 = iVar4;
-      if (animInstance->field36_0x58 == 0) {
+      if (animInstance->unk58 == 0) {
         iVar5 = 0;
       }
-      local_58[iVar4] = (&animInstance->field20_0x44)[iVar5];
-      local_3c[iVar4] = (&animInstance->field40_0x60)[iVar5];
-      (&local_88)[iVar4] = (void *)(&animInstance->field5_0x14)[iVar5];
+      local_58[iVar4] = (&animInstance->unk44)[iVar5];
+      local_3c[iVar4] = (&animInstance->unk60)[iVar5];
+      (&local_88)[iVar4] = (void *)(&animInstance->unk14)[iVar5];
       local_98[iVar4] = (&animInstance->hitboxSize)[iVar5];
       local_68[iVar4] = (&animInstance->y)[iVar5];
     }
-    local_44 = animInstance->field36_0x58;
+    local_44 = animInstance->unk58;
     LAB_8007da34((int)pMVar3,(int)auStack_9c,2);
-    if ((animInstance->field43_0x63 & 1) != 0) {
+    if ((animInstance->unk63 & 1) != 0) {
       uVar2 = 0x10;
     }
-    if ((animInstance->field43_0x63 & 4) != 0) {
+    if ((animInstance->unk63 & 4) != 0) {
       uVar2 = uVar2 | 0x20;
     }
     LAB_80066094((dword *)local_34,modelMatrix,(int)auStack_9c,(dword)pMVar3->joints,
@@ -658,7 +659,7 @@ void initModels(void) { //8007DAB0
     OSPanic("models_dolphin.c",0xa9,"Failed assertion animsLoadedTable");
   }
   pvVar1 = mmAlloc(0x830,ANIMS_COL,"mod:globalAnimBuffer");
-  if (pvVar1 == (void *)0x0) {
+  if (pvVar1 == NULL) {
 
     OSPanic("models_dolphin.c",0xae,"Failed assertion mem");
   }
@@ -683,14 +684,14 @@ ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
   int iVar3;
   Model *model;
 
-  modelNum = Model_Model_lookupModelInd(id);
+  modelNum = Model_lookupModelInd(id);
   if (((int)modelNum < 0) || ((int)maxModelNum <= (int)modelNum)) {
 
     OSPanic("models_dolphin.c",0xd2,s_Failed_assertion_modelNum>_0____m_802eb71c);
   }
   BVar1 = SparseArray_SparseArray_get((SparseArray *)modelsLoadedTable,modelNum,&model);
   if (BVar1 == FALSE) {
-    model = Model_Model_load(modelNum);
+    model = Model_load(modelNum);
     if (model == (Model *)0x0) {
 
       OSPanic("models_dolphin.c",0xda,"Failed assertion model");
@@ -699,10 +700,10 @@ ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
     if (dVar2 != 0) {
       model->flags = model->flags | NoAnimations;
     }
-    Model_Model_initPtrs(model);
-    Model_Model_loadTextures(model);
-    Model_Model_loadShaderTextures(model);
-    Model_Model_makeModelAnimation
+    Model_initPtrs(model);
+    Model_loadTextures(model);
+    Model_loadShaderTextures(model);
+    Model_makeModelAnimation
               (model,modelNum,(HitSpherePos *)(&model->usage + model->dataSize));
     SpareArray_SpareArray_set((SparseArray *)modelsLoadedTable,(short)modelNum,&model);
   }
@@ -724,7 +725,7 @@ ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
     modelSetupAnims(minst,minst->animInstances[1]);
   }
   LAB_8007e7f8(model,minst);
-  iVar3 = Model_Model_checksumHeader(model);
+  iVar3 = Model_checksumHeader(model);
   model->headerCksum = iVar3;
   DCStoreRange(model,model->dataSize);
   return minst;
@@ -751,8 +752,8 @@ void modelInstanceFree(ModelInstance *modelInstance) { //8007DD68
 
     OSPanic("models_dolphin.c",0x124,"Failed assertion model");
   }
-  if (modelInstance->field20_0x48 != (void *)0x0) {
-    mmFree(modelInstance->field20_0x48);
+  if (modelInstance->unk48 != NULL) {
+    mmFree(modelInstance->unk48);
   }
   mmFree(modelInstance);
   bVar1 = model->usage - 1;
@@ -767,7 +768,7 @@ void modelInstanceFree(ModelInstance *modelInstance) { //8007DD68
 }
 
 
-int Model_Model_checksumHeader(Model *model) { //8007DE30
+int Model_checksumHeader(Model *model) { //8007DE30
   s8 *pbVar1;
   int iVar2;
   int *end;
@@ -787,7 +788,7 @@ int Model_Model_checksumHeader(Model *model) { //8007DE30
 
    Library: KioskDefault 0 0 */
 
-Model * Model_Model_load(uint id) { //8007DE70
+Model * Model_load(uint id) { //8007DE70
   uint *modelsTab;
   uint amapSize;
   uint offset;
@@ -830,7 +831,7 @@ Model * Model_Model_load(uint id) { //8007DE70
 
    Library: KioskDefault 0 0 */
 
-void Model_Model_loadTextures(Model *model) { //8007DFF4
+void Model_loadTextures(Model *model) { //8007DFF4
   Texture *tex;
   int iTex;
 
@@ -880,7 +881,7 @@ void animUnloadFn_8007e0f8(int param1) { //8007E0F8
 
    Library: KioskDefault 0 0 */
 
-int Model_Model_lookupModelInd(int id) { //8007E160
+int Model_lookupModelInd(int id) { //8007E160
   int iVar1;
 
   if (id < 0) {
@@ -899,7 +900,7 @@ int Model_Model_lookupModelInd(int id) { //8007E160
 
    Library: KioskDefault 0 0 */
 
-void Model_Model_initPtrs(Model *model) { //8007E1B8
+void Model_initPtrs(Model *model) { //8007E1B8
   int iVar1;
   void *modelEnd;
 
@@ -908,7 +909,7 @@ void Model_Model_initPtrs(Model *model) { //8007E1B8
 
     OSPanic("models_dolphin.c",0x28a,"Failed assertion model");
   }
-  if ((model->sphereHits != (void *)0x0) &&
+  if ((model->sphereHits != NULL) &&
      ((model->sphereHits = &model->usage + (int)model->sphereHits,
       (Model *)model->sphereHits < model || (modelEnd <= model->sphereHits)))) {
 
@@ -978,7 +979,7 @@ void Model_Model_initPtrs(Model *model) { //8007E1B8
 
     OSPanic("models_dolphin.c",0x2ce,s_Failed_assertion_model_>vertexAn_802ebe98);
   }
-  if ((model->skin2Matrices != (void *)0x0) &&
+  if ((model->skin2Matrices != NULL) &&
      ((model->skin2Matrices = &model->usage + (int)model->skin2Matrices,
       (Model *)model->skin2Matrices < model || (modelEnd <= model->skin2Matrices)))) {
 
@@ -998,7 +999,7 @@ void Model_Model_initPtrs(Model *model) { //8007E1B8
   }
   iVar1 = 0;
   while( true ) {
-    if ((int)(uint)model->field93_0xb8 <= iVar1) {
+    if ((int)(uint)model->unkb8 <= iVar1) {
       for (iVar1 = 0; iVar1 < (int)(uint)model->bCopyVtxsToModelInst; iVar1 = iVar1 + 1) {
         model->vertexAnims[iVar1] = &model->usage + model->vertexAnims[iVar1];
         if (((Model *)model->vertexAnims[iVar1] < model) ||
@@ -1041,9 +1042,9 @@ void LAB_8007e7f8(Model *model,ModelInstance *minst) { //8007E76C
   int iVar1;
 
   if ((model->flags & CopyVtxsOnLoad) != 0) {
-    model->field57_0x7c = (int)model->skin2Matrices;
-    for (iVar1 = 0; iVar1 < (int)(uint)model->field48_0x72; iVar1 = iVar1 + 1) {
-      *(int *)(minst->field15_0x34 + iVar1 * 4) =
+    model->unk7c = (int)model->skin2Matrices;
+    for (iVar1 = 0; iVar1 < (int)(uint)model->unk72; iVar1 = iVar1 + 1) {
+      *(int *)(minst->unk34 + iVar1 * 4) =
            (int)&minst->vertexPositions[0]->x +
            *(int *)((int)model->skin2Matrices + iVar1 * 0x74 + 0x60);
       if (*(undefined **)((int)model->skin2Matrices + iVar1 * 0x74 + 100) < model->skinWeights) {
@@ -1056,7 +1057,7 @@ void LAB_8007e7f8(Model *model,ModelInstance *minst) { //8007E76C
 }
 
 
-void Model_Model_loadShaderTextures(Model *model) { //8007E814
+void Model_loadShaderTextures(Model *model) { //8007E814
   Shader *pSVar1;
   int iVar2;
   int iVar3;
@@ -1097,10 +1098,10 @@ void Model_Model_loadShaderTextures(Model *model) { //8007E814
            (undefined4 *********)(&model->GCtextures->next)[(int)pSVar1[iVar2].tex18];
     }
     if ((model->flagsA6 & 0xc) == 0) {
-      pSVar1[iVar2].field8_0x8 = 0;
+      pSVar1[iVar2].unk8 = 0;
     }
     if ((model->flagsA6 & 0xe00) == 0) {
-      pSVar1[iVar2].field17_0x14 = 0;
+      pSVar1[iVar2].unk14 = 0;
     }
   }
   return;
@@ -1142,7 +1143,7 @@ void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,floa
 
     OSPanic("models_dolphin.c",0x39c,"Failed assertion animInstance");
   }
-  if ((anim->field43_0x63 & 4) != 0) {
+  if ((anim->unk63 & 4) != 0) {
     objAnimFn_8008045c((double)*(float *)(object + 0x98),(double)*(float *)(object + 8),
                        modelInstance,0,0,&vStack_30,&local_38);
     WORD_8039872c = local_38.x;
@@ -1150,7 +1151,7 @@ void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,floa
     _WORD_ARRAY_80398730 = local_38.z;
   }
   if ((modelInstance->model->flags & 8) == 0) {
-    if ((modelInstance->animInstances[0]->field43_0x63 & 8) == 0) {
+    if ((modelInstance->animInstances[0]->unk63 & 8) == 0) {
       LAB_8007d540((double)*(float *)(object + 0x98),modelMatrix,modelInstance,
                    modelInstance->animInstances[0],0x7f);
       if ((modelInstance->animInstances[1] != (AnimInstance *)0x0) &&
@@ -1162,13 +1163,13 @@ void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,floa
     else {
       pAVar1 = modelInstance->animInstances[1];
       LAB_8007d6ec((double)*(float *)(object + 0x98),modelMatrix,(int *)modelInstance,(int)anim,0x7f
-                   ,0,0,2,0x14,anim->field37_0x5a);
+                   ,0,0,2,0x14,anim->unk5a);
       LAB_8007d6ec((double)*(float *)(object + 0x9c),modelMatrix,(int *)modelInstance,(int)pAVar1,
-                   0x7f,0,0,2,0x18,pAVar1->field37_0x5a);
+                   0x7f,0,0,2,0x18,pAVar1->unk5a);
       LAB_8007d6ec((double)*(float *)(object + 0x98),modelMatrix,(int *)modelInstance,(int)anim,0x7f
-                   ,0,0,0,7,pAVar1->field36_0x58);
+                   ,0,0,0,7,pAVar1->unk58);
       LAB_8007d6ec((double)*(float *)(object + 0x98),modelMatrix,(int *)modelInstance,(int)anim,0x7f
-                   ,0,1,1,1,anim->field36_0x58);
+                   ,0,1,1,1,anim->unk58);
     }
   }
   else {
@@ -1301,7 +1302,7 @@ void ModelInstance_ModelInstance_unloadShaders(Model *model) { //8007EF18
 
    Library: KioskDefault 0 0 */
 
-int Model_Model_getShaderTexture(ModelInstance *param1,int shaderNum) { //8007EF84
+int Model_getShaderTexture(ModelInstance *param1,int shaderNum) { //8007EF84
   if ((-1 < shaderNum) && (shaderNum < (int)(uint)param1->model->nShaders)) {
     return (int)(&param1->shaderDefs->texture + shaderNum * 2);
   }
@@ -1442,13 +1443,13 @@ void freezeModelFn_8007f184(undefined4 param_1,undefined4 param_2,char param3) {
 
   uVar18 = _savefpr_29();
   modelInstance = (ModelInstance *)((ulonglong)uVar18 >> 0x20);
-  if ((modelInstance->field20_0x48 == (void *)0x0) &&
+  if ((modelInstance->unk48 == NULL) &&
      (param1 = modelInstance->model, 1 < param1->animLength)) {
     iVar7 = param1->animLength - 1;
     freezemodel = mmAlloc(iVar7 * 0x46c + 0x10,ANIMS_COL,"mod:freezemodel");
-    modelInstance->field20_0x48 = freezemodel;
-    if (modelInstance->field20_0x48 != (void *)0x0) {
-      piVar16 = (int *)modelInstance->field20_0x48;
+    modelInstance->unk48 = freezemodel;
+    if (modelInstance->unk48 != NULL) {
+      piVar16 = (int *)modelInstance->unk48;
       *(short *)(piVar16 + 2) = (short)iVar7 * 0x58;
       *(short *)((int)piVar16 + 10) = (short)iVar7 * 0x2a;
       *piVar16 = (int)(piVar16 + 4);
@@ -1674,7 +1675,7 @@ undefined2 modelGetFieldA4(Model *model) { //8007FD3C
 
     OSPanic("models_dolphin.c",0x65b,"Failed assertion model");
   }
-  return model->field79_0xa4;
+  return model->unka4;
 }
 
 
@@ -1760,7 +1761,7 @@ DisplayList * modelGetDisplayList(Model *model,int listNum) { //8007FF9C
 
     OSPanic("models_dolphin.c",0x716,"Failed assertion model");
   }
-  if ((-1 < listNum) && (listNum < (int)(uint)model->field93_0xb8)) {
+  if ((-1 < listNum) && (listNum < (int)(uint)model->unkb8)) {
     return model->displayLists + listNum;
   }
 
@@ -1803,7 +1804,7 @@ int modelGetGCPoly(Model *model,int polygonNum) { //800800A4
 Animation * loadAnimation(Model *model,short id,short id2,void *dest) { //8008010C
   Animation *pAVar1;
 
-  if (dest == (void *)0x0) {
+  if (dest == NULL) {
     pAVar1 = getAnimation(id);
   }
   else {
@@ -2022,16 +2023,16 @@ void LAB_8008086c(ModelInstance *param_1,int param_2,ObjInstance *param_3,Mtx43 
     fVar2 = *(float *)(&param_5->hitstate->objHits->animId + iVar4 * 2);
   }
   if (param_3->hitstate != (HitState *)0x0) {
-    param_3->hitstate->field56_0x9f = param_3->hitstate->field56_0x9f - 1;
-    if ((char)param_3->hitstate->field56_0x9f < '\0') {
-      param_3->hitstate->field56_0x9f = 0;
+    param_3->hitstate->unk9f = param_3->hitstate->unk9f - 1;
+    if ((char)param_3->hitstate->unk9f < '\0') {
+      param_3->hitstate->unk9f = 0;
     }
-    (param_3->hitstate->field12_0x3c).z = (param_3->hitstate->field12_0x3c).y;
-    (param_3->hitstate->field12_0x3c).y = fVar2;
+    (param_3->hitstate->unk3c).z = (param_3->hitstate->unk3c).y;
+    (param_3->hitstate->unk3c).y = fVar2;
   }
   param_1->flags = param_1->flags ^ UseOtherHitboxes;
   local_50 = param_1->flags & 1;
-  param_1->field18_0x40 = param_1->animInstances[(param_1->flags >> 2 & 1) + 5];
+  param_1->unk40 = param_1->animInstances[(param_1->flags >> 2 & 1) + 5];
   m = param_4;
   for (iVar4 = 0; iVar4 < (int)(uint)*(s8 *)(param_2 + 0xb9); iVar4 = iVar4 + 1) {
     if (param_4 == (Mtx43 *)0x0) {
@@ -2051,22 +2052,22 @@ void LAB_8008086c(ModelInstance *param_1,int param_2,ObjInstance *param_3,Mtx43 
     local_5c.x = *(float *)(*(int *)(param_2 + 0x40) + iVar4 * 0x18 + 8);
     local_5c.y = *(float *)(*(int *)(param_2 + 0x40) + iVar4 * 0x18 + 0xc);
     local_5c.z = *(float *)(*(int *)(param_2 + 0x40) + iVar4 * 0x18 + 0x10);
-    *(float *)(param_1->field18_0x40 + iVar4 * 0x10) =
+    *(float *)(param_1->unk40 + iVar4 * 0x10) =
          *(float *)(*(int *)(param_2 + 0x40) + iVar4 * 0x18 + 4) * (param_5->pos).scale;
-    MTXMultVec(m,&local_5c,(vec3f *)(param_1->field18_0x40 + iVar4 * 0x10 + 4));
+    MTXMultVec(m,&local_5c,(vec3f *)(param_1->unk40 + iVar4 * 0x10 + 4));
     if (param_5->pMatrix != (ObjInstance *)0x0) {
-      multVectorByObjMtx((double)*(float *)(param_1->field18_0x40 + iVar4 * 0x10 + 4),
-                         (double)*(float *)(param_1->field18_0x40 + iVar4 * 0x10 + 8),
-                         (double)*(float *)(param_1->field18_0x40 + iVar4 * 0x10 + 0xc),
-                         (float *)(param_1->field18_0x40 + iVar4 * 0x10 + 4),
-                         (float *)(param_1->field18_0x40 + iVar4 * 0x10 + 8),
-                         (float *)(param_1->field18_0x40 + iVar4 * 0x10 + 0xc),param_5->pMatrix);
+      multVectorByObjMtx((double)*(float *)(param_1->unk40 + iVar4 * 0x10 + 4),
+                         (double)*(float *)(param_1->unk40 + iVar4 * 0x10 + 8),
+                         (double)*(float *)(param_1->unk40 + iVar4 * 0x10 + 0xc),
+                         (float *)(param_1->unk40 + iVar4 * 0x10 + 4),
+                         (float *)(param_1->unk40 + iVar4 * 0x10 + 8),
+                         (float *)(param_1->unk40 + iVar4 * 0x10 + 0xc),param_5->pMatrix);
       iVar1 = iVar4 * 0x10 + 4;
-      *(float *)(param_1->field18_0x40 + iVar1) =
-           *(float *)(param_1->field18_0x40 + iVar1) - playerMapOffsetX;
+      *(float *)(param_1->unk40 + iVar1) =
+           *(float *)(param_1->unk40 + iVar1) - playerMapOffsetX;
       iVar1 = iVar4 * 0x10 + 0xc;
-      *(float *)(param_1->field18_0x40 + iVar1) =
-           *(float *)(param_1->field18_0x40 + iVar1) - playerMapOffsetZ;
+      *(float *)(param_1->unk40 + iVar1) =
+           *(float *)(param_1->unk40 + iVar1) - playerMapOffsetZ;
     }
   }
   return;
@@ -2363,7 +2364,7 @@ BOOL countModels(void) { //800812A0
   BOOL uVar2;
 
   pvVar1 = getTable(MODELS.tab);
-  if (pvVar1 == (void *)0x0) {
+  if (pvVar1 == NULL) {
     uVar2 = FALSE;
   }
   else {
@@ -2376,7 +2377,7 @@ BOOL countModels(void) { //800812A0
       OSPanic("models_dolphin.c",0xce5,s_Failed_assertion_maxModelNum<_SH_802ec81c);
     }
     animOffsetTbl = (dword)getTable(ANIM.TAB);
-    if ((void *)animOffsetTbl == (void *)0x0) {
+    if ((void *)animOffsetTbl == NULL) {
       uVar2 = FALSE;
     }
     else {
@@ -2508,4 +2509,4 @@ void modelGetVtxPosFloat(Model *model,int positionNum,vec3f *posVec) { //8008157
 
   OSPanic("models_dolphin.c",0xe3b,s_Failed_assertion_positionNum>_0___802ec2e0);
 }
-
+#endif

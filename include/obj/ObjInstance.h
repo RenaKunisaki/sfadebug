@@ -27,10 +27,6 @@ typedef int (*ObjSeqFunc)(struct ObjInstance *this,
 
 typedef struct {
     int TODO;
-} Model;
-
-typedef struct {
-    int TODO;
 } ObjData;
 
 typedef struct {
@@ -52,10 +48,6 @@ typedef struct {
 typedef struct {
     int TODO;
 } astruct_53;
-
-typedef struct {
-    int TODO;
-} ModelInstance;
 
 typedef struct {
     /* 0x0 */ ObjPos pos;

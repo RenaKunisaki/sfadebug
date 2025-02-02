@@ -2,13 +2,13 @@
 #define _GFX_MODELS_ANIMATION_H_
 #include "gfx/models/models.h"
 
-typedef struct { //XXX move, populate
+typedef struct { //XXX populate
     /* 0x00 */ s8 usage; //reference count
     //...more...
 } Animation;
 
 typedef struct {
-    /* 0x00 */ Model *model;
+    /* 0x00 */ struct Model *model;
     /* 0x04 */ float hitboxSize;
     /* 0x08 */ float unk08;
     /* 0x0c */ undefined4 unk0c;
@@ -55,12 +55,7 @@ typedef struct {
     /* 0x64 */ undefined2 unk64;
     /* 0x66 */ s8 unk66;
     /* 0x67 */ s8 unk67;
-    /* 0x68 */ s8 unk68;
-    /* 0x69 */ s8 unk69;
-    /* 0x6a */ s8 unk6a;
-    /* 0x6b */ s8 unk6b;
-    /* 0x6c */ s8 unk6c;
-    /* 0x6d */ s8 unk6d;
+    /* 0x68 */ S16Vec unk68;
     /* 0x6e */ s8 unk6e;
     /* 0x6f */ s8 unk6f;
     /* 0x70 */ s8 unk70;
@@ -159,7 +154,7 @@ typedef struct {
     /* 0xcd */ s8 unkcd;
     /* 0xce */ s8 unkce;
     /* 0xcf */ s8 unkcf;
-    /* 0xd0 */ float unkd0;
+    /* 0xd0 */ S16Vec unkd0;
 } AnimInstance;
 
 #endif //_GFX_MODELS_ANIMATION_H_

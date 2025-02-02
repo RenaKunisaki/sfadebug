@@ -5,18 +5,27 @@
 #include "gfx/models/bitstream.h"
 #include "gfx/models/hit.h"
 #include "gfx/models/shaders.h"
+#include "gfx/models/animation.h"
 
 typedef enum {
-    ModelDataFlags2_NoAnimations = 2,
-    ModelDataFlags2_CopyVtxsOnLoad = 16,
-    ModelDataFlags2_BoneRelated = 32,
-    ModelDataFlags2_UseLocalModAnimTab = 64,
-    ModelDataFlags2_FogRelated = 256,
-    ModelDataFlags2_NoDepthTest = 1024,
-    ModelDataFlags2_ModelField14Valid = 4096,
-    ModelDataFlags2_AlphaZUpdateEnable = 8192,
-    ModelDataFlags2_AltRenderInstrs = 32768,
+    ModelDataFlags2_NoAnimations       =     2,
+    ModelDataFlags2_CopyVtxsOnLoad     =    16,
+    ModelDataFlags2_BoneRelated        =    32,
+    ModelDataFlags2_UseLocalModAnimTab =    64,
+    ModelDataFlags2_FogRelated         =   256,
+    ModelDataFlags2_NoDepthTest        =  1024,
+    ModelDataFlags2_ModelField14Valid  =  4096,
+    ModelDataFlags2_AlphaZUpdateEnable =  8192,
+    ModelDataFlags2_AltRenderInstrs    = 32768,
 } ModelDataFlags2;
+
+typedef enum {
+    ModelFlags18_UseOtherMtxs     =  1,
+    ModelFlags18_UseOtherVtxs     =  2,
+    ModelFlags18_UseOtherHitboxes =  4,
+    ModelFlags18_MtxsLoaded       =  8,
+    ModelFlags18_ShadersLoaded    = 64,
+} ModelFlags18;
 
 typedef struct {
     /* 0x00 */ void *displayList; //to raw GX commands
@@ -87,7 +96,7 @@ typedef struct {
     /* 0x1c */ u32 *exT; //extraAmapSize (dlInfoSize?)
     /* 0x20 */ Texture *GCtextures; //-> texture IDs that get turned into pointers
     /* 0x24 */ Vec *normals; //either 1 or 3 vecs per (presumably) face
-    /* 0x28 */ Vec *vertexPositions;
+    /* 0x28 */ S16Vec *vertexPositions;
     /* 0x2c */ Vec *vertexNormals;
     /* 0x30 */ u16 *vertexColours;
     /* 0x34 */ Vec *vertexTexCoords;
@@ -170,18 +179,23 @@ typedef struct {
 } Model;
 
 typedef struct {
+    Mtx44 *mtx[2];
+    S16Vec unk;
+} ModelInstanceField54;
+
+typedef struct {
     /* 0x00 */ Model *model;
-    /* 0x04 */ int vertexPositions2;
+    /* 0x04 */ S16Vec *vertexPositions2;
     /* 0x08 */ s8 unk08;
     /* 0x09 */ s8 unk09;
     /* 0x0a */ s8 unk0a;
     /* 0x0b */ s8 unk0b;
     /* 0x0c */ Mtx44 *mtxs[2];
-    /* 0x14 */ float *unk14;
+    /* 0x14 */ float **unk14;
     /* 0x18 */ u16 flags; //ModelFlags18 40:shaders loaded
-    /* 0x1a */ s8 1a;
-    /* 0x1b */ s8 1b;
-    /* 0x1c */ Vec *vertexPositions[2];
+    /* 0x1a */ s8 unk1a;
+    /* 0x1b */ s8 unk1b;
+    /* 0x1c */ S16Vec *vertexPositions[2];
     /* 0x24 */ AnimInstance *animInstances[2];
     /* 0x2c */ ShaderDef *shaderDefs;
     /* 0x30 */ UNKTYPE *texFuncPtr;
@@ -191,12 +205,12 @@ typedef struct {
     /* 0x40 */ u32 unk40;
     /* 0x44 */ uint unk44;
     /* 0x48 */ void *unk48;
-    /* 0x4c */ s8 *unk4c;
+    /* 0x4c */ Mtx44 *unk4c;
     /* 0x50 */ s8 unk50;
     /* 0x51 */ s8 unk51;
     /* 0x52 */ s8 unk52;
     /* 0x53 */ s8 unk53;
-    /* 0x54 */ uint unk54;
+    /* 0x54 */ ModelInstanceField54 *field54;
 } ModelInstance;
 
 #endif //_GFX_MODELS_MODELS_H_

@@ -12,6 +12,12 @@ typedef enum {
 } GCShaderAttributes;
 
 typedef struct {
+    /* 0x0 */ Texture *texture; //actual texture
+    /* 0x4 */ UNKTYPE *lighting; //material/lighting - setting texture AND lighting to null causes glitches
+    /* 0x8 */ UNKTYPE *material;
+} ShaderDef;
+
+typedef struct {
     /* 0x0 */ Texture *texture;
     /* 0x4 */ s8 unk04;
     /* 0x5 */ s8 unk05;
