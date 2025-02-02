@@ -1104,13 +1104,11 @@ N64Vertex** getCurDiVtx(void) { //80079AD0
 }
 
 BOOL DLL_createTempDll(int id) { //80079AD8
-    //should be equivalent, only reloc
     uint idx;
 
     //find a free slot
-    idx = 0;
-    while(id != tempDllIds[idx]) {
-        if(++idx >= 3) break;
+    for(idx = 0; idx < 3 && id != tempDllIds[idx]; idx++) {
+        //empty loop body
     }
     if(idx == 3) return FALSE;
 
