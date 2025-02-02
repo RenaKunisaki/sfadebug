@@ -1,9 +1,10 @@
 #include "dolphin.h"
+#include "dolphin/os/OSFastCast.h"
 #include "types.h"
 #include "debug.h"
 #include "sys/alloc.h"
 #include "gfx/gbi.h"
-#include "gfx/n64.h"
+#include "sys/n64.h"
 #include "gfx/render.h"
 #include "sys/dll.h"
 #include "obj/ObjDef.h"
@@ -39,8 +40,8 @@ extern char _defaultBits[];
 /* 80396c2c */ extern u8 main_dt;
 /* 80396c30 */ extern float main_fdt;
 /* 80396e28 */ extern RSPState *RSP_pState;
-/* 80396E88 */ extern int DAT_80396E88;
-/* 80396E8C */ extern int n64RamSize ;//= N64_RAM_SIZE;
+/* 80396E88 */ int DAT_80396E88;
+/* 80396E8C */ u32 n64RamSize = N64_RAM_SIZE;
 /* 80396E90 */ extern int unk_80396E90 ;//= 0x80000000;
 
 //.sbss (0x80398240)
@@ -304,7 +305,7 @@ extern GXRenderModeObj tvParamsNotProgScan;
 
 extern GXRenderModeObj *curTvParams; //80398b78
 extern GXRenderModeObj *curTvParams; //80398b78
-extern u8 DAT_80352f30[0x7EF]; //80352f30, unk type
+u8 DAT_80352f30[0x7EF]; //80352f30, unk type
 extern s8 padSetupOk; // = -1; //80398908
 extern s8 debugMenuState; //80398904
 
@@ -316,7 +317,7 @@ int main(int argc, char **argv) { //80077ca8
   init();
   while (true) {
     diProfReset();
-    if (N64_RAM_SIZE != 0x800000)
+    if (n64RamSize != N64_RAM_SIZE)
       showExpansionPakNeededScreen();
     else
       gameLoop();
@@ -394,7 +395,7 @@ void init(void) { //80077d14
     debugMenuState = 1;
     diMenuInit(enterMainDebugMenu, 0);
     globalMapInit();
-    if(N64_RAM_SIZE != 0x800000) {
+    if(n64RamSize != N64_RAM_SIZE) {
         pDll05 = runlinkDownloadCode(5,0x24);
         pDll05_2 = pDll05;
         pDll_subtitles = runlinkDownloadCode(0x14,6);
@@ -444,7 +445,7 @@ void init(void) { //80077d14
     gSync(gfx++, 0);
     diCreateDisplayList();
     debugMenuReset();
-    if (N64_RAM_SIZE == 0x800000) {
+    if (n64RamSize == N64_RAM_SIZE) {
         doQueuedLoads();
     }
     diMenu_main();
@@ -898,13 +899,13 @@ void cutsceneExit(void) { //800793A8
 }
 
 void allocFrameBuffers(void) { //800793B4 string reloc
-    main_gfx[0] = (Gfx *)mmAlloc(160000,LISTS_COL,"main:gfx");
+    main_gfx[0] = (Gfx *)mmAlloc(160000,ALLOC_TAG_LISTS_COL,"main:gfx");
     main_gfx[1] = main_gfx[0] + 10000;
-    main_mtx[0] = (Mtx44 *)mmAlloc(0x19000,LISTS_COL,"main:mtx");
+    main_mtx[0] = (Mtx44 *)mmAlloc(0x19000,ALLOC_TAG_LISTS_COL,"main:mtx");
     main_mtx[1] = main_mtx[0] + 800;
-    main_pol[0] = (Pol *)mmAlloc(32000,LISTS_COL,"main:pol");
+    main_pol[0] = (Pol *)mmAlloc(32000,ALLOC_TAG_LISTS_COL,"main:pol");
     main_pol[1] = main_pol[0] + 1000;
-    main_vtx[0] = (N64Vertex *)mmAlloc(32000,LISTS_COL,"main:vtx");
+    main_vtx[0] = (N64Vertex *)mmAlloc(32000,ALLOC_TAG_LISTS_COL,"main:vtx");
     main_vtx[1] = main_vtx[0] + 1000;
     main_dipol[0] = (Pol *)mmAlloc2(96000,1,"main:dipol");
     main_dipol[1] = main_dipol[0] + 3000;

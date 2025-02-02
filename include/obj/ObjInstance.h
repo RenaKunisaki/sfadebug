@@ -1,5 +1,7 @@
 #ifndef _OBJ_OBJINSTANCE_H_
 #define _OBJ_OBJINSTANCE_H_
+#include "gfx/models/models.h"
+
 typedef struct {
     /* 0x0 */ S16Vec rotation;
     /* 0x6 */ u16 flags; //ObjInstance_Flags06

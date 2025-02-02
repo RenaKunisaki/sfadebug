@@ -15,7 +15,7 @@ extern "C" {
 #define OS_FASTCAST_U16 3
 #define OS_FASTCAST_S16 5
 // clang-format off
-static inline void OSInitFastCast(void) {
+static void OSInitFastCast(void) {
 #ifdef __MWERKS__
   asm
   {
