@@ -1,4 +1,6 @@
-#include "textures.h"
+#ifndef _GFX_MODELS_SHADERS_H_
+#define _GFX_MODELS_SHADERS_H_
+#include "gfx/textures.h"
 
 typedef enum {
     GCShaderAttribute_HasFog = 2,
@@ -52,3 +54,5 @@ typedef struct {
     /* 0x3e */ s8 unk3e;
     /* 0x3f */ s8 unk3f;
 } Shader;
+
+#endif //_GFX_MODELS_SHADERS_H_

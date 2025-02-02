@@ -1,3 +1,6 @@
+#ifndef _MAPS_MAP_H_
+#define _MAPS_MAP_H_
+
 typedef enum {
     MapId_frontend = 0,
     MapId_frontend2 = 1,
@@ -118,3 +121,5 @@ typedef enum {
     MapId_vfppushblock = 116,
     MapId_None = -1,
 } MapId;
+
+#endif //_MAPS_MAP_H_

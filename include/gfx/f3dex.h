@@ -1,4 +1,7 @@
 //XXX this file isn't used
+#ifndef _GFX_F3DEX_H_
+#define _GFX_F3DEX_H_
+
 typedef enum {
     G_SPNOOP = 0,
     X_LOADVTXS = 16777216,
@@ -112,3 +115,5 @@ typedef union {
     _buf[0] = (COMMAND); \
     _buf[1] = (PARAM); \
 } while(0)*/
+
+#endif //_GFX_F3DEX_H_

@@ -1,3 +1,5 @@
+#ifndef _SYS_ALLOC_H_
+#define _SYS_ALLOC_H_
 typedef enum {
     ALLOC_TAG_ZERO               = 0x00000000,
     ALLOC_TAG_LISTS_COL          = 0x00000001,
@@ -116,3 +118,5 @@ typedef struct {
     /* 0x4 */ u8 delay;
 } FreeListEntry;
 #define MAX_FREELIST_SIZE 1024
+
+#endif //_SYS_ALLOC_H_

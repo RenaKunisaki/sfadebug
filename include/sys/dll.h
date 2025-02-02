@@ -1,3 +1,5 @@
+#ifndef _SYS_DLL_H_
+#define _SYS_DLL_H_
 //XXX file here is DLL*
 typedef int (*DLL_func)(void *file);
 
@@ -32,3 +34,5 @@ typedef struct {
 
 BOOL DLL_free(LoadedDLL *dll);
 LoadedDLL* runlinkDownloadCode(ushort id, ushort param);
+
+#endif //_SYS_DLL_H_

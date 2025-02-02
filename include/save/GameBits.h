@@ -1,3 +1,5 @@
+#ifndef _SAVE_GAMEBITS_H_
+#define _SAVE_GAMEBITS_H_
 typedef struct {
     u16 iBit; //Bit (not byte) offset into table
     u8 flags;
@@ -11,3 +13,5 @@ typedef struct {
 
 #define GAMEBIT_ALWAYS_1 0x0095
 #define GAMEBIT_ALWAYS_0 0x0096
+
+#endif //_SAVE_GAMEBITS_H_

@@ -1,3 +1,5 @@
+#ifndef _GFX_RENDER_H_
+#define _GFX_RENDER_H_
 #include "../dolphin/mtx.h"
 
 typedef enum {
@@ -107,3 +109,5 @@ extern short di_pol_count;
 
 extern RSPState *RSP_pState;
 extern int diFlag_803997d0; */
+
+#endif //_GFX_RENDER_H_

@@ -1,3 +1,5 @@
+#ifndef _OBJ_OBJINSTANCE_H_
+#define _OBJ_OBJINSTANCE_H_
 typedef struct {
     /* 0x0 */ S16Vec rotation;
     /* 0x6 */ u16 flags; //ObjInstance_Flags06
@@ -132,3 +134,5 @@ typedef struct {
     /* 0xfc */ Vec oldVel;
     /* 0x108 */ float f128; //maybe start of another object/subclass
 } ObjInstance;
+
+#endif //_OBJ_OBJINSTANCE_H_

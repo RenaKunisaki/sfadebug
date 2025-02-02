@@ -1,3 +1,5 @@
+#ifndef _SAVE_SAVEGAME_H_
+#define _SAVE_SAVEGAME_H_
 //many of these are from final version and might
 //not be correct for debug version
 typedef struct {
@@ -90,3 +92,5 @@ typedef struct {
 } SaveGame;
 
 #endif //VERSION
+
+#endif //_SAVE_SAVEGAME_H_

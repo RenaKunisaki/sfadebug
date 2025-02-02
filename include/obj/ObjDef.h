@@ -1,3 +1,5 @@
+#ifndef _OBJ_OBJDEF_H_
+#define _OBJ_OBJDEF_H_
 #define ObjDefNo_Sabre 0
 #define ObjDefNo_SH_newseqob 2
 #define ObjDefNo_checkpoint4 5
@@ -1504,3 +1506,5 @@ typedef struct {
 } ObjDef;
 
 typedef s16 ObjDefNo_t;
+
+#endif //_OBJ_OBJDEF_H_

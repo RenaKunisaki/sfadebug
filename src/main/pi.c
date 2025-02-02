@@ -5,6 +5,8 @@
 #include "sys/n64.h"
 #include "gfx/gbi.h"
 #include "gfx/render.h"
+#include "gfx/animation.h"
+#include "gfx/texture.h"
 #include "sys/dll.h"
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"
@@ -23,14 +25,6 @@ enum AssetTypeEnum {
     ASSET_TYPE_MODEL_INSTANCE = 6,
     ASSET_TYPE_ANIMATION = 7,
 };
-
-typedef struct { //XXX move, populate
-    /* 0x00 */ s8 usage; //reference count
-    //...more...
-} Animation;
-typedef struct {
-    int TODO;
-} Texture;
 
 void* loadDataFile(DataFileId32 file, int);
 Texture* textureLoad(int id, int);

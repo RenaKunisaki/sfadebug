@@ -1,3 +1,5 @@
+#ifndef _SYS_FILES_H_
+#define _SYS_FILES_H_
 typedef enum {
     FILE_AUDIO_tab = 0,
     FILE_AUDIO_bin = 1,
@@ -91,3 +93,5 @@ typedef enum {
     FILE_NULL_59 = 89,
     FILE_NONE = 4294967295,
 } DataFileId32;
+
+#endif //_SYS_FILES_H_

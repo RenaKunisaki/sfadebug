@@ -1,7 +1,10 @@
-#include "textures.h"
-#include "skeleton.h"
-#include "bitstream.h"
-#include "hit.h"
+#ifndef _GFX_MODELS_MODELS_H_
+#define _GFX_MODELS_MODELS_H_
+#include "gfx/textures.h"
+#include "gfx/models/skeleton.h"
+#include "gfx/models/bitstream.h"
+#include "gfx/models/hit.h"
+#include "gfx/models/shaders.h"
 
 typedef enum {
     ModelDataFlags2_NoAnimations = 2,
@@ -195,3 +198,5 @@ typedef struct {
     /* 0x53 */ s8 unk53;
     /* 0x54 */ uint unk54;
 } ModelInstance;
+
+#endif //_GFX_MODELS_MODELS_H_

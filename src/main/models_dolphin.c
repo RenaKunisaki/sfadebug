@@ -5,6 +5,7 @@
 #include "sys/n64.h"
 #include "gfx/gbi.h"
 #include "gfx/render.h"
+#include "gfx/models/animation.h"
 #include "sys/dll.h"
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"
@@ -36,7 +37,7 @@ ModelInstance * ModelInstance_ModelInstance_createModelInstance(Model *model,uin
   AnimInstance *pAVar6;
   short *psVar7;
   void *pvVar8;
-  vec3s *pvVar9;
+  S16Vec *pvVar9;
   undefined **param1;
   float local_40;
   float local_30;
@@ -65,7 +66,7 @@ ModelInstance * ModelInstance_ModelInstance_createModelInstance(Model *model,uin
         minst->vertexPositions2 = (int)model->vertexPositions;
       }
       else {
-        pvVar9 = (vec3s *)((int)psVar7 + 0x1fU & 0xffffffe0);
+        pvVar9 = (S16Vec *)((int)psVar7 + 0x1fU & 0xffffffe0);
         minst->vertexPositions[0] = pvVar9;
         psVar7 = &pvVar9->x + (uint)model->numPositions * 3;
         minst->vertexPositions2 = (int)psVar7;
@@ -75,10 +76,10 @@ ModelInstance * ModelInstance_ModelInstance_createModelInstance(Model *model,uin
       }
       anim = (AnimInstance *)alignTo4((uint)psVar7);
       minst->animInstances[0] = anim;
-      pvVar9 = (vec3s *)&anim->field_0x68;
+      pvVar9 = (S16Vec *)&anim->field_0x68;
       if ((flags & 0x80) != 0) {
         minst->animInstances[1] = (AnimInstance *)pvVar9;
-        pvVar9 = (vec3s *)&anim->field151_0xd0;
+        pvVar9 = (S16Vec *)&anim->field151_0xd0;
       }
       if ((model->flags & UseLocalModAnimTab) != 0) {
         buf3 = alignTo64((uint)pvVar9);
@@ -89,7 +90,7 @@ ModelInstance * ModelInstance_ModelInstance_createModelInstance(Model *model,uin
         buf4->field9_0x24 = pvVar8;
         pvVar8 = (void *)((int)pvVar8 + (int)local_30);
         buf4->field10_0x28 = pvVar8;
-        pvVar9 = (vec3s *)((int)pvVar8 + (int)local_30);
+        pvVar9 = (S16Vec *)((int)pvVar8 + (int)local_30);
         if (minst->animInstances[1] != (AnimInstance *)0x0) {
           pAVar6 = minst->animInstances[1];
           pAVar6->field7_0x1c = pvVar9;
@@ -99,11 +100,11 @@ ModelInstance * ModelInstance_ModelInstance_createModelInstance(Model *model,uin
           pAVar6->field9_0x24 = pvVar8;
           pvVar8 = (void *)((int)pvVar8 + (int)local_30);
           pAVar6->field10_0x28 = pvVar8;
-          pvVar9 = (vec3s *)((int)pvVar8 + (int)local_30);
+          pvVar9 = (S16Vec *)((int)pvVar8 + (int)local_30);
         }
       }
       if (model->bCopyVtxsToModelInst != 0) {
-        pvVar9 = (vec3s *)alignTo4((uint)pvVar9);
+        pvVar9 = (S16Vec *)alignTo4((uint)pvVar9);
         minst->vertexPositions[1] = pvVar9;
         pvVar9 = pvVar9 + 8;
         for (iVar5 = 0; iVar5 < 3; iVar5 = iVar5 + 1) {
@@ -120,7 +121,7 @@ ModelInstance * ModelInstance_ModelInstance_createModelInstance(Model *model,uin
         minst->field16_0x38 = uVar2;
         iVar5 = uVar2 + (uint)model->nHitSpheres * 0x10;
         minst->field17_0x3c = iVar5;
-        pvVar9 = (vec3s *)(iVar5 + (uint)model->nHitSpheres * 0x10);
+        pvVar9 = (S16Vec *)(iVar5 + (uint)model->nHitSpheres * 0x10);
         minst->field18_0x40 = minst->field16_0x38;
       }
       if ((((model->joints == (Bone *)0x0) || (model->animLength == 0)) ||
@@ -142,12 +143,12 @@ ModelInstance * ModelInstance_ModelInstance_createModelInstance(Model *model,uin
         minst->field7_0x14[4] = (float)pfVar3;
         bVar1 = model->animLength;
         minst->field7_0x14[6] = (float)(pfVar3 + bVar1);
-        pvVar9 = (vec3s *)((int)(pfVar3 + bVar1) + (uint)model->animLength);
+        pvVar9 = (S16Vec *)((int)(pfVar3 + bVar1) + (uint)model->animLength);
       }
       if (model->skin2Matrices != (void *)0x0) {
         uVar2 = alignTo4((uint)pvVar9);
         minst->field15_0x34 = uVar2;
-        pvVar9 = (vec3s *)(uVar2 + (uint)model->field48_0x72 * 4);
+        pvVar9 = (S16Vec *)(uVar2 + (uint)model->field48_0x72 * 4);
       }
       pSVar4 = (ShaderDef *)alignTo4((uint)pvVar9);
       minst->shaderDefs = pSVar4;
@@ -938,13 +939,13 @@ void Model_Model_initPtrs(Model *model) { //8007E1B8
 
     OSPanic("models_dolphin.c",0x2b3,s_Failed_assertion_model_>GCtextur_802ebc54);
   }
-  model->vertexPositions = (vec3s *)((int)&model->vertexPositions->x + (int)&model->usage);
+  model->vertexPositions = (S16Vec *)((int)&model->vertexPositions->x + (int)&model->usage);
   if (((Model *)model->vertexPositions < model) || (modelEnd <= model->vertexPositions)) {
 
     OSPanic("models_dolphin.c",0x2b6,s_Failed_assertion_model_>vertexPo_802ebca0);
   }
-  if ((model->vertexNormals != (vec3s *)0x0) &&
-     ((model->vertexNormals = (vec3s *)((int)&model->vertexNormals->x + (int)&model->usage),
+  if ((model->vertexNormals != (S16Vec *)0x0) &&
+     ((model->vertexNormals = (S16Vec *)((int)&model->vertexNormals->x + (int)&model->usage),
       (Model *)model->vertexNormals < model || (modelEnd <= model->vertexNormals)))) {
 
     OSPanic("models_dolphin.c",699,s_Failed_assertion_model_>vertexNo_802ebcf8);
@@ -955,7 +956,7 @@ void Model_Model_initPtrs(Model *model) { //8007E1B8
 
     OSPanic("models_dolphin.c",0x2c1,s_Failed_assertion_model_>vertexCo_802ebd4c);
   }
-  model->vertexTexCoords = (vec3s *)((int)&model->vertexTexCoords->x + (int)&model->usage);
+  model->vertexTexCoords = (S16Vec *)((int)&model->vertexTexCoords->x + (int)&model->usage);
   if (((Model *)model->vertexTexCoords < model) || (modelEnd <= model->vertexTexCoords)) {
 
     OSPanic("models_dolphin.c",0x2c5,s_Failed_assertion_model_>vertexTe_802ebda0);
@@ -1115,7 +1116,7 @@ void Model_Model_loadShaderTextures(Model *model) { //8007E814
 void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,float *modelMatrix) { //8007E974
   AnimInstance *pAVar1;
   AnimInstance *anim;
-  vec3s local_38;
+  S16Vec local_38;
   vec3f vStack_30;
 
   if (modelInstance == (ModelInstance *)0x0) {
@@ -1700,7 +1701,7 @@ Shader * modelGetShader(Model *model,int shaderNum) { //8007FD8C
 
    Library: KioskDefault 0 0 */
 
-vec3s * modelGetVtxPos(Model *model,int positionNum) { //8007FE10
+S16Vec * modelGetVtxPos(Model *model,int positionNum) { //8007FE10
   if (model == (Model *)0x0) {
 
     OSPanic("models_dolphin.c",0x687,"Failed assertion model");
@@ -1910,7 +1911,7 @@ void unloadAnimation(s8 *anim) { //8008039C
 
 
 void objAnimFn_8008045c(double param_1,double scale,ModelInstance *mInst,int whichBuf,int animIdx,
-                       vec3f *outPos,vec3s *outRot) { //8008045C
+                       vec3f *outPos,S16Vec *outRot) { //8008045C
   uint uVar1;
   float fVar2;
   s8 bVar3;
@@ -2488,7 +2489,7 @@ void LAB_80081578(void) { //80081534
    Library: KioskDefault 0 0 */
 
 void modelGetVtxPosFloat(Model *model,int positionNum,vec3f *posVec) { //8008157C
-  vec3s *vp;
+  S16Vec *vp;
 
   if (posVec == (vec3f *)0x0) {
 

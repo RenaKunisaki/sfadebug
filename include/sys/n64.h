@@ -1,3 +1,5 @@
+#ifndef _SYS_N64_H_
+#define _SYS_N64_H_
 #define N64_BUTTON_C_RIGHT	1
 #define N64_BUTTON_C_LEFT	2
 #define N64_BUTTON_C_DOWN	4
@@ -18,3 +20,5 @@ extern u32 n64RamSize; //main.c
 
 u32 n64DisableInterrupts(void);
 void n64EnableInterrupts(u32);
+
+#endif //_SYS_N64_H_

@@ -1,3 +1,6 @@
+#ifndef _GFX_TEXTURES_H_
+#define _GFX_TEXTURES_H_
+
 typedef struct Texture {
     /* 0x00 */ struct Texture *next;
     /* 0x04 */ s8 unk04;
@@ -14,14 +17,14 @@ typedef struct Texture {
     /* 0x13 */ s8 unk13;
     /* 0x14 */ s8 unk14;
     /* 0x15 */ s8 unk15;
-    /* 0x16 */ db unk16;
-    /* 0x17 */ db unk17;
-    /* 0x18 */ db unk18;
-    /* 0x19 */ db unk19;
-    /* 0x1a */ db unk1a;
+    /* 0x16 */ s8 unk16;
+    /* 0x17 */ s8 unk17;
+    /* 0x18 */ s8 unk18;
+    /* 0x19 */ s8 unk19;
+    /* 0x1a */ s8 unk1a;
     /* 0x1b */ s8 unk1b;
-    /* 0x1c */ db unk1c;
-    /* 0x1d */ db unk1d;
+    /* 0x1c */ s8 unk1c;
+    /* 0x1d */ s8 unk1d;
     /* 0x1e */ char unk1e;
     /* 0x1f */ s8 unk1f;
     /* 0x20 */ uint unk20;
@@ -50,9 +53,9 @@ typedef struct Texture {
     /* 0x3d */ s8 unk3d;
     /* 0x3e */ s8 unk3e;
     /* 0x3f */ s8 unk3f;
-    /* 0x40 */ addr unk40;
+    /* 0x40 */ UNKTYPE *unk40;
     /* 0x44 */ int unk44;
-    /* 0x48 */ db unk48;
+    /* 0x48 */ s8 unk48;
     /* 0x49 */ s8 unk49;
     /* 0x4a */ s8 unk4a;
     /* 0x4b */ s8 unk4b;
@@ -77,3 +80,5 @@ typedef struct Texture {
     /* 0x5e */ s8 unk5e;
     /* 0x5f */ s8 unk5f;
 } Texture;
+
+#endif //_GFX_TEXTURES_H_
