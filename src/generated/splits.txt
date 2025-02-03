@@ -113,7 +113,7 @@ main/light.c:
 main/main.c:
 	.text	start:0x80077CA8 end:0x8007A284
 	.bss	start:0x80355238 end:0x803555F8
-	.data	start:0x802EADA8 end:0x802EB0E0
+	.data	start:0x802EADC8 end:0x802EB0A0
 
 main/mm_dolphin.c:
 	.text	start:0x8007B3A4 end:0x8007C4AC

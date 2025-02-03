@@ -119,4 +119,18 @@ typedef struct {
 } FreeListEntry;
 #define MAX_FREELIST_SIZE 1024
 
+void initHeaps(void);
+void *heapInit(HeapEntry *addr, int size, int nSlots);
+//XXX fake match, name should be const char*
+void *mmAlloc(volatile int size, volatile u32 tag, volatile u32 name);
+void *realloc(void *volatile offset, volatile int size, const char *name);
+void *mmAlloc2(volatile int size, u32 tag, const char *name);
+void *heapAlloc(volatile int heap, volatile int size, u32 tag, const char *name);
+void mmSetDelay(int delay);
+void mmFree(void *__ptr);
+void checkHeaps(void);
+int heapSetEntry(int iHeap, int iEntry, u32 size, int type, int type2, u32 tag,
+    const char *name);
+int getTotalHeapUsed(int unused);
+
 #endif //_SYS_ALLOC_H_

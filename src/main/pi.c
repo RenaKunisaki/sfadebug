@@ -5,8 +5,8 @@
 #include "sys/n64.h"
 #include "gfx/gbi.h"
 #include "gfx/render.h"
-#include "gfx/animation.h"
-#include "gfx/texture.h"
+#include "gfx/models/animation.h"
+#include "gfx/textures.h"
 #include "sys/dll.h"
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"
@@ -89,6 +89,10 @@ static struct {
     u8 unk[0x18];
     AssetDef adef;
 } AssetDef_80352f00;
+
+//this buffer is only passed to some functions
+//that don't do anything with it
+u8 DAT_80352f30[0x7EF];
 
 void loadAsset_file(void **dest, DataFileId32 file) { //800777F0
     AssetDef_80352f00.adef.header.unk00 = true;

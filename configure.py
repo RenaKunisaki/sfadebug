@@ -274,10 +274,10 @@ config.libs = [
         "host": False,
         "objects": [
             Object(NonMatching, "debug.c"),
-            Object(Matching, "main/main.c"), # matching except for strings
+            Object(Matching, "main/main.c"),
             Object(NonMatching, "main/mm_dolphin.c"), # mostly regswaps
             Object(NonMatching, "main/models_dolphin.c"),
-            Object(NonMatching, "main/pi.c"), # matching except for mystery padding
+            Object(Matching, "main/pi.c"), # matching except for mystery padding
         ],
     },
 ]

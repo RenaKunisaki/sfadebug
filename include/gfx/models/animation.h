@@ -1,6 +1,6 @@
 #ifndef _GFX_MODELS_ANIMATION_H_
 #define _GFX_MODELS_ANIMATION_H_
-#include "gfx/models/models.h"
+//#include "gfx/models/models.h"
 
 typedef struct { //XXX populate
     /* 0x00 */ s8 usage; //reference count

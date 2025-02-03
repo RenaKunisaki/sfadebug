@@ -14,9 +14,9 @@
 #include "sys/files.h"
 
 //.data
-/* 802eadc8 */ const char /* *buildDate */ *s_802EADC8 = "03/01/01 16:09";
-/* 802eadd8 */ const char /* *buildName */ *s_802EADD8 = "ptossell";
-/* 802eade3 */ const char /* *buildVersion */ *s_802EADE3 = "Version 2.8 14/12/98 15.30 L.Schuneman";
+/* 802eadc8 */ const char *s_buildDate = "03/01/01 16:09";
+/* 802eadd8 */ const char *s_buildName = "ptossell";
+/* 802eade3 */ const char *s_buildVersion = "Version 2.8 14/12/98 15.30 L.Schuneman";
 /* 802eae0c */ int tempDllIds[3] = {-1, 0x33, 0x35};
 /* 802eae18 */ LoadedDLL *tempDlls[3] = {0};
 /* 802eae24 */ float frameTimes[10] = {0};
@@ -303,9 +303,9 @@ extern GXRenderModeObj tvParamsProgScan;
 extern GXRenderModeObj tvParamsNotProgScan;
 #endif
 
+extern u8 DAT_80352f30[0x7EF]; //80352f30, unk type
 extern GXRenderModeObj *curTvParams; //80398b78
 extern GXRenderModeObj *curTvParams; //80398b78
-u8 DAT_80352f30[0x7EF]; //80352f30, unk type
 extern s8 padSetupOk; // = -1; //80398908
 extern s8 debugMenuState; //80398904
 
@@ -586,7 +586,7 @@ void gameLoop(void) { //800781d4
         dprintSetPos(0x28, 0xd4);
         dprintSetColor(0xff, 0xff, 0xff, 0xff);
         dprintSetBgColor(0, 0, 0, 0x80);
-        diPrintf("%dk\n", fn_8007C54C(0) >> 10);
+        diPrintf("%dk\n", getTotalHeapUsed(0) >> 10);
     }
     if (shouldShowTexCacheUsed()) {
         dprintSetPos(0x1e, 0xe0);
@@ -898,14 +898,14 @@ void cutsceneExit(void) { //800793A8
     screenBlankFrameCount = 0;
 }
 
-void allocFrameBuffers(void) { //800793B4 string reloc
-    main_gfx[0] = (Gfx *)mmAlloc(160000,ALLOC_TAG_LISTS_COL,"main:gfx");
+void allocFrameBuffers(void) { //800793B4
+    main_gfx[0] = (Gfx *)mmAlloc(160000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:gfx");
     main_gfx[1] = main_gfx[0] + 10000;
-    main_mtx[0] = (Mtx44 *)mmAlloc(0x19000,ALLOC_TAG_LISTS_COL,"main:mtx");
+    main_mtx[0] = (Mtx44 *)mmAlloc(0x19000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:mtx");
     main_mtx[1] = main_mtx[0] + 800;
-    main_pol[0] = (Pol *)mmAlloc(32000,ALLOC_TAG_LISTS_COL,"main:pol");
+    main_pol[0] = (Pol *)mmAlloc(32000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:pol");
     main_pol[1] = main_pol[0] + 1000;
-    main_vtx[0] = (N64Vertex *)mmAlloc(32000,ALLOC_TAG_LISTS_COL,"main:vtx");
+    main_vtx[0] = (N64Vertex *)mmAlloc(32000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:vtx");
     main_vtx[1] = main_vtx[0] + 1000;
     main_dipol[0] = (Pol *)mmAlloc2(96000,1,"main:dipol");
     main_dipol[1] = main_dipol[0] + 3000;
@@ -1404,8 +1404,9 @@ int randInt(int min,int max) { //8007A228
     return uVar1;
 }
 
-/* 802eb0a0 */ Mtx44 mtx44_identity = {
+//probably doesn't belong here
+/* 802eb0a0 */ extern Mtx44 mtx44_identity ; /*= {
     1.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f};
+    0.0f, 0.0f, 0.0f, 1.0f}; */

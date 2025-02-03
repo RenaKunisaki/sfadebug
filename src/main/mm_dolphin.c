@@ -33,16 +33,6 @@
 
 /* 80398B78 */ TVParams *curTvParams; // probably doesn't belong here
 
-void *heapInit(HeapEntry *addr, int size, int nSlots);
-void *heapAlloc(volatile int heap, volatile int size, u32 tag, const char *name);
-void mmSetDelay(int param1);
-void _mmAddToFreeList(void *ptr);
-void _mmHeapFree(void *ptr);
-int heapSetEntry(int iHeap, int iEntry, u32 size, int type, int type2, u32 tag,
-    const char *name);
-void _mmActuallyFree(int iHeap, int iEntry);
-int _mmGetHeapIdx(void *offset);
-
 void initHeaps(void) { // 8007B3A4
 	int iVar1;
 	size_t size;
@@ -134,8 +124,7 @@ void *heapInit(HeapEntry *addr, int size, int nSlots) { // 8007B580
 	return heaps[iHeap].data;
 }
 
-void *mmAlloc(volatile int size, volatile u32 tag,
-    volatile u32 name) { // 8007B690
+void *mmAlloc(volatile int size, volatile u32 tag, volatile u32 name) { // 8007B690
 	void *result;
 	u32 *tags;
 	void *crash;
@@ -399,7 +388,7 @@ void checkHeaps(void) { // 8007BDFC
 	dVar2 = memUsedPct++;
     iVar3 = 500;
 	if(!(dVar2 - ((dVar2 / iVar3) * iVar3))) {
-        fn_8007C54C(0);
+        getTotalHeapUsed(0);
     }
 }
 
@@ -541,7 +530,7 @@ uint aignTo2(uint param1) { //8007C524
 }
 
 
-int getTotalHeapUsed(void) { //8007C54C
+int getTotalHeapUsed(int unused) { //8007C54C
   return heapUsed0 + heapUsed1 + heapUsed2;
 }
 
