@@ -273,11 +273,11 @@ config.libs = [
         "cflags": cflags_base,
         "host": False,
         "objects": [
-            Object(NonMatching, "debug.c"),
+            Object(Matching, "debug.c"),
             Object(Matching, "main/main.c"),
             Object(NonMatching, "main/mm_dolphin.c"), # mostly regswaps
             Object(NonMatching, "main/models_dolphin.c"),
-            Object(Matching, "main/pi.c"), # matching except for mystery padding
+            Object(Matching, "main/pi.c"),
         ],
     },
 ]

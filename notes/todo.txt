@@ -1,3 +1,67 @@
 [ ] when outputting code we should check if a function is using a variable whose namespace is that function, and emit a 'static' definition for it.
 [ ] create data sections for DLLs
-    - it looks like all DLL data sections are one after the other, and each one ends with its function table.
+  - it looks like all DLL data sections are one after the other, and each one ends with its function table. (this is .data)
+
+maybe we need a new approach with the scripts
+there are multiple tasks:
+- determine where source files' sections start/end
+  - dtk and ghidra don't do this at all (the output is empty)
+  - there are a few ways to partially automate this
+    - if a function calls various functions such as OSReport or audioStartSfx, it passes the file name and line number
+      - the line number might help to determine order? but the functions are probably already in their original order
+    - if two objects belong to the same file we can assume that all between them do as well
+    - if something is only referenced by functions within one file, it MIGHT belong to that file
+      - this isn't guaranteed; some functions in the main binary are only ever called by one DLL, etc
+      - we know it doesn't belong if:
+        - it's far away from others in this file, but how do we define far?
+        - objects between it and this file belong to another file
+    - we can assume that all functions in a DLL's function table belong to that DLL
+      - we assume each DLL has one file
+      - the function table seems to be at the end of the DLL's data section, so we can assume everything between it and the previous DLL belong to it
+  - instead of relying on splits.txt maybe it would be more convenient to denote section boundaries within ghidra:
+    - as a comment, or
+    - by changing the memory map (split the blocks by file)
+      - this method won't allow any overlaps which is a good thing
+    - we can still import the current splits.txt
+
+- determine the type, size, padding of each variable
+  - dtk is better at this than ghidra but does get types wrong sometimes (eg short strings treated as doubles)
+    - we do have a script that can identify misidentified strings which seems to work very well, though it can never be perfect
+  - we've already imported dtk's analysis and worked from there, so we should use ghidra as the ground truth now
+  - strings do need additional padding that neither tool adds, so we can reliably determine where splits end
+  - structs and arrays need manual figuring out
+    - are there patterns in how they're accessed that might offer hints?
+
+- determine the bounds of each function
+  - Ghidra and dtk both do this well enough that we only need a few manual fixes
+
+- extract function/var/file names from strings and other info (eg DLL table)
+  - various functions report file names in a consistent way => can extract them automatically
+  - the ones that we can't extract automatically are few enough to do manually
+  - names can be sourced via FunctionID/bsim from other versions/games
+    - especially JFG kiosk which has a symbol table
+    - DP has a similar crash screen; does it have symbols?
+    - DKR decomp can help as well
+    - we haven't even looked at Mickey
+  - automatic names like DAT_8000543c or DWORD_80004000 have been problematic
+    - upper vs lowercase
+    - different contexts give different names? how did this happen
+
+- determine function signatures
+  - ghidra does this somewhat well, but needs a lot of manual guidance
+    - this means it improves as we go, so, it's not static
+
+other useful info we can extract:
+  - if a buffer is passed to the various load asset functions we can infer what the buffer will hold
+  - if a buffer comes from alloc with some tag/name we can guess what it's for
+
+so for memory regions we want to:
+- split .data by the DLL table entries
+- split .text by the filenames we find in functions (done)
+
+
+to further split .data and .bss we can:
+- read all symbols in those regions
+- for each symbol, look at all functions that reference it
+  - if all of those functions belong to the same file, then so does the symbol
+we wrote something like this already, it just didn't work very well because the text sections weren't properly split

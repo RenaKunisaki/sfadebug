@@ -1,0 +1,1 @@
+/home/rena/ghidra_scripts/dtk.py
