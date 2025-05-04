@@ -17,9 +17,10 @@
 /* 802eadc8 */ const char *s_buildDate = "03/01/01 16:09";
 /* 802eadd8 */ const char *s_buildName = "ptossell";
 /* 802eade3 */ const char *s_buildVersion = "Version 2.8 14/12/98 15.30 L.Schuneman";
-/* 802eae0c */ extern int tempDllIds[3]; // = {-1, 0x33, 0x35};
-/* 802eae18 */ extern LoadedDLL *tempDlls[3]; // = {0};
-/* 802eae24 */ extern float frameTimes[10]; // = {0};
+//these are NOT extern. that makes gameLoop not match.
+/* 802eae0c */ int tempDllIds[3] = {-1, 0x33, 0x35};
+/* 802eae18 */ LoadedDLL *tempDlls[3] = {0};
+/* 802eae24 */ float frameTimes[10] = {0};
 
 //this must belong to some other file...
 /* 80321198 */ //char _defaultBits[] = " Stolen "; //likely part of larger struct
@@ -471,9 +472,6 @@ void init_GQR(void) {
 }
 
 inline float getFrames(s32 v) { return v / 65536.0f; }
-inline float* getPastFrameTimes() {
-    return frameTimes;
-}
 inline void doFrameTimeDisplay() {
     u64 time;
     int ii;
@@ -483,13 +481,12 @@ inline void doFrameTimeDisplay() {
 
     time = getFrameTime();
     ftime = getFrames(time / 12);
-    //I really hope this is fake.
-    getPastFrameTimes()[frameTimeArrayIdx++] = ftime;
+    frameTimes[frameTimeArrayIdx++] = ftime;
     if (frameTimeArrayIdx == 10) frameTimeArrayIdx = 0;
 
     fpsFlt = 0.0f;
     for (ii = 0; ii < 10; ii++) {
-        fpsFlt += getPastFrameTimes()[ii];
+        fpsFlt += frameTimes[ii];
     }
     fpsFlt = 600.0f / fpsFlt;
     fps = fpsFlt;
