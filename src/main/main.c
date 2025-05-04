@@ -12,11 +12,12 @@
 #include "save/GameBits.h"
 #include "save/SaveGame.h"
 #include "sys/files.h"
+#include "global.h"
 
 //.data
-/* 802eadc8 */ const char *s_buildDate = "03/01/01 16:09";
-/* 802eadd8 */ const char *s_buildName = "ptossell";
-/* 802eade3 */ const char *s_buildVersion = "Version 2.8 14/12/98 15.30 L.Schuneman";
+/* 802eadc8 */ const char *s_buildDate = BUILD_DATE;
+/* 802eadd8 */ const char *s_buildName = BUILD_AUTHOR;
+/* 802eade3 */ const char *s_buildVersion = VERSION_STRING;
 //these are NOT extern. that makes gameLoop not match.
 /* 802eae0c */ int tempDllIds[3] = {-1, 0x33, 0x35};
 /* 802eae18 */ LoadedDLL *tempDlls[3] = {0};
