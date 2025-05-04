@@ -4,63 +4,7 @@
 #include "gfx/gbi.h"
 #include "gfx/render.h"
 #include "sys/dll.h"
-
-#define CODE_VERSION   "1.3705"
-#define BUILD_DATE     "03/01/01 16:09"
-#define BUILD_AUTHOR   "ptossell"
-#define VERSION_STRING "Version 2.8 14/12/98 15.30 L.Schuneman"
-
-// there are multiple instances of:
-// li  r0,0x0
-// stb r0,0x0(0)
-// used as a "poor man's assert"
-inline void CRASH() {
-	*(u8 *)NULL = 0;
-}
-
-typedef struct {
-	/* 0x0 */ s16 nItems;
-	/* 0x2 */ s16 max;
-	/* 0x4 */ s16 itemSize;
-	/* 0x6 */ s8 _06;
-	/* 0x7 */ s8 _07;
-	/* 0x8 */ s16 count;
-	/* 0xa */ s8 _0a;
-	/* 0xb */ s8 _0b;
-	/* 0xc */ s16 *data;
-} DiStack;
-
-#define DIPROFSTRUCT_MAX_NUM  0x200
-#define DIPROFSTRUCT_NAME_LEN 23
-typedef struct {
-	/* 0x0 */ char name[DIPROFSTRUCT_NAME_LEN + 1];
-	/* 0x18 */ undefined4 _18;
-	/* 0x1c */ undefined4 time;
-	/* 0x20 */ u8 _20;
-	/* 0x21 */ undefined1 _21; // probably padding
-	/* 0x22 */ undefined1 _22;
-	/* 0x23 */ undefined1 _23;
-} DiProfStruct;
-
-typedef struct {
-	/* 0x0 */ undefined4 unk0;
-	/* 0x4 */ undefined4 unk4;
-	/* 0x8 */ Vec charPos;
-	/* 0x14 */ uint unk14;
-	/* 0x18 */ char codeVersion[64];
-	/* 0x58 */ char buildDate[64];
-	/* 0x98 */ char buildAuthor[64];
-	/* 0xd8 */ char fullVersionString[64];
-	/* 0x118 */ undefined4 unk118;
-	/* 0x11c */ undefined unk11c;
-	/* 0x11d */ undefined unk11d;
-	/* 0x11e */ undefined unk11e;
-	/* 0x11f */ undefined unk11f;
-	/* 0x120 */ undefined unk120;
-	/* 0x121 */ undefined unk121;
-	/* 0x122 */ undefined unk122;
-	/* 0x123 */ undefined unk123;
-} DebugSaveStruct;
+#include "debug.h"
 
 union {
 	struct {
@@ -79,7 +23,6 @@ union {
 /* 803973C0 */ extern int lbl_803973C0;
 /* 803973C4 */ extern int lbl_803973C4;
 
-
 //.bss (0x80325D20)
 /* 8038ba60 */ DiProfStruct DiProfStruct_8038ba60[DIPROFSTRUCT_MAX_NUM];
 /* 8038ba60 */ u8 DWORD_8038ba60[64]; // no idea the size, just picked something
@@ -95,8 +38,8 @@ union {
 /* 803989A4 */ extern LoadedDLL *pDll_SaveGame;
 //end 803989d0
 /* 803997B8 */ extern int DWORD_803997b8;
-/* 803997BC */ extern void *DWORD_803997bc;
-/* 803997C0 */ extern DebugSaveStruct *debugSaveBuf_803997c0;
+/* 803997BC */ extern DebugSaveStruct *pMeterPerfdata1;
+/* 803997C0 */ extern DebugSaveStruct *pMeterPerfdata2;
 /* 803997C4 */ extern int DAT_803997c4;
 /* 803997C8 */ extern int DWORD_803997c8;
 /* 803997CC */ extern int DWORD_803997cc;
@@ -125,8 +68,8 @@ union {
 /* 80399828 */ extern BOOL DWORD_80399828; // assumed type
 /* 8039982C */ extern BOOL bEnableRspStatusDisplay;
 /* 80399830 */ extern UNKTYPE *meter_cmdbuf;
-/* 80399834 */ extern UNKTYPE *lbl_80399834;
-/* 80399838 */ extern UNKTYPE *lbl_80399838;
+/* 80399834 */ extern UNKTYPE *DWORD_80399834;
+/* 80399838 */ extern UNKTYPE *DWORD_80399838;
 /* 8039983C */ extern UNKTYPE *meter_distack;
 /* 80399840 */ extern UNKTYPE *meter_cpustack;
 /* 80399844 */ extern int DAT_80399844;
@@ -138,7 +81,7 @@ union {
 /* 80398b74 */ extern void *pFrameBuffer_80398b74;
 
 void fn_8017A638(void);
-int fn_8017AFC4();
+s8 fn_8017AFC4(void);
 int diPrintf(const char *fmt, ...);
 DiStack *diStackCreate(int param1, int param2); // 80070320
 int diStackGetNumItems(DiStack *stack); // 800704d4
@@ -148,9 +91,8 @@ void diStackPop(DiStack *stack, void *out); // 80070440
 int ret0_800BFC8C(void); // 800BFC8C
 void nop_800BFBF0(UNKTYPE *, UNKTYPE *, int);
 void *mmAlloc2(uint size, uint tag, char *name); // 8007badc
-void debugSaveFn_8017a688(void);
-
 void memcpy_src_dst_len(void *src, void *dst, size_t len); // 800bfc20
+void debugSaveFn_8017a688(void);
 
 void diProfReset(void) { // 80179B60
 	if(!diStack) diStack = diStackCreate(10, 4);
@@ -279,8 +221,8 @@ void perfInit(void) { // 80179ec0
 	PTR_DAT_803997ec = meter_rcptimes;
 	PTR_DAT_803997f0 = (void *)((int)meter_rcptimes + 3200);
 	nop_800BFBF0((void *)((int)ptr + 0x4A60), meter_cmdbuf, 0x100);
-	nop_800BFBF0((void *)((int)ptr + 0x4A90), &lbl_80399838, 1);
-	nop_800BFBF0((void *)((int)ptr + 0x4A78), &lbl_80399834, 1);
+	nop_800BFBF0((void *)((int)ptr + 0x4A90), &DWORD_80399838, 1);
+	nop_800BFBF0((void *)((int)ptr + 0x4A78), &DWORD_80399834, 1);
 }
 
 void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8
@@ -295,14 +237,14 @@ void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8
 		} else if(param1 == 1) {
 			fn_8017AFD8();
 			debugSaveFn_8017a688();
-			DWORD_803997bc = mmAlloc2(0x286e0, 0xff00ff, "meter:perfdata1");
-			debugSaveBuf_803997c0 = (DebugSaveStruct *)mmAlloc2(
+			pMeterPerfdata1 = mmAlloc2(0x286e0, 0xff00ff, "meter:perfdata1");
+			pMeterPerfdata2 = (DebugSaveStruct *)mmAlloc2(
 			    0x124, 0xff00ff, "meter:perfdata2");
-			if((DWORD_803997bc == 0) || (debugSaveBuf_803997c0 == 0)) {
+			if((pMeterPerfdata1 == 0) || (pMeterPerfdata2 == 0)) {
 				printf("Sorry No DI memory left to store profile.");
 				diFlag_803997d0 = 0;
 			}
-			debugSaveBuf_803997c0->unk118 = 0;
+			pMeterPerfdata2->unk118 = 0;
 			diFlag_803997d0 = 0;
 			nop_800BFC04(0x80000000, 0x9FFFFFFF);
 			nop_800BFC08(0x80000000, 0x9FFFFFFF);
@@ -310,14 +252,14 @@ void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8
 		} else if(param1 == 2) {
 			fn_8017AFD8();
 			debugSaveFn_8017a688();
-			DWORD_803997bc = mmAlloc2(0x5c, 0xff00ff, "meter:perfdata3");
-			debugSaveBuf_803997c0 = (DebugSaveStruct *)mmAlloc2(
+			pMeterPerfdata1 = mmAlloc2(0x5c, 0xff00ff, "meter:perfdata3");
+			pMeterPerfdata2 = (DebugSaveStruct *)mmAlloc2(
 			    0x124, 0xff00ff, "meter:perfdata4");
-			if((DWORD_803997bc == 0) || (debugSaveBuf_803997c0 == 0)) {
+			if((pMeterPerfdata1 == 0) || (pMeterPerfdata2 == 0)) {
 				printf("Sorry No DI memory left to store profile.");
 				diFlag_803997d0 = 0;
 			}
-			debugSaveBuf_803997c0->unk118 = 0;
+			pMeterPerfdata2->unk118 = 0;
 			DWORD_803997c8 = 4;
 			diFlag_803997d0 = 0;
 			dVar1 = param1;
@@ -334,8 +276,8 @@ void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8
 
 void fn_8017A2B0(void) { // 8017A2B0
 	if(DWORD_803997b8 != 0) {
-		retM1_afterLoadAsset_ret0xFFFF(&lbl_803904C0, &lbl_803973C0, 1);
-		retM1_800BFBFC_ret0xFFFF(&lbl_803904D8, 0, 1);
+		retM1_afterLoadAsset(&lbl_803904C0, &lbl_803973C0, 1);
+		retM1_800BFBFC(&lbl_803904D8, 0, 1);
 	}
 }
 
@@ -363,8 +305,8 @@ BOOL fn_8017A320(void) { // 8017A320
 extern u8 lbl_80399858[8];
 void nop_8017a328(void) { // 8017A328
 	nop_800BFC0C(&DiProfStruct_8038ba60);
-	retM1_afterLoadAsset_ret0xFFFF(&lbl_803904C0, &lbl_80399858, 1);
-	retM1_800BFBFC_ret0xFFFF(&lbl_803904D8, 0, 1);
+	retM1_afterLoadAsset(&lbl_803904C0, &lbl_80399858, 1);
+	retM1_800BFBFC(&lbl_803904D8, 0, 1);
 }
 
 void printRspStatus(void) { // 8017A37C reloc
@@ -397,9 +339,9 @@ void printRspStatus(void) { // 8017A37C reloc
 		diPrintf("TMEM loading. = %2.0f%%", &work);
 	}
 	if(DWORD_80399828 != 0) {
-		retM1_afterLoadAsset_ret0xFFFF(
+		retM1_afterLoadAsset(
 		    lbl_803904C0, (undefined *)&lbl_803973C4, 1);
-		retM1_800BFBFC_ret0xFFFF((undefined *)&lbl_803904D8, 0, 1);
+		retM1_800BFBFC((undefined *)&lbl_803904D8, 0, 1);
 	}
 }
 
@@ -413,7 +355,7 @@ void dummiedProfFn_8017a59c(undefined4 param1) { // 8017A59C
 	*(PTR_DAT_803997f8++) = ret0_800BFC8C();
 	*(PTR_DAT_803997f8++) = param1;
 
-	retM1_afterLoadAsset_ret0xFFFF(lbl_803904C0, PTR_DAT_803997f8 - 3, 0);
+	retM1_afterLoadAsset(lbl_803904C0, PTR_DAT_803997f8 - 3, 0);
 	if(PTR_DAT_803997fc + 3 >= PTR_DAT_803997f8) {
 		PTR_DAT_803997f8 = (undefined4 *)meter_cputimes;
 	}
@@ -431,36 +373,36 @@ void debugSaveFn_8017a688(void) { // 8017A688
 	Vec *pos;
 	uint uVar1;
 
-	if(((DWORD_803997bc != 0) && (DWORD_803997c8 != 1))
+	if(((pMeterPerfdata1 != 0) && (DWORD_803997c8 != 1))
 	    && (DWORD_803997c8 != 3)) {
 		/* {@symbol 8012da28} */
 		pos = (Vec *)pDll_SaveGame->funcs->func[34]();
 		/* {@symbol 8012d9a0} */
 		uVar1 = pDll_SaveGame->funcs->func[27]() & 0xFF;
 
-		debugSaveBuf_803997c0->unk0 = 0x124;
-		debugSaveBuf_803997c0->unk4 = 0x5c;
-		(debugSaveBuf_803997c0->charPos).x = pos->x;
-		(debugSaveBuf_803997c0->charPos).y = pos->y;
-		(debugSaveBuf_803997c0->charPos).z = pos->z;
-		debugSaveBuf_803997c0->unk14 = uVar1;
-		debugSaveBuf_803997c0->unk118 = DAT_803997c4;
-		debugSaveBuf_803997c0->unk11c = 1;
-		debugSaveBuf_803997c0->unk11d = 1;
-		debugSaveBuf_803997c0->unk11e = 1;
-		debugSaveBuf_803997c0->unk11f = 0;
-		debugSaveBuf_803997c0->unk120 = 0;
-		debugSaveBuf_803997c0->unk121 = 0;
-		debugSaveBuf_803997c0->unk122 = 0;
-		debugSaveBuf_803997c0->unk123 = 0;
-		memset_(debugSaveBuf_803997c0->codeVersion, 0, 0x40);
-		memset_(debugSaveBuf_803997c0->buildDate, 0, 0x40);
-		memset_(debugSaveBuf_803997c0->buildAuthor, 0, 0x40);
-		memset_(debugSaveBuf_803997c0->fullVersionString, 0, 0x40);
-		strcpy(debugSaveBuf_803997c0->codeVersion, CODE_VERSION);
-		strcpy(debugSaveBuf_803997c0->buildDate, BUILD_DATE);
-		strcpy(debugSaveBuf_803997c0->buildAuthor, BUILD_AUTHOR);
-		strcpy(debugSaveBuf_803997c0->fullVersionString, VERSION_STRING);
+		pMeterPerfdata2->unk0 = 0x124;
+		pMeterPerfdata2->unk4 = 0x5c;
+		(pMeterPerfdata2->charPos).x = pos->x;
+		(pMeterPerfdata2->charPos).y = pos->y;
+		(pMeterPerfdata2->charPos).z = pos->z;
+		pMeterPerfdata2->unk14 = uVar1;
+		pMeterPerfdata2->unk118 = DAT_803997c4;
+		pMeterPerfdata2->unk11c = 1;
+		pMeterPerfdata2->unk11d = 1;
+		pMeterPerfdata2->unk11e = 1;
+		pMeterPerfdata2->unk11f = 0;
+		pMeterPerfdata2->unk120 = 0;
+		pMeterPerfdata2->unk121 = 0;
+		pMeterPerfdata2->unk122 = 0;
+		pMeterPerfdata2->unk123 = 0;
+		memset_(pMeterPerfdata2->codeVersion, 0, 0x40);
+		memset_(pMeterPerfdata2->buildDate, 0, 0x40);
+		memset_(pMeterPerfdata2->buildAuthor, 0, 0x40);
+		memset_(pMeterPerfdata2->fullVersionString, 0, 0x40);
+		strcpy(pMeterPerfdata2->codeVersion, CODE_VERSION);
+		strcpy(pMeterPerfdata2->buildDate, BUILD_DATE);
+		strcpy(pMeterPerfdata2->buildAuthor, BUILD_AUTHOR);
+		strcpy(pMeterPerfdata2->fullVersionString, VERSION_STRING);
 		if(DWORD_803997b8 == 1) {
 			DWORD_803997c8 = 1;
 		} else if(DWORD_803997b8 == 2) {

@@ -251,7 +251,7 @@ Matching = True                   # Object matches and should be linked
 NonMatching = False               # Object does not match and should not be linked
 Equivalent = config.non_matching  # Object should be linked when configured with --non-matching
 
-config.warn_missing_config = True
+config.warn_missing_config = False
 config.warn_missing_source = False
 config.libs = [
     {
@@ -273,11 +273,12 @@ config.libs = [
         "cflags": cflags_base,
         "host": False,
         "objects": [
-            Object(Matching, "debug.c"),
-            Object(Matching, "main/main.c"),
+            Object(NonMatching, "debug/dimenu.c"),
+            Object(NonMatching, "debug/prof.c"),
+            Object(NonMatching, "main/main.c"),
             Object(NonMatching, "main/mm_dolphin.c"), # mostly regswaps
             Object(NonMatching, "main/models_dolphin.c"),
-            Object(Matching, "main/pi.c"),
+            Object(NonMatching, "main/pi.c"),
         ],
     },
 ]

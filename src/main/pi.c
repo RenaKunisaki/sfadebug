@@ -1,6 +1,6 @@
 #include "dolphin.h"
 #include "types.h"
-#include "debug.h"
+#include "debug/debug.h"
 #include "sys/alloc.h"
 #include "sys/n64.h"
 #include "gfx/gbi.h"
@@ -234,6 +234,6 @@ int loadAsset(AssetDef *load) { //80077B68
                 (void *)load->anim.objFlags);
             break;
     }
-    return retM1_afterLoadAsset_ret0xFFFF(&AssetDef_80352f00, 0, 0);
+    return retM1_afterLoadAsset(&AssetDef_80352f00, 0, 0);
 }
 

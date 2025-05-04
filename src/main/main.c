@@ -1,7 +1,7 @@
 #include "dolphin.h"
 #include "dolphin/os/OSFastCast.h"
 #include "types.h"
-#include "debug.h"
+#include "debug/debug.h"
 #include "sys/alloc.h"
 #include "gfx/gbi.h"
 #include "sys/n64.h"
@@ -17,16 +17,16 @@
 /* 802eadc8 */ const char *s_buildDate = "03/01/01 16:09";
 /* 802eadd8 */ const char *s_buildName = "ptossell";
 /* 802eade3 */ const char *s_buildVersion = "Version 2.8 14/12/98 15.30 L.Schuneman";
-/* 802eae0c */ int tempDllIds[3] = {-1, 0x33, 0x35};
-/* 802eae18 */ LoadedDLL *tempDlls[3] = {0};
-/* 802eae24 */ float frameTimes[10] = {0};
+/* 802eae0c */ extern int tempDllIds[3]; // = {-1, 0x33, 0x35};
+/* 802eae18 */ extern LoadedDLL *tempDlls[3]; // = {0};
+/* 802eae24 */ extern float frameTimes[10]; // = {0};
 
 //this must belong to some other file...
 /* 80321198 */ //char _defaultBits[] = " Stolen "; //likely part of larger struct
 extern char _defaultBits[];
 
 //.bss (0x80325D20)
-/* 80355238 */ PlayerPrevPosition playerPrevPositions[NUM_PLAYER_PREV_POSITIONS];
+/* 80355238 */ extern PlayerPrevPosition playerPrevPositions[NUM_PLAYER_PREV_POSITIONS];
 
 //.sdata (0x80396700)
 /* 80396c14 */ extern s8 debugMenuPrevState;
@@ -167,12 +167,12 @@ void gameLoop(void);
 void setFrameTime(OSTime);
 void diProfReset(void);
 void nop_8017a328(void);
-void mainLoopGxSetupFn_8009e320(void);
+void beginFrame(void);
 void RSP_segSetBase(Gfx**, int, void*);
 void freakFn_800a58d0(Gfx**, int);
 void fn_8018F55C(void);
-void RSP_rcpInitSp(void);
-void RSP_rcpInitDp(void);
+void RSP_initSp(void);
+void RSP_initDp(void);
 int getRenderFlags(void);
 BOOL isCloudy(void);
 void nop_8009E5EC(Gfx**, Mtx44**, u8);
@@ -182,7 +182,7 @@ void perfFn_8018f5cc(void);
 int mainRender(Gfx*, Mtx44*, int);
 Gfx* rspFn_8017c278(void);
 void listCodeRender(Gfx*);
-int gxMaybeFlush(void);
+int finishFrame(void);
 void joyRead(void);
 void amAudioTick(void);
 void processObjDeleteList(void);
@@ -530,7 +530,7 @@ void gameLoop(void) { //800781d4
     setFrameTime(0ull);
     diProfReset();
     nop_8017a328();
-    mainLoopGxSetupFn_8009e320();
+    beginFrame();
     main_framebuf_idx ^= 1;
     cur_gfx = main_gfx[main_framebuf_idx];
     mtx = main_mtx[main_framebuf_idx];
@@ -544,8 +544,8 @@ void gameLoop(void) { //800781d4
     RSP_segSetBase(&gfx, 2, otherZbuf);
     freakFn_800a58d0(&gfx, framesThisStep);
     fn_8018F55C();
-    RSP_rcpInitSp();
-    RSP_rcpInitDp();
+    RSP_initSp();
+    RSP_initDp();
     if (RSP_pState->bNeedPipeSync != false) {
         RSP_pState->bNeedPipeSync = false;
         gDPPipeSync(gfx++);
@@ -573,7 +573,7 @@ void gameLoop(void) { //800781d4
     listCodeRender(rspFn_8017c278());
     pDll_gplay->funcs->func[0](&gfx, &mtx, &cur_vtx);
     pDll_Dummy15->funcs->func[5](&gfx);
-    gxMaybeFlush();
+    finishFrame();
     joyRead();
     amAudioTick();
     processObjDeleteList();
@@ -659,7 +659,7 @@ void gameLoop(void) { //800781d4
 }
 
 void showExpansionPakNeededScreen(void) { //800789a0
-    mainLoopGxSetupFn_8009e320();
+    beginFrame();
     mainRender(main_gfx[main_framebuf_idx], mtx, 0);
     main_framebuf_idx ^= 1;
     gfx = main_gfx[main_framebuf_idx];
@@ -669,8 +669,8 @@ void showExpansionPakNeededScreen(void) { //800789a0
     RSP_segSetBase(&gfx, 0, (void*)0x80000000);
     RSP_segSetBase(&gfx,1,currentScreen);
     RSP_segSetBase(&gfx,2,otherZbuf);
-    RSP_rcpInitSp();
-    RSP_rcpInitDp();
+    RSP_initSp();
+    RSP_initDp();
     if (RSP_pState->bNeedPipeSync != false) {
         RSP_pState->bNeedPipeSync = false;
         gDPPipeSync(gfx++);
@@ -683,7 +683,7 @@ void showExpansionPakNeededScreen(void) { //800789a0
     gDPFullSync(gfx++);
     gSync(gfx++, 0);
     joyRead();
-    gxMaybeFlush();
+    finishFrame();
     checkHeaps();
     updateTimeDelta2();
 }
@@ -826,8 +826,6 @@ int param4) { //80079068
     mapLoadFn_800ad69c(mapNo,setupPoint,
         &playerPos->pos.x,&playerPos->pos.y,&playerPos->pos.z,
         &playerPos->layer);
-    /* func09 */
-    //(**(code **)(*(int *)pDll_SaveGame + 0x1c))
     pDll_SaveGame->funcs->func[5](
         playerPos, 0, 0, playerPos->layer);
     if (mapGetPlayerObjType(NULL) != ObjDefNo_Sabre) {

@@ -798,7 +798,7 @@ dll_4E.c:
 dll_4D.c:
 	.text       start:0x80179B08 end:0x80179B10
 
-debug.c:
+debug/debug.c:
 	.text       start:0x80179B60 end:0x8017C278
 	.bss        start:0x8038BA58 end:0x80390978
 
