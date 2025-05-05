@@ -1,6 +1,6 @@
 #include "dolphin.h"
 #include "types.h"
-#include "debug.h"
+#include "debug/debug.h"
 #include "sys/alloc.h"
 #include "sys/n64.h"
 
@@ -33,15 +33,20 @@
 
 /* 80398B78 */ TVParams *curTvParams; // probably doesn't belong here
 
+void _mmHeapFree(void *ptr);
+void _mmAddToFreeList(void *ptr);
+void _mmActuallyFree(int iHeap, int iEntry);
+
 void initHeaps(void) { // 8007B3A4
+//should be eq, only data reloc
 	int iVar1;
 	size_t size;
 	void *pvVar2;
 	void *arenaEnd;
 	OSHeapHandle heap;
-	u32 *tags;
+	//u32 *tags;
 
-	tags = allocTagColorTbl; // probably fake for string reloc
+	//tags = allocTagColorTbl; // probably fake for string reloc
 
 	numHeaps = 0;
 	pvVar2 = OSGetArenaLo();
@@ -77,7 +82,7 @@ void initHeaps(void) { // 8007B3A4
     size = 0x9ffa0;
 	pvVar2 = OSAllocFromHeap(__OSCurrHeap, size);
 	if(!pvVar2) {
-		OSPanic("mm_dolphin.c", 0x142, "Memory region setup is too big");
+		OSPanic(__FILE__, 0x142, "Memory region setup is too big");
 	}
 	memset_(pvVar2, 0, size);
 	DCFlushRange(pvVar2, size);
@@ -234,23 +239,23 @@ const char *name) { // 8007B7F4
 
 void *mmAlloc2(volatile int size, u32 tag, const char *name) { // 8007BADC
 	// eq except regswap
-	void *result;
 	u32 *tags;
-	void *crash;
+	u32 *crash;
 	volatile u32 crash2;
+	void *result;
 
 	tags = allocTagColorTbl;
 	if(tag <= ALLOC_TAG_TEST_COL) tag = tags[tag];
-	if(size == 0) {
-		crash = NULL;
-		crash2 = *(volatile u32 *)((u32)crash + 0x14);
+	if(!size) {
+		result = NULL;
+		crash2 = ((u32*)result)[5];
 		return NULL;
 	}
 
 	result = heapAlloc(1, size, tag, name);
 	if(!result) {
 		crash = NULL;
-		crash2 = *(volatile u32 *)((u32)crash + 0x14);
+		crash2 = crash[5];
 	}
 	return result;
 }
