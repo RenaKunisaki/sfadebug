@@ -237,7 +237,8 @@ const char *name) { // 8007B7F4
 	return offset;
 }
 
-void *mmAlloc2(volatile int size, u32 tag, const char *name) { // 8007BADC
+void *mmAlloc2(
+volatile int size, u32 tag, const char *name) { // 8007BADC
 	// eq except regswap
 	u32 *tags;
 	u32 *crash;

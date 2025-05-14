@@ -273,7 +273,7 @@ config.libs = [
         "cflags": cflags_base,
         "host": False,
         "objects": [
-            Object(NonMatching, "debug/dimenu.c"),
+            Object(Matching, "debug/dimenu.c"),
             Object(NonMatching, "debug/prof.c"),
             Object(NonMatching, "main/main.c"),
             Object(NonMatching, "main/mm_dolphin.c"), # mostly regswaps

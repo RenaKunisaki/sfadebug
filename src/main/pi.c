@@ -35,7 +35,7 @@ ObjInstance* Object_objSetupObjectActual(ObjDef *objDef,
     ObjInstance *pMatrix,
     void *unused);
 DLL_func** DLL_setup(uint dllId, ushort exportCount, BOOL bDontCallInit);
-char * loadModelInstance (int id, uint flags);
+void *loadModelInstance(int id, uint flags);
 Animation * loadAnimation (Model * model, short id, short id2, void * dest);
 
 typedef struct {
