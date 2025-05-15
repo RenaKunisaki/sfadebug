@@ -2,6 +2,9 @@
 #define _GFX_RENDER_H_
 #include "../dolphin/mtx.h"
 
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
+
 typedef enum {
     IsNotSubmap = 1,
     EnableMapUpdate = 2,
