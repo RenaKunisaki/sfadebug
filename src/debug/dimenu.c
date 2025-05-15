@@ -185,6 +185,9 @@ void diMenuPop(void) { // 8017AD58
 }
 
 void diMenuPopAll(void) { // 8017AE58
+	while(diMenuStackDepth != 0) {
+		diMenuPop();
+	}
 }
 
 void fn_8017AF10(undefined *param_1,
