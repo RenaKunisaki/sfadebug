@@ -22,3 +22,4 @@ config/GSAP01-DEBUG/names.csv
 config/GSAP01-DEBUG/symbols2.txt
 notes/srcfiles.ods
 notes/srcfiles.csv
+src/main/models_dolphin.c.orig
