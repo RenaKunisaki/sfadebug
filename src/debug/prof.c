@@ -1,10 +1,11 @@
 #include "dolphin.h"
 #include "types.h"
+#include "global.h"
 #include "sys/n64.h"
 #include "gfx/gbi.h"
 #include "gfx/render.h"
 #include "sys/dll.h"
-#include "debug.h"
+#include "debug/debug.h"
 
 union {
 	struct {
@@ -25,8 +26,6 @@ union {
 
 //.bss (0x80325D20)
 /* 8038ba60 */ DiProfStruct DiProfStruct_8038ba60[DIPROFSTRUCT_MAX_NUM];
-/* 8038ba60 */ u8 DWORD_8038ba60[64]; // no idea the size, just picked something
-                                    // to force it out of sdata
 /* 803904c0 */ UNKTYPE *DWORD_803904c0;
 /* 803904d8 */ UNKTYPE *DWORD_803904d8;
 /* 803904f0 */ UNKTYPE *DWORD_803904f0;
@@ -136,7 +135,7 @@ void diProfEnd(undefined4 param1, char *name) { // 80179C50
 		printf("diProfEnd: prof overflow (%d)\n");
 	} else {
 		memcpy_src_dst_len(
-		    name, &DiProfStruct_8038ba60 + diProfCount, DIPROFSTRUCT_NAME_LEN);
+		    name, &DiProfStruct_8038ba60[diProfCount], DIPROFSTRUCT_NAME_LEN);
 		DiProfStruct_8038ba60[diProfCount].name[DIPROFSTRUCT_NAME_LEN] = '\0';
 		DiProfStruct_8038ba60[diProfCount]._18 = param1;
 		DiProfStruct_8038ba60[diProfCount].time = iVar1 - local_10;
@@ -183,7 +182,7 @@ void diProfPrint(uint mask) { // 80179D60
 
 // equiv except string offsets
 void perfInit(void) { // 80179ec0
-	UNKTYPE *ptr = &DWORD_8038ba60;
+	DiProfStruct *ptr = DiProfStruct_8038ba60;
 	DWORD_80399828 = FALSE;
 	bEnableRspStatusDisplay = FALSE;
 	DWORD_803997b8 = 0;
