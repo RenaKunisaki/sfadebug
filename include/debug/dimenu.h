@@ -10,6 +10,25 @@ typedef enum {
     End = 10 //End of list
 } DiMenuType;
 
+typedef enum {
+    DiMenuOpcode_Tick           = 0x00,
+    DiMenuOpcode_Increment      = 0x01,
+    DiMenuOpcode_Decrement      = 0x02,
+    DiMenuOpcode_AllocedStrings = 0x03,
+    DiMenuOpcode_MenuExit       = 0x04, //exiting this menu
+    DiMenuOpcode_APressed       = 0x0A,
+    DiMenuOpcode_BPressed       = 0x0B,
+    DiMenuOpcode_StartPressed   = 0x0C,
+    DiMenuOpcode_AReleased      = 0x14,
+    DiMenuOpcode_BReleased      = 0x15,
+    DiMenuOpcode_StartReleased  = 0x16,
+    DiMenuOpcode_AHeld          = 0x1E,
+    DiMenuOpcode_BHeld          = 0x1F,
+    DiMenuOpcode_StartHeld      = 0x20,
+    DiMenuOpcode_MenuEnter      = 0x28,	//just entered this menu
+    DiMenuOpcode_Unk29          = 0x29,
+} DiMenuOpcode;
+
 typedef union {
     unsigned int iStrs; //for Adjustable type; index into diMenuStrings
     char **pStr; //for Adjustable type
