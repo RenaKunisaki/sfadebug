@@ -15,6 +15,9 @@
 #define N64_BUTTON_B	16384
 #define N64_BUTTON_A	32768
 
+typedef u32 N64Button32;
+typedef u16 N64Button;
+
 extern u32 n64RamSize; //main.c
 #define N64_RAM_SIZE 0x800000
 

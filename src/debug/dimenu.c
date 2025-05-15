@@ -20,7 +20,14 @@
 /* 80399860 */ s8 diMenuItemFlag_80399860;
 /* 80390508 */ DiMenuStruct3 diMenuStruct3_80390508;
 /* 80390944 */ bool diMenuStringIsUsed[50];
+/* 80399864 */ Gfx *diMenuGfx;
+/* 80399868 */ void *DAT_80399868; // probably diMenuVtx or Mtx
+/* 8039986C */ void *DWORD_8039986c; // probably diMenuVtx or Mtx
+/* 80399870 */ void *DWORD_80399870; // probably diMenuPol
+/* 80399874 */ int diMenuFrameCount80399874;
+/* 80399880 */ N64Button32 debugN64ButtonsPressed;
 /* 80399884 */ bool diMenuVisible;
+/* 80399885 */ bool diMenuControlFlag_80399885; //true: do not allow Start/Z+Start to hide/show menu
 /* 80399890 */ s8 diMenuPendingPopCnt;
 
 void ObjEdit_init(void);
@@ -37,7 +44,7 @@ void diMenuInit(void (*callback)(void), int param_2) { // 8017A870
 	(*callback)();
 }
 
-void diMenuPush(DiMenuItem *items, uint space) { //8017a8d0
+void diMenuPush(DiMenuItem *items, uint space) { // 8017a8d0
 	uint screenRes;
 	uint height;
 	int width;
@@ -151,9 +158,7 @@ void diMenuPush(DiMenuItem *items, uint space) { //8017a8d0
 			// this is just a memcpy
 			u8 *dst = (u8 *)diMenuCur;
 			u8 *src = (u8 *)&diMenuStruct3_80390508;
-			for(ii = 0; ii < sizeof(DiMenuStruct3); ii++) {
-				dst[ii] = src[ii];
-			}
+			for(ii = 0; ii < sizeof(DiMenuStruct3); ii++) { dst[ii] = src[ii]; }
 		}
 		diMenuCur->spaceFlag28 = 1;
 	}
@@ -165,8 +170,7 @@ void diMenuPush(DiMenuItem *items, uint space) { //8017a8d0
 void diMenuPop(void) { // 8017AD58
 	if(disableMenus) {
 		diMenuPendingPopCnt++;
-	}
-	else if(0 < diMenuStackDepth) {
+	} else if(0 < diMenuStackDepth) {
 		DiMenuItem *item;
 		for(item = diMenuCur->items; item < diMenuCur->lastItem; item++) {
 			diMenuItemActivate(item, DiMenuOpcode_MenuExit);
@@ -180,21 +184,54 @@ void diMenuPop(void) { // 8017AD58
 		diMenuItemActivate(diMenuCur->items, DiMenuOpcode_Unk29);
 		diMenuStackDepth--;
 		if(diMenuStackDepth == 0) diMenuCur = NULL;
-		else diMenuCur = &diMenuStack[diMenuStackDepth - 1];
+		else
+			diMenuCur = &diMenuStack[diMenuStackDepth - 1];
 	}
 }
 
 void diMenuPopAll(void) { // 8017AE58
-	while(diMenuStackDepth != 0) {
-		diMenuPop();
-	}
+	while(diMenuStackDepth != 0) { diMenuPop(); }
 }
 
-void fn_8017AF10(undefined *param_1,
-    undefined *param_2,
-    int param_3,
-    undefined *param_4,
+void diMenuUpdate(Gfx *gfx, void *param_2, void *param_3, void *param_4,
     int framesTimes65536) { // 8017AE88
+	N64Button bHeld;
+	uint ii;
+
+	if(!diMenuCur) return;
+
+	diMenuGfx = gfx;
+	DAT_80399868 = param_2;
+	DWORD_8039986c = param_3;
+	DWORD_80399870 = param_4;
+	if((int)diMenuCur->spaceFlag28 != 0) {
+		u8 *src;
+		u8 *dst;
+		diMenuItemFlag_80399860 = 1;
+		src = (u8 *)&diMenuCur->curItem;
+		dst = (u8 *)&diMenuStruct3_80390508;
+		for(ii = 0; ii < sizeof(DiMenuStruct3); ii++) {
+			dst[ii] = src[ii];
+		}
+	}
+	diMenuFrameCount80399874 = framesTimes65536;
+	debugN64ButtonsPressed = n64GetEnabledButtonsPressed(0) & 0xffff;
+	bHeld = n64GetEnabledButtonsHeld(0);
+	if(!diMenuControlFlag_80399885) {
+		//Start: hide menu
+		//Hold Z, press Start: show menu
+		if((debugN64ButtonsPressed & N64_BUTTON_START) && diMenuVisible) {
+			diMenuVisible = 0;
+		}
+		else if((debugN64ButtonsPressed & N64_BUTTON_START)
+		&& (bHeld & N64_BUTTON_Z) && !diMenuVisible) {
+			diMenuVisible = 1;
+		}
+	}
+	if(diMenuVisible) {
+		diMenuDrawCur();
+		diMenuItemDoControls(diMenuCur->items);
+	}
 }
 
 s8 fn_8017AFC4(void) { // 8017AFC4
