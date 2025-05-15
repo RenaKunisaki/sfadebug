@@ -10,24 +10,24 @@
 #define MAX_MENU_DEPTH   10
 #define MAX_MENU_STRINGS 50
 
-/* 80399878 */ DiMenuStruct3 *diMenuCur;
-/* 80399886 */ bool disableMenus;
-/* 8039987C */ int diMenuStackDepth;
-/* 80399888 */ DiMenuItem *diMenuPendingPush;
-/* 8039988C */ int diMenuSpace;
+/* 80390508 */ DiMenuStruct3 diMenuStruct3_80390508;
 /* 80390534 */ DiMenuStruct3 diMenuStack[MAX_MENU_DEPTH];
 /* 803906EC */ DiMenuStrings diMenuStrings[MAX_MENU_STRINGS];
-/* 80399860 */ s8 diMenuItemFlag_80399860;
-/* 80390508 */ DiMenuStruct3 diMenuStruct3_80390508;
 /* 80390944 */ bool diMenuStringIsUsed[50];
+/* 80399860 */ s8 diMenuItemFlag_80399860;
 /* 80399864 */ Gfx *diMenuGfx;
-/* 80399868 */ void *DAT_80399868; // probably diMenuVtx or Mtx
-/* 8039986C */ void *DWORD_8039986c; // probably diMenuVtx or Mtx
-/* 80399870 */ void *DWORD_80399870; // probably diMenuPol
+/* 80399868 */ Mtx *diMenuMtx;
+/* 8039986C */ N64Vertex *diMenuVtx;
+/* 80399870 */ Pol *diMenuPol;
 /* 80399874 */ int diMenuFrameCount80399874;
+/* 80399878 */ DiMenuStruct3 *diMenuCur;
+/* 8039987C */ int diMenuStackDepth;
 /* 80399880 */ N64Button32 debugN64ButtonsPressed;
 /* 80399884 */ bool diMenuVisible;
-/* 80399885 */ bool diMenuControlFlag_80399885; //true: do not allow Start/Z+Start to hide/show menu
+/* 80399885 */ bool diMenuCanOpen; //true: do not allow Start/Z+Start to hide/show menu
+/* 80399886 */ bool disableMenus;
+/* 80399888 */ DiMenuItem *diMenuPendingPush;
+/* 8039988C */ int diMenuSpace;
 /* 80399890 */ s8 diMenuPendingPopCnt;
 
 void ObjEdit_init(void);
@@ -193,17 +193,16 @@ void diMenuPopAll(void) { // 8017AE58
 	while(diMenuStackDepth != 0) { diMenuPop(); }
 }
 
-void diMenuUpdate(Gfx *gfx, void *param_2, void *param_3, void *param_4,
+void diMenuUpdate(Gfx *gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol,
     int framesTimes65536) { // 8017AE88
 	N64Button bHeld;
 	uint ii;
 
 	if(!diMenuCur) return;
-
 	diMenuGfx = gfx;
-	DAT_80399868 = param_2;
-	DWORD_8039986c = param_3;
-	DWORD_80399870 = param_4;
+	diMenuMtx = mtx;
+	diMenuVtx = vtx;
+	diMenuPol = pol;
 	if((int)diMenuCur->spaceFlag28 != 0) {
 		u8 *src;
 		u8 *dst;
@@ -217,7 +216,7 @@ void diMenuUpdate(Gfx *gfx, void *param_2, void *param_3, void *param_4,
 	diMenuFrameCount80399874 = framesTimes65536;
 	debugN64ButtonsPressed = n64GetEnabledButtonsPressed(0) & 0xffff;
 	bHeld = n64GetEnabledButtonsHeld(0);
-	if(!diMenuControlFlag_80399885) {
+	if(!diMenuCanOpen) {
 		//Start: hide menu
 		//Hold Z, press Start: show menu
 		if((debugN64ButtonsPressed & N64_BUTTON_START) && diMenuVisible) {
@@ -234,10 +233,22 @@ void diMenuUpdate(Gfx *gfx, void *param_2, void *param_3, void *param_4,
 	}
 }
 
-s8 fn_8017AFC4(void) { // 8017AFC4
+bool diMenuIsVisible(void) { // 8017AFC4
 	return diMenuVisible;
 }
 
-void set_diMenuVisible(void) { // 8017AFCC
-	diMenuVisible = 1;
+void diMenuShow(void) { // 8017AFCC
+	diMenuVisible = true;
+}
+
+void diMenuHide(void) { // 8017AFD8
+	diMenuVisible = false;
+}
+
+void diMenuEnable(void) { // 8017AFE4
+	diMenuCanOpen = true;
+}
+
+void diMenuDisable(void) { // 8017AFF0
+	diMenuCanOpen = false;
 }

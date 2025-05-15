@@ -798,13 +798,13 @@ dll_4E.c:
 dll_4D.c:
 	.text       start:0x80179B08 end:0x80179B10
 
-debug/dimenu.c:
-	.text       start:0x80179B60 end:0x8017AFCC
-	.bss        start:0x8038BA58 end:0x80390260
-
 debug/prof.c:
-	.text       start:0x8017AFCC end:0x8017AFCC
-	.bss        start:0x80390260 end:0x80390978
+	.text       start:0x80179B60 end:0x8017A870
+	.bss        start:0x80390260 end:0x80390508
+
+debug/dimenu.c:
+	.text       start:0x8017A870 end:0x8017AFFC
+	.bss        start:0x80390508 end:0x80390978
 
 tricky.c:
 	.text       start:0x801A9128 end:0x801AA540
