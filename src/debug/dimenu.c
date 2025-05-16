@@ -10,10 +10,10 @@
 #define MAX_MENU_DEPTH   10
 #define MAX_MENU_STRINGS 50
 
-/* 80390508 */ DiMenuStruct3 diMenuStruct3_80390508;
-/* 80390534 */ DiMenuStruct3 diMenuStack[MAX_MENU_DEPTH];
-/* 803906EC */ DiMenuStrings diMenuStrings[MAX_MENU_STRINGS];
 /* 80390944 */ bool diMenuStringIsUsed[50];
+/* 803906EC */ DiMenuStrings diMenuStrings[MAX_MENU_STRINGS];
+/* 80390534 */ DiMenuStruct3 diMenuStack[MAX_MENU_DEPTH];
+/* 80390508 */ u8 diMenuStruct3_80390508[sizeof(DiMenuStruct3)]; //wtf
 /* 80399860 */ s8 diMenuItemFlag_80399860;
 /* 80399864 */ Gfx *diMenuGfx;
 /* 80399868 */ Mtx *diMenuMtx;
@@ -29,6 +29,14 @@
 /* 80399888 */ DiMenuItem *diMenuPendingPush;
 /* 8039988C */ int diMenuSpace;
 /* 80399890 */ s8 diMenuPendingPopCnt;
+
+static void dummy() {
+	//force variable order
+	diMenuStruct3_80390508;
+	diMenuStack;
+	diMenuStrings;
+	diMenuStringIsUsed;
+}
 
 void diMenuInit(void (*callback)(void), int param_2) { // 8017A870
 	int iVar1;

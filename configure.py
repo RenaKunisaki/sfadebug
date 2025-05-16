@@ -215,7 +215,7 @@ cflags_runtime = [
     "-inline auto",
 ]
 
-# REL flags
+# REL flags (not used, we have no rels)
 cflags_rel = [
     *cflags_base,
     "-sdata 0",
