@@ -23,7 +23,7 @@ union {
 /* 80390260 */ int DWORD_80390260[4];
 /* 80390270 */ int DWORD_80390270[4];
 /* 803904C0 */ u8 lbl_803904C0[0x18]; // unknown type/size
-/* 803904D8 */ int INT_803904d8[0x18];
+/* 803904D8 */ int INT_803904d8;
 /* 803904f0 */ UNKTYPE *DWORD_803904f0;
 /* 80396e88 */ extern int DWORD_80396e88;
 /* 803973C0 */ extern int lbl_803973C0;
@@ -180,15 +180,15 @@ void perfInit(void) { // 80179ec0 matching except string offsets
 	DWORD_803997c8 = 0;
 	DWORD_803997cc = 0;
 	DWORD_80399820 = DWORD_80399824 = 0;
-	meter_distack = mmAlloc2(16384, 0xff00ff, "meter:distack");
+	meter_distack  = mmAlloc2(16384, 0xff00ff, "meter:distack");
 	meter_cpustack = mmAlloc2(16000, 0xff00ff, "meter:cpustack");
-	meter_times = mmAlloc2(16192, 0xff00ff, "meter:times");
-	meter_rcptimes = mmAlloc2(3200, 0xff00ff, "meter:rcptimes");
+	meter_times    = mmAlloc2(16192, 0xff00ff, "meter:times");
+	meter_rcptimes = mmAlloc2( 3200, 0xff00ff, "meter:rcptimes");
 	meter_cputimes = mmAlloc2(16000, 0xff00ff, "meter:cputimes");
-	meter_actimes = mmAlloc2(3200, 0xff00ff, "meter:actimes");
-	meter_sctimes = mmAlloc2(6400, 0xff00ff, "meter:sctimes");
-	meter_cmdbuf = mmAlloc2(1024, 0xff00ff, "meter:cmdbuf");
-	meter_gfx = mmAlloc2(64832, 0xff00ff, "meter:gfx");
+	meter_actimes  = mmAlloc2( 3200, 0xff00ff, "meter:actimes");
+	meter_sctimes  = mmAlloc2( 6400, 0xff00ff, "meter:sctimes");
+	meter_cmdbuf   = mmAlloc2( 1024, 0xff00ff, "meter:cmdbuf");
+	meter_gfx      = mmAlloc2(64832, 0xff00ff, "meter:gfx");
 	initPerfMon();
 	if(DWORD_80396e88 == 0) {
 		DWORD_8039984c = 0x307e;
