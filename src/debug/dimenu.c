@@ -10,10 +10,12 @@
 #define MAX_MENU_DEPTH   10
 #define MAX_MENU_STRINGS 50
 
-/* 80390944 */ bool diMenuStringIsUsed[50];
-/* 803906EC */ DiMenuStrings diMenuStrings[MAX_MENU_STRINGS];
-/* 80390534 */ DiMenuStruct3 diMenuStack[MAX_MENU_DEPTH];
 /* 80390508 */ u8 diMenuStruct3_80390508[sizeof(DiMenuStruct3)]; //wtf
+/* 80390534 */ DiMenuStruct3 diMenuStack[MAX_MENU_DEPTH];
+/* 803906EC */ DiMenuStrings diMenuStrings[MAX_MENU_STRINGS];
+/* 80390944 */ bool diMenuStringIsUsed[MAX_MENU_STRINGS];
+
+//80398240: .sbss
 /* 80399860 */ s8 diMenuItemFlag_80399860;
 /* 80399864 */ Gfx *diMenuGfx;
 /* 80399868 */ Mtx *diMenuMtx;
@@ -172,25 +174,26 @@ void diMenuPush(DiMenuItem *items, uint space) { // 8017a8d0
 }
 
 void diMenuPop(void) { // 8017AD58
+	DiMenuItem *item;
+
 	if(disableMenus) {
 		diMenuPendingPopCnt++;
-	} else if(0 < diMenuStackDepth) {
-		DiMenuItem *item;
-		for(item = diMenuCur->items; item < diMenuCur->lastItem; item++) {
-			diMenuItemActivate(item, DiMenuOpcode_MenuExit);
-			if(item->type == Adjustable) {
-				bool nope = false;
-				bool *used = &diMenuStringIsUsed[(item->strs).iStrs];
-				*used = nope;
-				item->strs = diMenuStrings[(item->strs).iStrs].strs;
-			}
+        return;
+    }
+	if(diMenuStackDepth <= 0) return;
+
+	for(item = diMenuCur->items; item < diMenuCur->lastItem; item++) {
+		diMenuItemActivate(item, DiMenuOpcode_MenuExit);
+		if(item->type == Adjustable) {
+			diMenuStringIsUsed[(item->strs).iStrs] = false;
+			item->strs = diMenuStrings[(item->strs).iStrs].strs;
 		}
-		diMenuItemActivate(diMenuCur->items, DiMenuOpcode_Unk29);
-		diMenuStackDepth--;
-		if(diMenuStackDepth == 0) diMenuCur = NULL;
-		else
-			diMenuCur = &diMenuStack[diMenuStackDepth - 1];
 	}
+	item = diMenuCur->items;
+	diMenuItemActivate(item, DiMenuOpcode_Unk29);
+	diMenuStackDepth--;
+	if(diMenuStackDepth == 0) diMenuCur = NULL;
+	else diMenuCur = &diMenuStack[diMenuStackDepth - 1];
 }
 
 void diMenuPopAll(void) { // 8017AE58
