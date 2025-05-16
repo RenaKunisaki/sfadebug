@@ -35,7 +35,7 @@ union {
 
 //.sbss (0x80398240)
 /* 803989A4 */ extern LoadedDLL *pDll_SaveGame;
-//end 803989d0
+// end 803989d0
 /* 803997B8 */ extern int DWORD_803997b8;
 /* 803997BC */ extern DebugSaveStruct *pMeterPerfdata1;
 /* 803997C0 */ extern DebugSaveStruct *pMeterPerfdata2;
@@ -180,8 +180,7 @@ void diProfPrint(uint mask) { // 80179D60
 	}
 }
 
-// equiv except string offsets
-void perfInit(void) { // 80179ec0
+void perfInit(void) { // 80179ec0 matching except string offsets
 	DiProfStruct *ptr = DiProfStruct_8038ba60;
 	DWORD_80399828 = FALSE;
 	bEnableRspStatusDisplay = FALSE;
@@ -227,8 +226,7 @@ void perfInit(void) { // 80179ec0
 void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8
 	int dVar1;
 
-	dVar1 = DWORD_803997b8;
-	if(((DWORD_803997c8 != 1) && (DWORD_803997c8 != 3))
+	if((((dVar1 = DWORD_803997b8) != 1) && (DWORD_803997c8 != 3))
 	    && (DWORD_803997c8 != 5)) {
 		if(param1 == 0) {
 			debugSaveFn_8017a688();
@@ -261,14 +259,12 @@ void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8
 			pMeterPerfdata2->unk118 = 0;
 			DWORD_803997c8 = 4;
 			diFlag_803997d0 = 0;
-			dVar1 = param1;
 		} else if(param1 == 3) {
 			fn_8017AFD8();
 			diFlag_803997d0 = 1;
-			DWORD_803997c8 = 5;
 			dVar1 = 1;
-		} else
-			dVar1 = param1;
+			DWORD_803997c8 = 5;
+		}
 	}
 	DWORD_803997b8 = dVar1;
 }
@@ -338,8 +334,7 @@ void printRspStatus(void) { // 8017A37C reloc
 		diPrintf("TMEM loading. = %2.0f%%", &work);
 	}
 	if(DWORD_80399828 != 0) {
-		retM1_afterLoadAsset(
-		    lbl_803904C0, (undefined *)&lbl_803973C4, 1);
+		retM1_afterLoadAsset(lbl_803904C0, (undefined *)&lbl_803973C4, 1);
 		retM1_800BFBFC((undefined *)&lbl_803904D8, 0, 1);
 	}
 }
