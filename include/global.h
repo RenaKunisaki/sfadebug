@@ -6,6 +6,11 @@
 #define BUILD_AUTHOR   "ptossell"
 #define VERSION_STRING "Version 2.8 14/12/98 15.30 L.Schuneman"
 
+/* 802eadc8 */ extern const char *s_buildDate;
+/* 802eadd8 */ extern const char *s_buildName;
+/* 802eade3 */ extern const char *s_buildVersion;
+/* 80396c08 */ extern const char *s_codeVersion;
+
 #include "dolphin/types.h"
 
 #include "macros.h"

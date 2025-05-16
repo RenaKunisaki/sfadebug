@@ -31,6 +31,7 @@ extern char _defaultBits[];
 /* 80355238 */ extern PlayerPrevPosition playerPrevPositions[NUM_PLAYER_PREV_POSITIONS];
 
 //.sdata (0x80396700)
+/* 80396c08 */ const char *s_codeVersion = CODE_VERSION;
 /* 80396c14 */ extern s8 debugMenuPrevState;
 /* 80396c15 */ extern u8 framesThisStep;
 /* 80396c16 */ extern u8 framesLastStep;

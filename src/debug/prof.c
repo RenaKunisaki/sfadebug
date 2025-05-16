@@ -6,6 +6,7 @@
 #include "gfx/render.h"
 #include "sys/dll.h"
 #include "debug/debug.h"
+#include "debug/dimenu.h"
 
 union {
 	struct {
@@ -17,25 +18,19 @@ union {
 	int times[4];
 } rspTimes;
 
+//.bss
+/* 8038ba60 */ DiProfStruct DiProfStruct_8038ba60[512];
 /* 80390260 */ int DWORD_80390260[4];
 /* 80390270 */ int DWORD_80390270[4];
 /* 803904C0 */ u8 lbl_803904C0[0x18]; // unknown type/size
-/* 803904D8 */ int lbl_803904D8[0x18];
+/* 803904D8 */ int INT_803904d8[0x18];
+/* 803904f0 */ UNKTYPE *DWORD_803904f0;
+/* 80396e88 */ extern int DWORD_80396e88;
 /* 803973C0 */ extern int lbl_803973C0;
 /* 803973C4 */ extern int lbl_803973C4;
-
-//.bss (0x80325D20)
-/* 8038ba60 */ DiProfStruct DiProfStruct_8038ba60[DIPROFSTRUCT_MAX_NUM];
-/* 803904c0 */ UNKTYPE *DWORD_803904c0;
-/* 803904d8 */ UNKTYPE *DWORD_803904d8;
-/* 803904f0 */ UNKTYPE *DWORD_803904f0;
-
-//.sdata (0x80396700)
-/* 80396e88 */ extern int DWORD_80396e88;
-
-//.sbss (0x80398240)
 /* 803989A4 */ extern LoadedDLL *pDll_SaveGame;
-// end 803989d0
+/* 80398b70 */ extern void *pFrameBuffer_80398b70;
+/* 80398b74 */ extern void *pFrameBuffer_80398b74;
 /* 803997B8 */ extern int DWORD_803997b8;
 /* 803997BC */ extern DebugSaveStruct *pMeterPerfdata1;
 /* 803997C0 */ extern DebugSaveStruct *pMeterPerfdata2;
@@ -76,11 +71,8 @@ union {
 /* 8039984C */ extern int DWORD_8039984c;
 /* 80399850 */ extern int DWORD_80399850;
 /* 80399854 */ extern int DWORD_80399854;
-/* 80398b70 */ extern void *pFrameBuffer_80398b70;
-/* 80398b74 */ extern void *pFrameBuffer_80398b74;
 
 void fn_8017A638(void);
-s8 fn_8017AFC4(void);
 int diPrintf(const char *fmt, ...);
 DiStack *diStackCreate(int param1, int param2); // 80070320
 int diStackGetNumItems(DiStack *stack); // 800704d4
@@ -145,8 +137,7 @@ void diProfEnd(undefined4 param1, char *name) { // 80179C50
 	}
 }
 
-// should be equivalent, only regalloc
-void diProfPrint(uint mask) { // 80179D60
+void diProfPrint(uint mask) { // 80179D60 should be equivalent, only regalloc
 	int uVar1;
 	int iVar2;
 	uint uVar3;
@@ -271,8 +262,8 @@ void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8
 
 void fn_8017A2B0(void) { // 8017A2B0
 	if(DWORD_803997b8 != 0) {
-		retM1_afterLoadAsset(&lbl_803904C0, &lbl_803973C0, 1);
-		retM1_800BFBFC(&lbl_803904D8, 0, 1);
+		retM1_afterLoadAsset(&INT_803904d8, &lbl_803973C0, 1);
+		retM1_800BFBFC(&INT_803904d8, 0, 1);
 	}
 }
 
@@ -297,11 +288,15 @@ BOOL fn_8017A320(void) { // 8017A320
 	return DWORD_80399828;
 }
 
-extern u8 lbl_80399858[8];
-void nop_8017a328(void) { // 8017A328
-	nop_800BFC0C(&DiProfStruct_8038ba60);
-	retM1_afterLoadAsset(&lbl_803904C0, &lbl_80399858, 1);
-	retM1_800BFBFC(&lbl_803904D8, 0, 1);
+void nop_800BFC0C(void *param);
+int retM1_afterLoadAsset(void *param_1,void *param_2,int param_3);
+int retM1_800BFBFC(void *param_1,int param_2,int param_3);
+
+extern u8 BYTE_ARRAY_80399858[8];
+void nop_8017a328(void) { // 8017A328 these all do nothing
+	nop_800BFC0C(&DiProfStruct_8038ba60[512]);
+	retM1_afterLoadAsset(lbl_803904C0,BYTE_ARRAY_80399858,1);
+	retM1_800BFBFC(&DWORD_803904f0,0,1);
 }
 
 void printRspStatus(void) { // 8017A37C reloc
@@ -313,7 +308,7 @@ void printRspStatus(void) { // 8017A37C reloc
 		rspTimes.times[iVar2]
 		    = (DWORD_80390270[iVar2] - DWORD_80390260[iVar2]) & 0xffffff;
 	}
-	if((fn_8017AFC4() == 0) && (bEnableRspStatusDisplay != 0)) {
+	if((diMenuIsVisible() == false) && bEnableRspStatusDisplay) {
 		dprintReset();
 		dprintSetBgColor(0, 0, 0xff, 0x80);
 
@@ -335,7 +330,7 @@ void printRspStatus(void) { // 8017A37C reloc
 	}
 	if(DWORD_80399828 != 0) {
 		retM1_afterLoadAsset(lbl_803904C0, (undefined *)&lbl_803973C4, 1);
-		retM1_800BFBFC((undefined *)&lbl_803904D8, 0, 1);
+		retM1_800BFBFC((undefined *)&INT_803904d8, 0, 1);
 	}
 }
 
@@ -363,7 +358,7 @@ void fn_8017A638(void) { // 8017A638
 	*(PTR_DAT_803997e4++) = ret0_800BFC8C();
 }
 
-void debugSaveFn_8017a688(void) { // 8017A688
+void debugSaveFn_8017a688(void) { // 8017A688 does this belong here?
 	Vec *pos;
 	uint uVar1;
 
@@ -393,9 +388,9 @@ void debugSaveFn_8017a688(void) { // 8017A688
 		memset_(pMeterPerfdata2->buildDate, 0, 0x40);
 		memset_(pMeterPerfdata2->buildAuthor, 0, 0x40);
 		memset_(pMeterPerfdata2->fullVersionString, 0, 0x40);
-		strcpy(pMeterPerfdata2->codeVersion, CODE_VERSION);
-		strcpy(pMeterPerfdata2->buildDate, BUILD_DATE);
-		strcpy(pMeterPerfdata2->buildAuthor, BUILD_AUTHOR);
+		strcpy(pMeterPerfdata2->codeVersion, s_codeVersion);
+		strcpy(pMeterPerfdata2->buildDate, s_buildDate);
+		strcpy(pMeterPerfdata2->buildAuthor, s_buildName);
 		strcpy(pMeterPerfdata2->fullVersionString, VERSION_STRING);
 		if(DWORD_803997b8 == 1) {
 			DWORD_803997c8 = 1;

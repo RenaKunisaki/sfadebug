@@ -68,4 +68,18 @@ typedef struct {
     /* 0x28 */ uint spaceFlag28;
 } DiMenuStruct3;
 
+void ObjEdit_init(void);
+int debugPrintMeasureStr(char *param1, ...);
+int diMenuItemActivate(DiMenuItem *item, /* DiMenuOpcode */ int op);
+void diMenuInit(void (*callback)(void), int param_2);
+void diMenuPush(DiMenuItem *items, uint space);
+void diMenuPop(void);
+void diMenuPopAll(void);
+void diMenuUpdate(Gfx *gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol, int framesTimes65536);
+BOOL diMenuIsVisible(void);
+void diMenuShow(void);
+void diMenuHide(void);
+void diMenuEnable(void);
+void diMenuDisable(void);
+
 #endif //_DEBUG_DIMENU_H_

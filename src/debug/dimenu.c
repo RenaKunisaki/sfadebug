@@ -30,10 +30,6 @@
 /* 8039988C */ int diMenuSpace;
 /* 80399890 */ s8 diMenuPendingPopCnt;
 
-void ObjEdit_init(void);
-int debugPrintMeasureStr(char *param1, ...);
-int diMenuItemActivate(DiMenuItem *item, /* DiMenuOpcode */ int op);
-
 void diMenuInit(void (*callback)(void), int param_2) { // 8017A870
 	int iVar1;
 
@@ -233,7 +229,7 @@ void diMenuUpdate(Gfx *gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol,
 	}
 }
 
-bool diMenuIsVisible(void) { // 8017AFC4
+BOOL diMenuIsVisible(void) { // 8017AFC4
 	return diMenuVisible;
 }
 
