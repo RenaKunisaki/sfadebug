@@ -10,7 +10,7 @@
 #define MAX_MENU_DEPTH   10
 #define MAX_MENU_STRINGS 50
 
-/* 80390508 */ u8 diMenuStruct3_80390508[sizeof(DiMenuStruct3)]; //wtf
+/* 80390508 */ DiMenuStruct3 diMenuStruct3_80390508[1]; //wtf
 /* 80390534 */ DiMenuStruct3 diMenuStack[MAX_MENU_DEPTH];
 /* 803906EC */ DiMenuStrings diMenuStrings[MAX_MENU_STRINGS];
 /* 80390944 */ bool diMenuStringIsUsed[MAX_MENU_STRINGS];
@@ -40,6 +40,8 @@ static void dummy() {
 	diMenuStringIsUsed;
 }
 
+uint getScreenResolution();
+
 void diMenuInit(void (*callback)(void), int param_2) { // 8017A870
 	int iVar1;
 
@@ -51,127 +53,138 @@ void diMenuInit(void (*callback)(void), int param_2) { // 8017A870
 }
 
 void diMenuPush(DiMenuItem *items, uint space) { // 8017a8d0
-	uint screenRes;
-	uint height;
+    int tmpWidth;
+	int screenRes;
 	int width;
-	uint ii;
-	DiMenuItem *item;
-	uint widest;
+	int ii;
+    int i2;
+    int widest;
+    DiMenuItemStrings *strs;
 
 	screenRes = getScreenResolution();
-	widest = space;
-	if(disableMenus) {
-		diMenuSpace = widest;
+	if (disableMenus) {
 		diMenuPendingPush = items;
+		diMenuSpace = space;
 		return;
 	}
-	if(diMenuStackDepth == MAX_MENU_DEPTH) {
+	if (diMenuStackDepth == MAX_MENU_DEPTH) {
 		printf("diMenu: Menu stack full! Increase MAX_MENU_DEPTH\n");
 		return;
 	}
+
 	diMenuCur = &diMenuStack[diMenuStackDepth];
 	diMenuCur->spaceFlag28 = 0;
 	diMenuCur->items = items;
 	diMenuCur->curItem = items;
-	for(; items->type != End; items = items + 1) {
+	for(; items->type != End; items++) {
 		if(items->type == Adjustable) diMenuStringInit(items);
 	}
+
 	diMenuCur->lastItem = items;
-	item = diMenuCur->items;
+	items = diMenuCur->items;
 
 	// measure string dimensions
 	diMenuCur->minW = 0;
 	diMenuCur->minH = 0;
 	diMenuCur->maxH = SCREEN_HEIGHT;
 	diMenuCur->maxW = SCREEN_WIDTH;
-	while(item < diMenuCur->lastItem) {
-		item->heightFlags18 = 0;
-		height = debugPrintMeasureStr(item->text);
-		switch(item->type) {
+
+    while (items < diMenuCur->lastItem) {
+		items->heightFlags18 = 0;
+		width = debugPrintMeasureStr(items->text);
+		switch(items->type) {
 			case Header: {
-				if((item->strs).iStrs != 0) {
-					height += debugPrintMeasureStr(item->strs.str)
-					    + debugPrintMeasureStr(" ");
+				if (items->strs.iStrs != 0) {
+					width += debugPrintMeasureStr(items->strs.str) +
+						debugPrintMeasureStr(" ");
 				}
 				break;
 			}
 			case CBoostRelated:
-				height += 10;
+				width += 10;
 				// fall thru
-			case Unk0: height += debugPrintMeasureStr("00000"); break;
-
+			case Unk0:
+                width += debugPrintMeasureStr("00000");
+                break;
 			case Adjustable: {
-				DiMenuItemStrings *strs;
-				strs = &diMenuStrings[item->strs.iStrs].strs;
+				strs = &diMenuStrings[items->strs.iStrs].strs;
 				widest = 0;
-				for(ii = 0; strs->pStr[ii]; ii++) {
-					uint w = debugPrintMeasureStr(strs->pStr[ii]);
-					if((int)w > (int)widest) { widest = w; }
+				for(i2 = 0; strs->pStr[i2]; i2++) {
+					tmpWidth = debugPrintMeasureStr(strs->pStr[i2]);
+					if(tmpWidth > widest) widest = tmpWidth;
 				}
-				height += widest;
+				width += widest;
 				break;
 			}
 		}
+		if(items->width == 0xFFFF) ii = (SCREEN_WIDTH / 2) - (width / 2);
+		else if(items->width != 0) ii = items->width;
 
-		if(item->width == 0xFFFF) {
-			width = (SCREEN_WIDTH / 2)
-			    - (((int)height / 2) + (height < 0 && (height & 1) != 0));
-		} else if(item->width != 0) {
-			width = item->width;
-		}
-		if((item->width != 0) || (0 < item->height)) {
-			if(width < diMenuCur->maxW) { diMenuCur->maxW = width; }
-			if((item->width != 0xFFFF) || (0 < item->height)) {
-				if(item->height < diMenuCur->maxH) {
-					diMenuCur->maxH = item->height;
+		if ((items->width != 0) || (0 < items->height)) {
+			if(ii < diMenuCur->maxW) diMenuCur->maxW = ii;
+			if ((items->width != 0xFFFF) || (0 < items->height)) {
+				if (items->height < diMenuCur->maxH) {
+					diMenuCur->maxH = items->height;
 				}
-				if(item->height > diMenuCur->minH) {
-					diMenuCur->minH = item->height;
+				if (items->height > diMenuCur->minH) {
+					diMenuCur->minH = items->height;
 				}
 			}
 		}
-		if(item->width == 0xFFFF) {
-			item->heightFlags18 = 1;
-			item->width = (SCREEN_WIDTH / 2)
-			    - (((int)height / 2) + (height < 0 && (height & 1) != 0));
+
+		if (items->width == 0xFFFF) {
+			items->heightFlags18 = 1;
+			items->width = (SCREEN_WIDTH / 2) - (width / 2);
 		}
-		if(item->width + (int)height > diMenuCur->minW) {
-			diMenuCur->minW = item->width + height;
+		if (items->width + width > diMenuCur->minW) {
+			diMenuCur->minW = items->width + width;
 		}
-		if((int)(height + diMenuCur->maxW) > diMenuCur->minW) {
-			diMenuCur->minW = height + diMenuCur->maxW;
+		if ((width + diMenuCur->maxW) > diMenuCur->minW) {
+			diMenuCur->minW = width + diMenuCur->maxW;
 		}
-		item = item + 1;
-		if(diMenuCur->minH < (SCREEN_HEIGHT - 10)) { diMenuCur->minH += 11; }
+
+		items++;
+		if (diMenuCur->minH < (SCREEN_HEIGHT - 10)) {
+            diMenuCur->minH += 11;
+        }
 	}
-	if(diMenuCur->maxW >= 20) diMenuCur->maxW -= 20;
-	else
+
+	if (diMenuCur->maxW >= 20) {
+        diMenuCur->maxW -= 20;
+    } else {
 		diMenuCur->maxW = 0;
+    }
 	diMenuCur->minW += 20;
-	if(SCREEN_WIDTH < (int)(screenRes & 0xffff)) {
+
+	if (SCREEN_WIDTH < (screenRes & 0xffff)) {
 		diMenuCur->maxW <<= 1;
 		diMenuCur->minW <<= 1;
 	}
-	if(SCREEN_HEIGHT < (int)screenRes >> 0x10) {
+	if (SCREEN_HEIGHT < (screenRes >> 0x10)) {
 		diMenuCur->maxH <<= 1;
 		diMenuCur->minH <<= 1;
 	}
-	if(diMenuCur->curItem->type == Header) { diMenuCurGoNextItem(); }
-	diMenuCur->firstDispItem = diMenuCur->items;
+	if (diMenuCur->curItem->type == Header) {
+        diMenuCurGoNextItem();
+    }
 
-	if(widest) {
+	diMenuCur->firstDispItem = diMenuCur->items;
+	if(space) {
 		if(diMenuItemFlag_80399860) {
 			// this is just a memcpy
 			u8 *dst = (u8 *)diMenuCur;
-			u8 *src = (u8 *)&diMenuStruct3_80390508;
-			for(ii = 0; ii < sizeof(DiMenuStruct3); ii++) { dst[ii] = src[ii]; }
+			u8 *src = (u8*)&diMenuStruct3_80390508;
+			for (ii = 0; ii < sizeof(DiMenuStruct3); ii++) {
+                dst[ii] = src[ii];
+            }
 		}
 		diMenuCur->spaceFlag28 = 1;
 	}
 	diMenuStackDepth += 1;
 	diMenuItemActivate(diMenuCur->items, DiMenuOpcode_MenuEnter);
-	return;
+    !diMenuStruct3_80390508;
 }
+
 
 void diMenuPop(void) { // 8017AD58
 	DiMenuItem *item;
