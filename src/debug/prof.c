@@ -138,35 +138,35 @@ void diProfEnd(undefined4 param1, char *name) { // 80179C50
 }
 
 void diProfPrint(uint mask) { // 80179D60 should be equivalent, only regalloc
+	uint ii;
 	int uVar1;
 	int iVar2;
 	uint uVar3;
-	uint ii;
-	int jj;
 
 	if(!diStack) {
 		printf("diProfPrint: before diProfReset!\n");
 		CRASH();
 	}
 	for(ii = 0; ii < diProfCount; ii++) {
-		if((mask & DiProfStruct_8038ba60[ii]._18) == 0) continue;
+		if(!(mask & DiProfStruct_8038ba60[ii]._18)) continue;
 
 		uVar1 = DiProfStruct_8038ba60[ii]._20;
-		for(iVar2 = 0; iVar2 < (uVar1 << 1); iVar2++) printf(" ");
+		for(iVar2 = 0; iVar2 < (uVar1 * 2); iVar2++) printf(" ");
 		printf("%s: %d",
 		    DiProfStruct_8038ba60[ii].name,
 		    DiProfStruct_8038ba60[ii].time);
 
-		iVar2 = 0;
-		for(uVar3 = ii - 1;
-		    (int)uVar3 >= 0 && DiProfStruct_8038ba60[uVar3]._20 > uVar1;
-		    uVar3--) {
-			if((uVar1 + 1) == DiProfStruct_8038ba60[uVar3]._20) {
-				iVar2 += DiProfStruct_8038ba60[uVar3].time;
+		uVar3 = 0;
+		for(ii = iVar2 - 1;
+		(int)uVar3 >= 0 && DiProfStruct_8038ba60[uVar3]._20 > uVar1;
+		uVar3--) {
+			if((uVar1 + 1) == DiProfStruct_8038ba60[iVar2]._20) {
+				iVar2 = iVar2 + DiProfStruct_8038ba60[uVar3].time;
 			}
 		}
-		if(iVar2)
+		if(iVar2) {
 			printf(" (%d+%d)", DiProfStruct_8038ba60[ii].time - iVar2, iVar2);
+		}
 		printf("\n");
 	}
 }
