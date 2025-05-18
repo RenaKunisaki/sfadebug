@@ -8,7 +8,8 @@
 #include "debug/debug.h"
 #include "debug/dimenu.h"
 
-union {
+//.bss
+/* 80390280 */ union {
 	struct {
 		int rspTotalTime;
 		int rdpWorkingTime;
@@ -18,13 +19,13 @@ union {
 	int times[4];
 } rspTimes;
 
-//.bss
 /* 8038ba60 */ DiProfStruct DiProfStruct_8038ba60[512];
 /* 80390260 */ int DWORD_80390260[4];
 /* 80390270 */ int DWORD_80390270[4];
 /* 803904C0 */ u8 lbl_803904C0[0x18]; // unknown type/size
 /* 803904D8 */ int INT_803904d8;
 /* 803904f0 */ UNKTYPE *DWORD_803904f0;
+
 /* 80396e88 */ extern int DWORD_80396e88;
 /* 803973C0 */ extern int lbl_803973C0;
 /* 803973C4 */ extern int lbl_803973C4;
@@ -289,9 +290,10 @@ BOOL fn_8017A320(void) { // 8017A320
 
 extern u8 BYTE_ARRAY_80399858[8];
 void nop_8017a328(void) { // 8017A328 these all do nothing
-	nop_800BFC0C(&DiProfStruct_8038ba60[512]);
-	retM1_afterLoadAsset(lbl_803904C0,BYTE_ARRAY_80399858,1);
-	retM1_800BFBFC(&DWORD_803904f0,0,1);
+	int *s = DWORD_80390260;
+	nop_800BFC0C(&s[1]);
+	retM1_afterLoadAsset(&s[1],BYTE_ARRAY_80399858,1);
+	retM1_800BFBFC(&s[2],0,1);
 }
 
 void printRspStatus(void) { // 8017A37C reloc
