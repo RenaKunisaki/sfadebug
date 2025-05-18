@@ -84,6 +84,9 @@ void nop_800BFBF0(UNKTYPE *, UNKTYPE *, int);
 void *mmAlloc2(uint size, uint tag, char *name); // 8007badc
 void memcpy_src_dst_len(void *src, void *dst, size_t len); // 800bfc20
 void debugSaveFn_8017a688(void);
+void nop_800BFC0C(void *param);
+int retM1_afterLoadAsset(void *param_1,void *param_2,int param_3);
+int retM1_800BFBFC(void *param_1,int param_2,int param_3);
 
 void diProfReset(void) { // 80179B60
 	if(!diStack) diStack = diStackCreate(10, 4);
@@ -258,10 +261,9 @@ void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8 matching except string off
 }
 
 void fn_8017A2B0(void) { // 8017A2B0
-	if(DWORD_803997b8 != 0) {
-		retM1_afterLoadAsset(&INT_803904d8, &lbl_803973C0, 1);
-		retM1_800BFBFC(&INT_803904d8, 0, 1);
-	}
+	if(!DWORD_803997b8) return;
+	retM1_afterLoadAsset(&lbl_803904C0, &lbl_803973C0, 1);
+	retM1_800BFBFC(&lbl_803904C0, 0, 1);
 }
 
 int fn_8017A300(void) { // 8017A300
@@ -284,10 +286,6 @@ void fn_8017A318(BOOL param_1) { // 8017A318
 BOOL fn_8017A320(void) { // 8017A320
 	return DWORD_80399828;
 }
-
-void nop_800BFC0C(void *param);
-int retM1_afterLoadAsset(void *param_1,void *param_2,int param_3);
-int retM1_800BFBFC(void *param_1,int param_2,int param_3);
 
 extern u8 BYTE_ARRAY_80399858[8];
 void nop_8017a328(void) { // 8017A328 these all do nothing
