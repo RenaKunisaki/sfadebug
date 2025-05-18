@@ -213,50 +213,48 @@ void perfInit(void) { // 80179ec0 matching except string offsets
 	nop_800BFBF0((void *)((int)ptr + 0x4A78), &DWORD_80399834, 1);
 }
 
-void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8
-	int dVar1;
-
-	if((((dVar1 = DWORD_803997b8) != 1) && (DWORD_803997c8 != 3))
-	    && (DWORD_803997c8 != 5)) {
-		if(param1 == 0) {
-			debugSaveFn_8017a688();
+void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8 matching except string offsets
+	if(DWORD_803997c8 == 1) return;
+	if(DWORD_803997c8 == 3) return;
+	if(DWORD_803997c8 == 5) return;
+	if(param1 == 0) {
+		debugSaveFn_8017a688();
+		diFlag_803997d0 = 0;
+	} else if(param1 == 1) {
+		fn_8017AFD8();
+		debugSaveFn_8017a688();
+		pMeterPerfdata1 = mmAlloc2(0x286e0, 0xff00ff, "meter:perfdata1");
+		pMeterPerfdata2 = (DebugSaveStruct *)mmAlloc2(
+			0x124, 0xff00ff, "meter:perfdata2");
+		if((pMeterPerfdata1 == 0) || (pMeterPerfdata2 == 0)) {
+			printf("Sorry No DI memory left to store profile.");
 			diFlag_803997d0 = 0;
-		} else if(param1 == 1) {
-			fn_8017AFD8();
-			debugSaveFn_8017a688();
-			pMeterPerfdata1 = mmAlloc2(0x286e0, 0xff00ff, "meter:perfdata1");
-			pMeterPerfdata2 = (DebugSaveStruct *)mmAlloc2(
-			    0x124, 0xff00ff, "meter:perfdata2");
-			if((pMeterPerfdata1 == 0) || (pMeterPerfdata2 == 0)) {
-				printf("Sorry No DI memory left to store profile.");
-				diFlag_803997d0 = 0;
-			}
-			pMeterPerfdata2->unk118 = 0;
-			diFlag_803997d0 = 0;
-			nop_800BFC04(0x80000000, 0x9FFFFFFF);
-			nop_800BFC08(0x80000000, 0x9FFFFFFF);
-			pDll_SaveGame->funcs->func[6]();
-		} else if(param1 == 2) {
-			fn_8017AFD8();
-			debugSaveFn_8017a688();
-			pMeterPerfdata1 = mmAlloc2(0x5c, 0xff00ff, "meter:perfdata3");
-			pMeterPerfdata2 = (DebugSaveStruct *)mmAlloc2(
-			    0x124, 0xff00ff, "meter:perfdata4");
-			if((pMeterPerfdata1 == 0) || (pMeterPerfdata2 == 0)) {
-				printf("Sorry No DI memory left to store profile.");
-				diFlag_803997d0 = 0;
-			}
-			pMeterPerfdata2->unk118 = 0;
-			DWORD_803997c8 = 4;
-			diFlag_803997d0 = 0;
-		} else if(param1 == 3) {
-			fn_8017AFD8();
-			diFlag_803997d0 = 1;
-			dVar1 = 1;
-			DWORD_803997c8 = 5;
 		}
+		pMeterPerfdata2->unk118 = 0;
+		diFlag_803997d0 = 0;
+		nop_800BFC04(0x80000000, 0x9FFFFFFF);
+		nop_800BFC08(0x80000000, 0x9FFFFFFF);
+		pDll_SaveGame->funcs->func[6]();
+	} else if(param1 == 2) {
+		fn_8017AFD8();
+		debugSaveFn_8017a688();
+		pMeterPerfdata1 = mmAlloc2(0x5c, 0xff00ff, "meter:perfdata3");
+		pMeterPerfdata2 = (DebugSaveStruct *)mmAlloc2(
+			0x124, 0xff00ff, "meter:perfdata4");
+		if((pMeterPerfdata1 == 0) || (pMeterPerfdata2 == 0)) {
+			printf("Sorry No DI memory left to store profile.");
+			diFlag_803997d0 = 0;
+		}
+		pMeterPerfdata2->unk118 = 0;
+		DWORD_803997c8 = 4;
+		diFlag_803997d0 = 0;
+	} else if(param1 == 3) {
+		fn_8017AFD8();
+		diFlag_803997d0 = 1;
+		param1 = 1;
+		DWORD_803997c8 = 5;
 	}
-	DWORD_803997b8 = dVar1;
+	DWORD_803997b8 = param1;
 }
 
 void fn_8017A2B0(void) { // 8017A2B0
