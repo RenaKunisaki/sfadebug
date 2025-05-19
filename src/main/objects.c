@@ -324,3 +324,11 @@ ObjInstance *Object_findByUniqueId(u32 id) {
     }
     return NULL;
 }
+
+s32 Object_getNumLoadedObjs(void) {
+    return Object_numLoadedObjs;
+}
+
+s32 Object_getFirstLoadedObj(void) {
+    return 0;
+}
