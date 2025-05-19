@@ -288,3 +288,16 @@ ObjInstance **Object_getObjects(s32 *outFirstObj, s32 *outNumObjs) {
     if(outNumObjs) *outNumObjs = Object_numLoadedObjs;
     return Object_loadedObjs;
 }
+
+/**
+ * @brief Get the specified object from the global object list.
+ *
+ *  @param idx Object index.
+ *  @return ObjInstance* The object, or NULL if idx is invalid.
+ */
+ObjInstance *Object_getObject(s32 idx) {
+    if((idx < 0) || (idx >= Object_numLoadedObjs)) {
+        return NULL;
+    }
+    return Object_loadedObjs[idx];
+}
