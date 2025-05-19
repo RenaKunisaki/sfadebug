@@ -216,3 +216,38 @@ int getNumVisibleObjects(s32 *outNumObjs) {
     nVisibleObjs = result;
     return result;
 }
+
+void depthSortObjects_doSort(s32 arg0, s32 arg1) {
+    ObjInstance *obj;
+    s32 var_r29;
+    s32 var_r31;
+    s32 var_r31_2;
+
+    if(arg0 > arg1) return;
+
+    var_r31 = arg0;
+    while(var_r31 <= arg1) {
+        obj = Object_loadedObjs[var_r31];
+        if(obj->data->flags & 0x80000) {
+            obj->depth = (f32) ((u8) obj->data->unk96 * 0x64);
+        } else {
+            obj->depth = -getCameraDepth(obj->prevPos.x, obj->prevPos.y, obj->prevPos.z);
+        }
+        var_r31 += 1;
+    }
+
+    var_r29 = 0;
+    while(var_r29 == 0) {
+        var_r29 = 1;
+        var_r31_2 = arg0;
+        while(var_r31_2 < arg1) {
+            if (Object_loadedObjs[var_r31_2 + 1]->depth < Object_loadedObjs[var_r31_2]->depth) {
+                obj = Object_loadedObjs[var_r31_2];
+                Object_loadedObjs[var_r31_2] = Object_loadedObjs[var_r31_2 + 1];
+                Object_loadedObjs[var_r31_2 + 1] = obj;
+                var_r29 = 0;
+            }
+            var_r31_2 += 1;
+        }
+    }
+}
