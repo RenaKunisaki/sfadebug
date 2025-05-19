@@ -219,7 +219,7 @@ int getNumVisibleObjects(s32 *outNumObjs) {
 
 void depthSortObjects_doSort(s32 arg0, s32 arg1) {
     ObjInstance *obj;
-    s32 var_r29;
+    BOOL done;
     s32 ii;
 
     if(arg0 > arg1) return;
@@ -233,18 +233,16 @@ void depthSortObjects_doSort(s32 arg0, s32 arg1) {
         }
     }
 
-    var_r29 = 0;
-    while(var_r29 == 0) {
-        var_r29 = 1;
-        ii = arg0;
-        while(ii < arg1) {
+    done = false;
+    while(!done) {
+        done = true;
+        for(ii = arg0; ii < arg1; ii++) {
             if (Object_loadedObjs[ii + 1]->depth < Object_loadedObjs[ii]->depth) {
                 obj = Object_loadedObjs[ii];
                 Object_loadedObjs[ii] = Object_loadedObjs[ii + 1];
                 Object_loadedObjs[ii + 1] = obj;
-                var_r29 = 0;
+                done = false;
             }
-            ii += 1;
         }
     }
 }
