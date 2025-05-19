@@ -166,10 +166,20 @@ extern s32 tables_tab;
 extern f32 timeDelta;
 extern s32 var_80396D08;
 
+/**
+ * @brief Reset nVisibleObjs.
+ */
 void clearNVisibleObjs(void) {
     nVisibleObjs = 0;
 }
 
+/**
+ * @brief Get the number of visible objects.
+ *
+ *  @param outNumObjs Receives number of loaded objects.
+ *  @return int Number of visible objects.
+ *  @note Caches the result.
+ */
 int getNumVisibleObjects(s32 *outNumObjs) {
     int result; //r31
     s32 nObjs; //r30
