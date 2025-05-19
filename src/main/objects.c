@@ -265,3 +265,16 @@ void updateObjMtxs(void) {
         }
     }
 }
+
+/**
+ * @brief Get the global object list.
+ *
+ *  @param outFirstObj (optional) Receives index of first object (always 0).
+ *  @param outNumObjs (optional) Receives number of objects.
+ *  @return ObjInstance** The object list.
+ */
+ObjInstance **Object_getObjects(s32 *outFirstObj, s32 *outNumObjs) {
+    if(outFirstObj) *outFirstObj = 0;
+    if(outNumObjs) *outNumObjs = Object_numLoadedObjs;
+    return Object_loadedObjs;
+}
