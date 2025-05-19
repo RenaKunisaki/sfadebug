@@ -301,3 +301,26 @@ ObjInstance *Object_getObject(s32 idx) {
     }
     return Object_loadedObjs[idx];
 }
+
+/**
+ * @brief Find an object by its unique ID.
+ *
+ *  @param id The ID.
+ *  @return ObjInstance* The object, or NULL if not found.
+ */
+ObjInstance *Object_findByUniqueId(u32 id) {
+    s32 ii;
+    s32 nObjs;
+    ObjInstance *obj;
+
+    ii = 0;
+    nObjs = Object_numLoadedObjs;
+    while(ii < nObjs) {
+        obj = Object_loadedObjs[ii];
+        if(obj->def && obj->def->id == id) {
+            return obj;
+        }
+        ii++;
+    }
+    return NULL;
+}

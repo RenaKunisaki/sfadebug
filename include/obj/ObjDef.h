@@ -1502,7 +1502,7 @@ typedef struct {
     /* 0x06 */ s8 bound; //load if in range (bound<<3) of player
     /* 0x07 */ s8 cullDist;
     /* 0x08 */ Vec pos;
-    /* 0x14 */ int id; //unique ID
+    /* 0x14 */ s32 id; //unique ID
 } ObjDef;
 
 typedef s16 ObjDefNo_t;
