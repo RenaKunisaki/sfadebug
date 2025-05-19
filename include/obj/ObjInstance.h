@@ -5,30 +5,137 @@
 typedef struct {
     /* 0x0 */ S16Vec rotation;
     /* 0x6 */ u16 flags; //ObjInstance_Flags06
-    /* 0x8 */ float	scale;
+    /* 0x8 */ float scale;
     /* 0xc */ Vec pos;
 } ObjPos;
 
 struct ObjInstance;
 
-#define ObjInstance_FlagsB0_WhichParentHitbox	7
-#define ObjInstance_FlagsB0_ScalingFlag08	8
-#define ObjInstance_FlagsB0_IsInGlobalObjList	16
-#define ObjInstance_FlagsB0_FallThruFloor	32
-#define ObjInstance_FlagsB0_IsFreed	64
-#define ObjInstance_FlagsB0_LockAnimsAndControls	128
-#define ObjInstance_FlagsB0_Invisible	1024
-#define ObjInstance_FlagsB0_IsRendered	2048
-#define ObjInstance_FlagsB0_SeqActive	4096
-#define ObjInstance_FlagsB0_DontMove	8192
-#define ObjInstance_FlagsB0_DontUseRenderCallback	16384
-#define ObjInstance_FlagsB0_DontUpdate	32768
+#define ObjInstance_FlagsB0_WhichParentHitbox 7
+#define ObjInstance_FlagsB0_ScalingFlag08 8
+#define ObjInstance_FlagsB0_IsInGlobalObjList 16
+#define ObjInstance_FlagsB0_FallThruFloor 32
+#define ObjInstance_FlagsB0_IsFreed 64
+#define ObjInstance_FlagsB0_LockAnimsAndControls 128
+#define ObjInstance_FlagsB0_Invisible 1024
+#define ObjInstance_FlagsB0_IsRendered 2048
+#define ObjInstance_FlagsB0_SeqActive 4096
+#define ObjInstance_FlagsB0_DontMove 8192
+#define ObjInstance_FlagsB0_DontUseRenderCallback 16384
+#define ObjInstance_FlagsB0_DontUpdate 32768
 
 typedef int (*ObjSeqFunc)(struct ObjInstance *this,
     struct ObjInstance *that, void *state);
 
 typedef struct {
     int TODO;
+} ModLine;
+
+typedef struct {
+    int TODO;
+} ObjSeqCmd;
+
+typedef struct {
+    int TODO;
+} ObjWeaponData;
+
+typedef struct {
+    int TODO;
+} AttachPoint;
+
+typedef struct {
+    int TODO;
+} LockData;
+
+typedef uint ObjFileStructFlags44;
+typedef int ObjFileStruct_ShadowType;
+typedef uint HitboxFlags60;
+typedef uint HitboxFlags62;
+
+typedef struct {
+    /* 0x00 */ float unk00; //copied to shadow field 0
+    /* 0x04 */ float scale;
+    /* 0x08 */ u32 *pModelList; //-> list of model IDs
+    /* 0x0c */ void *textures;
+    /* 0x10 */ void *jointRelated10;
+    /* 0x14 */ void *unk14;
+    /* 0x18 */ ObjSeqCmd *offset_0x18; //[OPTIONAL] a file containing functions
+    /* 0x1c */ u16 *pSeq; //[OPTIONAL] -> seq IDs
+    /* 0x20 */ void *pEvent; //[OPTIONAL] -> event IDs, ends with -1
+    /* 0x24 */ void *pHits; //[OPTIONAL]
+    /* 0x28 */ ObjWeaponData *pWeaponDa; //[OPTIONAL]
+    /* 0x2c */ AttachPoint *pAttachPoints;
+    /* 0x30 */ ModLine *pModLines; //ignored in file (zeroed on load)
+    /* 0x34 */ void *wObjList; //ignored in file (zeroed on load)
+    /* 0x38 */ void *nextIntersectPoint;
+    /* 0x3c */ void *nextIntersectLine;
+    /* 0x40 */ LockData *lockdata; //A-button interaction
+    /* 0x44 */ ObjFileStructFlags44 flags;
+    /* 0x48 */ ObjFileStruct_ShadowType shadowType;
+    /* 0x4a */ s16 shadowTexture;
+    /* 0x4c */ s8 unk4c;
+    /* 0x4d */ s8 unk4d;
+    /* 0x4e */ HitboxFlags60 hitbox_flags60;
+    /* 0x50 */ s8 unk50;
+    /* 0x51 */ s8 unk51;
+    /* 0x52 */ s8 unk52;
+    /* 0x53 */ s8 unk53;
+    /* 0x54 */ s8 unk54;
+    /* 0x55 */ s8 unk55;
+    /* 0x56 */ s8 numPlayerObjs; //if > 0, objAddObjectType(obj, 8)
+    /* 0x57 */ u8 unk57; //never read?
+    /* 0x58 */ u16 dll_id;
+    /* 0x5a */ u16 objId;
+    /* 0x5c */ s8 modLinesSize; //ignored in file
+    /* 0x5d */ s8 nModels;
+    /* 0x5e */ u8 numSeqs;
+    /* 0x5f */ char name[15];
+    /* 0x6e */ s8 unk6e;
+    /* 0x6f */ s8 unk6f;
+    /* 0x70 */ s8 noplacements; //related to hitbox (height?)
+    /* 0x71 */ u8 nTextures;
+    /* 0x72 */ s8 nJoints;
+    /* 0x73 */ s8 stateVar73; //1=translucent; 3=invincible - not flags
+    /* 0x74 */ bool bDisableHits;
+    /* 0x75 */ s8 unk75;
+    /* 0x76 */ s16 modLineCount;
+    /* 0x78 */ s16 modLineNo;
+    /* 0x7a */ s16 nSeqs;
+    /* 0x7c */ s8 unk7c;
+    /* 0x7d */ s8 unk7d;
+    /* 0x7e */ s8 unk7e;
+    /* 0x7f */ s8 unk7f;
+    /* 0x80 */ s8 unk80;
+    /* 0x81 */ s8 unk81;
+    /* 0x82 */ s8 unk82;
+    /* 0x83 */ s8 cend; //relates to lighting
+    /* 0x84 */ s8 csize;
+    /* 0x85 */ s8 ambient;
+    /* 0x86 */ s8 intensity;
+    /* 0x87 */ s8 lightFlags;
+    /* 0x88 */ float lagVar88; //causes lag at ~65536.0; GPU hang at much more; related to shadow; maybe causing excessive map loads?
+    /* 0x8c */ s8 nLights;
+    /* 0x8d */ s8 lightIdx;
+    /* 0x8e */ s8 unk8e; //related to textures; 1=dark, 2=default, 3+=corrupt, 77=crash, 0=normal
+    /* 0x8f */ s8 maybeNumHits; //related to hitbox
+    /* 0x90 */ HitboxFlags62 hitbox_flagsB6; // < 0xE = invincible
+    /* 0x91 */ s8 unk91;
+    /* 0x92 */ s8 unk92;
+    /* 0x93 */ s8 flags93;
+    /* 0x94 */ s8 unk94;
+    /* 0x95 */ s8 unk95;
+    /* 0x96 */ s8 unk96;
+    /* 0x97 */ s8 unk97;
+    /* 0x98 */ s8 unk98;
+    /* 0x99 */ s8 unk99;
+    /* 0x9a */ s8 unk9a;
+    /* 0x9b */ s8 nFocusPoints;
+    /* 0x9c */ s8 unk9c;
+    /* 0x9d */ u8 fixedDepth; //mult by 100, used if flags & FIxedDepth
+    /* 0x9e */ s8 unk9e;
+    /* 0x9f */ s8 unk9f;
+    /* 0xa0 */ s8 unka0;
+    /* 0xa1 */ s8 unka1;
 } ObjData;
 
 typedef struct {
@@ -97,7 +204,7 @@ typedef struct {
     /* 0xb4 */ s16 curSeq;
     /* 0xb6 */ s8 _B6; //padding?
     /* 0xb7 */ s8 _B7;
-    /* 0xb8 */ void	*state; //type depends on object
+    /* 0xb8 */ void *state; //type depends on object
     /* 0xbc */ ObjSeqFunc *seqFn;
     /* 0xc0 */ struct ObjInstance *pObj_0xc0;
     /* 0xc4 */ struct ObjInstance *parent;
@@ -128,5 +235,11 @@ typedef struct {
     /* 0xfc */ Vec oldVel;
     /* 0x108 */ float f128; //maybe start of another object/subclass
 } ObjInstance;
+
+typedef struct {
+    short usage;
+    short objSize;
+    ObjInstance *obj;
+} ObjListStruct;
 
 #endif //_OBJ_OBJINSTANCE_H_
