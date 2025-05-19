@@ -24,6 +24,8 @@ struct ObjInstance;
 #define ObjInstance_FlagsB0_DontUseRenderCallback 16384
 #define ObjInstance_FlagsB0_DontUpdate 32768
 
+#define ObjData_Flag_FixedDepth 0x80000
+
 typedef int (*ObjSeqFunc)(struct ObjInstance *this,
     struct ObjInstance *that, void *state);
 
@@ -48,8 +50,8 @@ typedef struct {
 } LockData;
 
 typedef uint ObjFileStructFlags44;
-typedef int ObjFileStruct_ShadowType;
-typedef uint HitboxFlags60;
+typedef s16 ObjFileStruct_ShadowType;
+typedef u16 HitboxFlags60;
 typedef uint HitboxFlags62;
 
 typedef struct {
@@ -119,9 +121,6 @@ typedef struct {
     /* 0x8e */ s8 unk8e; //related to textures; 1=dark, 2=default, 3+=corrupt, 77=crash, 0=normal
     /* 0x8f */ s8 maybeNumHits; //related to hitbox
     /* 0x90 */ HitboxFlags62 hitbox_flagsB6; // < 0xE = invincible
-    /* 0x91 */ s8 unk91;
-    /* 0x92 */ s8 unk92;
-    /* 0x93 */ s8 flags93;
     /* 0x94 */ s8 unk94;
     /* 0x95 */ s8 unk95;
     /* 0x96 */ s8 unk96;

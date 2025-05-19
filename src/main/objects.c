@@ -226,10 +226,11 @@ void depthSortObjects_doSort(s32 arg0, s32 arg1) {
 
     for(ii = arg0; ii <= arg1; ii++) {
         obj = Object_loadedObjs[ii];
-        if(obj->data->flags & 0x80000) {
-            obj->depth = (f32) ((u8) obj->data->unk96 * 0x64);
+        if(obj->data->flags & ObjData_Flag_FixedDepth) {
+            obj->depth = obj->data->fixedDepth * 100;
         } else {
-            obj->depth = -getCameraDepth(obj->prevPos.x, obj->prevPos.y, obj->prevPos.z);
+            obj->depth = -getCameraDepth(obj->prevPos.x,
+                obj->prevPos.y, obj->prevPos.z);
         }
     }
 
@@ -237,10 +238,10 @@ void depthSortObjects_doSort(s32 arg0, s32 arg1) {
     while(!done) {
         done = true;
         for(ii = arg0; ii < arg1; ii++) {
-            if (Object_loadedObjs[ii + 1]->depth < Object_loadedObjs[ii]->depth) {
+            if (Object_loadedObjs[ii+1]->depth < Object_loadedObjs[ii]->depth) {
                 obj = Object_loadedObjs[ii];
-                Object_loadedObjs[ii] = Object_loadedObjs[ii + 1];
-                Object_loadedObjs[ii + 1] = obj;
+                Object_loadedObjs[ii] = Object_loadedObjs[ii+1];
+                Object_loadedObjs[ii+1] = obj;
                 done = false;
             }
         }
