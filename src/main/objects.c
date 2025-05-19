@@ -161,8 +161,8 @@ extern void **pDll_modgfx;
 extern f32 playerMapOffsetX;
 extern f32 playerMapOffsetZ;
 extern s16 playerObjIds[2];
-extern s32 tables_bin;
-extern s32 tables_tab;
+extern s32 *tables_bin;
+extern s32 *tables_tab;
 extern f32 timeDelta;
 extern s32 var_80396D08;
 
@@ -331,4 +331,12 @@ s32 Object_getNumLoadedObjs(void) {
 
 s32 Object_getFirstLoadedObj(void) {
     return 0;
+}
+
+s32 *getTablesBinEntry(s32 arg0) {
+    //why is this here?
+    if((arg0 < 0) || (arg0 >= nTablesTab)) {
+        return tables_bin;
+    }
+    return (s32*)((u32)tables_bin + tables_tab[arg0] * 4);
 }
