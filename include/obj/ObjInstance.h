@@ -158,11 +158,11 @@ typedef struct {
     int TODO;
 } astruct_53;
 
-typedef struct {
+typedef struct ObjInstance {
     /* 0x0 */ ObjPos pos;
     /* 0x18 */ Vec prevPos; //maybe "viewPos"
     /* 0x24 */ Vec vel;
-    /* 0x30 */ struct ObjInstance *pMatrix; //can be null
+    /* 0x30 */ struct ObjInstance *heldBy; //can be null
     /* 0x34 */ u8 map; //MapId8 related to children and/or player objects
     /* 0x35 */ u8 mtxIdx;
     /* 0x36 */ u8 newOpacity;
@@ -206,7 +206,7 @@ typedef struct {
     /* 0xb7 */ s8 _B7;
     /* 0xb8 */ void *state; //type depends on object
     /* 0xbc */ ObjSeqFunc *seqFn;
-    /* 0xc0 */ struct ObjInstance *pObj_0xc0;
+    /* 0xc0 */ struct ObjInstance *pObj_0xc0; //related to being held
     /* 0xc4 */ struct ObjInstance *parent;
     /* 0xc8 */ struct ObjInstance *child[3];
     /* 0xd4 */ s8 *_D4;

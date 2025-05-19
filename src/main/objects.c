@@ -248,3 +248,21 @@ void depthSortObjects_doSort(s32 arg0, s32 arg1) {
         }
     }
 }
+
+//maybe better name is "objUpdateHolders"
+void updateObjMtxs(void) {
+    ObjInstance *obj1;
+    ObjInstance *obj2;
+    s32 ii;
+
+    for(ii = 0; ii < Object_numLoadedObjs; ii++) {
+        obj1 = Object_loadedObjs[ii];
+        if(obj1->pObj_0xc0) {
+            obj2 = obj1->pObj_0xc0;
+            if (!obj1->heldBy && obj2->heldBy) {
+                obj1->heldBy = obj2->heldBy;
+            }
+            obj1->pObj_0xc0 = NULL;
+        }
+    }
+}
