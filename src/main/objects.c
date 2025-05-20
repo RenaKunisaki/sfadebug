@@ -99,7 +99,7 @@ void objFreeObjdef(int defNo);                       /* static */
 void objFreezeFn_80085e2c(ObjInstance *object,undefined4 fieldE6,undefined4 r,undefined4 g,undefined4 b,uint a); /* static */
 uint objGetTotalDataSize(ObjInstance *obj,ObjData *objData,ObjDef *objDef,uint flags); /* static */
 double objModelFn_800839d4(ObjInstance *this);        /* static */
-void objSetup(double param_1,double param_2,double param_3,ObjInstance *this,uint bAddToLoadedObjs);                /* static */
+void objSetup(ObjInstance *this,uint bAddToLoadedObjs);                /* static */
 extern u8 BYTE_802eca98;
 extern u8 BYTE_80398a91;
 extern f64 DOUBLE_8039a990;
@@ -333,10 +333,24 @@ s32 Object_getFirstLoadedObj(void) {
     return 0;
 }
 
-s32 *getTablesBinEntry(s32 arg0) {
+s32 *getTablesBinEntry(s32 idx) {
     //why is this here?
-    if((arg0 < 0) || (arg0 >= nTablesTab)) {
+    if((idx < 0) || (idx >= nTablesTab)) {
         return tables_bin;
     }
-    return (s32*)((u32)tables_bin + tables_tab[arg0] * 4);
+    return (s32*)((u32)tables_bin + tables_tab[idx] * 4);
+}
+
+ObjInstance *objInstantiateCharacter(
+ObjDef *def, uint flags, int mapId, int objNo, float *pMatrix) {
+    ObjInstance *obj;
+
+    obj = NULL;
+    if(getPiLockedFlags() & 1) { obj; }
+
+    loadAsset_Character(&obj, def, flags, mapId, objNo, pMatrix, 0);
+    if(obj) objSetup(obj, flags);
+
+    if(getPiLockedFlags() & 1) { obj; }
+    return obj;
 }
