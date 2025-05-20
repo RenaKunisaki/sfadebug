@@ -5,6 +5,7 @@
 #include "sys/n64.h"
 #include "gfx/gbi.h"
 #include "gfx/render.h"
+#include "sys/alloc.h"
 #include "sys/dll.h"
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"
@@ -14,7 +15,6 @@ typedef int DataFileId32;
 typedef int mapId32;
 typedef uint DataFileLoadedFlags;
 typedef int ObjDefEnum;
-typedef u32 AllocTag;
 typedef u32 ModelFlags_loadCharacter;
 
 s8 Camera_addWorldMtx(void *);                      /* extern */
@@ -60,8 +60,6 @@ ObjDefEnum mapGetPlayerObjType(int *outWhichObjs);                       /* exte
 f32 mathFn_80294204(f32, f32);                      /* extern */
 void memclr(void *param1,size_t param2);                               /* extern */
 void memcpy_src_dst_len(void *param1,void *param2,size_t param3);                /* extern */
-void * mmAlloc(uint size,AllocTag tag,char *name);                           /* extern */
-void mmFree(void *__ptr);                                    /* extern */
 undefined2 modelGetFieldA4(Model *model);                      /* extern */
 void modelInstanceFree(ModelInstance *modelInstance);                           /* extern */
 void mtx44Transpose(Mtx44 *src,Mtx44 *dst);                         /* extern */
@@ -117,7 +115,7 @@ extern s32 Object_maxObjType;
 extern s32 Object_numLoadedObjs;
 extern s32 Object_objDelListCount;
 extern s32 Object_objTypes;
-extern s32 Object_pObjIndex;
+extern s16 *Object_pObjIndex;
 extern s32 Object_pObjectsTab;
 extern s32 defList;
 extern s32 defNo;
@@ -353,4 +351,260 @@ ObjDef *def, uint flags, int mapId, int objNo, float *pMatrix) {
 
     if(getPiLockedFlags() & 1) { obj; }
     return obj;
+}
+
+ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 arg1,
+s32 arg2, s32 arg3, struct ObjInstance *arg4) {
+    ObjInstance objTmp;
+    struct ObjInstance *sp18;
+    s32 sp14;
+    s32 sp10;
+    ObjData *objData;
+    ObjData *temp_ret;
+    ObjInstance *result;
+    ObjInstance *temp_ret_3;
+    Point3d *temp_r3_6;
+    astruct_53 **temp_r3_5;
+    f64 temp_ret_4;
+    f64 var_f1;
+    s16 oType;
+    s16 realType;
+    s32 (***temp_ret_2)(void *);
+    s32 temp_r28;
+    s32 var_r26;
+    s32 var_r27;
+    s32 var_r28;
+    s8 var_r19;
+    u32 temp_r27;
+    u32 totalSize;
+    u32 temp_ret_11;
+    u32 temp_ret_7;
+    u32 temp_ret_8;
+    u32 temp_ret_9;
+    u32 var_r27_2;
+    u32 var_r4;
+    u8 temp_r21;
+    void *temp_r3_4;
+    void *temp_r3_7;
+    void *temp_ret_10;
+    void *temp_ret_5;
+    void *temp_ret_6;
+    void *var_r29;
+
+    sp10 = arg2;
+    sp14 = arg3;
+    sp18 = arg4;
+    oType = def->objType;
+    if (arg1 & 2) {
+        realType = oType;
+        goto block_5;
+    }
+    if (oType > Object_maxObjType) {
+        printf("objSetupObjectActual objtype out of range %d/%d\n",
+            oType,Object_maxObjType);
+        return NULL;
+    }
+    realType = Object_pObjIndex[oType];
+block_5:
+    memclr(&objTmp, sizeof(ObjInstance));
+    objData = Object_objLoadData(realType);
+    objTmp.data = objData;
+    if ((objData == NULL) || ((s32) objData == -1)) {
+            debugPrint("Warning: Unknown object type \'%d/%d romdefno %d\', using DummyObject (128)\n",
+               oType, def->objType, objTmp.romdefno);
+        if ((s32) objData == -1) {
+            debugPrint("Warning: Object romdefno is -1, check the object is in objects.spec");
+        }
+        return NULL;
+    }
+    objTmp.objId = objData->objId;
+    objTmp.pos.scale = objData->scale;
+    if (0.0 == objTmp.pos.scale) {
+        objTmp.pos.scale = 1.0;
+    }
+    objTmp.pos.flags = 2;
+    if (objData->flags & 0x80) {
+        objTmp.pos.flags = (s16) objTmp.pos.flags | 0x80;
+    }
+    if (objData->flags & 0x40000) {
+        objTmp.flags_0xb0 |= 0x80;
+    }
+    if (arg1 & 4) {
+        objTmp.pos.flags = (s16) objTmp.pos.flags | 0x2000;
+    }
+    objTmp.pos.pos.x = def->pos.x;
+    objTmp.pos.pos.y = def->pos.y;
+    objTmp.pos.pos.z = def->pos.z;
+    objTmp.realType = realType;
+    objTmp.def = def;
+    objTmp.romdefno = oType;
+    objTmp.romDefNo = (s16) sp14;
+    objTmp.mapId = (u8) (s8) sp10;
+    objTmp.animVal_a2 = -1;
+    objTmp.curSeq = -1;
+    objTmp.newOpacity = 0xFF;
+    objTmp.msgQueue = NULL;
+    objTmp.camDistVar3C = (f32) ((u8) def->bound * 8);
+    objTmp.camDistVar40 = (f32) ((u8) def->cullDist * 8);
+    objTmp.dll = NULL;
+    if ((u16) objData->dll_id != 0) {
+        //probably wrong return type here
+        objTmp.dll = (DLL*)DLL_setup((u32) objData->dll_id, 6U, 1);
+        if ((DLL *) objTmp.dll == NULL) {
+            //printf((s8 *) (&BYTE_802eca98 + 0x1C4), (u32) (u64) temp_ret_2, (bitwise f32) temp_ret_2);
+            printf("OBJECTS: warning DLL load failed\n");
+        }
+    }
+    temp_r27 = Object_getModelFlags(&objTmp);
+    if (objData->flags & 0x20) {
+        var_r27 = temp_r27 & 0xFFFFFFFE;
+    } else {
+        var_r27 = temp_r27 | 1;
+    }
+    if ((s16) objData->shadowType != 0) {
+        var_r27_2 = var_r27 | 2;
+    } else {
+        var_r27_2 = var_r27 & 0xFFFFFFFD;
+    }
+    if ((s16) objData->shadowType == 3) {
+        var_r27_2 |= 0x8000;
+    }
+    totalSize = objGetTotalDataSize(&objTmp, objData, def, var_r27_2);
+    result = (ObjInstance*)mmAlloc(totalSize, ALLOC_TAG_OBJECTS_COL, (volatile u32)"obj");
+    if (result == NULL) {
+        //printf((s8 *) (&BYTE_802eca98 + 0x1F8), (u32) (u64) temp_ret_3, (bitwise f32) temp_ret_3);
+        printf("ObjSetupObject(3) Memory fail!!\n");
+        objFreeObjdef((s32) realType);
+        return NULL;
+    }
+    memcpy_src_dst_len(&objTmp, result, sizeof(ObjInstance));
+    memclr(result + sizeof(ObjInstance), totalSize - sizeof(ObjInstance));
+    temp_r21 = objData->nModels;
+    result->modelInstances = (ModelInstance**)&result[1];
+    var_r28 = 0;
+    var_r19 = 0;
+    if (!(var_r27_2 & 0x200)) {
+        if (var_r27_2 & 0x400) {
+            temp_r28 = (var_r27_2 >> 0xBU) & 0xF;
+            if (temp_r28 < (s8) temp_r21) {
+                result->modelInstances[temp_r28] = loadModelInstance(
+                    -(s32)objData->pModelList[temp_r28],
+                    var_r27_2);
+                if ((s32) *(result->modelInstances + (temp_r28 * 4)) == 0) {
+                    var_r19 = 1;
+                } else {
+                    ModelInstance_loadShaders(*(result->modelInstances + (temp_r28 * 4)), result);
+                    modelInitSkeleton((f64) result->pos.scale, *(result->modelInstances + (temp_r28 * 4)));
+                    if (result->data->flags & 0x800) {
+                        Modelnstance_setTexFuncPtr(*(result->modelInstances + (temp_r28 * 4)), modelLoadCb_800c5b80);
+                    }
+                }
+            }
+        } else {
+loop_43:
+            if (var_r28 < (s8) temp_r21) {
+                *(result->modelInstances + (var_r28 * 4)) = loadModelInstance(-(s32) objData->pModelList[var_r28], var_r27_2);
+                if ((s32) *(result->modelInstances + (var_r28 * 4)) == 0) {
+                    var_r19 = 1;
+                } else {
+                    ModelInstance_loadShaders(*(result->modelInstances + (var_r28 * 4)), result);
+                    modelInitSkeleton((f64) result->pos.scale, *(result->modelInstances + (var_r28 * 4)));
+                    if (result->data->flags & 0x800) {
+                        Modelnstance_setTexFuncPtr(*(result->modelInstances + (var_r28 * 4)), modelLoadCb_800c5b80);
+                    }
+                }
+                var_r28 += 1;
+                goto loop_43;
+            }
+        }
+    }
+    if (var_r19 != 0) {
+        Object_freeModels(result, (s32) (s8) temp_r21);
+        objFreeObjdef((s32) realType);
+        return NULL;
+    }
+    var_r29 = Object_objInitState(result, result->modelInstances + ((s8) objData->nModels * 4));
+    if (var_r27_2 & 0x40) {
+        var_r29 = Object_objSetupEvents((s32) result->romdefno, result, var_r29);
+    }
+    if (var_r27_2 & 0x100) {
+        var_r29 = Object_objSetupModels((s32)result->romdefno,
+            result->modelInstances[0]->model, result, var_r29);
+    }
+    if ((var_r27_2 & 2) && ((s16) objData->shadowType != 0)) {
+        var_r29 = Object_objLoadShadow(result, var_r29);
+    }
+    temp_ret_4 = objModelFn_800839d4(result);
+    var_f1 = temp_ret_4;
+    var_r4 = temp_ret_4;
+    result->cullDistance = result->pos.scale * (f32) var_f1;
+    if ((u8) objData->maybeNumHits != 0) {
+        temp_ret_5 = Object_objSetupHitState(result, var_r29);
+        //var_f1 = temp_ret_5;
+        var_r4 = (u32) (u64) temp_ret_5;
+        var_r29 = temp_ret_5;
+        if ((u8) objData->maybeNumHits & 8) {
+            temp_ret_6 = Object_objSetupField58(result, var_r29);
+            //var_f1 = (bitwise f64) temp_ret_6;
+            var_r4 = (u32) (u64) temp_ret_6;
+            var_r29 = temp_ret_6;
+        }
+    }
+    if ((u8) objData->unk6e != 0) {
+        temp_ret_7 = alignTo4((u64) var_r29);
+        //var_f1 = (bitwise f64) temp_ret_7;
+        //temp_r3_4 = temp_ret_7;
+        var_r4 = (u32) (u64) temp_ret_7;
+        result->pVecs = temp_r3_4;
+        //var_r29 = temp_r3_4 + ((u8) objData->unk6e * 0x12);
+    }
+    if ((u8) objData->name[0xE] != 0) {
+        temp_ret_8 = alignTo4((u64) var_r29);
+        var_f1 = (bitwise f64) temp_ret_8;
+        temp_r3_5 = temp_ret_8;
+        var_r4 = (u32) (u64) temp_ret_8;
+        result->pTextures = temp_r3_5;
+        var_r29 = temp_r3_5 + ((u8) objData->name[0xE] * 0x10);
+    }
+    if ((u8) objData->unk94 != 0) {
+        temp_ret_9 = alignTo4((u64) var_r29);
+        var_f1 = (bitwise f64) temp_ret_9;
+        temp_r3_6 = temp_ret_9;
+        var_r4 = (u32) (u64) temp_ret_9;
+        result->_74 = temp_r3_6;
+        var_r29 = temp_r3_6 + ((u8) objData->unk94 * 0x18);
+    }
+    if (((u8) objData->unk8F != 0) && ((u8) objData->noplacements != 0)) {
+        temp_ret_10 = Object_objSetupHits((s32) result->romdefno, (ModelInstance *) result->modelInstances->model, result->hitstate, alignTo4((u64) var_r29), result);
+        var_f1 = (bitwise f64) temp_ret_10;
+        var_r4 = (u32) (u64) temp_ret_10;
+        var_r29 = temp_ret_10;
+    }
+    if ((u8) objData->unk94 != 0) {
+        temp_ret_11 = alignTo4((u64) var_r29);
+        var_f1 = (bitwise f64) temp_ret_11;
+        temp_r3_7 = temp_ret_11;
+        var_r4 = (u32) (u64) temp_ret_11;
+        result->_78 = temp_r3_7;
+        var_r26 = 0;
+loop_68:
+        if (var_r26 < (s32) (u8) objData->unk94) {
+            *(result->_78 + ((var_r26 * 5) + 4)) = *(objData->lockdata + ((var_r26 * 0x18) + 0x10));
+            *(result->_78 + (var_r26 * 5)) = *(objData->lockdata + ((var_r26 * 0x18) + 0xC));
+            *(result->_78 + ((var_r26 * 5) + 3)) = *(objData->lockdata + ((var_r26 * 0x18) + 0xF));
+            *(result->_78 + ((var_r26 * 5) + 1)) = *(objData->lockdata + ((var_r26 * 0x18) + 0xD));
+            var_r4 = (u32) result->_78;
+            *(var_r4 + ((var_r26 * 5) + 2)) = *(objData->lockdata + ((var_r26 * 0x18) + 0xE));
+            var_r26 += 1;
+            goto loop_68;
+        }
+        var_r29 = temp_r3_7 + ((u8) objData->unk94 * 5);
+    }
+    if ((s32) totalSize != (s32) (var_r29 - result)) {
+        //printf((s8 *) (&BYTE_802eca98 + 0x21C), var_r4, var_f1);
+        printf("objects.c: objSetupObject: sizes do not match\n");
+    }
+    result->pMatrix = sp18;
+    Object_streamFn_8018fa50(result, (s32) result->romdefno);
+    return result;
 }
