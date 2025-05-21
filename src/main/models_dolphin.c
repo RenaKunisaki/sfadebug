@@ -18,7 +18,7 @@ int Model_setupAnimInstance(
 
 void *loadModelInstance(int id, uint flags) { // 8007C57C
 	void *result;
-	loadAsset_modelInstance(&result, id, param2);
+	loadAsset_modelInstance(&result, id, flags);
 	return result;
 }
 

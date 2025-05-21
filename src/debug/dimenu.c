@@ -10,27 +10,32 @@
 #define MAX_MENU_DEPTH   10
 #define MAX_MENU_STRINGS 50
 
+/* 80306F20 */ extern DiMenuButtonCmds DiMenuButtonCmds_ARRAY_80306f20[4];
+
 /* 80390508 */ DiMenuStruct3 diMenuStruct3_80390508[1]; //wtf
 /* 80390534 */ DiMenuStruct3 diMenuStack[MAX_MENU_DEPTH];
 /* 803906EC */ DiMenuStrings diMenuStrings[MAX_MENU_STRINGS];
 /* 80390944 */ bool diMenuStringIsUsed[MAX_MENU_STRINGS];
 
 //80398240: .sbss
-/* 80399860 */ s8 diMenuItemFlag_80399860;
-/* 80399864 */ Gfx *diMenuGfx;
-/* 80399868 */ Mtx *diMenuMtx;
-/* 8039986C */ N64Vertex *diMenuVtx;
-/* 80399870 */ Pol *diMenuPol;
-/* 80399874 */ int diMenuFrameCount80399874;
-/* 80399878 */ DiMenuStruct3 *diMenuCur;
-/* 8039987C */ int diMenuStackDepth;
-/* 80399880 */ N64Button32 debugN64ButtonsPressed;
-/* 80399884 */ bool diMenuVisible;
-/* 80399885 */ bool diMenuCanOpen; //true: do not allow Start/Z+Start to hide/show menu
-/* 80399886 */ bool disableMenus;
-/* 80399888 */ DiMenuItem *diMenuPendingPush;
-/* 8039988C */ int diMenuSpace;
-/* 80399890 */ s8 diMenuPendingPopCnt;
+/* 80399860 */ extern s8 diMenuItemFlag_80399860;
+/* 80399864 */ extern Gfx *diMenuGfx;
+/* 80399868 */ extern Mtx *diMenuMtx;
+/* 8039986C */ extern N64Vertex *diMenuVtx;
+/* 80399870 */ extern Pol *diMenuPol;
+/* 80399874 */ extern int diMenuFrameCount80399874;
+/* 80399878 */ extern DiMenuStruct3 *diMenuCur;
+/* 8039987C */ extern int diMenuStackDepth;
+/* 80399880 */ extern N64Button32 debugN64ButtonsPressed;
+/* 80399884 */ extern bool diMenuVisible;
+/* 80399885 */ extern bool diMenuCanOpen; //true: do not allow Start/Z+Start to hide/show menu
+/* 80399886 */ extern bool disableMenus;
+/* 80399888 */ extern DiMenuItem *diMenuPendingPush;
+/* 8039988C */ extern int diMenuSpace;
+/* 80399890 */ extern s8 diMenuPendingPopCnt;
+/* 80399894 */ extern u32 diMenuPrevButtons;
+/* 80399898 */ extern s8 diMenuItemSelectDelay;
+/* 80399899 */ extern s8 diMenuItemAdjustDelay;
 
 static void dummy() {
 	//force variable order
@@ -41,6 +46,416 @@ static void dummy() {
 }
 
 uint getScreenResolution();
+void diMenuPush(DiMenuItem *items, uint space);
+void diMenuPop(void);
+
+int diMenuItemActivate(DiMenuItem *item, /* DiMenuOpcode */ int op) {
+  int iStr;
+  undefined4 uVar1;
+  DiMenuOp oper;
+
+  if (item->func == NULL) {
+    uVar1 = 0;
+  }
+  else {
+    oper.op  = op;
+    oper.gfx = diMenuGfx;
+    oper.mtx = diMenuMtx;
+    oper.vtx = diMenuVtx;
+    oper.pol = diMenuPol;
+    oper.frameCount  = diMenuFrameCount80399874;
+    oper.item1C = (DiMenuItem *)(((int)item - (int)diMenuCur->items) / sizeof(DiMenuItem));
+    oper.item20 = (DiMenuItem *)(((int)diMenuCur->curItem - (int)diMenuCur->items) / sizeof(DiMenuItem));
+    oper.item24 = item;
+    if (op == 0x29) {
+      uVar1 = item->func(&item->strs,&oper);
+    }
+    else if (item->type == Adjustable) {
+      iStr = (item->strs).iStrs;
+      oper.str = *(char **)(diMenuStrings[iStr].strs.str + diMenuStrings[iStr].iStr * 4);
+      //uVar1 = item->func(iStr * 0xc + -0x7fc6f910,&oper);
+    }
+    else {
+      oper.str = NULL;
+      uVar1 = item->func(&item->strs,&oper);
+    }
+  }
+  return uVar1;
+}
+
+
+void diMenuCurGoNextItem(void) {
+  DiMenuItem *start;
+  bool done;
+
+  done = false;
+  start = diMenuCur->curItem;
+  while( true ) {
+    if (done) {
+      return;
+    }
+    diMenuCur->curItem = diMenuCur->curItem + 1;
+    done = true;
+    if (diMenuCur->curItem->type == End) {
+      if (diMenuCur->bWrap == FALSE) {
+        diMenuCur->curItem = diMenuCur->items;
+      }
+      else {
+        diMenuCur->curItem = start;
+      }
+    }
+    if (diMenuCur->lastDispItem < diMenuCur->curItem) {
+      diMenuCur->firstDispItem = diMenuCur->firstDispItem + 1;
+    }
+    if (diMenuCur->curItem == start) break;
+    if (diMenuCur->curItem->type == Header) {
+      done = false;
+    }
+  }
+  return;
+}
+
+
+void diMenuCurGoPrevItem(void)
+
+{
+  DiMenuItem *start;
+  bool done;
+
+  done = false;
+  start = diMenuCur->curItem;
+  while( true ) {
+    if (done) {
+      return;
+    }
+    done = true;
+    if (diMenuCur->curItem == diMenuCur->items) {
+      if (diMenuCur->bWrap == FALSE) {
+        while (diMenuCur->curItem->type != End) {
+          diMenuCur->curItem = diMenuCur->curItem + 1;
+        }
+        diMenuCur->curItem = diMenuCur->curItem + -1;
+      }
+      else {
+        diMenuCur->curItem = start;
+      }
+    }
+    else {
+      diMenuCur->curItem = diMenuCur->curItem + -1;
+    }
+    if (diMenuCur->curItem < diMenuCur->firstDispItem) {
+      diMenuCur->firstDispItem = diMenuCur->firstDispItem + -1;
+    }
+    if (diMenuCur->curItem == start) break;
+    if (diMenuCur->curItem->type == Header) {
+      done = false;
+    }
+  }
+  return;
+}
+
+
+void diMenuItemDecrementCurrent(void)
+
+{
+  int iVar1;
+
+  if (diMenuCur->curItem->type == Adjustable) {
+    iVar1 = (diMenuCur->curItem->strs).iStrs;
+    if ((int)diMenuStrings[iVar1].iStr < 1) {
+      diMenuStrings[iVar1].iStr = diMenuStrings[iVar1].nStrs;
+    }
+    else {
+      diMenuStrings[iVar1].iStr = diMenuStrings[iVar1].iStr - 1;
+    }
+  }
+  diMenuItemActivate(diMenuCur->curItem,2);
+  return;
+}
+
+
+void diMenuItemIncrementCurrent(void)
+
+{
+  int iVar1;
+
+  if (diMenuCur->curItem->type == Adjustable) {
+    iVar1 = (diMenuCur->curItem->strs).iStrs;
+    if ((int)diMenuStrings[iVar1].iStr < (int)diMenuStrings[iVar1].nStrs) {
+      diMenuStrings[iVar1].iStr = diMenuStrings[iVar1].iStr + 1;
+    }
+    else {
+      diMenuStrings[iVar1].iStr = 0;
+    }
+  }
+  diMenuItemActivate(diMenuCur->curItem,1);
+  return;
+}
+
+
+
+
+void diMenuDrawCur(void)
+
+{
+  uint *puVar1;
+  char *itemStr;
+  int iVar2;
+  int iVar3;
+  uint uVar4;
+  Gfx *puVar6;
+  Gfx *puVar2;
+  Gfx *puVar5;
+  Gfx *puVar10;
+  Gfx *puVar9;
+  u32 *cmd;
+  Gfx *rsp;
+  uint width;
+  uint x;
+  uint y;
+  DiMenuItem *items;
+  DiMenuItem *item;
+  double fltVal;
+  uint height;
+  bool needPrintMore;
+  DiMenuItem **pItems;
+
+#if 0
+  x = 0;
+  height = 0;
+  y = getScreenResolution();
+  GXSetScissor(0,0,y & 0xffff,y >> 0x10);
+  rsp = (Gfx *)diMenuGfx->cmd;
+  diMenuGfx->cmd = (u32)(rsp + 1);
+  rsp->cmd = G_SETSCISSOR;
+  fltVal = 4503599627370496.0;
+  rsp->param = ((int)((float)((double)CONCAT44(0x43300000,y & 0xffff) - 4503599627370496.0) * 4.0) &
+               0xfffU) << 0xc |
+               (int)((float)((double)CONCAT44(0x43300000,y >> 0x10) - 4503599627370496.0) * 4.0) &
+               0xfffU;
+  cmd = (u32 *)diMenuGfx->cmd;
+  diMenuGfx->cmd = (u32)(cmd + 2);
+  *cmd = G_RDPPIPESYNC;
+  cmd[1] = G_MW_MATRIX_or_G_MW_MATRIX;
+  puVar9 = (Gfx *)diMenuGfx->cmd;
+  puVar9->cmd = ~G_MOVEMEM;
+  puVar9->param = 0xfffdf6fb;
+  RSP::pipeSync(diMenuGfx);
+  puVar10 = (Gfx *)diMenuGfx->cmd;
+  puVar10->cmd = 0xef002c00;
+  puVar10->param = (u32)&DAT_00504240;
+  LAB_800a697c((Gfx **)diMenuGfx);
+  RSP::setTevColor1(diMenuGfx,0xff,0xff,0xff,0xff);
+  RSP::setTevColor2(diMenuGfx,0x1f,0x1f,0x1f,0x90);
+  puVar1 = (uint *)diMenuGfx->cmd;
+  diMenuGfx->cmd = (u32)(puVar1 + 2);
+  *puVar1 = (diMenuCur->minW & 0x3ff) << 0xe | 0xf6000000 | (diMenuCur->minH & 0x3ffU) << 2;
+  puVar1[1] = (diMenuCur->maxH & 0x3ff) << 0xe | (diMenuCur->maxW & 0x3ffU) << 2;
+  RSP::pState->bNeedPipeSync = true;
+  dprintSetBgColor(0x1f,0x1f,0x1f,0);
+  pItems = &diMenuCur->items;
+  needPrintMore = diMenuCur->firstDispItem != diMenuCur->items;
+  diMenuCur->bWrap = FALSE;
+  items = *pItems;
+  do {
+    item = items;
+    if (item->type == End) {
+      return;
+    }
+    y = height;
+    if (((item->heightFlags18 & 1U) == 0) || (0 < item->width)) {
+      if ((item->height != 0) || (0 < item->width)) {
+        x = (uint)(ushort)item->height;
+        y = (uint)(ushort)item->width;
+      }
+    }
+    else {
+      x = (uint)(ushort)item->height;
+    }
+    if (needPrintMore) {
+      width = debugPrintMeasureStr(item->text);
+      if ((item->strs).iStrs != 0) {
+        itemStr = diMenuItemPrintVal(fltVal,item);
+        iVar2 = debugPrintMeasureStr(itemStr);
+        iVar3 = debugPrintMeasureStr(" ");
+        width = iVar3 + iVar2 + width;
+      }
+      uVar4 = debugPrintMeasureStr("More");
+      dprintSetPos((x + ((int)width >> 1) + (uint)((int)width < 0 && (width & 1) != 0)) -
+                   (((int)uVar4 >> 1) + (uint)((int)uVar4 < 0 && (uVar4 & 1) != 0)),y - 0xb);
+      dprintSetColor(0xff,0xff,0xff,0xff);
+      puVar6 = (Gfx *)diMenuGfx->cmd;
+      diMenuGfx->cmd = (u32)(puVar6 + 1);
+      puVar6->cmd = G_RDPPIPESYNC;
+      puVar6->param = 0;
+      RSP::setTevColor2(diMenuGfx,0x1f,0x7f,0x1f,0x90);
+      puVar2 = (Gfx *)diMenuGfx->cmd;
+      diMenuGfx->cmd = (u32)(puVar2 + 1);
+      puVar2->cmd = (diMenuCur->minW & 0x3ff) << 0xe | 0xf6000000 | (diMenuCur->maxW & 0x3ffU) << 2;
+      puVar2->param = (diMenuCur->maxH & 0x3ff) << 0xe | (diMenuCur->maxW + -0xb) * 4 & 0xffcU;
+      RSP::pState->bNeedPipeSync = true;
+      diPrintf("More\n");
+      needPrintMore = false;
+      diMenuCur->bWrap = TRUE;
+    }
+    dprintSetPos(x,y);
+    if (item == diMenuCur->curItem) {
+      dprintSetColor(0xff,0xff,0xff,0xff);
+    }
+    else if (((uint)item->color & 0xff |
+             (uint)item->color >> 8 & 0xff |
+             (uint)item->color >> 0x18 | (uint)item->color >> 0x10 & 0xff) != 0) {
+      dprintSetColor((item->color).r,(item->color).g,(item->color).b,(item->color).a);
+    }
+    height = y;
+    if (diMenuCur->firstDispItem <= item) {
+      diMenuCur->lastDispItem = item;
+      if (item->type == Header) {
+        if ((item->strs).iStrs == 0) {
+          diPrintf("%s\n",item->text);
+        }
+        else {
+          diPrintf("%s %s\n",item->text,(item->strs).iStrs);
+        }
+      }
+      else {
+        iVar2 = strlen(item->text);
+        if (iVar2 == 0) {
+          itemStr = diMenuItemPrintVal(fltVal,item);
+          diPrintf("%s\n",itemStr);
+        }
+        else {
+          itemStr = diMenuItemPrintVal(fltVal,item);
+          diPrintf("%s %s\n",item->text,itemStr);
+        }
+      }
+      height = y + 0xb;
+      if (item->width == -1) {
+        height = y + 0x10;
+      }
+    }
+    items = item + 1;
+  } while (((height & 0xffff) + 0xb < 231) || (items->type == End));
+  diMenuCur->bWrap = TRUE;
+  dprintSetPos(x,height);
+  dprintSetColor(0xff,0xff,0xff,0xff);
+  puVar5 = (Gfx *)diMenuGfx->cmd;
+  diMenuGfx->cmd = (u32)(puVar5 + 1);
+  puVar5->cmd = G_RDPPIPESYNC;
+  puVar5->param = 0;
+  RSP::setTevColor2(diMenuGfx,0x1f,0x7f,0x1f,0x90);
+  puVar1 = (uint *)diMenuGfx->cmd;
+  diMenuGfx->cmd = (u32)(puVar1 + 2);
+  *puVar1 = (diMenuCur->minW & 0x3ff) << 0xe | 0xf6000000 | (diMenuCur->minH + 0xb) * 4 & 0xffcU;
+  puVar1[1] = (diMenuCur->maxH & 0x3ff) << 0xe | (diMenuCur->minH & 0x3ffU) << 2;
+  RSP::pState->bNeedPipeSync = true;
+  y = debugPrintMeasureStr(item->text);
+  if ((item->strs).iStrs != 0) {
+    itemStr = diMenuItemPrintVal(fltVal,item);
+    iVar2 = debugPrintMeasureStr(itemStr);
+    iVar3 = debugPrintMeasureStr(" ");
+    y = iVar3 + iVar2 + y;
+  }
+  width = debugPrintMeasureStr("More");
+  dprintSetPos((x + ((int)y >> 1) + (uint)((int)y < 0 && (y & 1) != 0)) -
+               (((int)width >> 1) + (uint)((int)width < 0 && (width & 1) != 0)),height);
+  diPrintf("More\n");
+#endif
+}
+
+
+void diMenuItemDoControls(DiMenuItem *item) {
+  s8 sy;
+  s8 sx;
+  N64Button btns0;
+  N64Button btns2;
+  DiMenuButtonCmds *pDVar1;
+  N64Button32 btns32;
+
+  sy = getStickY2(0);
+  sx = getStickX2(0);
+  btns0 = n64GetEnabledButtonsHeld(0);
+  btns2 = n64GetEnabledButtonsHeld(2);
+  if ((btns2 & N64_BUTTON_Z) != 0) {
+    sy = getStickY2(2);
+    sx = getStickX2(2);
+    btns0 = n64GetEnabledButtonsHeld(2);
+  }
+  btns32 = (N64Button32)btns0;
+  disableMenus = 1;
+  do {
+    if (item->type == End) {
+      if (sy < 0x33) {
+        if (sy < -0x32) {
+          if ((diMenuItemSelectDelay == 0) || (10 < diMenuItemSelectDelay)) {
+            diMenuCurGoNextItem();
+          }
+                    /* holding the stick for 10 frames will activate auto repeat */
+          diMenuItemSelectDelay += 1;
+        }
+        else {
+          diMenuItemSelectDelay = 0;
+        }
+      }
+      else {
+        if ((diMenuItemSelectDelay == 0) || (10 < diMenuItemSelectDelay)) {
+          diMenuCurGoPrevItem();
+        }
+        diMenuItemSelectDelay += 1;
+      }
+      disableMenus = 0;
+      diMenuPrevButtons = btns32;
+      for (; diMenuPendingPopCnt != 0; diMenuPendingPopCnt -= 1) {
+        diMenuPop();
+      }
+      if (diMenuPendingPush != NULL) {
+        diMenuPush(diMenuPendingPush,diMenuSpace);
+        diMenuPendingPush = NULL;
+      }
+      return;
+    }
+    diMenuItemActivate(item,0);
+    for (pDVar1 = DiMenuButtonCmds_ARRAY_80306f20; pDVar1->buttons != 999999; pDVar1 = pDVar1 + 1) {
+      if (item == diMenuCur->curItem) {
+        if ((btns32 & pDVar1->buttons) != 0) {
+          if ((diMenuPrevButtons & pDVar1->buttons) == 0) {
+            diMenuItemActivate(item,(uint)pDVar1->onPress);
+            goto LAB_8017b210;
+          }
+        }
+        if ((btns32 & pDVar1->buttons) == 0) {
+          if ((diMenuPrevButtons & pDVar1->buttons) != 0) {
+            diMenuItemActivate(item,(uint)pDVar1->onRelease);
+          }
+        }
+        else {
+          diMenuItemActivate(item,(uint)pDVar1->onHold);
+        }
+      }
+    }
+LAB_8017b210:
+    if (item == diMenuCur->curItem) {
+      if (sx < -0x32) {
+        if ((diMenuItemAdjustDelay == 0) || (10 < diMenuItemAdjustDelay)) {
+          diMenuItemDecrementCurrent();
+        }
+        diMenuItemAdjustDelay += 1;
+      }
+      else if (sx < 0x33) {
+        diMenuItemAdjustDelay = 0;
+      }
+      else {
+        if ((diMenuItemAdjustDelay == 0) || (10 < diMenuItemAdjustDelay)) {
+          diMenuItemIncrementCurrent();
+        }
+        diMenuItemAdjustDelay += 1;
+      }
+    }
+    item = item + 1;
+  } while( true );
+}
+
+
 
 void diMenuInit(void (*callback)(void), int param_2) { // 8017A870
 	int iVar1;

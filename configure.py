@@ -19,6 +19,7 @@ from typing import Any, Dict, List
 
 from tools.project import (
     Object,
+    ProgressCategory,
     ProjectConfig,
     calculate_progress,
     generate_build,
@@ -112,6 +113,12 @@ parser.add_argument(
     action="store_true",
     help="builds equivalent (but non-matching) or modded objects",
 )
+parser.add_argument(
+    "--no-progress",
+    dest="progress",
+    action="store_false",
+    help="disable progress calculation",
+)
 args = parser.parse_args()
 
 config = ProjectConfig()
@@ -124,10 +131,10 @@ config.dtk_path = args.dtk
 config.objdiff_path = args.objdiff
 config.binutils_path = args.binutils
 config.compilers_path = args.compilers
-config.debug = args.debug
 config.generate_map = args.map
 config.non_matching = args.non_matching
 config.sjiswrap_path = args.sjiswrap
+config.progress = args.progress
 if not is_windows():
     config.wrapper = args.wrapper
 # Don't build asm unless we're --non-matching
@@ -160,10 +167,19 @@ config.ldflags = [
     "-warn off", # remove 8 zillion lines about .note.split
     # "-listclosure", # Uncomment for Wii linkers
 ]
+if args.debug:
+    config.ldflags.append("-g")  # Or -gdwarf-2 for Wii linkers
+if args.map:
+    config.ldflags.append("-mapunused")
+    # config.ldflags.append("-listclosure") # For Wii linkers
 # Use for any additional files that should cause a re-configure when modified
 config.reconfig_deps = [
     'config/GSAP01-DEBUG/ldscript.tpl',
 ]
+
+# Optional numeric ID for decomp.me preset
+# Can be overridden in libraries or objects
+config.scratch_preset_id = None
 
 # Base flags, common to most GC/Wii games.
 # Generally leave untouched, with overrides added below.
@@ -201,7 +217,8 @@ cflags_base = [
 ]
 
 # Debug flags
-if config.debug:
+if args.debug:
+    # Or -sym dwarf-2 for Wii compilers
     cflags_base.extend(["-sym on", "-DDEBUG=1"])
 else:
     cflags_base.append("-DNDEBUG=1")
@@ -211,6 +228,7 @@ cflags_runtime = [
     *cflags_base,
     "-use_lmw_stmw on",
     "-str reuse,pool,readonly",
+    "-gccinc",
     "-common off",
     "-inline auto",
 ]
@@ -231,25 +249,19 @@ def DolphinLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
         "lib": lib_name,
         "mw_version": "GC/1.0",
         "cflags": cflags_base,
-        "host": False,
+        "progress_category": "sdk",
         "objects": objects,
     }
-
-
-# Helper function for REL script objects
-def Rel(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
-    return {
-        "lib": lib_name,
-        "mw_version": "GC/1.0",
-        "cflags": cflags_rel,
-        "host": True,
-        "objects": objects,
-    }
-
 
 Matching = True                   # Object matches and should be linked
 NonMatching = False               # Object does not match and should not be linked
 Equivalent = config.non_matching  # Object should be linked when configured with --non-matching
+
+
+# Object is only matching for specific versions
+def MatchingFor(*versions):
+    return config.version in versions
+
 
 config.warn_missing_config = False
 config.warn_missing_source = False
@@ -258,7 +270,7 @@ config.libs = [
         "lib": "Runtime.PPCEABI.H",
         "mw_version": config.linker_version,
         "cflags": cflags_runtime,
-        "host": False,
+        "progress_category": "sdk",  # str | List[str]
         "objects": [
             Object(Equivalent, "Runtime.PPCEABI.H/global_destructor_chain.c"),
             Object(Equivalent, "Runtime.PPCEABI.H/__init_cpp_exceptions.cpp"),
@@ -271,7 +283,7 @@ config.libs = [
         "lib": "main",
         "mw_version": config.linker_version,
         "cflags": cflags_base,
-        "host": False,
+        "progress_category": "game",  # str | List[str]
         "objects": [
             Object(Matching, "debug/dimenu.c"),
             Object(NonMatching, "debug/prof.c"),
@@ -284,12 +296,43 @@ config.libs = [
     },
 ]
 
+
+# Optional callback to adjust link order. This can be used to add, remove, or reorder objects.
+# This is called once per module, with the module ID and the current link order.
+#
+# For example, this adds "dummy.c" to the end of the DOL link order if configured with --non-matching.
+# "dummy.c" *must* be configured as a Matching (or Equivalent) object in order to be linked.
+def link_order_callback(module_id: int, objects: List[str]) -> List[str]:
+    # Don't modify the link order for matching builds
+    if not config.non_matching:
+        return objects
+    if module_id == 0:  # DOL
+        return objects + ["dummy.c"]
+    return objects
+
+# Uncomment to enable the link order callback.
+# config.link_order_callback = link_order_callback
+
+
+# Optional extra categories for progress tracking
+# Adjust as desired for your project
+config.progress_categories = [
+    ProgressCategory("game", "Game Code"),
+    ProgressCategory("sdk", "SDK Code"),
+]
+config.progress_each_module = args.verbose
+# Optional extra arguments to `objdiff-cli report generate`
+config.progress_report_args = [
+    # Marks relocations as mismatching if the target value is different
+    # Default is "functionRelocDiffs=none", which is most lenient
+    # "--config functionRelocDiffs=data_value",
+]
+
 if args.mode == "configure":
     # Write build.ninja and objdiff.json
     generate_build(config)
 elif args.mode == "progress":
-    # Print progress and write progress.json
-    config.progress_each_module = args.verbose
+    # Print progress information
     calculate_progress(config)
 else:
     sys.exit("Unknown mode: " + args.mode)
