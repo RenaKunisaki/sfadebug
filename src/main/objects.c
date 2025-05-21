@@ -25,15 +25,15 @@ void Modelnstance_setTexFuncPtrsetTexFuncPtr(ModelInstance *modelInstance,undefi
 void ModelInstance_unloadShaders(ModelInstance *modelInstance);                 /* extern */
 void Object_freeFn_80092460(ObjInstance *obj);                    /* extern */
 void Object_objAddObjectType(ObjInstance *this,int type);             /* extern */
-void* Object_objLoadShadow(ObjInstance *this,void *ptr);              /* extern */
+void* Object_objLoadShadow(ObjInstance *this,void *ptr,s32);              /* extern */
 void* Object_objSetupField58(ObjInstance *this,void *ptr);               /* extern */
 void* Object_objSetupHitState(ObjInstance *this,void *ptr);              /* extern */
 void* Object_objSetupHits(int romdefno,ModelInstance *minst,HitState *hitState,void *buf,ObjInstance *obj); /* extern */
 ObjInstance** Object_playerGetObject(int typ,int *outNumObjs);               /* extern */
 void Object_objRemoveObjectType(ObjInstance *obj,int playerObjIdx);               /* extern */
 void Object_streamFn_8018fa50(ObjInstance *obj,int romDefNo);               /* extern */
-u32 alignTo4(u64);                                  /* extern */
-s32 alignTo64(u64);                                 /* extern */
+void *alignTo4(void*);                                  /* extern */
+void *alignTo64(void*);                                 /* extern */
 void debugPrint(char *fmt,...);                   /* extern */
 void dll_26F_init(ObjInstance *this,ObjDef *objDef,ObjInstance *obj2,/* DllInitFlags*/ uint flags,float x,float y,float z);                  /* extern */
 void objStopSounds(ObjInstance *this,u8 flags);                 /* extern */
@@ -78,13 +78,13 @@ double sqrt(double __x);        /* extern */
 void texFreeTexture(Texture *tex);                              /* extern */
 void trackFreeMap(mapId32 mapNo);                                 /* extern */
 void worldMapListFn_800aac60(double param_1,double param_2,double param_3,mapId32 mapNo,int param2);           /* extern */
-void Object_freeModels(ObjInstance *this,int count);     /* static */
+void Object_freeModels(ObjInstance *this,int count, int);     /* static */
 ModelFlags_loadCharacter Object_getModelFlags(ObjInstance *obj);                /* static */
 void * Object_objInitState(ObjInstance *this,void *ptr);        /* static */
 ObjData * Object_objLoadData(int objType);                 /* static */
 void Object_objLoadEventData (ObjInstance *this,int romdefno,ObjEventData *event,int animId,bool bImmediate); /* static */
 void * Object_objSetupEvents(int romdefno,ObjInstance *obj,void *ptr); /* static */
-void * Object_objSetupModels(int romdefno,Model *model,ObjInstance *obj,void *ptr); /* static */
+void * Object_objSetupModels(int romdefno,ModelInstance *modelInstances,ObjInstance *obj,void *ptr); /* static */
 void Object_setPriority(ObjInstance *obj,s8 priority);        /* static */
 void Object_setup(ObjInstance *this,ObjDef *def,undefined4 param_3);   /* static */
 void Object_worldProcessObjFreeList(ObjInstance *obj,int param2); /* static */
@@ -96,7 +96,7 @@ void modelInitSkeleton(double scale,ModelInstance *model);       /* static */
 void objFreeObjdef(int defNo);                       /* static */
 void objFreezeFn_80085e2c(ObjInstance *object,undefined4 fieldE6,undefined4 r,undefined4 g,undefined4 b,uint a); /* static */
 uint objGetTotalDataSize(ObjInstance *obj,ObjData *objData,ObjDef *objDef,uint flags); /* static */
-double objModelFn_800839d4(ObjInstance *this);        /* static */
+float objModelFn_800839d4(ObjInstance *this);        /* static */
 void objSetup(ObjInstance *this,uint bAddToLoadedObjs);                /* static */
 extern u8 BYTE_802eca98;
 extern u8 BYTE_80398a91;
@@ -353,258 +353,199 @@ ObjDef *def, uint flags, int mapId, int objNo, float *pMatrix) {
     return obj;
 }
 
-ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 arg1,
-s32 arg2, s32 arg3, struct ObjInstance *arg4) {
+ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags,
+s32 mapId, s32 romDefNo, struct ObjInstance *heldBy) {
+    //should be down to regswap and string offsets
     ObjInstance objTmp;
-    struct ObjInstance *sp18;
-    s32 sp14;
-    s32 sp10;
     ObjData *objData;
-    ObjData *temp_ret;
     ObjInstance *result;
-    ObjInstance *temp_ret_3;
-    Point3d *temp_r3_6;
-    astruct_53 **temp_r3_5;
-    f64 temp_ret_4;
-    f64 var_f1;
-    s16 oType;
-    s16 realType;
-    s32 (***temp_ret_2)(void *);
-    s32 temp_r28;
-    s32 var_r26;
-    s32 var_r27;
-    s32 var_r28;
-    s8 var_r19;
-    u32 temp_r27;
+    s32 oType;
+    s32 realType;
+    s32 iModelInst;
+    s32 iLock;
+    s32 ii;
+    s8 bModelFailed;
     u32 totalSize;
-    u32 temp_ret_11;
-    u32 temp_ret_7;
-    u32 temp_ret_8;
-    u32 temp_ret_9;
-    u32 var_r27_2;
-    u32 var_r4;
-    u8 temp_r21;
-    void *temp_r3_4;
-    void *temp_r3_7;
-    void *temp_ret_10;
-    void *temp_ret_5;
-    void *temp_ret_6;
-    void *var_r29;
+    u32 modelFlags; //ModelFlags_loadCharacter
+    int nModels;
+    void *next;
 
-    sp10 = arg2;
-    sp14 = arg3;
-    sp18 = arg4;
     oType = def->objType;
-    if (arg1 & 2) {
-        realType = oType;
-        goto block_5;
+    if(flags & 2) realType = oType;
+    else {
+        if(oType > Object_maxObjType) {
+            printf("objSetupObjectActual objtype out of range %d/%d\n",
+                oType,Object_maxObjType);
+            return NULL;
+        }
+        realType = Object_pObjIndex[oType];
     }
-    if (oType > Object_maxObjType) {
-        printf("objSetupObjectActual objtype out of range %d/%d\n",
-            oType,Object_maxObjType);
-        return NULL;
-    }
-    realType = Object_pObjIndex[oType];
-block_5:
+
     memclr(&objTmp, sizeof(ObjInstance));
+    result = &objTmp;
     objData = Object_objLoadData(realType);
-    objTmp.data = objData;
-    if ((objData == NULL) || ((s32) objData == -1)) {
-            debugPrint("Warning: Unknown object type \'%d/%d romdefno %d\', using DummyObject (128)\n",
-               oType, def->objType, objTmp.romdefno);
-        if ((s32) objData == -1) {
+    result->data = objData;
+    if((!objData) || ((s32)objData == -1)) {
+            debugPrint("Warning: Unknown object type '%d/%d romdefno %d', using DummyObject (128)\n",
+               oType, def->objType, result->romdefno);
+        if((s32)objData == -1) {
+            //@bug missing newline
             debugPrint("Warning: Object romdefno is -1, check the object is in objects.spec");
         }
         return NULL;
     }
-    objTmp.objId = objData->objId;
-    objTmp.pos.scale = objData->scale;
-    if (0.0 == objTmp.pos.scale) {
-        objTmp.pos.scale = 1.0;
-    }
-    objTmp.pos.flags = 2;
-    if (objData->flags & 0x80) {
-        objTmp.pos.flags = (s16) objTmp.pos.flags | 0x80;
-    }
-    if (objData->flags & 0x40000) {
-        objTmp.flags_0xb0 |= 0x80;
-    }
-    if (arg1 & 4) {
-        objTmp.pos.flags = (s16) objTmp.pos.flags | 0x2000;
-    }
-    objTmp.pos.pos.x = def->pos.x;
-    objTmp.pos.pos.y = def->pos.y;
-    objTmp.pos.pos.z = def->pos.z;
-    objTmp.realType = realType;
-    objTmp.def = def;
-    objTmp.romdefno = oType;
-    objTmp.romDefNo = (s16) sp14;
-    objTmp.mapId = (u8) (s8) sp10;
-    objTmp.animVal_a2 = -1;
-    objTmp.curSeq = -1;
-    objTmp.newOpacity = 0xFF;
-    objTmp.msgQueue = NULL;
-    objTmp.camDistVar3C = (f32) ((u8) def->bound * 8);
-    objTmp.camDistVar40 = (f32) ((u8) def->cullDist * 8);
-    objTmp.dll = NULL;
-    if ((u16) objData->dll_id != 0) {
+
+    result->objId = objData->objId;
+    result->pos.scale = objData->scale;
+    if(0.0f == result->pos.scale) result->pos.scale = 1.0f;
+    result->pos.flags = 2;
+    if(objData->flags & 0x80) result->pos.flags |= 0x80;
+    if(objData->flags & 0x40000) result->flags_0xb0 |= 0x80; //LockAnimsAndControls
+    if(flags & 4) result->pos.flags |= 0x2000; //DontSave
+
+    result->pos.pos.x = def->pos.x;
+    result->pos.pos.y = def->pos.y;
+    result->pos.pos.z = def->pos.z;
+    result->realType = realType;
+    result->def = def;
+    result->romdefno = oType;
+    result->romDefNo = romDefNo;
+    result->mapId = (s8)mapId;
+    result->animVal_a2 = -1;
+    result->curSeq = -1;
+    result->newOpacity = 0xFF;
+    result->msgQueue = NULL;
+    result->camDistVar3C = ((u8) def->bound * 8);
+    result->camDistVar40 = ((u8) def->cullDist * 8);
+
+    result->dll = NULL;
+    if(objData->dll_id) {
         //probably wrong return type here
-        objTmp.dll = (DLL*)DLL_setup((u32) objData->dll_id, 6U, 1);
-        if ((DLL *) objTmp.dll == NULL) {
-            //printf((s8 *) (&BYTE_802eca98 + 0x1C4), (u32) (u64) temp_ret_2, (bitwise f32) temp_ret_2);
-            printf("OBJECTS: warning DLL load failed\n");
-        }
+        result->dll = (DLL*)DLL_setup((u32) objData->dll_id, 6U, 1);
+        if(!result->dll) printf("OBJECTS: warning DLL load failed\n");
     }
-    temp_r27 = Object_getModelFlags(&objTmp);
-    if (objData->flags & 0x20) {
-        var_r27 = temp_r27 & 0xFFFFFFFE;
-    } else {
-        var_r27 = temp_r27 | 1;
-    }
-    if ((s16) objData->shadowType != 0) {
-        var_r27_2 = var_r27 | 2;
-    } else {
-        var_r27_2 = var_r27 & 0xFFFFFFFD;
-    }
-    if ((s16) objData->shadowType == 3) {
-        var_r27_2 |= 0x8000;
-    }
-    totalSize = objGetTotalDataSize(&objTmp, objData, def, var_r27_2);
-    result = (ObjInstance*)mmAlloc(totalSize, ALLOC_TAG_OBJECTS_COL, (volatile u32)"obj");
-    if (result == NULL) {
-        //printf((s8 *) (&BYTE_802eca98 + 0x1F8), (u32) (u64) temp_ret_3, (bitwise f32) temp_ret_3);
+
+    if(result->romdefno == 0xF7) { result; }
+    modelFlags = Object_getModelFlags(result);
+    if(objData->flags & 0x20) modelFlags &= ~1;
+    else modelFlags |= 1;
+    if (objData->shadowType != 0) modelFlags |= 2;
+    else modelFlags &= ~2;
+    if (objData->shadowType == 3) modelFlags |= 0x8000; //HasShadow
+
+    totalSize = objGetTotalDataSize(result, objData, def, modelFlags);
+    result = (ObjInstance*)mmAlloc(totalSize, ALLOC_TAG_OBJECTS_COL,
+        (volatile u32)"obj");
+    if(!result) {
         printf("ObjSetupObject(3) Memory fail!!\n");
-        objFreeObjdef((s32) realType);
+        objFreeObjdef(realType);
         return NULL;
     }
     memcpy_src_dst_len(&objTmp, result, sizeof(ObjInstance));
-    memclr(result + sizeof(ObjInstance), totalSize - sizeof(ObjInstance));
-    temp_r21 = objData->nModels;
+    memclr(result + 1, totalSize - sizeof(ObjInstance));
+    nModels = objData->nModels;
     result->modelInstances = (ModelInstance**)&result[1];
-    var_r28 = 0;
-    var_r19 = 0;
-    if (!(var_r27_2 & 0x200)) {
-        if (var_r27_2 & 0x400) {
-            temp_r28 = (var_r27_2 >> 0xBU) & 0xF;
-            if (temp_r28 < (s8) temp_r21) {
-                result->modelInstances[temp_r28] = loadModelInstance(
-                    -(s32)objData->pModelList[temp_r28],
-                    var_r27_2);
-                if ((s32) *(result->modelInstances + (temp_r28 * 4)) == 0) {
-                    var_r19 = 1;
+
+    ii = 0;
+    bModelFailed = false;
+    if (!(modelFlags & 0x200)) { //objFileHasModels
+        if(modelFlags & 0x400) { //OnlyLoadOneModel
+            iModelInst = (modelFlags >> 0xBU) & 0xF;
+            if (iModelInst < nModels) {
+                result->modelInstances[iModelInst] = loadModelInstance(
+                    -objData->pModelList[iModelInst], modelFlags);
+                if(!(s32)result->modelInstances[iModelInst]) {
+                    bModelFailed = true;
                 } else {
-                    ModelInstance_loadShaders(*(result->modelInstances + (temp_r28 * 4)), result);
-                    modelInitSkeleton((f64) result->pos.scale, *(result->modelInstances + (temp_r28 * 4)));
+                    ModelInstance_loadShaders(
+                        result->modelInstances[iModelInst], result);
+                    modelInitSkeleton(result->pos.scale,
+                        result->modelInstances[iModelInst]);
                     if (result->data->flags & 0x800) {
-                        Modelnstance_setTexFuncPtr(*(result->modelInstances + (temp_r28 * 4)), modelLoadCb_800c5b80);
+                        Modelnstance_setTexFuncPtr(
+                            result->modelInstances[iModelInst],
+                            modelLoadCb_800c5b80);
                     }
                 }
             }
         } else {
-loop_43:
-            if (var_r28 < (s8) temp_r21) {
-                *(result->modelInstances + (var_r28 * 4)) = loadModelInstance(-(s32) objData->pModelList[var_r28], var_r27_2);
-                if ((s32) *(result->modelInstances + (var_r28 * 4)) == 0) {
-                    var_r19 = 1;
+            while (ii < nModels) {
+                result->modelInstances[ii] = loadModelInstance(-(s32) objData->pModelList[ii], modelFlags);
+                if ((s32) result->modelInstances[ii] == 0) {
+                    bModelFailed = true;
                 } else {
-                    ModelInstance_loadShaders(*(result->modelInstances + (var_r28 * 4)), result);
-                    modelInitSkeleton((f64) result->pos.scale, *(result->modelInstances + (var_r28 * 4)));
+                    ModelInstance_loadShaders(result->modelInstances[ii], result);
+                    modelInitSkeleton((f64) result->pos.scale, result->modelInstances[ii]);
                     if (result->data->flags & 0x800) {
-                        Modelnstance_setTexFuncPtr(*(result->modelInstances + (var_r28 * 4)), modelLoadCb_800c5b80);
+                        Modelnstance_setTexFuncPtr(result->modelInstances[ii], modelLoadCb_800c5b80);
                     }
                 }
-                var_r28 += 1;
-                goto loop_43;
+                ii += 1;
             }
         }
     }
-    if (var_r19 != 0) {
-        Object_freeModels(result, (s32) (s8) temp_r21);
-        objFreeObjdef((s32) realType);
+    if(bModelFailed) {
+        Object_freeModels(result, nModels, realType); //unsure of last arg
+        objFreeObjdef(realType);
         return NULL;
     }
-    var_r29 = Object_objInitState(result, result->modelInstances + ((s8) objData->nModels * 4));
-    if (var_r27_2 & 0x40) {
-        var_r29 = Object_objSetupEvents((s32) result->romdefno, result, var_r29);
+    next = &result->modelInstances[objData->nModels];
+    next = Object_objInitState(result, next);
+    if(modelFlags & 0x40) {
+        next = Object_objSetupEvents((s32) result->romdefno,
+            result, next);
     }
-    if (var_r27_2 & 0x100) {
-        var_r29 = Object_objSetupModels((s32)result->romdefno,
-            result->modelInstances[0]->model, result, var_r29);
+    if(modelFlags & 0x100) {
+        next = Object_objSetupModels(result->romdefno,
+            result->modelInstances[0], result, next);
     }
-    if ((var_r27_2 & 2) && ((s16) objData->shadowType != 0)) {
-        var_r29 = Object_objLoadShadow(result, var_r29);
+    if((modelFlags & 2) && ((s16) objData->shadowType != 0)) {
+        next = Object_objLoadShadow(result, next, 0);
     }
-    temp_ret_4 = objModelFn_800839d4(result);
-    var_f1 = temp_ret_4;
-    var_r4 = temp_ret_4;
-    result->cullDistance = result->pos.scale * (f32) var_f1;
-    if ((u8) objData->maybeNumHits != 0) {
-        temp_ret_5 = Object_objSetupHitState(result, var_r29);
-        //var_f1 = temp_ret_5;
-        var_r4 = (u32) (u64) temp_ret_5;
-        var_r29 = temp_ret_5;
-        if ((u8) objData->maybeNumHits & 8) {
-            temp_ret_6 = Object_objSetupField58(result, var_r29);
-            //var_f1 = (bitwise f64) temp_ret_6;
-            var_r4 = (u32) (u64) temp_ret_6;
-            var_r29 = temp_ret_6;
+    result->cullDistance = result->pos.scale * objModelFn_800839d4(result);
+    if((u8)objData->maybeNumHits != 0) {
+        next = (void*)Object_objSetupHitState(result, next);
+        if ((u8) objData->flags93 & 8) {
+            next = (void*)Object_objSetupField58(result, next);
         }
     }
-    if ((u8) objData->unk6e != 0) {
-        temp_ret_7 = alignTo4((u64) var_r29);
-        //var_f1 = (bitwise f64) temp_ret_7;
-        //temp_r3_4 = temp_ret_7;
-        var_r4 = (u32) (u64) temp_ret_7;
-        result->pVecs = temp_r3_4;
-        //var_r29 = temp_r3_4 + ((u8) objData->unk6e * 0x12);
+    if((u8)objData->nJoints != 0) {
+        next = alignTo4(next);
+        result->joints = next;
+        next = (void*)((s32)next + ((u8)objData->nJoints * sizeof(Joint)));
     }
-    if ((u8) objData->name[0xE] != 0) {
-        temp_ret_8 = alignTo4((u64) var_r29);
-        var_f1 = (bitwise f64) temp_ret_8;
-        temp_r3_5 = temp_ret_8;
-        var_r4 = (u32) (u64) temp_ret_8;
-        result->pTextures = temp_r3_5;
-        var_r29 = temp_r3_5 + ((u8) objData->name[0xE] * 0x10);
+    if((u8)objData->nTextures != 0) {
+        next = alignTo4(next);
+        result->pTextures = next;
+        next = (void*)((s32)next + ((u8) objData->nTextures * 0x10));
     }
-    if ((u8) objData->unk94 != 0) {
-        temp_ret_9 = alignTo4((u64) var_r29);
-        var_f1 = (bitwise f64) temp_ret_9;
-        temp_r3_6 = temp_ret_9;
-        var_r4 = (u32) (u64) temp_ret_9;
-        result->_74 = temp_r3_6;
-        var_r29 = temp_r3_6 + ((u8) objData->unk94 * 0x18);
+    if((u8) objData->numLockData != 0) {
+        next = alignTo4(next);
+        result->romLockdata = next;
+        next = (void*)((s32)next + ((u8) objData->numLockData * sizeof(RomLockData)));
     }
-    if (((u8) objData->unk8F != 0) && ((u8) objData->noplacements != 0)) {
-        temp_ret_10 = Object_objSetupHits((s32) result->romdefno, (ModelInstance *) result->modelInstances->model, result->hitstate, alignTo4((u64) var_r29), result);
-        var_f1 = (bitwise f64) temp_ret_10;
-        var_r4 = (u32) (u64) temp_ret_10;
-        var_r29 = temp_ret_10;
+    if(((u8) objData->maybeNumHits != 0) && ((u8) objData->bDisableHits != 0)) {
+        next = alignTo4(next);
+        next = Object_objSetupHits((s32)result->romdefno,
+            (ModelInstance *)result->modelInstances[0],
+            result->hitstate, next, result);
     }
-    if ((u8) objData->unk94 != 0) {
-        temp_ret_11 = alignTo4((u64) var_r29);
-        var_f1 = (bitwise f64) temp_ret_11;
-        temp_r3_7 = temp_ret_11;
-        var_r4 = (u32) (u64) temp_ret_11;
-        result->_78 = temp_r3_7;
-        var_r26 = 0;
-loop_68:
-        if (var_r26 < (s32) (u8) objData->unk94) {
-            *(result->_78 + ((var_r26 * 5) + 4)) = *(objData->lockdata + ((var_r26 * 0x18) + 0x10));
-            *(result->_78 + (var_r26 * 5)) = *(objData->lockdata + ((var_r26 * 0x18) + 0xC));
-            *(result->_78 + ((var_r26 * 5) + 3)) = *(objData->lockdata + ((var_r26 * 0x18) + 0xF));
-            *(result->_78 + ((var_r26 * 5) + 1)) = *(objData->lockdata + ((var_r26 * 0x18) + 0xD));
-            var_r4 = (u32) result->_78;
-            *(var_r4 + ((var_r26 * 5) + 2)) = *(objData->lockdata + ((var_r26 * 0x18) + 0xE));
-            var_r26 += 1;
-            goto loop_68;
+    if(objData->numLockData != 0) {
+        next = alignTo4(next);
+        result->lockdata = next;
+        for(iLock = 0; iLock < objData->numLockData; iLock++) {
+            result->lockdata[iLock].flags         = objData->lockdata[iLock].flags;
+            result->lockdata[iLock].fieldC        = objData->lockdata[iLock].unk0C;
+            result->lockdata[iLock].fieldF        = objData->lockdata[iLock].unk0F;
+            result->lockdata[iLock].combatCamDist = objData->lockdata[iLock].combatCamDist;
+            result->lockdata[iLock].maxDist       = objData->lockdata[iLock].maxDist;
         }
-        var_r29 = temp_r3_7 + ((u8) objData->unk94 * 5);
+        next = (void*)((u32)next + (u32)(objData->numLockData * sizeof(RamLockData)));
     }
-    if ((s32) totalSize != (s32) (var_r29 - result)) {
-        //printf((s8 *) (&BYTE_802eca98 + 0x21C), var_r4, var_f1);
+    if ((s32) totalSize != ((s32)next - (s32)result)) {
         printf("objects.c: objSetupObject: sizes do not match\n");
     }
-    result->pMatrix = sp18;
+    result->heldBy = heldBy;
     Object_streamFn_8018fa50(result, (s32) result->romdefno);
     return result;
 }

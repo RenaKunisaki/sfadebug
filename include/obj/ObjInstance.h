@@ -4,7 +4,7 @@
 
 typedef struct {
     /* 0x0 */ S16Vec rotation;
-    /* 0x6 */ u16 flags; //ObjInstance_Flags06
+    /* 0x6 */ s16 flags; //ObjInstance_Flags06
     /* 0x8 */ float scale;
     /* 0xc */ Vec pos;
 } ObjPos;
@@ -24,10 +24,40 @@ struct ObjInstance;
 #define ObjInstance_FlagsB0_DontUseRenderCallback 16384
 #define ObjInstance_FlagsB0_DontUpdate 32768
 
+
 #define ObjData_Flag_FixedDepth 0x80000
+
+#define RomLockData_Flag_Rotate 0x10
 
 typedef int (*ObjSeqFunc)(struct ObjInstance *this,
     struct ObjInstance *that, void *state);
+
+typedef struct {
+    /* 0x00 */ short unk00;
+    /* 0x02 */ short unk02;
+    /* 0x04 */ short unk04;
+    /* 0x06 */ S16Vec unk08;
+    /* 0x0c */ u8 unk0C;
+    /* 0x0d */ u8 combatCamDist; //deactivate combat mode when further away than (this << 2)
+    /* 0x0e */ u8 maxDist;
+    /* 0x0f */ u8 unk0F;
+    /* 0x10 */ u8 flags; //RomLockData_Flag_*
+    /* 0x11 */ u8 unk11;
+    /* 0x12 */ u8 unk12;
+    /* 0x13 */ u8 unk13;
+    /* 0x14 */ u8 unk14;
+    /* 0x15 */ u8 unk15;
+    /* 0x16 */ u8 unk16;
+    /* 0x17 */ u8 unk17;
+} RomLockData;
+
+typedef struct {
+    /* 0x00 */ u8 fieldC;
+    /* 0x01 */ u8 combatCamDist;
+    /* 0x02 */ u8 maxDist;
+    /* 0x03 */ u8 fieldF;
+    /* 0x04 */ u8 flags;
+} RamLockData;
 
 typedef struct {
     int TODO;
@@ -46,13 +76,13 @@ typedef struct {
 } AttachPoint;
 
 typedef struct {
-    int TODO;
-} LockData;
+    u8 TODO[0x12];
+} Joint;
 
 typedef uint ObjFileStructFlags44;
 typedef s16 ObjFileStruct_ShadowType;
 typedef u16 HitboxFlags60;
-typedef uint HitboxFlags62;
+typedef u16 HitboxFlags62;
 
 typedef struct {
     /* 0x00 */ float unk00; //copied to shadow field 0
@@ -71,7 +101,7 @@ typedef struct {
     /* 0x34 */ void *wObjList; //ignored in file (zeroed on load)
     /* 0x38 */ void *nextIntersectPoint;
     /* 0x3c */ void *nextIntersectLine;
-    /* 0x40 */ LockData *lockdata; //A-button interaction
+    /* 0x40 */ RomLockData *lockdata; //A-button interaction
     /* 0x44 */ ObjFileStructFlags44 flags;
     /* 0x48 */ ObjFileStruct_ShadowType shadowType;
     /* 0x4a */ s16 shadowTexture;
@@ -121,6 +151,8 @@ typedef struct {
     /* 0x8e */ s8 unk8e; //related to textures; 1=dark, 2=default, 3+=corrupt, 77=crash, 0=normal
     /* 0x8f */ s8 maybeNumHits; //related to hitbox
     /* 0x90 */ HitboxFlags62 hitbox_flagsB6; // < 0xE = invincible
+    /* 0x92 */ s8 unk92;
+    /* 0x93 */ u8 flags93;
     /* 0x94 */ s8 unk94;
     /* 0x95 */ s8 unk95;
     /* 0x96 */ s8 unk96;
@@ -128,7 +160,7 @@ typedef struct {
     /* 0x98 */ s8 unk98;
     /* 0x99 */ s8 unk99;
     /* 0x9a */ s8 unk9a;
-    /* 0x9b */ s8 nFocusPoints;
+    /* 0x9b */ u8 numLockData;
     /* 0x9c */ s8 unk9c;
     /* 0x9d */ u8 fixedDepth; //mult by 100, used if flags & FIxedDepth
     /* 0x9e */ s8 unk9e;
@@ -158,7 +190,7 @@ typedef struct {
 } astruct_53;
 
 typedef struct ObjInstance {
-    /* 0x0 */ ObjPos pos;
+    /* 0x00 */ ObjPos pos;
     /* 0x18 */ Vec prevPos; //maybe "viewPos"
     /* 0x24 */ Vec vel;
     /* 0x30 */ struct ObjInstance *heldBy; //can be null
@@ -181,10 +213,10 @@ typedef struct ObjInstance {
     /* 0x60 */ ObjEventData *pEventName;
     /* 0x64 */ Shadow *shadow;
     /* 0x68 */ DLL *dll; //can be NULL; XXX is it LoadedDLL?
-    /* 0x6c */ UNKTYPE *pVecs;
+    /* 0x6c */ Joint *joints;
     /* 0x70 */ astruct_53 **pTextures; //count = file->count59
-    /* 0x74 */ Vec *_74; //maybe matrix*; count = file->count72
-    /* 0x78 */ UNKTYPE *_78;
+    /* 0x74 */ RomLockData *romLockdata;
+    /* 0x78 */ RamLockData *lockdata;
     /* 0x7c */ ModelInstance **modelInstances; //one per model
     /* 0x80 */ Vec oldPos;
     /* 0x8c */ Vec pos_0x8c;
