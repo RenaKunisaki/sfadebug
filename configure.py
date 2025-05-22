@@ -143,11 +143,11 @@ if not config.non_matching:
 
 # Tool versions
 config.binutils_tag = "2.42-1"
-config.compilers_tag = "20240706"
-config.dtk_tag = "v0.9.4"
-config.objdiff_tag = "v2.0.0-beta.3"
-config.sjiswrap_tag = "v1.1.1"
-config.wibo_tag = "0.6.11"
+config.compilers_tag = "20250520"
+config.dtk_tag = "v1.5.1"
+config.objdiff_tag = "v3.0.0-beta.8"
+config.sjiswrap_tag = "v1.2.1"
+config.wibo_tag = "0.6.16"
 
 # Project
 config.config_path = Path("config") / config.version / "config.yml"
