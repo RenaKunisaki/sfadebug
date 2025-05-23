@@ -9,15 +9,16 @@
 
 #define MAX_MENU_DEPTH   10
 #define MAX_MENU_STRINGS 50
+#define MENU_ANALOG_DEADZONE 50
 
 /* 80306F20 */ extern DiMenuButtonCmds DiMenuButtonCmds_ARRAY_80306f20[4];
 
-/* 80390508 */ DiMenuStruct3 diMenuStruct3_80390508[1]; //wtf
+/* 80390508 */ DiMenuStruct3 diMenuStruct3_80390508[1]; // wtf
 /* 80390534 */ DiMenuStruct3 diMenuStack[MAX_MENU_DEPTH];
 /* 803906EC */ DiMenuStrings diMenuStrings[MAX_MENU_STRINGS];
 /* 80390944 */ bool diMenuStringIsUsed[MAX_MENU_STRINGS];
 
-//80398240: .sbss
+// 80398240: .sbss
 /* 80399860 */ extern s8 diMenuItemFlag_80399860;
 /* 80399864 */ extern Gfx *diMenuGfx;
 /* 80399868 */ extern Mtx *diMenuMtx;
@@ -28,29 +29,34 @@
 /* 8039987C */ extern int diMenuStackDepth;
 /* 80399880 */ extern N64Button32 debugN64ButtonsPressed;
 /* 80399884 */ extern bool diMenuVisible;
-/* 80399885 */ extern bool diMenuCanOpen; //true: do not allow Start/Z+Start to hide/show menu
+/* 80399885 */ extern bool
+    diMenuCanOpen; // true: do not allow Start/Z+Start to hide/show menu
 /* 80399886 */ extern bool disableMenus;
 /* 80399888 */ extern DiMenuItem *diMenuPendingPush;
 /* 8039988C */ extern int diMenuSpace;
-/* 80399890 */ extern s8 diMenuPendingPopCnt;
+/* 80399890 */ extern u8 diMenuPendingPopCnt;
 /* 80399894 */ extern u32 diMenuPrevButtons;
-/* 80399898 */ extern s8 diMenuItemSelectDelay;
-/* 80399899 */ extern s8 diMenuItemAdjustDelay;
+/* 80399898 */ extern u8 diMenuItemSelectDelay;
+/* 80399899 */ extern u8 diMenuItemAdjustDelay;
 
 static void dummy() {
-	//force variable order
+	// force variable order
 	diMenuStruct3_80390508;
 	diMenuStack;
 	diMenuStrings;
 	diMenuStringIsUsed;
 }
 
+N64Button n64GetEnabledButtonsHeld(int pad);
+s8 getStickX2(int pad);
+s8 getStickY2(int pad);
 uint getScreenResolution();
 /* 8017a870 */ void diMenuInit(void (*callback)(void), int param_2);
 /* 8017a8d0 */ void diMenuPush(DiMenuItem *items, uint space);
 /* 8017ad58 */ void diMenuPop(void);
 /* 8017ae58 */ void diMenuPopAll(void);
-/* 8017ae88 */ void diMenuUpdate(Gfx *gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol, int framesTimes65536);
+/* 8017ae88 */ void diMenuUpdate(
+    Gfx *gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol, int framesTimes65536);
 /* 8017afc4 */ BOOL diMenuIsVisible(void);
 /* 8017afcc */ void diMenuShow(void);
 /* 8017afd8 */ void diMenuHide(void);
@@ -59,7 +65,8 @@ uint getScreenResolution();
 /* 8017affc */ void diMenuStringInit(DiMenuItem *item);
 /* 8017b10c */ void diMenuItemDoControls(DiMenuItem *item);
 /* 8017b384 */ void diMenuDrawCur(void);
-/* 8017ba10 */ int diMenuItemActivate(DiMenuItem *item, /* DiMenuOpcode */ int op);
+/* 8017ba10 */ int diMenuItemActivate(
+    DiMenuItem *item, /* DiMenuOpcode */ int op);
 /* 8017bd08 */ void diMenuCurGoNextItem(void);
 /* 8017bddc */ void diMenuCurGoPrevItem(void);
 /* 8017bee8 */ void diMenuItemIncrementCurrent(void);
@@ -76,21 +83,21 @@ void diMenuInit(void (*callback)(void), int param_2) { // 8017A870
 }
 
 void diMenuPush(DiMenuItem *items, uint space) { // 8017a8d0
-    int tmpWidth;
+	int tmpWidth;
 	int screenRes;
 	int width;
 	int ii;
-    int i2;
-    int widest;
-    DiMenuItemStrings *strs;
+	int i2;
+	int widest;
+	DiMenuItemStrings *strs;
 
 	screenRes = getScreenResolution();
-	if (disableMenus) {
+	if(disableMenus) {
 		diMenuPendingPush = items;
 		diMenuSpace = space;
 		return;
 	}
-	if (diMenuStackDepth == MAX_MENU_DEPTH) {
+	if(diMenuStackDepth == MAX_MENU_DEPTH) {
 		printf("diMenu: Menu stack full! Increase MAX_MENU_DEPTH\n");
 		return;
 	}
@@ -112,23 +119,21 @@ void diMenuPush(DiMenuItem *items, uint space) { // 8017a8d0
 	diMenuCur->maxH = SCREEN_HEIGHT;
 	diMenuCur->maxW = SCREEN_WIDTH;
 
-    while (items < diMenuCur->lastItem) {
+	while(items < diMenuCur->lastItem) {
 		items->heightFlags18 = 0;
 		width = debugPrintMeasureStr(items->text);
 		switch(items->type) {
 			case Header: {
-				if (items->strs.iStrs != 0) {
-					width += debugPrintMeasureStr(items->strs.str) +
-						debugPrintMeasureStr(" ");
+				if(items->strs.iStrs != 0) {
+					width += debugPrintMeasureStr(items->strs.str)
+					    + debugPrintMeasureStr(" ");
 				}
 				break;
 			}
 			case CBoostRelated:
 				width += 10;
 				// fall thru
-			case Unk0:
-                width += debugPrintMeasureStr("00000");
-                break;
+			case Unk0: width += debugPrintMeasureStr("00000"); break;
 			case Adjustable: {
 				strs = &diMenuStrings[items->strs.iStrs].strs;
 				widest = 0;
@@ -141,71 +146,66 @@ void diMenuPush(DiMenuItem *items, uint space) { // 8017a8d0
 			}
 		}
 		if(items->width == 0xFFFF) ii = (SCREEN_WIDTH / 2) - (width / 2);
-		else if(items->width != 0) ii = items->width;
+		else if(items->width != 0)
+			ii = items->width;
 
-		if ((items->width != 0) || (0 < items->height)) {
+		if((items->width != 0) || (0 < items->height)) {
 			if(ii < diMenuCur->maxW) diMenuCur->maxW = ii;
-			if ((items->width != 0xFFFF) || (0 < items->height)) {
-				if (items->height < diMenuCur->maxH) {
+			if((items->width != 0xFFFF) || (0 < items->height)) {
+				if(items->height < diMenuCur->maxH) {
 					diMenuCur->maxH = items->height;
 				}
-				if (items->height > diMenuCur->minH) {
+				if(items->height > diMenuCur->minH) {
 					diMenuCur->minH = items->height;
 				}
 			}
 		}
 
-		if (items->width == 0xFFFF) {
+		if(items->width == 0xFFFF) {
 			items->heightFlags18 = 1;
 			items->width = (SCREEN_WIDTH / 2) - (width / 2);
 		}
-		if (items->width + width > diMenuCur->minW) {
+		if(items->width + width > diMenuCur->minW) {
 			diMenuCur->minW = items->width + width;
 		}
-		if ((width + diMenuCur->maxW) > diMenuCur->minW) {
+		if((width + diMenuCur->maxW) > diMenuCur->minW) {
 			diMenuCur->minW = width + diMenuCur->maxW;
 		}
 
 		items++;
-		if (diMenuCur->minH < (SCREEN_HEIGHT - 10)) {
-            diMenuCur->minH += 11;
-        }
+		if(diMenuCur->minH < (SCREEN_HEIGHT - 10)) { diMenuCur->minH += 11; }
 	}
 
-	if (diMenuCur->maxW >= 20) {
-        diMenuCur->maxW -= 20;
-    } else {
+	if(diMenuCur->maxW >= 20) {
+		diMenuCur->maxW -= 20;
+	} else {
 		diMenuCur->maxW = 0;
-    }
+	}
 	diMenuCur->minW += 20;
 
-	if (SCREEN_WIDTH < (screenRes & 0xffff)) {
+	if(SCREEN_WIDTH < (screenRes & 0xffff)) {
 		diMenuCur->maxW <<= 1;
 		diMenuCur->minW <<= 1;
 	}
-	if (SCREEN_HEIGHT < (screenRes >> 0x10)) {
+	if(SCREEN_HEIGHT < (screenRes >> 0x10)) {
 		diMenuCur->maxH <<= 1;
 		diMenuCur->minH <<= 1;
 	}
-	if (diMenuCur->curItem->type == Header) {
-        diMenuCurGoNextItem();
-    }
+	if(diMenuCur->curItem->type == Header) { diMenuCurGoNextItem(); }
 
 	diMenuCur->firstDispItem = diMenuCur->items;
 	if(space) {
 		if(diMenuItemFlag_80399860) {
 			// this is just a memcpy
 			u8 *dst = (u8 *)diMenuCur;
-			u8 *src = (u8*)&diMenuStruct3_80390508;
-			for (ii = 0; ii < sizeof(DiMenuStruct3); ii++) {
-                dst[ii] = src[ii];
-            }
+			u8 *src = (u8 *)&diMenuStruct3_80390508;
+			for(ii = 0; ii < sizeof(DiMenuStruct3); ii++) { dst[ii] = src[ii]; }
 		}
 		diMenuCur->spaceFlag28 = 1;
 	}
 	diMenuStackDepth += 1;
 	diMenuItemActivate(diMenuCur->items, DiMenuOpcode_MenuEnter);
-    !diMenuStruct3_80390508;
+	!diMenuStruct3_80390508;
 }
 
 void diMenuPop(void) { // 8017AD58
@@ -213,8 +213,8 @@ void diMenuPop(void) { // 8017AD58
 
 	if(disableMenus) {
 		diMenuPendingPopCnt++;
-        return;
-    }
+		return;
+	}
 	if(diMenuStackDepth <= 0) return;
 
 	for(item = diMenuCur->items; item < diMenuCur->lastItem; item++) {
@@ -228,7 +228,8 @@ void diMenuPop(void) { // 8017AD58
 	diMenuItemActivate(item, DiMenuOpcode_Unk29);
 	diMenuStackDepth--;
 	if(diMenuStackDepth == 0) diMenuCur = NULL;
-	else diMenuCur = &diMenuStack[diMenuStackDepth - 1];
+	else
+		diMenuCur = &diMenuStack[diMenuStackDepth - 1];
 }
 
 void diMenuPopAll(void) { // 8017AE58
@@ -251,21 +252,18 @@ void diMenuUpdate(Gfx *gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol,
 		diMenuItemFlag_80399860 = 1;
 		src = (u8 *)&diMenuCur->curItem;
 		dst = (u8 *)&diMenuStruct3_80390508;
-		for(ii = 0; ii < sizeof(DiMenuStruct3); ii++) {
-			dst[ii] = src[ii];
-		}
+		for(ii = 0; ii < sizeof(DiMenuStruct3); ii++) { dst[ii] = src[ii]; }
 	}
 	diMenuFrameCount80399874 = framesTimes65536;
 	debugN64ButtonsPressed = n64GetEnabledButtonsPressed(0) & 0xffff;
 	bHeld = n64GetEnabledButtonsHeld(0);
 	if(!diMenuCanOpen) {
-		//Start: hide menu
-		//Hold Z, press Start: show menu
+		// Start: hide menu
+		// Hold Z, press Start: show menu
 		if((debugN64ButtonsPressed & N64_BUTTON_START) && diMenuVisible) {
 			diMenuVisible = 0;
-		}
-		else if((debugN64ButtonsPressed & N64_BUTTON_START)
-		&& (bHeld & N64_BUTTON_Z) && !diMenuVisible) {
+		} else if((debugN64ButtonsPressed & N64_BUTTON_START)
+		    && (bHeld & N64_BUTTON_Z) && !diMenuVisible) {
 			diMenuVisible = 1;
 		}
 	}
@@ -295,7 +293,7 @@ void diMenuDisable(void) { // 8017AFF0
 	diMenuCanOpen = false;
 }
 
-void diMenuStringInit(DiMenuItem *item) { //8017affc
+void diMenuStringInit(DiMenuItem *item) { // 8017affc
 	int iVar2;
 	int iStr;
 	DiMenuStrings *strEnt;
@@ -303,7 +301,7 @@ void diMenuStringInit(DiMenuItem *item) { //8017affc
 	iStr = -1;
 	if(item->strs.iStrs > MAX_MENU_STRINGS) {
 		for(iVar2 = 0; iVar2 < MAX_MENU_STRINGS && iStr == -1; iVar2++) {
-			if (diMenuStringIsUsed[iVar2] == 0) {
+			if(diMenuStringIsUsed[iVar2] == 0) {
 				iStr = iVar2;
 				diMenuStringIsUsed[iVar2] = 1;
 			}
@@ -312,136 +310,121 @@ void diMenuStringInit(DiMenuItem *item) { //8017affc
 			strEnt = &diMenuStrings[iStr];
 			strEnt->strs = item->strs;
 			strEnt->nStrs = 0;
-			while(strEnt->strs.pStr[strEnt->nStrs] != 0) {
-				strEnt->nStrs++;
-			}
+			while(strEnt->strs.pStr[strEnt->nStrs] != 0) { strEnt->nStrs++; }
 			strEnt->nStrs--;
 			(item->strs).iStrs = iStr;
-		}
-		else {
+		} else {
 			printf("diMenuStringInit: Run out of string structures!\n");
 			return;
 		}
-	}
-	else {
+	} else {
 		strEnt = &diMenuStrings[item->strs.iStrs];
 	}
-	strEnt->iStr = diMenuItemActivate(item,3);;
+	strEnt->iStr = diMenuItemActivate(item, 3);
 }
 
-void diMenuItemDoControls(DiMenuItem *item) { //8017b10c
-  s8 sy;
-  s8 sx;
-  N64Button btns0;
-  N64Button btns2;
-  DiMenuButtonCmds *pDVar1;
-  N64Button32 btns32;
+void diMenuItemDoControls(DiMenuItem *item) { // 8017b10c
+	int sy;
+	int sx;
+	N64Button32 bHeld;
+	DiMenuButtonCmds *pDVar1;
 
-  sy = getStickY2(0);
-  sx = getStickX2(0);
-  btns0 = n64GetEnabledButtonsHeld(0);
-  btns2 = n64GetEnabledButtonsHeld(2);
-  if ((btns2 & N64_BUTTON_Z) != 0) {
-    sy = getStickY2(2);
-    sx = getStickX2(2);
-    btns0 = n64GetEnabledButtonsHeld(2);
-  }
-  btns32 = (N64Button32)btns0;
-  disableMenus = 1;
-  do {
-    if (item->type == End) {
-      if (sy < 0x33) {
-        if (sy < -0x32) {
-          if ((diMenuItemSelectDelay == 0) || (10 < diMenuItemSelectDelay)) {
-            diMenuCurGoNextItem();
-          }
-                    /* holding the stick for 10 frames will activate auto repeat */
-          diMenuItemSelectDelay += 1;
-        }
-        else {
-          diMenuItemSelectDelay = 0;
-        }
-      }
-      else {
-        if ((diMenuItemSelectDelay == 0) || (10 < diMenuItemSelectDelay)) {
-          diMenuCurGoPrevItem();
-        }
-        diMenuItemSelectDelay += 1;
-      }
-      disableMenus = 0;
-      diMenuPrevButtons = btns32;
-      for (; diMenuPendingPopCnt != 0; diMenuPendingPopCnt -= 1) {
-        diMenuPop();
-      }
-      if (diMenuPendingPush != NULL) {
-        diMenuPush(diMenuPendingPush,diMenuSpace);
-        diMenuPendingPush = NULL;
-      }
-      return;
-    }
-    diMenuItemActivate(item,0);
-    for (pDVar1 = DiMenuButtonCmds_ARRAY_80306f20; pDVar1->buttons != 999999; pDVar1 = pDVar1 + 1) {
-      if (item == diMenuCur->curItem) {
-        if ((btns32 & pDVar1->buttons) != 0) {
-          if ((diMenuPrevButtons & pDVar1->buttons) == 0) {
-            diMenuItemActivate(item,(uint)pDVar1->onPress);
-            goto LAB_8017b210;
-          }
-        }
-        if ((btns32 & pDVar1->buttons) == 0) {
-          if ((diMenuPrevButtons & pDVar1->buttons) != 0) {
-            diMenuItemActivate(item,(uint)pDVar1->onRelease);
-          }
-        }
-        else {
-          diMenuItemActivate(item,(uint)pDVar1->onHold);
-        }
-      }
-    }
-LAB_8017b210:
-    if (item == diMenuCur->curItem) {
-      if (sx < -0x32) {
-        if ((diMenuItemAdjustDelay == 0) || (10 < diMenuItemAdjustDelay)) {
-          diMenuItemDecrementCurrent();
-        }
-        diMenuItemAdjustDelay += 1;
-      }
-      else if (sx < 0x33) {
-        diMenuItemAdjustDelay = 0;
-      }
-      else {
-        if ((diMenuItemAdjustDelay == 0) || (10 < diMenuItemAdjustDelay)) {
-          diMenuItemIncrementCurrent();
-        }
-        diMenuItemAdjustDelay += 1;
-      }
-    }
-    item = item + 1;
-  } while( true );
+	sy = getStickY2(0);
+	sx = getStickX2(0);
+	bHeld = n64GetEnabledButtonsHeld(0);
+	if((n64GetEnabledButtonsHeld(2) & N64_BUTTON_Z) != 0) {
+		sy = getStickY2(2);
+		sx = getStickX2(2);
+		bHeld = n64GetEnabledButtonsHeld(2);
+	}
+	disableMenus = 1;
+	while(item->type != End) {
+		diMenuItemActivate(item, 0);
+		for(pDVar1 = DiMenuButtonCmds_ARRAY_80306f20;
+		pDVar1->buttons != 999999; pDVar1++) {
+			if(item == diMenuCur->curItem) {
+				if(((bHeld & pDVar1->buttons))
+				&& ((diMenuPrevButtons & pDVar1->buttons) == 0)) {
+					diMenuItemActivate(item, (uint)pDVar1->onPress);
+				}
+				else if((bHeld & pDVar1->buttons)) {
+					diMenuItemActivate(item, (uint)pDVar1->onHold);
+				} else if((diMenuPrevButtons & pDVar1->buttons)) {
+					diMenuItemActivate(item, (uint)pDVar1->onRelease);
+				}
+			}
+		}
+		if(item == diMenuCur->curItem) {
+			if(sx < -MENU_ANALOG_DEADZONE) {
+				if((diMenuItemAdjustDelay == 0)
+				|| (diMenuItemAdjustDelay > 10)) {
+					diMenuItemDecrementCurrent();
+				}
+				diMenuItemAdjustDelay++;
+			} else if(sx > MENU_ANALOG_DEADZONE) {
+				if((diMenuItemAdjustDelay == 0)
+				    || (diMenuItemAdjustDelay > 10)) {
+					diMenuItemIncrementCurrent();
+				}
+				diMenuItemAdjustDelay += 1;
+			} else {
+				diMenuItemAdjustDelay = 0;
+			}
+		}
+		item = item + 1;
+	}
+
+	if(sy > MENU_ANALOG_DEADZONE) {
+		if((diMenuItemSelectDelay == 0)
+			|| (10 < diMenuItemSelectDelay)) {
+			diMenuCurGoPrevItem();
+		}
+		diMenuItemSelectDelay++;
+
+	}
+	else if(sy < -MENU_ANALOG_DEADZONE) {
+		if((diMenuItemSelectDelay == 0)
+			|| (diMenuItemSelectDelay > 10)) {
+			diMenuCurGoNextItem();
+		}
+		//holding the stick for 10 frames will activate auto repeat
+		diMenuItemSelectDelay++;
+	} else {
+		diMenuItemSelectDelay = 0;
+	}
+	diMenuPrevButtons = bHeld;
+	disableMenus = 0;
+	for(; diMenuPendingPopCnt; diMenuPendingPopCnt--) {
+		diMenuPop();
+	}
+	if(diMenuPendingPush) {
+		diMenuPush(diMenuPendingPush, diMenuSpace);
+		diMenuPendingPush = NULL;
+	}
 }
 
-void diMenuDrawCur(void) { //8017b384
-  uint *puVar1;
-  char *itemStr;
-  int iVar2;
-  int iVar3;
-  uint uVar4;
-  Gfx *puVar6;
-  Gfx *puVar2;
-  Gfx *puVar5;
-  Gfx *puVar10;
-  Gfx *puVar9;
-  u32 *cmd;
-  Gfx *rsp;
-  uint width;
-  uint x;
-  uint y;
-  DiMenuItem *items;
-  DiMenuItem *item;
-  double fltVal;
-  uint height;
-  bool needPrintMore;
-  DiMenuItem **pItems;
+void diMenuDrawCur(void) { // 8017b384
+	uint *puVar1;
+	char *itemStr;
+	int iVar2;
+	int iVar3;
+	uint uVar4;
+	Gfx *puVar6;
+	Gfx *puVar2;
+	Gfx *puVar5;
+	Gfx *puVar10;
+	Gfx *puVar9;
+	u32 *cmd;
+	Gfx *rsp;
+	uint width;
+	uint x;
+	uint y;
+	DiMenuItem *items;
+	DiMenuItem *item;
+	double fltVal;
+	uint height;
+	bool needPrintMore;
+	DiMenuItem **pItems;
 
 #if 0
   x = 0;
@@ -586,135 +569,123 @@ void diMenuDrawCur(void) { //8017b384
 #endif
 }
 
-int diMenuItemActivate(DiMenuItem *item, /* DiMenuOpcode */ int op) { //8017ba10
-  int iStr;
-  undefined4 uVar1;
-  DiMenuOp oper;
+int diMenuItemActivate(DiMenuItem *item, /* DiMenuOpcode */ int op) { // 8017ba10
+	int iStr;
+	undefined4 uVar1;
+	DiMenuOp oper;
 
-  if (item->func == NULL) {
-    uVar1 = 0;
-  }
-  else {
-    oper.op  = op;
-    oper.gfx = diMenuGfx;
-    oper.mtx = diMenuMtx;
-    oper.vtx = diMenuVtx;
-    oper.pol = diMenuPol;
-    oper.frameCount  = diMenuFrameCount80399874;
-    oper.item1C = (DiMenuItem *)(((int)item - (int)diMenuCur->items) / sizeof(DiMenuItem));
-    oper.item20 = (DiMenuItem *)(((int)diMenuCur->curItem - (int)diMenuCur->items) / sizeof(DiMenuItem));
-    oper.item24 = item;
-    if (op == 0x29) {
-      uVar1 = item->func(&item->strs,&oper);
-    }
-    else if (item->type == Adjustable) {
-      iStr = (item->strs).iStrs;
-      oper.str = *(char **)(diMenuStrings[iStr].strs.str + diMenuStrings[iStr].iStr * 4);
-      //uVar1 = item->func(iStr * 0xc + -0x7fc6f910,&oper);
-    }
-    else {
-      oper.str = NULL;
-      uVar1 = item->func(&item->strs,&oper);
-    }
-  }
-  return uVar1;
+	if(item->func == NULL) {
+		uVar1 = 0;
+	} else {
+		oper.op = op;
+		oper.gfx = diMenuGfx;
+		oper.mtx = diMenuMtx;
+		oper.vtx = diMenuVtx;
+		oper.pol = diMenuPol;
+		oper.frameCount = diMenuFrameCount80399874;
+		oper.item1C = (DiMenuItem *)(((int)item - (int)diMenuCur->items)
+		    / sizeof(DiMenuItem));
+		oper.item20
+		    = (DiMenuItem *)(((int)diMenuCur->curItem - (int)diMenuCur->items)
+		        / sizeof(DiMenuItem));
+		oper.item24 = item;
+		if(op == 0x29) {
+			uVar1 = item->func(&item->strs, &oper);
+		} else if(item->type == Adjustable) {
+			iStr = (item->strs).iStrs;
+			oper.str = *(char **)(diMenuStrings[iStr].strs.str
+			    + diMenuStrings[iStr].iStr * 4);
+			// uVar1 = item->func(iStr * 0xc + -0x7fc6f910,&oper);
+		} else {
+			oper.str = NULL;
+			uVar1 = item->func(&item->strs, &oper);
+		}
+	}
+	return uVar1;
 }
 
-void diMenuCurGoNextItem(void) { //8017bd08
-  DiMenuItem *start;
-  bool done;
+void diMenuCurGoNextItem(void) { // 8017bd08
+	DiMenuItem *start;
+	bool done;
 
-  done = false;
-  start = diMenuCur->curItem;
-  while( true ) {
-    if (done) {
-      return;
-    }
-    diMenuCur->curItem = diMenuCur->curItem + 1;
-    done = true;
-    if (diMenuCur->curItem->type == End) {
-      if (diMenuCur->bWrap == FALSE) {
-        diMenuCur->curItem = diMenuCur->items;
-      }
-      else {
-        diMenuCur->curItem = start;
-      }
-    }
-    if (diMenuCur->lastDispItem < diMenuCur->curItem) {
-      diMenuCur->firstDispItem = diMenuCur->firstDispItem + 1;
-    }
-    if (diMenuCur->curItem == start) break;
-    if (diMenuCur->curItem->type == Header) {
-      done = false;
-    }
-  }
-  return;
+	done = false;
+	start = diMenuCur->curItem;
+	while(true) {
+		if(done) { return; }
+		diMenuCur->curItem = diMenuCur->curItem + 1;
+		done = true;
+		if(diMenuCur->curItem->type == End) {
+			if(diMenuCur->bWrap == FALSE) {
+				diMenuCur->curItem = diMenuCur->items;
+			} else {
+				diMenuCur->curItem = start;
+			}
+		}
+		if(diMenuCur->lastDispItem < diMenuCur->curItem) {
+			diMenuCur->firstDispItem = diMenuCur->firstDispItem + 1;
+		}
+		if(diMenuCur->curItem == start) break;
+		if(diMenuCur->curItem->type == Header) { done = false; }
+	}
+	return;
 }
 
-void diMenuCurGoPrevItem(void) { //8017bddc
-  DiMenuItem *start;
-  bool done;
+void diMenuCurGoPrevItem(void) { // 8017bddc
+	DiMenuItem *start;
+	bool done;
 
-  done = false;
-  start = diMenuCur->curItem;
-  while( true ) {
-    if (done) {
-      return;
-    }
-    done = true;
-    if (diMenuCur->curItem == diMenuCur->items) {
-      if (diMenuCur->bWrap == FALSE) {
-        while (diMenuCur->curItem->type != End) {
-          diMenuCur->curItem = diMenuCur->curItem + 1;
-        }
-        diMenuCur->curItem = diMenuCur->curItem + -1;
-      }
-      else {
-        diMenuCur->curItem = start;
-      }
-    }
-    else {
-      diMenuCur->curItem = diMenuCur->curItem + -1;
-    }
-    if (diMenuCur->curItem < diMenuCur->firstDispItem) {
-      diMenuCur->firstDispItem = diMenuCur->firstDispItem + -1;
-    }
-    if (diMenuCur->curItem == start) break;
-    if (diMenuCur->curItem->type == Header) {
-      done = false;
-    }
-  }
-  return;
+	done = false;
+	start = diMenuCur->curItem;
+	while(true) {
+		if(done) { return; }
+		done = true;
+		if(diMenuCur->curItem == diMenuCur->items) {
+			if(diMenuCur->bWrap == FALSE) {
+				while(diMenuCur->curItem->type != End) {
+					diMenuCur->curItem = diMenuCur->curItem + 1;
+				}
+				diMenuCur->curItem = diMenuCur->curItem + -1;
+			} else {
+				diMenuCur->curItem = start;
+			}
+		} else {
+			diMenuCur->curItem = diMenuCur->curItem + -1;
+		}
+		if(diMenuCur->curItem < diMenuCur->firstDispItem) {
+			diMenuCur->firstDispItem = diMenuCur->firstDispItem + -1;
+		}
+		if(diMenuCur->curItem == start) break;
+		if(diMenuCur->curItem->type == Header) { done = false; }
+	}
+	return;
 }
 
-void diMenuItemIncrementCurrent(void) { //8017bee8
-  int iVar1;
+void diMenuItemIncrementCurrent(void) { // 8017bee8
+	int iVar1;
 
-  if (diMenuCur->curItem->type == Adjustable) {
-    iVar1 = (diMenuCur->curItem->strs).iStrs;
-    if ((int)diMenuStrings[iVar1].iStr < (int)diMenuStrings[iVar1].nStrs) {
-      diMenuStrings[iVar1].iStr = diMenuStrings[iVar1].iStr + 1;
-    }
-    else {
-      diMenuStrings[iVar1].iStr = 0;
-    }
-  }
-  diMenuItemActivate(diMenuCur->curItem,1);
-  return;
+	if(diMenuCur->curItem->type == Adjustable) {
+		iVar1 = (diMenuCur->curItem->strs).iStrs;
+		if((int)diMenuStrings[iVar1].iStr < (int)diMenuStrings[iVar1].nStrs) {
+			diMenuStrings[iVar1].iStr = diMenuStrings[iVar1].iStr + 1;
+		} else {
+			diMenuStrings[iVar1].iStr = 0;
+		}
+	}
+	diMenuItemActivate(diMenuCur->curItem, 1);
+	return;
 }
 
-void diMenuItemDecrementCurrent(void) { //8017bf74
-  int iVar1;
+void diMenuItemDecrementCurrent(void) { // 8017bf74
+	int iVar1;
 
-  if (diMenuCur->curItem->type == Adjustable) {
-    iVar1 = (diMenuCur->curItem->strs).iStrs;
-    if ((int)diMenuStrings[iVar1].iStr < 1) {
-      diMenuStrings[iVar1].iStr = diMenuStrings[iVar1].nStrs;
-    }
-    else {
-      diMenuStrings[iVar1].iStr = diMenuStrings[iVar1].iStr - 1;
-    }
-  }
-  diMenuItemActivate(diMenuCur->curItem,2);
-  return;
+	if(diMenuCur->curItem->type == Adjustable) {
+		iVar1 = (diMenuCur->curItem->strs).iStrs;
+		if((int)diMenuStrings[iVar1].iStr < 1) {
+			diMenuStrings[iVar1].iStr = diMenuStrings[iVar1].nStrs;
+		} else {
+			diMenuStrings[iVar1].iStr = diMenuStrings[iVar1].iStr - 1;
+		}
+	}
+	diMenuItemActivate(diMenuCur->curItem, 2);
+	return;
 }
