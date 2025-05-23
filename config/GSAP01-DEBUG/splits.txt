@@ -803,7 +803,7 @@ debug/prof.c:
 	.bss        start:0x80390260 end:0x80390508
 
 debug/dimenu.c:
-	.text       start:0x8017A870 end:0x8017AFFC
+	.text       start:0x8017A870 end:0x8017BFFC
 	.bss        start:0x80390508 end:0x80390978
 
 tricky.c:
