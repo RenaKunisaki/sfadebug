@@ -81,6 +81,10 @@ typedef struct {
 typedef struct {
     u32 /*F3DEXcommand*/ cmd;
     u32	param;
+} GfxPacket;
+
+typedef struct {
+    GfxPacket pkt;
 } Gfx_; //official name is Gfx, but that's used by gbi.h
 
 #define MAIN_GFX_SIZE 10000
