@@ -7,9 +7,11 @@
 #include "debug/debug.h"
 #include "debug/dimenu.h"
 
-#define MAX_MENU_DEPTH   10
-#define MAX_MENU_STRINGS 50
+#define MAX_MENU_DEPTH       10
+#define MAX_MENU_STRINGS     50
 #define MENU_ANALOG_DEADZONE 50
+
+/* 80396e28 */ extern RSPState *RSP_pState;
 
 /* 80306F20 */ extern DiMenuButtonCmds DiMenuButtonCmds_ARRAY_80306f20[4];
 
@@ -20,7 +22,7 @@
 
 // 80398240: .sbss
 /* 80399860 */ extern s8 diMenuItemFlag_80399860;
-/* 80399864 */ extern Gfx *diMenuGfx;
+/* 80399864 */ extern Gfx_ **diMenuGfx;
 /* 80399868 */ extern Mtx *diMenuMtx;
 /* 8039986C */ extern N64Vertex *diMenuVtx;
 /* 80399870 */ extern Pol *diMenuPol;
@@ -46,31 +48,6 @@ static void dummy() {
 	diMenuStrings;
 	diMenuStringIsUsed;
 }
-
-N64Button n64GetEnabledButtonsHeld(int pad);
-s8 getStickX2(int pad);
-s8 getStickY2(int pad);
-uint getScreenResolution();
-/* 8017a870 */ void diMenuInit(void (*callback)(void), int param_2);
-/* 8017a8d0 */ void diMenuPush(DiMenuItem *items, uint space);
-/* 8017ad58 */ void diMenuPop(void);
-/* 8017ae58 */ void diMenuPopAll(void);
-/* 8017ae88 */ void diMenuUpdate(
-    Gfx *gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol, int framesTimes65536);
-/* 8017afc4 */ BOOL diMenuIsVisible(void);
-/* 8017afcc */ void diMenuShow(void);
-/* 8017afd8 */ void diMenuHide(void);
-/* 8017afe4 */ void diMenuEnable(void);
-/* 8017aff0 */ void diMenuDisable(void);
-/* 8017affc */ void diMenuStringInit(DiMenuItem *item);
-/* 8017b10c */ void diMenuItemDoControls(DiMenuItem *item);
-/* 8017b384 */ void diMenuDrawCur(void);
-/* 8017ba10 */ int diMenuItemActivate(
-    DiMenuItem *item, /* DiMenuOpcode */ int op);
-/* 8017bd08 */ void diMenuCurGoNextItem(void);
-/* 8017bddc */ void diMenuCurGoPrevItem(void);
-/* 8017bee8 */ void diMenuItemIncrementCurrent(void);
-/* 8017bf74 */ void diMenuItemDecrementCurrent(void);
 
 void diMenuInit(void (*callback)(void), int param_2) { // 8017A870
 	int iVar1;
@@ -236,7 +213,7 @@ void diMenuPopAll(void) { // 8017AE58
 	while(diMenuStackDepth != 0) { diMenuPop(); }
 }
 
-void diMenuUpdate(Gfx *gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol,
+void diMenuUpdate(Gfx_ **gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol,
     int framesTimes65536) { // 8017AE88
 	N64Button bHeld;
 	uint ii;
@@ -340,14 +317,13 @@ void diMenuItemDoControls(DiMenuItem *item) { // 8017b10c
 	disableMenus = 1;
 	while(item->type != End) {
 		diMenuItemActivate(item, 0);
-		for(pDVar1 = DiMenuButtonCmds_ARRAY_80306f20;
-		pDVar1->buttons != 999999; pDVar1++) {
+		for(pDVar1 = DiMenuButtonCmds_ARRAY_80306f20; pDVar1->buttons != 999999;
+		    pDVar1++) {
 			if(item == diMenuCur->curItem) {
 				if(((bHeld & pDVar1->buttons))
-				&& ((diMenuPrevButtons & pDVar1->buttons) == 0)) {
+				    && ((diMenuPrevButtons & pDVar1->buttons) == 0)) {
 					diMenuItemActivate(item, (uint)pDVar1->onPress);
-				}
-				else if((bHeld & pDVar1->buttons)) {
+				} else if((bHeld & pDVar1->buttons)) {
 					diMenuItemActivate(item, (uint)pDVar1->onHold);
 				} else if((diMenuPrevButtons & pDVar1->buttons)) {
 					diMenuItemActivate(item, (uint)pDVar1->onRelease);
@@ -357,7 +333,7 @@ void diMenuItemDoControls(DiMenuItem *item) { // 8017b10c
 		if(item == diMenuCur->curItem) {
 			if(sx < -MENU_ANALOG_DEADZONE) {
 				if((diMenuItemAdjustDelay == 0)
-				|| (diMenuItemAdjustDelay > 10)) {
+				    || (diMenuItemAdjustDelay > 10)) {
 					diMenuItemDecrementCurrent();
 				}
 				diMenuItemAdjustDelay++;
@@ -375,28 +351,23 @@ void diMenuItemDoControls(DiMenuItem *item) { // 8017b10c
 	}
 
 	if(sy > MENU_ANALOG_DEADZONE) {
-		if((diMenuItemSelectDelay == 0)
-			|| (10 < diMenuItemSelectDelay)) {
+		if((diMenuItemSelectDelay == 0) || (10 < diMenuItemSelectDelay)) {
 			diMenuCurGoPrevItem();
 		}
 		diMenuItemSelectDelay++;
 
-	}
-	else if(sy < -MENU_ANALOG_DEADZONE) {
-		if((diMenuItemSelectDelay == 0)
-			|| (diMenuItemSelectDelay > 10)) {
+	} else if(sy < -MENU_ANALOG_DEADZONE) {
+		if((diMenuItemSelectDelay == 0) || (diMenuItemSelectDelay > 10)) {
 			diMenuCurGoNextItem();
 		}
-		//holding the stick for 10 frames will activate auto repeat
+		// holding the stick for 10 frames will activate auto repeat
 		diMenuItemSelectDelay++;
 	} else {
 		diMenuItemSelectDelay = 0;
 	}
 	diMenuPrevButtons = bHeld;
 	disableMenus = 0;
-	for(; diMenuPendingPopCnt; diMenuPendingPopCnt--) {
-		diMenuPop();
-	}
+	for(; diMenuPendingPopCnt; diMenuPendingPopCnt--) { diMenuPop(); }
 	if(diMenuPendingPush) {
 		diMenuPush(diMenuPendingPush, diMenuSpace);
 		diMenuPendingPush = NULL;
@@ -404,172 +375,168 @@ void diMenuItemDoControls(DiMenuItem *item) { // 8017b10c
 }
 
 void diMenuDrawCur(void) { // 8017b384
-	uint *puVar1;
-	char *itemStr;
-	int iVar2;
-	int iVar3;
-	uint uVar4;
-	Gfx *puVar6;
-	Gfx *puVar2;
-	Gfx *puVar5;
-	Gfx *puVar10;
-	Gfx *puVar9;
-	u32 *cmd;
-	Gfx *rsp;
-	uint width;
-	uint x;
-	uint y;
-	DiMenuItem *items;
-	DiMenuItem *item;
-	double fltVal;
-	uint height;
-	bool needPrintMore;
-	DiMenuItem **pItems;
+	void *sp18;
+    void *sp14;
+    void *sp10;
+    void *spC;
+    void *sp8;
+    s32 temp_r15;
+    s32 temp_r15_2;
+    s32 temp_r4;
+    s32 temp_r4_2;
+    s32 var_r28;
+    s32 var_r28_2;
+    s8 temp_r24;
+    s8 temp_r25;
+    s8 var_r27;
+    u16 temp_r3;
+    u16 var_r29;
+    u16 var_r30;
+    u32 temp_r0;
+    u32 temp_r21;
+    u32 temp_r26;
+    DiMenuItem *item;
+    Gfx_ *temp_r16;
+    Gfx_ *temp_r17;
+    Gfx_ *temp_r18;
+    Gfx_ *temp_r19;
+    Gfx_ *temp_r3_2;
+    Gfx_ *temp_r3_3;
+    Gfx_ *temp_r3_4;
+    Gfx_ *temp_r3_5;
+    Gfx_ *temp_r3_6;
 
-#if 0
-  x = 0;
-  height = 0;
-  y = getScreenResolution();
-  GXSetScissor(0,0,y & 0xffff,y >> 0x10);
-  rsp = (Gfx *)diMenuGfx->cmd;
-  diMenuGfx->cmd = (u32)(rsp + 1);
-  rsp->cmd = G_SETSCISSOR;
-  fltVal = 4503599627370496.0;
-  rsp->param = ((int)((float)((double)CONCAT44(0x43300000,y & 0xffff) - 4503599627370496.0) * 4.0) &
-               0xfffU) << 0xc |
-               (int)((float)((double)CONCAT44(0x43300000,y >> 0x10) - 4503599627370496.0) * 4.0) &
-               0xfffU;
-  cmd = (u32 *)diMenuGfx->cmd;
-  diMenuGfx->cmd = (u32)(cmd + 2);
-  *cmd = G_RDPPIPESYNC;
-  cmd[1] = G_MW_MATRIX_or_G_MW_MATRIX;
-  puVar9 = (Gfx *)diMenuGfx->cmd;
-  puVar9->cmd = ~G_MOVEMEM;
-  puVar9->param = 0xfffdf6fb;
-  RSP::pipeSync(diMenuGfx);
-  puVar10 = (Gfx *)diMenuGfx->cmd;
-  puVar10->cmd = 0xef002c00;
-  puVar10->param = (u32)&DAT_00504240;
-  LAB_800a697c((Gfx **)diMenuGfx);
-  RSP::setTevColor1(diMenuGfx,0xff,0xff,0xff,0xff);
-  RSP::setTevColor2(diMenuGfx,0x1f,0x1f,0x1f,0x90);
-  puVar1 = (uint *)diMenuGfx->cmd;
-  diMenuGfx->cmd = (u32)(puVar1 + 2);
-  *puVar1 = (diMenuCur->minW & 0x3ff) << 0xe | 0xf6000000 | (diMenuCur->minH & 0x3ffU) << 2;
-  puVar1[1] = (diMenuCur->maxH & 0x3ff) << 0xe | (diMenuCur->maxW & 0x3ffU) << 2;
-  RSP::pState->bNeedPipeSync = true;
-  dprintSetBgColor(0x1f,0x1f,0x1f,0);
-  pItems = &diMenuCur->items;
-  needPrintMore = diMenuCur->firstDispItem != diMenuCur->items;
-  diMenuCur->bWrap = FALSE;
-  items = *pItems;
-  do {
-    item = items;
-    if (item->type == End) {
-      return;
+    var_r27 = 0;
+    var_r29 = 0;
+    var_r30 = 0;
+    temp_r3 = getScreenResolution();
+    temp_r21 = temp_r3 >> 0x10U;
+    GXSetScissor(0U, 0U, (u32) temp_r3, (u32) (s16) temp_r21);
+    temp_r19 = *diMenuGfx++;
+    temp_r19->cmd = 0xED000000;
+    temp_r19->param = (s32) (((s32) (4.0f * (f32) (u16) temp_r21) & 0xFFF & ~0xFFF000) | (((s32) (4.0f * (f32) temp_r3) << 0xC) & 0xFFF000));
+    temp_r18 = *diMenuGfx++;
+    temp_r18->cmd = 0xE7000000;
+    temp_r18->param = 0;
+    temp_r17 = *diMenuGfx++;
+    temp_r17->cmd = 0xFCFFFFFF;
+    temp_r17->param = 0xFFFDF6FB;
+    RSP_pipeSync(diMenuGfx, 4.0f);
+    temp_r16 = *diMenuGfx++;
+    temp_r16->cmd = 0xEF002C00;
+    temp_r16->param = 0x504240;
+    fn_800A6900(diMenuGfx);
+    RSP_setTevColor1(diMenuGfx, 0xFF, 0xFF, 0xFF, 0xFF);
+    RSP_setTevColor2(diMenuGfx, 0x1F, 0x1F, 0x1F, 0x90);
+    temp_r3_2 = *diMenuGfx++;
+    sp18 = temp_r3_2;
+    temp_r3_2->cmd = (diMenuCur->minW & 0x3ff) << 0xe | 0xf6000000 | (diMenuCur->minH & 0x3ffU) << 2;
+    temp_r3_2->param = (diMenuCur->maxH & 0x3ff) << 0xe | (diMenuCur->maxW & 0x3ffU) << 2;
+    RSP_pState->bNeedPipeSync = 1;
+    dprintSetBgColor(0x1F, 0x1F, 0x1F, 0);
+    item = diMenuCur->items;
+    if ((u8 *) diMenuCur->firstDispItem != (u8 *) diMenuCur->items) {
+        var_r27 = 1;
     }
-    y = height;
-    if (((item->heightFlags18 & 1U) == 0) || (0 < item->width)) {
-      if ((item->height != 0) || (0 < item->width)) {
-        x = (uint)(ushort)item->height;
-        y = (uint)(ushort)item->width;
-      }
+    diMenuCur->bWrap = 0;
+loop_32:
+    if ((u8) item->type == 0xA) {
+        return;
     }
-    else {
-      x = (uint)(ushort)item->height;
+    if ((item->heightFlags18 & 1) && ((s16) item->width <= 0)) {
+        var_r29 = item->height;
+    } else if (((u16) item->height != 0) || ((s16) item->width > 0)) {
+        var_r29 = item->height;
+        var_r30 = (u16) item->width;
     }
-    if (needPrintMore) {
-      width = debugPrintMeasureStr(item->text);
-      if ((item->strs).iStrs != 0) {
-        itemStr = diMenuItemPrintVal(fltVal,item);
-        iVar2 = debugPrintMeasureStr(itemStr);
-        iVar3 = debugPrintMeasureStr(" ");
-        width = iVar3 + iVar2 + width;
-      }
-      uVar4 = debugPrintMeasureStr("More");
-      dprintSetPos((x + ((int)width >> 1) + (uint)((int)width < 0 && (width & 1) != 0)) -
-                   (((int)uVar4 >> 1) + (uint)((int)uVar4 < 0 && (uVar4 & 1) != 0)),y - 0xb);
-      dprintSetColor(0xff,0xff,0xff,0xff);
-      puVar6 = (Gfx *)diMenuGfx->cmd;
-      diMenuGfx->cmd = (u32)(puVar6 + 1);
-      puVar6->cmd = G_RDPPIPESYNC;
-      puVar6->param = 0;
-      RSP::setTevColor2(diMenuGfx,0x1f,0x7f,0x1f,0x90);
-      puVar2 = (Gfx *)diMenuGfx->cmd;
-      diMenuGfx->cmd = (u32)(puVar2 + 1);
-      puVar2->cmd = (diMenuCur->minW & 0x3ff) << 0xe | 0xf6000000 | (diMenuCur->maxW & 0x3ffU) << 2;
-      puVar2->param = (diMenuCur->maxH & 0x3ff) << 0xe | (diMenuCur->maxW + -0xb) * 4 & 0xffcU;
-      RSP::pState->bNeedPipeSync = true;
-      diPrintf("More\n");
-      needPrintMore = false;
-      diMenuCur->bWrap = TRUE;
+    if (var_r27 != 0) {
+        var_r28 = debugPrintMeasureStr(item->text);
+        if ((u32) item->strs.iStrs != 0U) {
+            temp_r15 = debugPrintMeasureStr(diMenuItemGetDisplayText(item));
+            var_r28 = debugPrintMeasureStr(" ") + (temp_r15 + var_r28);
+        }
+        dprintSetPos((var_r29 + (var_r28 / 2)) - (debugPrintMeasureStr("More") / 2), var_r30 - 0xB);
+        dprintSetColor(0xFFU, 0xFF, 0xFF, 0xFF);
+        temp_r3_3 = *diMenuGfx;
+        *diMenuGfx = temp_r3_3 + 8;
+        sp14 = temp_r3_3;
+        temp_r3_3->cmd = 0xE7000000;
+        temp_r3_3->param = 0;
+        RSP_setTevColor2(diMenuGfx, 0x1F, 0x7F, 0x1F, 0x90);
+        temp_r3_4 = *diMenuGfx;
+        *diMenuGfx = temp_r3_4 + 8;
+        sp10 = temp_r3_4;
+        temp_r3_4->cmd = (s32) (((diMenuCur->minW << 0xE) & 0xFFC000) | 0xF6000000 | ((diMenuCur->minH * 4) & 0xFFC));
+        temp_r4 = diMenuCur->maxW;
+        temp_r3_4->param = (s32) ((((diMenuCur->minH - 0xB) * 4) & 0xFFC & ~0xFFC000) | ((temp_r4 << 0xE) & 0xFFC000));
+        RSP_pState->bNeedPipeSync = 1;
+        diPrintf("More\n");
+        var_r27 = 0;
+        diMenuCur->bWrap = 1;
     }
-    dprintSetPos(x,y);
+    dprintSetPos(var_r29, var_r30);
     if (item == diMenuCur->curItem) {
-      dprintSetColor(0xff,0xff,0xff,0xff);
+        dprintSetColor(0xFFU, 0xFF, 0xFF, 0xFF);
+    } else {
+        temp_r26 = (u32) item->color >> 0x18U;
+        temp_r25 = (s8) ((u32) item->color >> 0x10U);
+        temp_r24 = (s8) ((u32) item->color >> 8U);
+        temp_r0 = item->color;
+        if (((s8) temp_r0 | (temp_r24 | ((s8) temp_r26 | temp_r25))) != 0) {
+            dprintSetColor(temp_r26, temp_r25, temp_r24, (s8) temp_r0);
+        }
     }
-    else if (((uint)item->color & 0xff |
-             (uint)item->color >> 8 & 0xff |
-             (uint)item->color >> 0x18 | (uint)item->color >> 0x10 & 0xff) != 0) {
-      dprintSetColor((item->color).r,(item->color).g,(item->color).b,(item->color).a);
+    if (item >= diMenuCur->firstDispItem) {
+        diMenuCur->lastDispItem = item;
+        if ((u8) item->type == 4) {
+            if ((u32) item->strs.iStrs == 0U) {
+                diPrintf("%s\n", (s32) item->text);
+            } else {
+                diPrintf("%s %s\n", (s32) item->text, item->strs.iStrs);
+            }
+        } else if (strlen(item->text) == 0) {
+            diPrintf("%s\n", diMenuItemGetDisplayText(item));
+        } else {
+            diPrintf("%s %s\n", (s32) item->text, diMenuItemGetDisplayText(item));
+        }
+        var_r30 += 0xB;
+        if ((s16) item->width == -1) {
+            var_r30 += 5;
+        }
     }
-    height = y;
-    if (diMenuCur->firstDispItem <= item) {
-      diMenuCur->lastDispItem = item;
-      if (item->type == Header) {
-        if ((item->strs).iStrs == 0) {
-          diPrintf("%s\n",item->text);
+    item += 0x1C;
+    if (((s32) (var_r30 + 0xB) > 0xE6) && (item->type != 0xA)) {
+        diMenuCur->bWrap = 1;
+        dprintSetPos(var_r29, var_r30);
+        dprintSetColor(0xFFU, 0xFF, 0xFF, 0xFF);
+        temp_r3_5 = *diMenuGfx;
+        *diMenuGfx = temp_r3_5 + 8;
+        spC = temp_r3_5;
+        temp_r3_5->cmd = 0xE7000000;
+        temp_r3_5->param = 0;
+        RSP_setTevColor2(diMenuGfx, 0x1F, 0x7F, 0x1F, 0x90);
+        temp_r3_6 = *diMenuGfx;
+        *diMenuGfx = temp_r3_6 + 8;
+        sp8 = temp_r3_6;
+        temp_r3_6->cmd = (s32) (((diMenuCur->minW << 0xE) & 0xFFC000) | 0xF6000000 | (((diMenuCur->minH + 0xB) * 4) & 0xFFC));
+        temp_r4_2 = diMenuCur->maxW;
+        temp_r3_6->param = (s32) (((diMenuCur->minH * 4) & 0xFFC & ~0xFFC000) | ((temp_r4_2 << 0xE) & 0xFFC000));
+        RSP_pState->bNeedPipeSync = 1;
+        var_r28_2 = debugPrintMeasureStr(item[-0x1C].text, temp_r4_2);
+        if ((u32) item[-0x1C].strs.iStrs != 0U) {
+            diMenuItemGetDisplayText(item - 0x1C);
+            temp_r15_2 = debugPrintMeasureStr();
+            var_r28_2 = debugPrintMeasureStr(" ") + (temp_r15_2 + var_r28_2);
         }
-        else {
-          diPrintf("%s %s\n",item->text,(item->strs).iStrs);
-        }
-      }
-      else {
-        iVar2 = strlen(item->text);
-        if (iVar2 == 0) {
-          itemStr = diMenuItemPrintVal(fltVal,item);
-          diPrintf("%s\n",itemStr);
-        }
-        else {
-          itemStr = diMenuItemPrintVal(fltVal,item);
-          diPrintf("%s %s\n",item->text,itemStr);
-        }
-      }
-      height = y + 0xb;
-      if (item->width == -1) {
-        height = y + 0x10;
-      }
+        dprintSetPos((var_r29 + (var_r28_2 / 2)) - (debugPrintMeasureStr("More") / 2), var_r30);
+        diPrintf("More\n");
+        return;
     }
-    items = item + 1;
-  } while (((height & 0xffff) + 0xb < 231) || (items->type == End));
-  diMenuCur->bWrap = TRUE;
-  dprintSetPos(x,height);
-  dprintSetColor(0xff,0xff,0xff,0xff);
-  puVar5 = (Gfx *)diMenuGfx->cmd;
-  diMenuGfx->cmd = (u32)(puVar5 + 1);
-  puVar5->cmd = G_RDPPIPESYNC;
-  puVar5->param = 0;
-  RSP::setTevColor2(diMenuGfx,0x1f,0x7f,0x1f,0x90);
-  puVar1 = (uint *)diMenuGfx->cmd;
-  diMenuGfx->cmd = (u32)(puVar1 + 2);
-  *puVar1 = (diMenuCur->minW & 0x3ff) << 0xe | 0xf6000000 | (diMenuCur->minH + 0xb) * 4 & 0xffcU;
-  puVar1[1] = (diMenuCur->maxH & 0x3ff) << 0xe | (diMenuCur->minH & 0x3ffU) << 2;
-  RSP::pState->bNeedPipeSync = true;
-  y = debugPrintMeasureStr(item->text);
-  if ((item->strs).iStrs != 0) {
-    itemStr = diMenuItemPrintVal(fltVal,item);
-    iVar2 = debugPrintMeasureStr(itemStr);
-    iVar3 = debugPrintMeasureStr(" ");
-    y = iVar3 + iVar2 + y;
-  }
-  width = debugPrintMeasureStr("More");
-  dprintSetPos((x + ((int)y >> 1) + (uint)((int)y < 0 && (y & 1) != 0)) -
-               (((int)width >> 1) + (uint)((int)width < 0 && (width & 1) != 0)),height);
-  diPrintf("More\n");
-#endif
+    goto loop_32;
 }
 
-int diMenuItemActivate(DiMenuItem *item, /* DiMenuOpcode */ int op) { // 8017ba10
+int diMenuItemActivate(
+    DiMenuItem *item, /* DiMenuOpcode */ int op) { // 8017ba10
 	int iStr;
 	undefined4 uVar1;
 	DiMenuOp oper;
@@ -578,7 +545,7 @@ int diMenuItemActivate(DiMenuItem *item, /* DiMenuOpcode */ int op) { // 8017ba1
 		uVar1 = 0;
 	} else {
 		oper.op = op;
-		oper.gfx = diMenuGfx;
+		//oper.gfx = diMenuGfx;
 		oper.mtx = diMenuMtx;
 		oper.vtx = diMenuVtx;
 		oper.pol = diMenuPol;

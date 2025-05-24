@@ -93,17 +93,29 @@ typedef struct {
 } DiMenuButtonCmds;
 
 void ObjEdit_init(void);
-int debugPrintMeasureStr(char *param1, ...);
-int diMenuItemActivate(DiMenuItem *item, /* DiMenuOpcode */ int op);
-void diMenuInit(void (*callback)(void), int param_2);
-//void diMenuPush(DiMenuItem *items, uint space);
-//void diMenuPop(void);
-void diMenuPopAll(void);
-void diMenuUpdate(Gfx *gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol, int framesTimes65536);
-BOOL diMenuIsVisible(void);
-void diMenuShow(void);
-void diMenuHide(void);
-void diMenuEnable(void);
-void diMenuDisable(void);
+N64Button n64GetEnabledButtonsHeld(int pad);
+s8 getStickX2(int pad);
+s8 getStickY2(int pad);
+uint getScreenResolution();
+/* 8017a870 */ void diMenuInit(void (*callback)(void), int param_2);
+/* 8017a8d0 */ void diMenuPush(DiMenuItem *items, uint space);
+/* 8017ad58 */ void diMenuPop(void);
+/* 8017ae58 */ void diMenuPopAll(void);
+/* 8017ae88 */ void diMenuUpdate(
+    Gfx_ **gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol, int framesTimes65536);
+/* 8017afc4 */ BOOL diMenuIsVisible(void);
+/* 8017afcc */ void diMenuShow(void);
+/* 8017afd8 */ void diMenuHide(void);
+/* 8017afe4 */ void diMenuEnable(void);
+/* 8017aff0 */ void diMenuDisable(void);
+/* 8017affc */ void diMenuStringInit(DiMenuItem *item);
+/* 8017b10c */ void diMenuItemDoControls(DiMenuItem *item);
+/* 8017b384 */ void diMenuDrawCur(void);
+/* 8017ba10 */ int diMenuItemActivate(
+    DiMenuItem *item, /* DiMenuOpcode */ int op);
+/* 8017bd08 */ void diMenuCurGoNextItem(void);
+/* 8017bddc */ void diMenuCurGoPrevItem(void);
+/* 8017bee8 */ void diMenuItemIncrementCurrent(void);
+/* 8017bf74 */ void diMenuItemDecrementCurrent(void);
 
 #endif //_DEBUG_DIMENU_H_

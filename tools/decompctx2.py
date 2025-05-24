@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Context generator borrowed from https://github.com/Prakxo/ac-decomp/blob/master/tools/decompctx.py
 
 # This script makes leaves most of the heavy lifting to pcpp which does preprocessing and expansion of files:

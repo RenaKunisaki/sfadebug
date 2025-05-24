@@ -46,17 +46,17 @@ typedef struct {
 } RSPState;
 
 typedef struct {
-/* 0x0 */ s16 x;
-/* 0x2 */ s16 y;
-/* 0x4 */ s16 z;
-/* 0x6 */ s8 _06;
-/* 0x7 */ s8 _07;
-/* 0x8 */ s16 s;
-/* 0xa */ s16 t;
-/* 0xb */ u8 r;
-/* 0xc */ u8 g;
-/* 0xd */ u8 b;
-/* 0xe */ u8 a;
+    /* 0x0 */ s16 x;
+    /* 0x2 */ s16 y;
+    /* 0x4 */ s16 z;
+    /* 0x6 */ s8 _06;
+    /* 0x7 */ s8 _07;
+    /* 0x8 */ s16 s;
+    /* 0xa */ s16 t;
+    /* 0xb */ u8 r;
+    /* 0xc */ u8 g;
+    /* 0xd */ u8 b;
+    /* 0xe */ u8 a;
 } N64Vertex;
 
 typedef struct {
@@ -77,6 +77,11 @@ typedef struct {
     /* 0xE */ s8 _0E;
     /* 0xF */ s8 _0F;
 } Pol; //Polygon?
+
+typedef struct {
+    u32 /*F3DEXcommand*/ cmd;
+    u32	param;
+} Gfx_; //official name is Gfx, but that's used by gbi.h
 
 #define MAIN_GFX_SIZE 10000
 #define MAIN_MTX_SIZE 800
