@@ -374,6 +374,12 @@ void diMenuItemDoControls(DiMenuItem *item) { // 8017b10c
 	}
 }
 
+#define RSP_CMD(gfx, op, prm) do { \
+	Gfx_ *temp_r19 = *gfx++; \
+    temp_r19->cmd = op; \
+    temp_r19->param = prm; \
+} while(0)
+
 void diMenuDrawCur(void) { // 8017b384
 	void *sp18;
     void *sp14;
@@ -412,26 +418,17 @@ void diMenuDrawCur(void) { // 8017b384
     temp_r3 = getScreenResolution();
     temp_r21 = temp_r3 >> 0x10U;
     GXSetScissor(0U, 0U, (u32) temp_r3, (u32) (s16) temp_r21);
-    temp_r19 = *diMenuGfx++;
-    temp_r19->cmd = 0xED000000;
-    temp_r19->param = (s32) (((s32) (4.0f * (f32) (u16) temp_r21) & 0xFFF & ~0xFFF000) | (((s32) (4.0f * (f32) temp_r3) << 0xC) & 0xFFF000));
-    temp_r18 = *diMenuGfx++;
-    temp_r18->cmd = 0xE7000000;
-    temp_r18->param = 0;
-    temp_r17 = *diMenuGfx++;
-    temp_r17->cmd = 0xFCFFFFFF;
-    temp_r17->param = 0xFFFDF6FB;
+	RSP_CMD(diMenuGfx, 0xED000000, (s32) (((s32) (4.0f * (f32) (u16) temp_r21) & 0xFFF & ~0xFFF000) | (((s32) (4.0f * (f32) temp_r3) << 0xC) & 0xFFF000)));
+    RSP_CMD(diMenuGfx, 0xE7000000, 0);
+    RSP_CMD(diMenuGfx, 0xFCFFFFFF, 0xFFFDF6FB);
     RSP_pipeSync(diMenuGfx, 4.0f);
-    temp_r16 = *diMenuGfx++;
-    temp_r16->cmd = 0xEF002C00;
-    temp_r16->param = 0x504240;
+    RSP_CMD(diMenuGfx, 0xEF002C00, 0x0504240);
     fn_800A6900(diMenuGfx);
     RSP_setTevColor1(diMenuGfx, 0xFF, 0xFF, 0xFF, 0xFF);
     RSP_setTevColor2(diMenuGfx, 0x1F, 0x1F, 0x1F, 0x90);
-    temp_r3_2 = *diMenuGfx++;
-    sp18 = temp_r3_2;
-    temp_r3_2->cmd = (diMenuCur->minW & 0x3ff) << 0xe | 0xf6000000 | (diMenuCur->minH & 0x3ffU) << 2;
-    temp_r3_2->param = (diMenuCur->maxH & 0x3ff) << 0xe | (diMenuCur->maxW & 0x3ffU) << 2;
+    RSP_CMD(diMenuGfx,
+		(diMenuCur->minW & 0x3ff) << 0xe | 0xf6000000 | (diMenuCur->minH & 0x3ffU) << 2,
+    	temp_r3_2->param = (diMenuCur->maxH & 0x3ff) << 0xe | (diMenuCur->maxW & 0x3ffU) << 2);
     RSP_pState->bNeedPipeSync = 1;
     dprintSetBgColor(0x1F, 0x1F, 0x1F, 0);
     item = diMenuCur->items;
@@ -440,7 +437,7 @@ void diMenuDrawCur(void) { // 8017b384
     }
     diMenuCur->bWrap = 0;
 loop_32:
-    if ((u8) item->type == 0xA) {
+    if (item->type == 0xA) {
         return;
     }
     if ((item->heightFlags18 & 1) && ((s16) item->width <= 0)) {
@@ -457,18 +454,11 @@ loop_32:
         }
         dprintSetPos((var_r29 + (var_r28 / 2)) - (debugPrintMeasureStr("More") / 2), var_r30 - 0xB);
         dprintSetColor(0xFFU, 0xFF, 0xFF, 0xFF);
-        temp_r3_3 = *diMenuGfx;
-        *diMenuGfx = temp_r3_3 + 8;
-        sp14 = temp_r3_3;
-        temp_r3_3->cmd = 0xE7000000;
-        temp_r3_3->param = 0;
+        RSP_CMD(diMenuGfx, 0xE7000000, 0);
         RSP_setTevColor2(diMenuGfx, 0x1F, 0x7F, 0x1F, 0x90);
-        temp_r3_4 = *diMenuGfx;
-        *diMenuGfx = temp_r3_4 + 8;
-        sp10 = temp_r3_4;
-        temp_r3_4->cmd = (s32) (((diMenuCur->minW << 0xE) & 0xFFC000) | 0xF6000000 | ((diMenuCur->minH * 4) & 0xFFC));
-        temp_r4 = diMenuCur->maxW;
-        temp_r3_4->param = (s32) ((((diMenuCur->minH - 0xB) * 4) & 0xFFC & ~0xFFC000) | ((temp_r4 << 0xE) & 0xFFC000));
+        RSP_CMD(diMenuGfx,
+			(s32) (((diMenuCur->minW << 0xE) & 0xFFC000) | 0xF6000000 | ((diMenuCur->minH * 4) & 0xFFC)),
+        	temp_r3_4->param = (s32) ((((diMenuCur->minH - 0xB) * 4) & 0xFFC & ~0xFFC000) | ((diMenuCur->maxW << 0xE) & 0xFFC000)));
         RSP_pState->bNeedPipeSync = 1;
         diPrintf("More\n");
         var_r27 = 0;
@@ -509,18 +499,11 @@ loop_32:
         diMenuCur->bWrap = 1;
         dprintSetPos(var_r29, var_r30);
         dprintSetColor(0xFFU, 0xFF, 0xFF, 0xFF);
-        temp_r3_5 = *diMenuGfx;
-        *diMenuGfx = temp_r3_5 + 8;
-        spC = temp_r3_5;
-        temp_r3_5->cmd = 0xE7000000;
-        temp_r3_5->param = 0;
+        RSP_CMD(diMenuGfx, 0xE7000000, 0);
         RSP_setTevColor2(diMenuGfx, 0x1F, 0x7F, 0x1F, 0x90);
-        temp_r3_6 = *diMenuGfx;
-        *diMenuGfx = temp_r3_6 + 8;
-        sp8 = temp_r3_6;
-        temp_r3_6->cmd = (s32) (((diMenuCur->minW << 0xE) & 0xFFC000) | 0xF6000000 | (((diMenuCur->minH + 0xB) * 4) & 0xFFC));
-        temp_r4_2 = diMenuCur->maxW;
-        temp_r3_6->param = (s32) (((diMenuCur->minH * 4) & 0xFFC & ~0xFFC000) | ((temp_r4_2 << 0xE) & 0xFFC000));
+        RSP_CMD(diMenuGfx,
+			(s32) (((diMenuCur->minW << 0xE) & 0xFFC000) | 0xF6000000 | (((diMenuCur->minH + 0xB) * 4) & 0xFFC)),
+        	temp_r3_6->param = (s32) (((diMenuCur->minH * 4) & 0xFFC & ~0xFFC000) | ((diMenuCur->maxW << 0xE) & 0xFFC000)));
         RSP_pState->bNeedPipeSync = 1;
         var_r28_2 = debugPrintMeasureStr(item[-0x1C].text, temp_r4_2);
         if ((u32) item[-0x1C].strs.iStrs != 0U) {
