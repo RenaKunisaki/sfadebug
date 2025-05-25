@@ -509,40 +509,36 @@ void diMenuDrawCur(void) { // 8017b384
 	}
 }
 
-int diMenuItemActivate(
-    DiMenuItem *item, /* DiMenuOpcode */ int op) { // 8017ba10
-	int iStr;
-	undefined4 uVar1;
+int diMenuItemActivate(DiMenuItem *item, /* DiMenuOpcode */ int op) { // 8017ba10
+	DiMenuStrings *strEnt;
 	DiMenuOp oper;
 
-	if(item->func == NULL) {
-		uVar1 = 0;
-	} else {
-		oper.op = op;
-		//oper.gfx = diMenuGfx;
-		oper.mtx = diMenuMtx;
-		oper.vtx = diMenuVtx;
-		oper.pol = diMenuPol;
-		oper.frameCount = diMenuFrameCount80399874;
-		oper.item1C = (DiMenuItem *)(((int)item - (int)diMenuCur->items)
-		    / sizeof(DiMenuItem));
-		oper.item20
-		    = (DiMenuItem *)(((int)diMenuCur->curItem - (int)diMenuCur->items)
-		        / sizeof(DiMenuItem));
-		oper.item24 = item;
-		if(op == 0x29) {
-			uVar1 = item->func(&item->strs, &oper);
-		} else if(item->type == Adjustable) {
-			iStr = (item->strs).iStrs;
-			oper.str = *(char **)(diMenuStrings[iStr].strs.str
-			    + diMenuStrings[iStr].iStr * 4);
-			// uVar1 = item->func(iStr * 0xc + -0x7fc6f910,&oper);
-		} else {
-			oper.str = NULL;
-			uVar1 = item->func(&item->strs, &oper);
-		}
+	if(!item->activate) return 0;
+	oper.op = op;
+	oper.gfx = diMenuGfx;
+	oper.mtx = diMenuMtx;
+	oper.vtx = diMenuVtx;
+	oper.pol = diMenuPol;
+	oper.frameCount = diMenuFrameCount80399874;
+	oper.item1C = (DiMenuItem *)(((int)item - (int)diMenuCur->items)
+		/ (int)sizeof(DiMenuItem));
+	oper.item20
+		= (DiMenuItem *)(((int)diMenuCur->curItem - (int)diMenuCur->items)
+			/ (int)sizeof(DiMenuItem));
+	oper.item24 = item;
+
+	if(op == DiMenuOpcode_Unk29) {
+		return item->op29(item->strs.pStr, &oper);
 	}
-	return uVar1;
+	else if(item->type == Adjustable) {
+		strEnt = &diMenuStrings[item->strs.iStrs];
+		oper.str = *(char **)(strEnt->strs.str + strEnt->iStr*4);
+		return item->adjust(&strEnt->iStr, &oper);
+	}
+	else {
+		oper.str = NULL;
+		return item->activate(item->strs.str, &oper);
+	}
 }
 
 void diMenuCurGoNextItem(void) { // 8017bd08

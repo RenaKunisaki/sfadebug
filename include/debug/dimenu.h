@@ -49,7 +49,11 @@ typedef struct {
     /* 0x08 */ u32 color; //if 0, don't set
     /* 0x0c */ char *text;
     /* 0x10 */ DiMenuItemStrings strs;
-    /* 0x14 */ int (*func)(DiMenuItemStrings*, /* DiMenuOp* */ void*);
+    /* 0x14 */ union {
+        int (*op29)(char**, /* DiMenuOp* */ void*);
+        int (*activate)(char*, /* DiMenuOp* */ void*);
+        int (*adjust)(int*, /* DiMenuOp* */ void*);
+    };
     /* 0x18 */ s8 heightFlags18; //maybe bool
     //struct size: 0x1C
 } DiMenuItem;
@@ -74,7 +78,7 @@ typedef struct {
     /* 0x02 */ u8 unk02;
     /* 0x03 */ u8 unk03;
     /* 0x04 */ char *str;
-    /* 0x08 */ Gfx *gfx;
+    /* 0x08 */ Gfx_ **gfx;
     /* 0x0c */ Mtx *mtx;
     /* 0x10 */ N64Vertex *vtx;
     /* 0x14 */ Pol *pol;
