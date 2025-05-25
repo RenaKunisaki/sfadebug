@@ -45,7 +45,7 @@ typedef struct {
 typedef struct {
     /* 0x00 */ u8 type; //DiMenuType
     /* 0x02 */ u16 width; //0=auto, 0xFFFF=centre?
-    /* 0x04 */ s16 height; //why is one signed and the other not?
+    /* 0x04 */ u16 height;
     /* 0x08 */ u32 color; //if 0, don't set
     /* 0x0c */ char *text;
     /* 0x10 */ DiMenuItemStrings strs;
@@ -97,6 +97,10 @@ N64Button n64GetEnabledButtonsHeld(int pad);
 s8 getStickX2(int pad);
 s8 getStickY2(int pad);
 uint getScreenResolution();
+int debugPrintMeasureStr(char *param1,...);
+char * diMenuItemGetDisplayText(DiMenuItem *item);
+int diPrintf(const char *fmt, ...);
+void dprintSetColor(u8 r,u8 g,u8 b,u8 a);
 /* 8017a870 */ void diMenuInit(void (*callback)(void), int param_2);
 /* 8017a8d0 */ void diMenuPush(DiMenuItem *items, uint space);
 /* 8017ad58 */ void diMenuPop(void);

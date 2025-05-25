@@ -74,7 +74,6 @@
 /* 80399854 */ extern int DWORD_80399854;
 
 void fn_8017A638(void);
-int diPrintf(const char *fmt, ...);
 DiStack *diStackCreate(int param1, int param2); // 80070320
 int diStackGetNumItems(DiStack *stack); // 800704d4
 int diStackIsOverflow(DiStack *param_1); // 800704b8
