@@ -376,140 +376,147 @@ void diMenuItemDoControls(DiMenuItem *item) { // 8017b10c
 	}
 }
 
-#define RSP_CMD(gfx, op, prm) do { \
-	Gfx_ *temp_r19 = (*(gfx))++; \
-	temp_r19->pkt.cmd = op; \
-    temp_r19->pkt.param = prm; \
-} while(0)
+#define RSP_CMD(gfx, op, prm)                                                  \
+	do {                                                                       \
+		Gfx_ *temp_r19 = (*(gfx))++;                                           \
+		temp_r19->pkt.cmd = op;                                                \
+		temp_r19->pkt.param = prm;                                             \
+	} while(0)
 
-#define RSP_CMD_NOINC(gfx, op, prm) do { \
-	Gfx_ *temp_r19 = *gfx; \
-	temp_r19->pkt.cmd = op; \
-    temp_r19->pkt.param = prm; \
-} while(0)
+#define RSP_CMD_NOINC(gfx, op, prm)                                            \
+	do {                                                                       \
+		Gfx_ *temp_r19 = *gfx;                                                 \
+		temp_r19->pkt.cmd = op;                                                \
+		temp_r19->pkt.param = prm;                                             \
+	} while(0)
 
 void diMenuDrawCur(void) { // 8017b384
-    u32 xPos, yPos;
-    u8 colR, colG, colB, colA;
-    bool bMore;
-    u16 screenH, screenW;
-    u32 screenRes;
+	u32 xPos, yPos;
+	u8 colR, colG, colB, colA;
+	bool bMore;
+	u16 screenH, screenW;
+	u32 screenRes;
 	s32 len;
-    DiMenuItem *item;
+	DiMenuItem *item;
 
-    bMore = false;
-    xPos = 0;
-    yPos = 0;
-    screenRes = getScreenResolution();
-    screenW = screenRes >> 0x10U;
+	bMore = false;
+	xPos = 0;
+	yPos = 0;
+	screenRes = getScreenResolution();
+	screenW = screenRes >> 0x10U;
 	screenH = screenRes & 0xFFFF;
-    GXSetScissor(0U, 0U, screenH, screenW);
-	RSP_CMD(diMenuGfx, 0xED000000, (
-		(((s32)(4.0f * screenH) & 0x00000FFF)) << 12 |
-		(((s32)(4.0f * screenW)  & 0x00000FFF))
-	));
-    RSP_CMD(diMenuGfx, 0xE7000000, 0);
-    RSP_CMD_NOINC(diMenuGfx, 0xFCFFFFFF, 0xFFFDF6FB);
+	GXSetScissor(0U, 0U, screenH, screenW);
+	RSP_CMD(diMenuGfx,
+	    0xED000000,
+	    ((((s32)(4.0f * screenH) & 0x00000FFF)) << 12
+	        | (((s32)(4.0f * screenW) & 0x00000FFF))));
+	RSP_CMD(diMenuGfx, 0xE7000000, 0);
+	RSP_CMD_NOINC(diMenuGfx, 0xFCFFFFFF, 0xFFFDF6FB);
 	RSP_pipeSync(diMenuGfx);
 	RSP_CMD_NOINC(diMenuGfx, 0xEF002C00, 0x00504240);
 	fn_800A6900(diMenuGfx);
-    RSP_setTevColor1(diMenuGfx, 0xFF, 0xFF, 0xFF, 0xFF);
-    RSP_setTevColor2(diMenuGfx, 0x1F, 0x1F, 0x1F, 0x90);
-    RSP_CMD(diMenuGfx,
-		(diMenuCur->minW & 0x3ff) << 0xe | 0xf6000000 | (diMenuCur->minH & 0x3ffU) << 2,
-    	(diMenuCur->maxW & 0x3ff) << 0xe | (diMenuCur->maxH & 0x3ffU) << 2);
-    RSP_pState->bNeedPipeSync = 1;
-    dprintSetBgColor(0x1F, 0x1F, 0x1F, 0);
-    item = diMenuCur->items;
-    if ((u8 *) diMenuCur->firstDispItem != (u8 *) diMenuCur->items) {
-        bMore = true;
-    }
-    diMenuCur->bWrap = 0;
+	RSP_setTevColor1(diMenuGfx, 0xFF, 0xFF, 0xFF, 0xFF);
+	RSP_setTevColor2(diMenuGfx, 0x1F, 0x1F, 0x1F, 0x90);
+	RSP_CMD(diMenuGfx,
+	    (diMenuCur->minW & 0x3ff) << 0xe | 0xf6000000
+	        | (diMenuCur->minH & 0x3ffU) << 2,
+	    (diMenuCur->maxW & 0x3ff) << 0xe | (diMenuCur->maxH & 0x3ffU) << 2);
+	RSP_pState->bNeedPipeSync = 1;
+	dprintSetBgColor(0x1F, 0x1F, 0x1F, 0);
+	item = diMenuCur->items;
+	if((u8 *)diMenuCur->firstDispItem != (u8 *)diMenuCur->items) {
+		bMore = true;
+	}
+	diMenuCur->bWrap = 0;
 	while(item->type != 0xA) {
-		if ((item->heightFlags18 & 1) && ((s16) item->height <= 0)) {
+		if((item->heightFlags18 & 1) && ((s16)item->height <= 0)) {
 			xPos = item->width;
-		} else if (((u16) item->width != 0) || ((s16) item->height > 0)) {
+		} else if(((u16)item->width != 0) || ((s16)item->height > 0)) {
 			xPos = item->width;
 			yPos = item->height;
 		}
 		if(bMore) {
 			len = debugPrintMeasureStr(item->text);
-			if ((u32) item->strs.iStrs != 0U) {
-				len += debugPrintMeasureStr(" ") + (
-					debugPrintMeasureStr(
-						diMenuItemGetDisplayText(item)));
+			if((u32)item->strs.iStrs != 0U) {
+				len += debugPrintMeasureStr(" ")
+				    + (debugPrintMeasureStr(diMenuItemGetDisplayText(item)));
 			}
-			dprintSetPos((xPos + (len / 2)) -
-				(debugPrintMeasureStr("More") / 2),
-				yPos - 0xB);
+			dprintSetPos(
+			    (xPos + (len / 2)) - (debugPrintMeasureStr("More") / 2),
+			    yPos - 0xB);
 			dprintSetColor(0xFFU, 0xFF, 0xFF, 0xFF);
 			RSP_CMD(diMenuGfx, 0xE7000000, 0);
 			RSP_setTevColor2(diMenuGfx, 0x1F, 0x7F, 0x1F, 0x90);
 			RSP_CMD(diMenuGfx,
-				(((diMenuCur->minW * 0x4000) & 0xFFC000) | 0xF6000000 | ((diMenuCur->maxH * 4) & 0xFFC)),
-				((((diMenuCur->maxH - 11) * 4) & 0xFFC & ~0xFFC000) | ((diMenuCur->maxW << 14) & 0xFFC000)));
+			    (((diMenuCur->minW * 0x4000) & 0xFFC000) | 0xF6000000
+			        | ((diMenuCur->maxH * 4) & 0xFFC)),
+			    ((((diMenuCur->maxH - 11) * 4) & 0xFFC & ~0xFFC000)
+			        | ((diMenuCur->maxW << 14) & 0xFFC000)));
 			RSP_pState->bNeedPipeSync = 1;
 			diPrintf("More\n");
 			bMore = false;
 			diMenuCur->bWrap = 1;
 		}
 		dprintSetPos(xPos, yPos);
-		if (item == diMenuCur->curItem) {
+		if(item == diMenuCur->curItem) {
 			dprintSetColor(0xFFU, 0xFF, 0xFF, 0xFF);
 		} else {
 			colR = item->color >> 24;
 			colG = item->color >> 16;
-			colB = item->color >>  8;
-			colA  = item->color;
+			colB = item->color >> 8;
+			colA = item->color;
 			if((colR | colG | colB | colA) != 0) {
-				dprintSetColor(colR, colG, colB, (s8) colA);
+				dprintSetColor(colR, colG, colB, (s8)colA);
 			}
 		}
-		if (item >= diMenuCur->firstDispItem) {
+		if(item >= diMenuCur->firstDispItem) {
 			diMenuCur->lastDispItem = item;
-			if ((u8) item->type == 4) {
-				if ((u32) item->strs.iStrs == 0U) {
-					diPrintf("%s\n", (s32) item->text);
+			if((u8)item->type == 4) {
+				if((u32)item->strs.iStrs == 0U) {
+					diPrintf("%s\n", (s32)item->text);
 				} else {
-					diPrintf("%s %s\n", (s32) item->text, item->strs.iStrs);
+					diPrintf("%s %s\n", (s32)item->text, item->strs.iStrs);
 				}
-			} else if (strlen(item->text) == 0) {
+			} else if(strlen(item->text) == 0) {
 				diPrintf("%s\n", diMenuItemGetDisplayText(item));
 			} else {
-				diPrintf("%s %s\n", (s32) item->text, diMenuItemGetDisplayText(item));
+				diPrintf(
+				    "%s %s\n", (s32)item->text, diMenuItemGetDisplayText(item));
 			}
 			yPos += 11;
-			if ((s16) item->height == -1) {
-				yPos += 5;
-			}
+			if((s16)item->height == -1) { yPos += 5; }
 		}
 		item++;
-		if (((s32) ((yPos & 0xFFFF) + 11) > (SCREEN_HEIGHT-10))
-		&& (item->type != 0xA)) {
+		if(((s32)((yPos & 0xFFFF) + 11) > (SCREEN_HEIGHT - 10))
+		    && (item->type != 0xA)) {
 			diMenuCur->bWrap = 1;
 			dprintSetPos(xPos, yPos);
 			dprintSetColor(0xFFU, 0xFF, 0xFF, 0xFF);
 			RSP_CMD(diMenuGfx, 0xE7000000, 0);
 			RSP_setTevColor2(diMenuGfx, 0x1F, 0x7F, 0x1F, 0x90);
 			RSP_CMD(diMenuGfx,
-				(s32) (((diMenuCur->minW * 0x4000) & 0xFFC000) | 0xF6000000 | (((diMenuCur->minH + 0xB) * 4) & 0xFFC)),
-				(s32) (((diMenuCur->minH * 4) & 0xFFC & ~0xFFC000) | ((diMenuCur->maxW << 0xE) & 0xFFC000)));
+			    (s32)(((diMenuCur->minW * 0x4000) & 0xFFC000) | 0xF6000000
+			        | (((diMenuCur->minH + 0xB) * 4) & 0xFFC)),
+			    (s32)(((diMenuCur->minH * 4) & 0xFFC & ~0xFFC000)
+			        | ((diMenuCur->maxW << 0xE) & 0xFFC000)));
 			RSP_pState->bNeedPipeSync = 1;
 			item--;
 			len = debugPrintMeasureStr(item->text);
-			if ((u32) item->strs.iStrs != 0U) {
-				len = debugPrintMeasureStr(" ") + (
-					debugPrintMeasureStr(
-						diMenuItemGetDisplayText(item))) + len;
+			if((u32)item->strs.iStrs != 0U) {
+				len = debugPrintMeasureStr(" ")
+				    + (debugPrintMeasureStr(diMenuItemGetDisplayText(item)))
+				    + len;
 			}
-			dprintSetPos((xPos + (len / 2)) - (debugPrintMeasureStr("More") / 2), yPos);
+			dprintSetPos(
+			    (xPos + (len / 2)) - (debugPrintMeasureStr("More") / 2), yPos);
 			diPrintf("More\n");
 			return;
 		}
 	}
 }
 
-int diMenuItemActivate(DiMenuItem *item, /* DiMenuOpcode */ int op) { // 8017ba10
+int diMenuItemActivate(
+    DiMenuItem *item, /* DiMenuOpcode */ int op) { // 8017ba10
 	DiMenuStrings *strEnt;
 	DiMenuOp oper;
 
@@ -521,24 +528,74 @@ int diMenuItemActivate(DiMenuItem *item, /* DiMenuOpcode */ int op) { // 8017ba1
 	oper.pol = diMenuPol;
 	oper.frameCount = diMenuFrameCount80399874;
 	oper.item1C = (DiMenuItem *)(((int)item - (int)diMenuCur->items)
-		/ (int)sizeof(DiMenuItem));
+	    / (int)sizeof(DiMenuItem));
 	oper.item20
-		= (DiMenuItem *)(((int)diMenuCur->curItem - (int)diMenuCur->items)
-			/ (int)sizeof(DiMenuItem));
+	    = (DiMenuItem *)(((int)diMenuCur->curItem - (int)diMenuCur->items)
+	        / (int)sizeof(DiMenuItem));
 	oper.item24 = item;
 
 	if(op == DiMenuOpcode_Unk29) {
 		return item->op29(item->strs.pStr, &oper);
-	}
-	else if(item->type == Adjustable) {
+	} else if(item->type == Adjustable) {
 		strEnt = &diMenuStrings[item->strs.iStrs];
-		oper.str = *(char **)(strEnt->strs.str + strEnt->iStr*4);
+		oper.str = *(char **)(strEnt->strs.str + strEnt->iStr * 4);
 		return item->adjust(&strEnt->iStr, &oper);
-	}
-	else {
+	} else {
 		oper.str = NULL;
 		return item->activate(item->strs.str, &oper);
 	}
+}
+
+char *diMenuItemGetDisplayText(DiMenuItem *item) { //8017bb40
+	int iVar1;
+	DiMenuType type;
+	DiMenuStrings *strEnt;
+	static char diMenuItemValBuf[80];
+
+	switch(item->type) {
+		case CBoostRelated: {
+			iVar1 = *item->strs.pInt;
+			switch(iVar1) {
+				case 0: sprintf(diMenuItemValBuf, "\tBOOST");   break;
+				case 1: sprintf(diMenuItemValBuf, "\tC-BOOST"); break;
+				case 2: sprintf(diMenuItemValBuf, "\tFAST");    break;
+				case 3: sprintf(diMenuItemValBuf, "\tMEDIUM");  break;
+				case 4: sprintf(diMenuItemValBuf, "\tSLOW");    break;
+				case 5: sprintf(diMenuItemValBuf, "\tV.SLOW");  break;
+				default: sprintf(diMenuItemValBuf, " ");
+			}
+			break;
+		}
+
+		case Unk0:
+			debugPrintLockBuffer(1);
+			sprintf(diMenuItemValBuf, "%d", *(item->strs).pInt);
+			debugPrintLockBuffer(0);
+			break;
+
+		case Unk2:
+			debugPrintLockBuffer(1);
+			//@bug? passing an int when expecting a float
+			//unless this value does hold floats too, but it's
+			//passed in r5, so that shouldn't work?
+			sprintf(diMenuItemValBuf, "%.2f", item->strs.pInt);
+			debugPrintLockBuffer(0);
+			break;
+
+		case Adjustable: {
+			strEnt = &diMenuStrings[item->strs.iStrs];
+			sprintf(diMenuItemValBuf, "%s",
+				*(char **)(strEnt->strs.str
+					+ strEnt->iStr * 4));
+			break;
+		}
+
+		case Selectable:
+		default:
+			strcpy(diMenuItemValBuf, "");
+			break;
+	}
+	return diMenuItemValBuf;
 }
 
 void diMenuCurGoNextItem(void) { // 8017bd08

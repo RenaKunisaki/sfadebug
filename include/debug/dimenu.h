@@ -4,6 +4,7 @@
 typedef enum {
     Unk0 = 0,
     Adjustable = 1, //Choose a value
+    Unk2 = 2,
     Selectable = 3, //Selecting it calls a function
     Header = 4, //Not selectable
     CBoostRelated = 5,
@@ -102,7 +103,6 @@ s8 getStickX2(int pad);
 s8 getStickY2(int pad);
 uint getScreenResolution();
 int debugPrintMeasureStr(char *param1,...);
-char * diMenuItemGetDisplayText(DiMenuItem *item);
 int diPrintf(const char *fmt, ...);
 void dprintSetColor(u8 r,u8 g,u8 b,u8 a);
 /* 8017a870 */ void diMenuInit(void (*callback)(void), int param_2);
@@ -121,6 +121,7 @@ void dprintSetColor(u8 r,u8 g,u8 b,u8 a);
 /* 8017b384 */ void diMenuDrawCur(void);
 /* 8017ba10 */ int diMenuItemActivate(
     DiMenuItem *item, /* DiMenuOpcode */ int op);
+/* 8017bb40 */ char *diMenuItemGetDisplayText(DiMenuItem *item);
 /* 8017bd08 */ void diMenuCurGoNextItem(void);
 /* 8017bddc */ void diMenuCurGoPrevItem(void);
 /* 8017bee8 */ void diMenuItemIncrementCurrent(void);
