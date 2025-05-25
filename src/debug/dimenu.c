@@ -605,7 +605,7 @@ void diMenuCurGoNextItem(void) { // 8017bd08
 	done = false;
 	start = diMenuCur->curItem;
 	while(!done) {
-		diMenuCur->curItem = diMenuCur->curItem + 1;
+		diMenuCur->curItem++;
 		done = true;
 		if(diMenuCur->curItem->type == End) {
 			if(diMenuCur->bWrap) {
