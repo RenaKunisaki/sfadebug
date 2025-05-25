@@ -128,14 +128,14 @@ void diMenuPush(DiMenuItem *items, uint space) { // 8017a8d0
 		else if(items->width != 0)
 			ii = items->width;
 
-		if((items->width != 0) || (0 < items->height)) {
+		if((items->width != 0) || ((s16)items->height > 0)) {
 			if(ii < diMenuCur->maxW) diMenuCur->maxW = ii;
-			if((items->width != 0xFFFF) || (0 < items->height)) {
-				if(items->height < diMenuCur->maxH) {
-					diMenuCur->maxH = items->height;
+			if((items->width != 0xFFFF) || ((s16)items->height > 0)) {
+				if((s16)items->height < diMenuCur->maxH) {
+					diMenuCur->maxH = (s16)items->height;
 				}
-				if(items->height > diMenuCur->minH) {
-					diMenuCur->minH = items->height;
+				if((s16)items->height > diMenuCur->minH) {
+					diMenuCur->minH = (s16)items->height;
 				}
 			}
 		}
