@@ -604,24 +604,21 @@ void diMenuCurGoNextItem(void) { // 8017bd08
 
 	done = false;
 	start = diMenuCur->curItem;
-	while(true) {
-		if(done) { return; }
+	while(!done) {
 		diMenuCur->curItem = diMenuCur->curItem + 1;
 		done = true;
 		if(diMenuCur->curItem->type == End) {
-			if(diMenuCur->bWrap == FALSE) {
-				diMenuCur->curItem = diMenuCur->items;
-			} else {
+			if(diMenuCur->bWrap) {
 				diMenuCur->curItem = start;
 			}
+			else diMenuCur->curItem = diMenuCur->items;
 		}
-		if(diMenuCur->lastDispItem < diMenuCur->curItem) {
-			diMenuCur->firstDispItem = diMenuCur->firstDispItem + 1;
+		if(diMenuCur->curItem > diMenuCur->lastDispItem) {
+			diMenuCur->firstDispItem++;
 		}
 		if(diMenuCur->curItem == start) break;
-		if(diMenuCur->curItem->type == Header) { done = false; }
-	}
-	return;
+		if(diMenuCur->curItem->type == Header) done = false;
+	};
 }
 
 void diMenuCurGoPrevItem(void) { // 8017bddc
