@@ -235,7 +235,7 @@ void diMenuUpdate(Gfx_ **gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol,
 	}
 	diMenuFrameCount80399874 = framesTimes65536;
 	debugN64ButtonsPressed = n64GetEnabledButtonsPressed(0) & 0xffff;
-	bHeld = n64GetEnabledButtonsHeld(0);
+	bHeld = n64GetEnabledButtonsHeld(0) & 0xFFFF;
 	if(!diMenuCanOpen) {
 		// Start: hide menu
 		// Hold Z, press Start: show menu
