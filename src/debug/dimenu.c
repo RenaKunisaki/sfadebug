@@ -299,7 +299,7 @@ void diMenuStringInit(DiMenuItem *item) { // 8017affc
 	} else {
 		strEnt = &diMenuStrings[item->strs.iStrs];
 	}
-	strEnt->iStr = diMenuItemActivate(item, 3);
+	strEnt->iStr = diMenuItemActivate(item, DiMenuOpcode_AllocedStrings);
 }
 
 void diMenuItemDoControls(DiMenuItem *item) { // 8017b10c
@@ -318,7 +318,7 @@ void diMenuItemDoControls(DiMenuItem *item) { // 8017b10c
 	}
 	disableMenus = 1;
 	while(item->type != End) {
-		diMenuItemActivate(item, 0);
+		diMenuItemActivate(item, DiMenuOpcode_Tick);
 		for(pDVar1 = DiMenuButtonCmds_ARRAY_80306f20; pDVar1->buttons != 999999;
 		    pDVar1++) {
 			if(item == diMenuCur->curItem) {
@@ -651,7 +651,7 @@ void diMenuItemIncrementCurrent(void) { // 8017bee8
 		if(strs->iStr < strs->nStrs) strs->iStr++;
 		else strs->iStr = 0;
 	}
-	diMenuItemActivate(diMenuCur->curItem, 1);
+	diMenuItemActivate(diMenuCur->curItem, DiMenuOpcode_Increment);
 }
 
 void diMenuItemDecrementCurrent(void) { // 8017bf74
@@ -660,5 +660,5 @@ void diMenuItemDecrementCurrent(void) { // 8017bf74
 		if(strs->iStr > 0) strs->iStr--;
 		else strs->iStr = strs->nStrs;
 	}
-	diMenuItemActivate(diMenuCur->curItem, 2);
+	diMenuItemActivate(diMenuCur->curItem, DiMenuOpcode_Decrement);
 }
