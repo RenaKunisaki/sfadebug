@@ -153,7 +153,7 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	minst->shaderDefs = pSVar4;
 	param1 = &pSVar4->texture + (uint)model->nShaders * 2;
 	if((flags & 0x8000) != 0) {
-		uVar2 = aignTo2((uint)param1);
+		uVar2 = alignTo2((uint)param1);
 		minst->unk44 = uVar2;
 		param1 = (Texture **)(uVar2 + 0x1a);
 		*(undefined *)(minst->unk44 + 0x18) = 0;
