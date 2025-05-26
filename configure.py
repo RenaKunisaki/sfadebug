@@ -276,9 +276,9 @@ config.libs = [
             Object(Equivalent, "Runtime.PPCEABI.H/__init_cpp_exceptions.cpp"),
         ],
     },
-    #DolphinLib("ai", [
-    #    DolphinLib(Matching, "dolphin/ai/ai.c"),
-    #]),
+    DolphinLib("ai", [
+        Object(Matching, "dolphin/ai/ai.c"),
+    ]),
     {
         "lib": "main",
         "mw_version": config.linker_version,
@@ -287,11 +287,11 @@ config.libs = [
         "objects": [
             Object(Matching, "debug/dimenu.c"),
             Object(NonMatching, "debug/prof.c"),
-            Object(NonMatching, "main/main.c"),
+            Object(Matching, "main/main.c"),
             Object(NonMatching, "main/mm_dolphin.c"), # mostly regswaps
             Object(NonMatching, "main/models_dolphin.c"),
             Object(NonMatching, "main/objects.c"),
-            Object(NonMatching, "main/pi.c"),
+            Object(Matching, "main/pi.c"),
         ],
     },
 ]

@@ -44,9 +44,9 @@ void initHeaps(void) { // 8007B3A4
 	void *pvVar2;
 	void *arenaEnd;
 	OSHeapHandle heap;
-	//u32 *tags;
+	u32 *tags;
 
-	//tags = allocTagColorTbl; // probably fake for string reloc
+	tags = allocTagColorTbl; // probably fake for string reloc
 
 	numHeaps = 0;
 	pvVar2 = OSGetArenaLo();
@@ -237,8 +237,7 @@ const char *name) { // 8007B7F4
 	return offset;
 }
 
-void *mmAlloc2(
-volatile int size, u32 tag, const char *name) { // 8007BADC
+void *mmAlloc2(volatile int size, u32 tag, const char *name) { // 8007BADC
 	// eq except regswap
 	u32 *tags;
 	u32 *crash;
@@ -294,7 +293,7 @@ u32 tag, const char *name) { // 8007BB74 regalloc
         if(data->type == 0) {
             size2 = (int)data->entry.size;
             if(size2 >= smallest) {
-                if(smallest < size2) {
+                if(size2 < smallest) {
                     largest = data->entry.size;
                 }
                 iEntry = iVar3;
@@ -309,13 +308,12 @@ u32 tag, const char *name) { // 8007BB74 regalloc
         heapSetEntry(iHeap, iEntry, size, 1, 0, tag, name);
         result = &data[iEntry].entry.loc;
         n64EnableInterrupts(irq);
-        return result;
+        return *(void**)result;
     }
-    if((iHeap == 2 && size > 0x3000) || iHeap != 3) {
-        result = NULL;
+    if((iHeap == 2 && size > 0x3000) || (iHeap != 3 && iHeap == 1)) {
+        result = dummy_0x8007bd00(result);
     }
-    if(iHeap == 1) result = dummy_0x8007bd00(result);
-    return result;
+    return NULL;
 }
 
 void mmSetDelay(int delay) { // 8007BD28

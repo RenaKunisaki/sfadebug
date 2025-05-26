@@ -289,6 +289,7 @@ BOOL fn_8017A320(void) { // 8017A320
 
 extern u8 BYTE_ARRAY_80399858[8];
 void nop_8017a328(void) { // 8017A328 these all do nothing
+	//not sure what's up with these
 	int *s = DWORD_80390260;
 	nop_800BFC0C(&s[1]);
 	retM1_afterLoadAsset(&s[1],BYTE_ARRAY_80399858,1);
