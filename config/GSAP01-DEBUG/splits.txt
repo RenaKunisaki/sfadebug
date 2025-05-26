@@ -126,11 +126,11 @@ main/main.c:
 	.text       start:0x80077CA8 end:0x8007A284
 
 main/mm_dolphin.c:
-	.text       start:0x8007B3A4 end:0x8007C4AC
+	.text       start:0x8007B3A4 end:0x8007C57C
 	.bss        start:0x80352CD8 end:0x80357698
 
 main/models_dolphin.c:
-	.text       start:0x8007C524 end:0x800816B4
+	.text       start:0x8007C57C end:0x800816B4
 	.rodata     start:0x802CF000 end:0x802CF018
 
 main/SKNControl.c:
