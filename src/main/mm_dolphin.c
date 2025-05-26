@@ -525,6 +525,22 @@ int type2, u32 tag, const char *name) { // 8007C328 regswap
 	return iEntry;
 }
 
+int alignTo16(int param1) { //8007C4AC
+	int pad = param1 & 15;
+	if(pad > 0) param1 += (16 - pad);
+	return param1;
+}
+int alignTo8(int param1) { //8007C4D4
+	int pad = param1 & 7;
+	if(pad > 0) param1 += (8 - pad);
+	return param1;
+}
+int alignTo4(int param1) { //8007C4FC
+
+	int pad = param1 & 3;
+	if(pad > 0) param1 += (4 - pad);
+	return param1;
+}
 int alignTo2(int param1) { //8007C524
 	int pad = param1 & 1;
 	if(pad > 0) param1 += (2 - pad);
@@ -532,5 +548,7 @@ int alignTo2(int param1) { //8007C524
 }
 
 int getTotalHeapUsed(int unused) { //8007C54C
+	volatile Heap *dummy = heaps;
+	(void)dummy[0];
 	return heapUsed2 + heapUsed0 + heapUsed1;
 }
