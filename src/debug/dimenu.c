@@ -646,18 +646,12 @@ void diMenuCurGoPrevItem(void) { // 8017bddc
 }
 
 void diMenuItemIncrementCurrent(void) { // 8017bee8
-	int iVar1;
-
 	if(diMenuCur->curItem->type == Adjustable) {
-		iVar1 = (diMenuCur->curItem->strs).iStrs;
-		if((int)diMenuStrings[iVar1].iStr < (int)diMenuStrings[iVar1].nStrs) {
-			diMenuStrings[iVar1].iStr = diMenuStrings[iVar1].iStr + 1;
-		} else {
-			diMenuStrings[iVar1].iStr = 0;
-		}
+		DiMenuStrings *strs = &diMenuStrings[diMenuCur->curItem->strs.iStrs];
+		if(strs->iStr < strs->nStrs) strs->iStr++;
+		else strs->iStr = 0;
 	}
 	diMenuItemActivate(diMenuCur->curItem, 1);
-	return;
 }
 
 void diMenuItemDecrementCurrent(void) { // 8017bf74
