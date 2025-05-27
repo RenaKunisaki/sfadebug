@@ -548,7 +548,6 @@ int alignTo2(int param1) { //8007C524
 }
 
 int getTotalHeapUsed(int unused) { //8007C54C
-	volatile Heap *dummy = heaps;
-	(void)dummy[0].used;
+	register Heap *dummy = heaps;
 	return heapUsed0 + heapUsed1 + heapUsed2;
 }

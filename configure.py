@@ -288,7 +288,7 @@ config.libs = [
             Object(Matching, "debug/dimenu.c"),
             Object(NonMatching, "debug/prof.c"),
             Object(Matching, "main/main.c"),
-            Object(NonMatching, "main/mm_dolphin.c"), # mostly regswaps
+            Object(NonMatching, "main/mm_dolphin.c",  extra_cflags=['-O0,p']),
             Object(NonMatching, "main/models_dolphin.c"),
             Object(NonMatching, "main/objects.c"),
             Object(Matching, "main/pi.c"),
