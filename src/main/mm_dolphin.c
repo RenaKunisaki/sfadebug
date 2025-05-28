@@ -38,7 +38,6 @@ void _mmAddToFreeList(void *ptr);
 void _mmActuallyFree(int iHeap, int iEntry);
 
 void initHeaps(void) { // 8007B3A4
-//should be eq, only data reloc
 	int iVar1;
 	size_t size;
 	void *pvVar2;

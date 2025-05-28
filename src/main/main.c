@@ -700,7 +700,7 @@ int gameUpdate(void) { //80078BBC
         if(screenBlankFrameCount) nop_8009FA00(&gfx);
         if(!screenBlankFrameCount) {
             if(getDebugMenuState() == 1) objUpdateFn_80081f94();
-            else if (fn_8017AFC4() == 0) objUpdateFn_80081f94();
+            else if (diMenuIsVisible() == 0) objUpdateFn_80081f94();
             else objUpdateFn_80082238();
             updateEnvironment(FALSE);
 
