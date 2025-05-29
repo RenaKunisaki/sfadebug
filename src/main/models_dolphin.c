@@ -175,3 +175,25 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	return minst;
 }
 
+
+/* 80398a28 */ u32 *pAmapTab;
+uint modelGetAmapSize(uint id,int noAmap,int nAnimations) { //8007cbd0
+	uint offs;
+	uint result = 0;
+	if(noAmap) {
+		result += nAnimations * 2 + 8;
+		while(result & 7) result++;
+	}
+	else {
+		result += nAnimations * 2;
+		while((result & 7) != 0) result++;
+		offs = id & ~3;
+		loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, offs * 4, 0x20);
+		id &= 3;
+		result += pAmapTab[id+1] - pAmapTab[id];
+	}
+	return result;
+}
+
+
+
