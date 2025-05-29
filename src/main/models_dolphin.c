@@ -13,6 +13,13 @@
 
 uint DAT_828398a10;
 
+
+void *loadModelInstanceAsset(int id,void *buf) { //80077a78 types may be wrong
+	void *result;
+	loadAsset_modelInstance(&result,id,buf);
+	return result;
+}
+
 int Model_setupAnimInstance(
     Model *model, uint flags, AnimInstance *anim, int param4);
 
