@@ -302,4 +302,10 @@ void ModelInstance_setTexFuncPtr(ModelInstance *modelInstance,UNKTYPE *cb) {
 	modelInstance->texFuncPtr = cb;
 }
 
+UNKTYPE * ModelInstance_getTexFuncPtr(ModelInstance *modelInstance) {
+	ASSERTLINE(1243, modelInstance);
+	return modelInstance->texFuncPtr;
+}
+
+
 
