@@ -159,7 +159,7 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	}
 	pSVar4 = (ShaderDef *)alignTo4((uint)pvVar9);
 	minst->shaderDefs = pSVar4;
-	param1 = &pSVar4->texture + (uint)model->nShaders * 2;
+	param1 = &pSVar4->texture + (uint)model->numShaders * 2;
 	if((flags & 0x8000) != 0) {
 		uVar2 = alignTo2((uint)param1);
 		minst->unk44 = uVar2;
@@ -171,7 +171,7 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 		    "DANGER: createModelInstance: Actual size exceeded totalsize!!!\n");
 	}
 	minst->unk48 = NULL;
-	minst->model = model;
+	minst->mod = model;
 	minst->unk50 = 0;
 	return minst;
 }
@@ -251,10 +251,10 @@ void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj) {
 	register int iShader;
 	Model *model;
 
-	model = minst->model;
+	model = minst->mod;
 	if(!(minst->flags & ModelFlags18_ShadersLoaded)) {
 		minst->flags = minst->flags | ModelFlags18_ShadersLoaded;
-		for(iShader = 0; iShader < minst->model->nShaders; iShader++) {
+		for(iShader = 0; iShader < minst->mod->numShaders; iShader++) {
 			shaderInit(&model->shaders[iShader],
 				&minst->shaderDefs[iShader],
 				obj, model->shaderFlags);
@@ -266,8 +266,14 @@ void ModelInstance_unloadShaders(ModelInstance *minst) {
 	register int ii;
 	if(minst->flags & ModelFlags18_ShadersLoaded) {
 		minst->flags = minst->flags & ~ModelFlags18_ShadersLoaded;
-		for(ii = 0; ii < minst->model->nShaders; ii++) {
+		for(ii = 0; ii < minst->mod->numShaders; ii++) {
 			shaderFree(&minst->shaderDefs[ii]);
 		}
 	}
 }
+
+int Model_getShaderTexture(ModelInstance *modelInstance,int shaderNum) {
+	ASSERTLINE(1146, shaderNum>=0 && shaderNum<modelInstance->mod->numShaders);
+	return (int)(&modelInstance->shaderDefs->texture + shaderNum * 2);
+}
+

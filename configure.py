@@ -214,14 +214,15 @@ cflags_base = [
     "-i include/libc",
     f"-i build/{config.version}/include",
     f"-DVERSION={version_num}",
+    "-DDEBUG=1",
 ]
 
 # Debug flags
-if args.debug:
-    # Or -sym dwarf-2 for Wii compilers
-    cflags_base.extend(["-sym on", "-DDEBUG=1"])
-else:
-    cflags_base.append("-DNDEBUG=1")
+#if args.debug:
+#    # Or -sym dwarf-2 for Wii compilers
+#    cflags_base.extend(["-sym on", "-DDEBUG=1"])
+#else:
+#    cflags_base.append("-DNDEBUG=1")
 
 # Metrowerks library flags
 cflags_runtime = [
@@ -289,7 +290,7 @@ config.libs = [
             Object(NonMatching, "debug/prof.c"),
             Object(Matching, "main/main.c"),
             Object(NonMatching, "main/mm_dolphin.c",  extra_cflags=['-O0,p', '-use_lmw_stmw on']),
-            Object(NonMatching, "main/models_dolphin.c",  extra_cflags=['-O0,s', '-use_lmw_stmw on']),
+            Object(NonMatching, "main/models_dolphin.c",  extra_cflags=[*cflags_base, '-O0,s', '-use_lmw_stmw on']),
             Object(NonMatching, "main/objects.c"),
             Object(Matching, "main/pi.c"),
         ],

@@ -174,7 +174,7 @@ typedef struct {
     /* 0xb7 */ u8 animLength;
     /* 0xb8 */ s8 unkb8;
     /* 0xb9 */ u8 nHitSpheres;
-    /* 0xba */ u8 nShaders;
+    /* 0xba */ u8 numShaders;
     /* 0xbb */ u8 bCopyVtxsToModelInst;
 } Model;
 
@@ -184,7 +184,7 @@ typedef struct {
 } ModelInstanceField54;
 
 typedef struct {
-    /* 0x00 */ Model *model;
+    /* 0x00 */ Model *mod;
     /* 0x04 */ S16Vec *vertexPositions2;
     /* 0x08 */ s8 unk08;
     /* 0x09 */ s8 unk09;
