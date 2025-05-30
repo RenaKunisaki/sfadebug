@@ -333,8 +333,18 @@ S16Vec * modelGetVtxPos(Model *model,int positionNum) { //str offsets
 	return &model->vertexPositions[positionNum];
 }
 
+//"Failed assertion normalNum>=0 && normalNum<model->numNormals";
+//"Failed assertion colourNum>=0 && colourNum<model->numColours";
+//"Failed assertion coordNum>=0 && coordNum<model->numColours";'
+
 Texture * modelGetGCTexture(Model *model,int textureNum) { //str offsets
 	ASSERTLINE(1768, model);
 	ASSERTLINE(1769, textureNum>=0 && textureNum<model->numTextures);
 	return model->GCtextures[textureNum];
+}
+
+Bone * modelGetJoint(Model *model,int jointNum) { //str offsets
+	ASSERTLINE(1791, model);
+	ASSERTLINE(1792, jointNum>=0 && jointNum<model->numJoints);
+	return &model->joints[jointNum];
 }
