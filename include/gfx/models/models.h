@@ -94,7 +94,7 @@ typedef struct {
     /* 0x14 */ float *skeleton;
     /* 0x18 */ float *radi;
     /* 0x1c */ u32 *exT; //extraAmapSize (dlInfoSize?)
-    /* 0x20 */ Texture *GCtextures; //-> texture IDs that get turned into pointers
+    /* 0x20 */ Texture **GCtextures; //-> texture IDs that get turned into pointers
     /* 0x24 */ Vec *normals; //either 1 or 3 vecs per (presumably) face
     /* 0x28 */ S16Vec *vertexPositions;
     /* 0x2c */ Vec *vertexNormals;

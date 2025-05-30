@@ -218,3 +218,10 @@ int Model_checksumHeader(Model *model) {
 	}
 	return result;
 }
+
+void Model_freeTextures(Model *model) {
+	int ii;
+	for(ii = 0; ii < model->numTextures; ii += 1) {
+		texFreeTexture(model->GCtextures[ii]);
+	}
+}
