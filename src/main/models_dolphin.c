@@ -296,3 +296,10 @@ void modelInstSwapJmtxs(ModelInstance *modelInstance) {
 	modelInstance->flags = modelInstance->flags ^ ModelFlags18_UseOtherMtxs;
 }
 
+//XXX type
+void ModelInstance_setTexFuncPtr(ModelInstance *modelInstance,UNKTYPE *cb) {
+	ASSERTLINE(1224, modelInstance);
+	modelInstance->texFuncPtr = cb;
+}
+
+
