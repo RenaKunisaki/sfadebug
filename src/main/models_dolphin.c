@@ -290,3 +290,9 @@ Mtx44 * modelInstGetjMtx(ModelInstance *modelInstance,int iMtx) {
 	return (Mtx44 *)(
 		&modelInstance->jMtxs[modelInstance->flags & 1][iMtx]);
 }
+
+void modelInstSwapJmtxs(ModelInstance *modelInstance) {
+	ASSERTLINE(1203, modelInstance);
+	modelInstance->flags = modelInstance->flags ^ ModelFlags18_UseOtherMtxs;
+}
+
