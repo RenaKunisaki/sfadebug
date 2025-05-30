@@ -289,7 +289,7 @@ config.libs = [
             Object(NonMatching, "debug/prof.c"),
             Object(Matching, "main/main.c"),
             Object(NonMatching, "main/mm_dolphin.c",  extra_cflags=['-O0,p', '-use_lmw_stmw on']),
-            Object(NonMatching, "main/models_dolphin.c"),
+            Object(NonMatching, "main/models_dolphin.c",  extra_cflags=['-O0,s', '-use_lmw_stmw on']),
             Object(NonMatching, "main/objects.c"),
             Object(Matching, "main/pi.c"),
         ],

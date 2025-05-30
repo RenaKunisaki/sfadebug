@@ -11,7 +11,7 @@
 #include "obj/ObjInstance.h"
 #include "sys/files.h"
 
-uint DAT_828398a10;
+/* 80398a28 */ u32 *pAmapTab;
 
 
 void *loadModelInstanceAsset(int id,void *buf) { //80077a78 types may be wrong
@@ -175,25 +175,22 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	return minst;
 }
 
+int modelGetAmapSize(uint id,BOOL noAmap,int nAnimations) { //8007cbd0 regswap
+	int count;
+	int result;
 
-/* 80398a28 */ u32 *pAmapTab;
-uint modelGetAmapSize(uint id,int noAmap,int nAnimations) { //8007cbd0
-	uint offs;
-	uint result = 0;
+	result = 0;
 	if(noAmap) {
 		result += nAnimations * 2 + 8;
 		while(result & 7) result++;
 	}
 	else {
-		result += nAnimations * 2;
-		while((result & 7) != 0) result++;
-		offs = id & ~3;
-		loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, offs * 4, 0x20);
+		result += nAnimations * 4;
+		while(result & 7) result++;
+		loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, (id & ~3) * 4, 32);
 		id &= 3;
-		result += pAmapTab[id+1] - pAmapTab[id];
+		count = pAmapTab[id+1] - pAmapTab[id];
+		result += count;
 	}
 	return result;
 }
-
-
-
