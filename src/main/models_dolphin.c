@@ -333,3 +333,8 @@ S16Vec * modelGetVtxPos(Model *model,int positionNum) { //str offsets
 	return &model->vertexPositions[positionNum];
 }
 
+Texture * modelGetGCTexture(Model *model,int textureNum) { //str offsets
+	ASSERTLINE(1768, model);
+	ASSERTLINE(1769, textureNum>=0 && textureNum<model->numTextures);
+	return model->GCtextures[textureNum];
+}
