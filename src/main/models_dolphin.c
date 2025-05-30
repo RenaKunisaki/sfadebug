@@ -314,3 +314,8 @@ void ModelInstance_freeField48(ModelInstance *modelInstance) {
 		modelInstance->unk48 = NULL;
 	}
 }
+
+u16 modelGetFieldA4(Model *model) {
+	ASSERTLINE(1627, model);
+	return model->unka4;
+}
