@@ -204,3 +204,17 @@ uint param_3,Model *model) {
   return result;
 }
 
+
+int Model_checksumHeader(Model *model) {
+	u8 *data;
+	int result;
+	u8 *pEnd;
+
+	result = 0;
+	data = (u8*)model;
+	pEnd = (u8*)((uint)model + model->dataSize);
+	for (; data < pEnd; data++) {
+		result += *data;
+	}
+	return result;
+}
