@@ -20,7 +20,7 @@ typedef enum {
 } ModelDataFlags2;
 
 typedef enum {
-    ModelFlags18_UseOtherMtxs     =  1,
+    ModelFlags18_UseOtherMtxs     =  1, //which index into jMtxs to use
     ModelFlags18_UseOtherVtxs     =  2,
     ModelFlags18_UseOtherHitboxes =  4,
     ModelFlags18_MtxsLoaded       =  8,
@@ -171,7 +171,7 @@ typedef struct {
     /* 0xb2 */ s16 numGcPolygons;
     /* 0xb4 */ s16 numPolyGroups;
     /* 0xb6 */ u8 numTextures;
-    /* 0xb7 */ u8 animLength;
+    /* 0xb7 */ u8 numJoints;
     /* 0xb8 */ s8 unkb8;
     /* 0xb9 */ u8 nHitSpheres;
     /* 0xba */ u8 numShaders;
@@ -179,7 +179,7 @@ typedef struct {
 } Model;
 
 typedef struct {
-    Mtx44 *mtx[2];
+    Mtx44 *jMtxs[2];
     S16Vec unk;
 } ModelInstanceField54;
 
@@ -190,7 +190,7 @@ typedef struct {
     /* 0x09 */ s8 unk09;
     /* 0x0a */ s8 unk0a;
     /* 0x0b */ s8 unk0b;
-    /* 0x0c */ Mtx44 *mtxs[2];
+    /* 0x0c */ Mtx44 *jMtxs[2]; //maybe jMtxs (joint matrices)
     /* 0x14 */ float **unk14;
     /* 0x18 */ u16 flags; //ModelFlags18 40:shaders loaded
     /* 0x1a */ s8 unk1a;

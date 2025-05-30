@@ -63,10 +63,10 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 
 	memclr(minst, size);
 	field54 = (ModelInstanceField54 *)alignTo16(&minst->field54);
-	minst->mtxs[0] = field54->mtx[0];
-	minst->mtxs[1] = field54->mtx[1];
+	minst->jMtxs[0] = field54->jMtxs[0];
+	minst->jMtxs[1] = field54->jMtxs[1];
 	psVar7 = &field54->unk;
-	minst->unk4c = minst->mtxs[0];
+	minst->unk4c = minst->jMtxs[0];
 	if((model->bCopyVtxsToModelInst == 0) && (model->skin2Matrices == NULL)) {
 		pvVar9 = (S16Vec *)((int)psVar7 + 0x1fU & 0xffffffe0);
 		minst->vertexPositions[0] = pvVar9;
@@ -131,7 +131,7 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 		pvVar9 = (S16Vec *)(iVar5 + (uint)model->nHitSpheres * 0x10);
 		minst->unk40 = minst->unk38;
 	}
-	if((((model->joints == (Bone *)0x0) || (model->animLength == 0))
+	if((((model->joints == (Bone *)0x0) || (model->numJoints == 0))
 	       || (model->radi == NULL))
 	    || (model->exT == (u32 *)0x0)) {
 		minst->unk14 = NULL;
@@ -140,17 +140,17 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 		minst->unk14 = pfVar3;
 		pfVar3 = pfVar3 + 7;
 		minst->unk14[0] = (float *)pfVar3;
-		pfVar3 = pfVar3 + (uint)model->animLength * 3;
+		pfVar3 = pfVar3 + (uint)model->numJoints * 3;
 		minst->unk14[1] = (float *)pfVar3;
-		pfVar3 = pfVar3 + model->animLength;
+		pfVar3 = pfVar3 + model->numJoints;
 		minst->unk14[2] = (float *)pfVar3;
-		pfVar3 = pfVar3 + model->animLength;
+		pfVar3 = pfVar3 + model->numJoints;
 		minst->unk14[3] = (float *)pfVar3;
-		pfVar3 = pfVar3 + model->animLength;
+		pfVar3 = pfVar3 + model->numJoints;
 		minst->unk14[4] = (float *)pfVar3;
-		bVar1 = model->animLength;
+		bVar1 = model->numJoints;
 		minst->unk14[6] = (float *)(pfVar3 + bVar1);
-		pvVar9 = (S16Vec *)((int)(pfVar3 + bVar1) + (uint)model->animLength);
+		pvVar9 = (S16Vec *)((int)(pfVar3 + bVar1) + (uint)model->numJoints);
 	}
 	if(model->skin2Matrices != NULL) {
 		uVar2 = alignTo4((uint)pvVar9);
@@ -277,3 +277,16 @@ int Model_getShaderTexture(ModelInstance *modelInstance,int shaderNum) {
 	return (int)(&modelInstance->shaderDefs->texture + shaderNum * 2);
 }
 
+Mtx44 * modelInstGetjMtx(ModelInstance *modelInstance,int iMtx) {
+	int nMtxs;
+
+	ASSERTLINE(1169, modelInstance);
+	if(modelInstance->mod->numJoints) {
+		nMtxs = (uint)modelInstance->mod->numJoints;
+	}
+	else nMtxs = 1;
+	if(iMtx >= nMtxs) iMtx = 0;
+
+	return (Mtx44 *)(
+		&modelInstance->jMtxs[modelInstance->flags & 1][iMtx]);
+}
