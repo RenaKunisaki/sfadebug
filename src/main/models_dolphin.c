@@ -262,17 +262,12 @@ void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj) {
 	}
 }
 
-
-/*void ModelInstance_unloadShaders(ModelInstance *modelInstance) {
-  int iVar1;
-
-  if ((modelInstance->flags & ModelFlags18_ShadersLoaded) != 0) {
-    modelInstance->flags = modelInstance->flags & ~ModelFlags18_ShadersLoaded;
-    for (iVar1 = 0; iVar1 < (int)(uint)modelInstance->mod->nShaders; iVar1 += 1) {
-      shaderFree((Shader *)(&modelInstance->shaderDefs->texture + iVar1 * 2));
-    }
-  }
-  return;
-}*/
-
-
+void ModelInstance_unloadShaders(ModelInstance *minst) {
+	register int ii;
+	if(minst->flags & ModelFlags18_ShadersLoaded) {
+		minst->flags = minst->flags & ~ModelFlags18_ShadersLoaded;
+		for(ii = 0; ii < minst->model->nShaders; ii++) {
+			shaderFree(&minst->shaderDefs[ii]);
+		}
+	}
+}
