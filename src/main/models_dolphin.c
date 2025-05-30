@@ -319,3 +319,9 @@ u16 modelGetFieldA4(Model *model) {
 	ASSERTLINE(1627, model);
 	return model->unka4;
 }
+
+Shader * modelGetShader(Model *model, int shaderNum) { //str offsets
+	ASSERTLINE(1648, model);
+	ASSERTLINE(1649, shaderNum>=0 && shaderNum<model->numShaders);
+	return &model->shaders[shaderNum];
+}
