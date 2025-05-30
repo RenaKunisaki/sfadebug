@@ -247,8 +247,9 @@ int Model_lookupModelInd(int id) {
 }
 
 void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj) {
+	#pragma peephole on
+	register int iShader;
 	Model *model;
-	int iShader;
 
 	model = minst->model;
 	if(!(minst->flags & ModelFlags18_ShadersLoaded)) {
@@ -256,8 +257,22 @@ void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj) {
 		for(iShader = 0; iShader < minst->model->nShaders; iShader++) {
 			shaderInit(&model->shaders[iShader],
 				&minst->shaderDefs[iShader],
-			obj,model->shaderFlags);
+				obj, model->shaderFlags);
 		}
 	}
 }
+
+
+/*void ModelInstance_unloadShaders(ModelInstance *modelInstance) {
+  int iVar1;
+
+  if ((modelInstance->flags & ModelFlags18_ShadersLoaded) != 0) {
+    modelInstance->flags = modelInstance->flags & ~ModelFlags18_ShadersLoaded;
+    for (iVar1 = 0; iVar1 < (int)(uint)modelInstance->mod->nShaders; iVar1 += 1) {
+      shaderFree((Shader *)(&modelInstance->shaderDefs->texture + iVar1 * 2));
+    }
+  }
+  return;
+}*/
+
 
