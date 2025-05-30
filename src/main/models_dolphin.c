@@ -308,4 +308,9 @@ UNKTYPE * ModelInstance_getTexFuncPtr(ModelInstance *modelInstance) {
 }
 
 
-
+void ModelInstance_freeField48(ModelInstance *modelInstance) {
+	if(modelInstance->unk48) {
+		mmFree(modelInstance->unk48);
+		modelInstance->unk48 = NULL;
+	}
+}
