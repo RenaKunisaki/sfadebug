@@ -105,7 +105,7 @@ typedef struct {
     /* 0x40 */ void *sphereHits;
     /* 0x44 */ UNKTYPE *GCpolygons;
     /* 0x48 */ PolygonGroup *polygonGroups;
-    /* 0x4c */ HitSpherePos *hitSpheres4C;
+    /* 0x4c */ UNKTYPE **anims;
     /* 0x50 */ HitSpherePos *curHitSpherePos; //=hitSpherePositions[n] for current frame
     /* 0x54 */ s16 *animIds;
     /* 0x58 */ UNKTYPE *unk58;
@@ -167,7 +167,7 @@ typedef struct {
     /* 0xad */ s8 unkad;
     /* 0xae */ s8 unkae;
     /* 0xaf */ s8 unkaf;
-    /* 0xb0 */ ushort animBufSize;
+    /* 0xb0 */ u16 numAnims;
     /* 0xb2 */ s16 numGcPolygons;
     /* 0xb4 */ s16 numPolyGroups;
     /* 0xb6 */ u8 numTextures;

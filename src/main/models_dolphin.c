@@ -11,6 +11,7 @@
 #include "obj/ObjInstance.h"
 #include "sys/files.h"
 
+/* 80398a24 */ s16 *globalModAnimBuffer;
 /* 80398a28 */ u32 *pAmapTab;
 
 
@@ -221,7 +222,27 @@ int Model_checksumHeader(Model *model) {
 
 void Model_freeTextures(Model *model) {
 	int ii;
-	for(ii = 0; ii < model->numTextures; ii += 1) {
+	for(ii = 0; ii < model->numTextures; ii++) {
 		texFreeTexture(model->GCtextures[ii]);
 	}
 }
+
+void Model_freeAnimations(Model *model) {
+	int ii;
+	if(model->anims && model->numAnims) {
+		for (ii = 0; ii < model->numAnims; ii++) {
+			unloadAnimation(model->anims[ii]);
+		}
+	}
+}
+
+int Model_lookupModelInd(int id) {
+	if(id < 0) id = -id;
+	else {
+		loadDataFileWithLength(FILE_MODELIND_bin,
+			globalModAnimBuffer, id << 1, 8);
+		id = globalModAnimBuffer[0];
+	}
+	return id;
+}
+
