@@ -159,7 +159,7 @@ typedef struct {
     /* 0x9f */ s8 unk9f;
     /* 0xa0 */ UNKTYPE *vertexAnims;
     /* 0xa4 */ s16 unka4;
-    /* 0xa6 */ u16 flagsA6;
+    /* 0xa6 */ u16 shaderFlags;
     /* 0xa8 */ ushort numPositions;
     /* 0xaa */ s8 unkaa;
     /* 0xab */ s8 unkab;

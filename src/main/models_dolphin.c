@@ -246,3 +246,18 @@ int Model_lookupModelInd(int id) {
 	return id;
 }
 
+void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj) {
+	Model *model;
+	int iShader;
+
+	model = minst->model;
+	if(!(minst->flags & ModelFlags18_ShadersLoaded)) {
+		minst->flags = minst->flags | ModelFlags18_ShadersLoaded;
+		for(iShader = 0; iShader < minst->model->nShaders; iShader++) {
+			shaderInit(&model->shaders[iShader],
+				&minst->shaderDefs[iShader],
+			obj,model->shaderFlags);
+		}
+	}
+}
+
