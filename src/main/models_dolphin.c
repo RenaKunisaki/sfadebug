@@ -246,8 +246,9 @@ int Model_lookupModelInd(int id) {
 	return id;
 }
 
+#pragma peephole on
+
 void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj) {
-	#pragma peephole on
 	register int iShader;
 	Model *model;
 
@@ -325,3 +326,10 @@ Shader * modelGetShader(Model *model, int shaderNum) { //str offsets
 	ASSERTLINE(1649, shaderNum>=0 && shaderNum<model->numShaders);
 	return &model->shaders[shaderNum];
 }
+
+S16Vec * modelGetVtxPos(Model *model,int positionNum) { //str offsets
+	ASSERTLINE(1671, model);
+	ASSERTLINE(1672, positionNum>=0 && positionNum<model->numPositions);
+	return &model->vertexPositions[positionNum];
+}
+
