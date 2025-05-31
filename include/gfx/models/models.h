@@ -28,6 +28,10 @@ typedef enum {
 } ModelFlags18;
 
 typedef struct {
+    u8 unknown[8];
+} GCPolygon;
+
+typedef struct {
     /* 0x00 */ void *displayList; //to raw GX commands
     /* 0x04 */ u16 length;
     /* 0x06 */ s8 unk06;
@@ -103,7 +107,7 @@ typedef struct {
     /* 0x38 */ Shader *shaders;
     /* 0x3c */ Bone *joints;
     /* 0x40 */ void *sphereHits;
-    /* 0x44 */ UNKTYPE *GCpolygons;
+    /* 0x44 */ GCPolygon *GCpolygons;
     /* 0x48 */ PolygonGroup *polygonGroups;
     /* 0x4c */ UNKTYPE **anims;
     /* 0x50 */ HitSpherePos *curHitSpherePos; //=hitSpherePositions[n] for current frame
@@ -168,7 +172,7 @@ typedef struct {
     /* 0xae */ s8 unkae;
     /* 0xaf */ s8 unkaf;
     /* 0xb0 */ u16 numAnims;
-    /* 0xb2 */ s16 numGcPolygons;
+    /* 0xb2 */ u16 numPolygons;
     /* 0xb4 */ u16 numGroups;
     /* 0xb6 */ u8 numTextures;
     /* 0xb7 */ u8 numJoints;

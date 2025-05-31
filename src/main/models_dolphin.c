@@ -379,3 +379,7 @@ PolygonGroup * modelGetPolyGroup(Model *model,int groupNum) { //str offsets
 	return &model->polygonGroups[groupNum];
 }
 
+GCPolygon * modelGetGCPoly(Model *model,int polygonNum) {
+	ASSERTLINE(1927, polygonNum>=0 && polygonNum<model->numPolygons);
+	return &model->GCpolygons[polygonNum];
+}
