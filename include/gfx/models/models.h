@@ -169,7 +169,7 @@ typedef struct {
     /* 0xaf */ s8 unkaf;
     /* 0xb0 */ u16 numAnims;
     /* 0xb2 */ s16 numGcPolygons;
-    /* 0xb4 */ s16 numPolyGroups;
+    /* 0xb4 */ u16 numGroups;
     /* 0xb6 */ u8 numTextures;
     /* 0xb7 */ u8 numJoints;
     /* 0xb8 */ u8 numDisplayLists;

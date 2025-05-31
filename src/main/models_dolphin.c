@@ -373,3 +373,9 @@ DisplayList * modelGetDisplayList(Model *model,int listNum) { //str offsets
 	return &model->displayLists[listNum];
 }
 
+PolygonGroup * modelGetPolyGroup(Model *model,int groupNum) { //str offsets
+	ASSERTLINE(1906, model);
+	ASSERTLINE(1907, groupNum>=0 && groupNum<model->numGroups);
+	return &model->polygonGroups[groupNum];
+}
+
