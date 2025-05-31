@@ -383,3 +383,11 @@ GCPolygon * modelGetGCPoly(Model *model,int polygonNum) {
 	ASSERTLINE(1927, polygonNum>=0 && polygonNum<model->numPolygons);
 	return &model->GCpolygons[polygonNum];
 }
+
+Animation * getAnimation(short id);
+Animation * modelLoadAnimation(Model *model,int index,int id,void *dest);
+
+void loadAnimation(Model *model,short id,short id2,void *dest) {
+	if(!dest) getAnimation(id);
+	else modelLoadAnimation(model, id, id2, dest);
+}
