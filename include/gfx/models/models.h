@@ -97,9 +97,9 @@ typedef struct {
     /* 0x20 */ Texture **GCtextures; //-> texture IDs that get turned into pointers
     /* 0x24 */ Vec *normals; //either 1 or 3 vecs per (presumably) face
     /* 0x28 */ S16Vec *vertexPositions;
-    /* 0x2c */ Vec *vertexNormals;
+    /* 0x2c */ S16Vec *vertexNormals;
     /* 0x30 */ u16 *vertexColours;
-    /* 0x34 */ Vec *vertexTexCoords;
+    /* 0x34 */ S16Vec *vertexTexCoords;
     /* 0x38 */ Shader *shaders;
     /* 0x3c */ Bone *joints;
     /* 0x40 */ void *sphereHits;
@@ -161,9 +161,9 @@ typedef struct {
     /* 0xa4 */ u16 unka4;
     /* 0xa6 */ u16 shaderFlags;
     /* 0xa8 */ ushort numPositions;
-    /* 0xaa */ s8 unkaa;
-    /* 0xab */ s8 unkab;
-    /* 0xac */ s8 unkac;
+    /* 0xaa */ s8 numNormals;
+    /* 0xab */ s8 numColours;
+    /* 0xac */ s8 numTexCoords;
     /* 0xad */ s8 unkad;
     /* 0xae */ s8 unkae;
     /* 0xaf */ s8 unkaf;

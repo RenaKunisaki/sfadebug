@@ -333,9 +333,27 @@ S16Vec * modelGetVtxPos(Model *model,int positionNum) { //str offsets
 	return &model->vertexPositions[positionNum];
 }
 
-//"Failed assertion normalNum>=0 && normalNum<model->numNormals";
-//"Failed assertion colourNum>=0 && colourNum<model->numColours";
-//"Failed assertion coordNum>=0 && coordNum<model->numColours";'
+S16Vec * modelGetNormal(Model *model, int normalNum) {
+	//function was optimized out, line numbers unknown
+	ASSERTLINE(0, model);
+	ASSERTLINE(0, normalNum>=0 && normalNum<model->numNormals);
+	return &model->vertexNormals[normalNum];
+}
+
+u16 * modelGetColour(Model *model, int colourNum) {
+	//function was optimized out, line numbers unknown
+	ASSERTLINE(0, model);
+	ASSERTLINE(0, colourNum>=0 && colourNum<model->numColours);
+	return &model->vertexColours[colourNum];
+}
+
+S16Vec * modelGetTexCoord(Model *model, int coordNum) {
+	//function was optimized out, line numbers unknown
+	ASSERTLINE(0, model);
+	//@bug comparing to numColours instead of numTexCoords
+	ASSERTLINE(0, coordNum>=0 && coordNum<model->numColours);
+	return &model->vertexTexCoords[coordNum];
+}
 
 Texture * modelGetGCTexture(Model *model,int textureNum) { //str offsets
 	ASSERTLINE(1768, model);
