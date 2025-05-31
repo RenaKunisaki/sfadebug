@@ -16,5 +16,7 @@ typedef struct {
 
 BOOL SparseArray_get(SparseArray *sparseArray,int id,void *element);
 void SparseArray_set(SparseArray *sparseArray,short key,void *newElement);
+BOOL SparseArray_find(SparseArray *sparseArray,void *element,int *key);
+void SparseArray_remove(SparseArray *sparseArray,int key);
 
 #endif //_SYS_SPARSEARRAY_H_

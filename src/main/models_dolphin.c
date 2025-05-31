@@ -18,6 +18,7 @@
 
 Animation * getAnimation(short id);
 Animation * modelLoadAnimation(Model *model,int index,int id,AnimCache *dest);
+void unloadAnimation(Animation *anim);
 
 void *loadModelInstanceAsset(int id,void *buf) { //80077a78 types may be wrong
 	void *result;
@@ -439,4 +440,24 @@ Animation * getAnimation(short id) {
 		ASSERTLINE(2216, anim->usage<UCHAR_MAX);
 	}
 	return anim;
+}
+
+void unloadAnimation(Animation *anim) {
+	s8 unused;
+	bool success;
+	int key;
+
+	if(!anim) {
+		//probably a printf or something here
+		anim;
+	}
+	else {
+		ASSERTLINE(2248, anim); //why?
+		if(--anim->usage > 0) return;
+
+		success = SparseArray_find(animsLoadedTable,&anim,&key);
+		ASSERTLINE(2258, success);
+		SparseArray_remove(animsLoadedTable,key);
+		mmFree(anim);
+	}
 }
