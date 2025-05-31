@@ -172,7 +172,7 @@ typedef struct {
     /* 0xb4 */ s16 numPolyGroups;
     /* 0xb6 */ u8 numTextures;
     /* 0xb7 */ u8 numJoints;
-    /* 0xb8 */ s8 unkb8;
+    /* 0xb8 */ u8 numDisplayLists;
     /* 0xb9 */ u8 nHitSpheres;
     /* 0xba */ u8 numShaders;
     /* 0xbb */ u8 bCopyVtxsToModelInst;

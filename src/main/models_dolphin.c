@@ -366,3 +366,10 @@ Bone * modelGetJoint(Model *model,int jointNum) { //str offsets
 	ASSERTLINE(1792, jointNum>=0 && jointNum<model->numJoints);
 	return &model->joints[jointNum];
 }
+
+DisplayList * modelGetDisplayList(Model *model,int listNum) { //str offsets
+	ASSERTLINE(1814, model);
+	ASSERTLINE(1815, listNum>=0 && listNum<model->numDisplayLists);
+	return &model->displayLists[listNum];
+}
+
