@@ -31,6 +31,12 @@ typedef struct {
     u8 unknown[8];
 } GCPolygon;
 
+#define ANIMMAP_SIZE 0x80
+typedef struct {
+    u8 animMap[ANIMMAP_SIZE];
+    Animation animData[];
+} AnimCache;
+
 typedef struct {
     /* 0x00 */ void *displayList; //to raw GX commands
     /* 0x04 */ u16 length;

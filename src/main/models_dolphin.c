@@ -13,7 +13,10 @@
 
 /* 80398a24 */ s16 *globalModAnimBuffer;
 /* 80398a28 */ u32 *pAmapTab;
+/* 80398a2c */ u32 *animOffsetTbl;
 
+Animation * getAnimation(short id);
+Animation * modelLoadAnimation(Model *model,int index,int id,AnimCache *dest);
 
 void *loadModelInstanceAsset(int id,void *buf) { //80077a78 types may be wrong
 	void *result;
@@ -384,10 +387,28 @@ GCPolygon * modelGetGCPoly(Model *model,int polygonNum) {
 	return &model->GCpolygons[polygonNum];
 }
 
-Animation * getAnimation(short id);
-Animation * modelLoadAnimation(Model *model,int index,int id,void *dest);
-
 void loadAnimation(Model *model,short id,short id2,void *dest) {
 	if(!dest) getAnimation(id);
 	else modelLoadAnimation(model, id, id2, dest);
+}
+
+Animation * modelLoadAnimation(Model *model,int index,int id,AnimCache *dest) { //str offsets
+	int len2;
+	int len;
+	int animSize;
+	uint offset;
+	Animation *anim;
+
+	len = animOffsetTbl[index];
+	loadAndDecompressDataFile(FILE_ANIM_BIN,NULL,len,0,&animSize,index,1);
+	ASSERTLINE(2150, animSize<model->animCacheSize-ANIMMAP_SIZE);
+
+	anim = dest->animData;
+	ASSERTLINE(2155, anim);
+
+	loadAndDecompressDataFile(FILE_ANIM_BIN,anim,len,animSize,NULL,index,0);
+	len2 = (model->numJoints - 1 & ~7) + 8;
+	offset = model->animOffset + id * len2;
+	loadDataFileWithLength(FILE_AMAP_BIN, dest, offset, len2);
+	return anim;
 }
