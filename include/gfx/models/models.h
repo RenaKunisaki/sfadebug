@@ -6,6 +6,7 @@
 #include "gfx/models/hit.h"
 #include "gfx/models/shaders.h"
 #include "gfx/models/animation.h"
+#include "sys/SparseArray.h"
 
 typedef enum {
     ModelDataFlags2_NoAnimations       =     2,

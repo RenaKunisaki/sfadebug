@@ -14,6 +14,7 @@
 /* 80398a24 */ s16 *globalModAnimBuffer;
 /* 80398a28 */ u32 *pAmapTab;
 /* 80398a2c */ u32 *animOffsetTbl;
+/* 80398a3c */ SparseArray *animsLoadedTable;
 
 Animation * getAnimation(short id);
 Animation * modelLoadAnimation(Model *model,int index,int id,AnimCache *dest);
@@ -252,7 +253,7 @@ int Model_lookupModelInd(int id) {
 #pragma peephole on
 
 void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj) {
-	register int iShader;
+	REGISTER int iShader;
 	Model *model;
 
 	model = minst->mod;
@@ -267,7 +268,7 @@ void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj) {
 }
 
 void ModelInstance_unloadShaders(ModelInstance *minst) {
-	register int ii;
+	REGISTER int ii;
 	if(minst->flags & ModelFlags18_ShadersLoaded) {
 		minst->flags = minst->flags & ~ModelFlags18_ShadersLoaded;
 		for(ii = 0; ii < minst->mod->numShaders; ii++) {
@@ -410,5 +411,28 @@ Animation * modelLoadAnimation(Model *model,int index,int id,AnimCache *dest) { 
 	len2 = (model->numJoints - 1 & ~7) + 8;
 	offset = model->animOffset + id * len2;
 	loadDataFileWithLength(FILE_AMAP_BIN, dest, offset, len2);
+	return anim;
+}
+
+Animation * getAnimation(short id) {
+	uint offset;
+	uint size;
+	Animation *anim;
+
+	if(!SparseArray_get(animsLoadedTable, id, &anim)) {
+		offset = animOffsetTbl[id];
+		loadAndDecompressDataFile(FILE_ANIM_BIN,NULL,offset,0,&size,id,1);
+		anim = (Animation *)mmAlloc(size,ALLOC_TAG_ANIMS_COL,
+			(volatile u32)"mod:anim");
+		ASSERTLINE(2203, anim);
+
+		loadAndDecompressDataFile(FILE_ANIM_BIN,&anim->usage,offset,size,NULL,(int)id,0);
+		anim->usage = 1;
+		SparseArray_set(animsLoadedTable,id,&anim);
+	}
+	else {
+		anim->usage++;
+		ASSERTLINE(2216, anim->usage<UCHAR_MAX);
+	}
 	return anim;
 }

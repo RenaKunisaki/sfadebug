@@ -28,6 +28,11 @@
 
 #define ASSERT(cond) ASSERTLINE(__LINE__, cond)
 
+//make this a macro so we can easily disable it if
+//we want to use a newer compiler which no longer
+//allows it.
+#define REGISTER register
+
 // there are multiple instances of:
 // li  r0,0x0
 // stb r0,0x0(0)
@@ -35,5 +40,8 @@
 #define CRASH() do { \
 	*(u8 *)NULL = 0; \
 } while(0)
+
+//really? this isn't defined?
+#define UCHAR_MAX 255u
 
 #endif // _H_MACROS_
