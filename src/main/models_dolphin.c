@@ -461,3 +461,14 @@ void unloadAnimation(Animation *anim) {
 		mmFree(anim);
 	}
 }
+
+void vtxAnimFn_800279cc(Model **pModel,int param_3,
+int param_4,int param_5,float param_1,s8 param_6);
+
+void fn_80080ac8(Model **pModel) {
+	if((*pModel)->vertexAnims) {
+		vtxAnimFn_800279cc(pModel, 0, -1, -1, 0.0f, 7);
+		vtxAnimFn_800279cc(pModel, 1, -1, -1, 0.0f, 7);
+		vtxAnimFn_800279cc(pModel, 2, -1, -1, 0.0f, 7);
+	}
+}
