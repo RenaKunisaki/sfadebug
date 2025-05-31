@@ -14,4 +14,7 @@ typedef struct {
     /* 0x0d */ u8 elemSize;
 } SparseArray;
 
+BOOL SparseArray_get(SparseArray *sparseArray,int id,void *element);
+void SparseArray_set(SparseArray *sparseArray,short key,void *newElement);
+
 #endif //_SYS_SPARSEARRAY_H_

@@ -14,7 +14,7 @@
 /* 80398a24 */ s16 *globalModAnimBuffer;
 /* 80398a28 */ u32 *pAmapTab;
 /* 80398a2c */ u32 *animOffsetTbl;
-/* 80398a3c */ SparseArray *animsLoadedTable;
+/* 80398a3c */ SparseArray *animsLoadedTable; // -> Animation*
 
 Animation * getAnimation(short id);
 Animation * modelLoadAnimation(Model *model,int index,int id,AnimCache *dest);
@@ -415,20 +415,24 @@ Animation * modelLoadAnimation(Model *model,int index,int id,AnimCache *dest) { 
 }
 
 Animation * getAnimation(short id) {
+	int unused1;
+	Animation *anim;
+	int unused2;
 	uint offset;
 	uint size;
-	Animation *anim;
 
 	if(!SparseArray_get(animsLoadedTable, id, &anim)) {
 		offset = animOffsetTbl[id];
-		loadAndDecompressDataFile(FILE_ANIM_BIN,NULL,offset,0,&size,id,1);
-		anim = (Animation *)mmAlloc(size,ALLOC_TAG_ANIMS_COL,
+		loadAndDecompressDataFile(FILE_ANIM_BIN,
+			NULL, offset, 0, &size, id, 1); //get size
+		anim = (Animation *)mmAlloc(size, ALLOC_TAG_ANIMS_COL,
 			(volatile u32)"mod:anim");
 		ASSERTLINE(2203, anim);
 
-		loadAndDecompressDataFile(FILE_ANIM_BIN,&anim->usage,offset,size,NULL,(int)id,0);
+		loadAndDecompressDataFile(FILE_ANIM_BIN,
+			anim, offset, size, NULL, id, 0);
 		anim->usage = 1;
-		SparseArray_set(animsLoadedTable,id,&anim);
+		SparseArray_set(animsLoadedTable, id, &anim);
 	}
 	else {
 		anim->usage++;
