@@ -197,7 +197,7 @@ typedef struct {
 } ModelInstanceField20; //size: 0x10
 
 typedef struct {
-    Mtx44 *jMtxs[2];
+    Mtx *jMtxs[2];
     S16Vec unk;
 } ModelInstanceField54;
 
@@ -208,7 +208,7 @@ typedef struct {
     /* 0x09 */ s8 unk09;
     /* 0x0a */ s8 unk0a;
     /* 0x0b */ s8 unk0b;
-    /* 0x0c */ Mtx44 *jMtxs[2]; //maybe jMtxs (joint matrices)
+    /* 0x0c */ Mtx *jMtxs[2]; //joint matrices
     /* 0x14 */ float **unk14;
     /* 0x18 */ u16 flags; //ModelFlags18 40:shaders loaded
     /* 0x1a */ s8 unk1a;
@@ -224,7 +224,7 @@ typedef struct {
     /* 0x40 */ u32 unk40;
     /* 0x44 */ uint unk44;
     /* 0x48 */ void *unk48;
-    /* 0x4c */ Mtx44 *unk4c;
+    /* 0x4c */ Mtx *jMtxs4C;
     /* 0x50 */ s8 unk50;
     /* 0x51 */ s8 unk51;
     /* 0x52 */ s8 unk52;

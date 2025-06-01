@@ -72,7 +72,7 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	minst->jMtxs[0] = field54->jMtxs[0];
 	minst->jMtxs[1] = field54->jMtxs[1];
 	psVar7 = &field54->unk;
-	minst->unk4c = minst->jMtxs[0];
+	minst->jMtxs4C = minst->jMtxs[0];
 	if((model->bCopyVtxsToModelInst == 0) && (model->skin2Matrices == NULL)) {
 		pvVar9 = (S16Vec *)((int)psVar7 + 0x1fU & 0xffffffe0);
 		minst->vertexPositions = pvVar9;
@@ -282,7 +282,7 @@ int Model_getShaderTexture(ModelInstance *modelInstance, int shaderNum) {
 	return (int)(&modelInstance->shaderDefs->texture + shaderNum * 2);
 }
 
-Mtx44 *modelInstGetjMtx(ModelInstance *modelInstance, int iMtx) {
+Mtx *modelInstGetjMtx(ModelInstance *modelInstance, int iMtx) {
 	int nMtxs;
 
 	ASSERTLINE(1169, modelInstance);
@@ -292,7 +292,7 @@ Mtx44 *modelInstGetjMtx(ModelInstance *modelInstance, int iMtx) {
 		nMtxs = 1;
 	if(iMtx >= nMtxs) iMtx = 0;
 
-	return (Mtx44 *)(&modelInstance->jMtxs[modelInstance->flags & 1][iMtx]);
+	return (Mtx *)(&modelInstance->jMtxs[modelInstance->flags & 1][iMtx]);
 }
 
 void modelInstSwapJmtxs(ModelInstance *modelInstance) {
@@ -504,6 +504,32 @@ void modelFn_80080c28(float param1, ModelInstance *modelInstance) {
 					field20->flags = field20->flags & ~4;
 				}
 			}
+		}
+	}
+}
+
+void fn_80081084(ModelInstance *modelInstance,Mtx *mtx,undefined *param_3) {
+	Mtx *m1;
+	Mtx m2;
+	Model *model;
+	uint iMtx;
+
+	model = modelInstance->mod;
+	if (model->numJoints == 0) {
+		m1 = modelInstGetjMtx(modelInstance,0);
+		MTXConcat(*mtx, *m1, *m1);
+	}
+	else {
+		for (iMtx = 0; iMtx < model->numJoints; iMtx++) {
+			m1 = modelInstGetjMtx(modelInstance,iMtx);
+			MTXTrans(m2,
+				-model->joints[iMtx].bindTranslation.x,
+				-model->joints[iMtx].bindTranslation.y,
+				-model->joints[iMtx].bindTranslation.z);
+			MTXConcat(*m1, m2, m2);
+			//XXX figure out type
+			mtxTranspose43(m2, (Mtx *)(param_3 + (iMtx*4) * 12));
+			MTXConcat(*mtx, *m1, *m1);
 		}
 	}
 }
