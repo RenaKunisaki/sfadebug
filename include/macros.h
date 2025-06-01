@@ -54,5 +54,6 @@ and have just arbitrarily chosen x to be the statement.
 
 //really? this isn't defined?
 #define UCHAR_MAX 255u
+#define SHRT_MAX 32767
 
 #endif // _H_MACROS_

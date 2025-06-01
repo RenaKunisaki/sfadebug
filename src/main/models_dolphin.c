@@ -11,14 +11,17 @@
 #include "obj/ObjInstance.h"
 #include "sys/files.h"
 
+/* 80398a20 */ int maxModelNum;
 /* 80398a24 */ s16 *globalModAnimBuffer;
 /* 80398a28 */ u32 *pAmapTab;
 /* 80398a2c */ u32 *animOffsetTbl;
+/* 80398a34 */ BOOL bHaveAnimTab;
 /* 80398a3c */ SparseArray *animsLoadedTable; // -> Animation*
 
 Animation *getAnimation(short id);
 Animation *modelLoadAnimation(Model *model, int index, int id, AnimCache *dest);
 void unloadAnimation(Animation *anim);
+void * getTable(DataFileId32 file);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 80077a78 types may be wrong
 	void *result;
@@ -532,4 +535,21 @@ void fn_80081084(ModelInstance *modelInstance,Mtx *mtx,undefined *param_3) {
 			MTXConcat(*mtx, *m1, *m1);
 		}
 	}
+}
+
+BOOL countModels(void) {
+	int *modelsTab;
+
+	modelsTab = getTable(FILE_MODELS_tab);
+	if(!modelsTab) return FALSE;
+
+	maxModelNum = 0;
+	while(modelsTab[maxModelNum] != -1) maxModelNum++;
+	maxModelNum--;
+	ASSERTLINE(3301, maxModelNum<=SHRT_MAX);
+	animOffsetTbl = getTable(FILE_ANIM_TAB);
+	if(!animOffsetTbl) return FALSE;
+
+	bHaveAnimTab = FALSE;
+	return TRUE;
 }
