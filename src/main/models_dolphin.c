@@ -447,9 +447,7 @@ void unloadAnimation(Animation *anim) {
 	bool success;
 	int key;
 
-	if(!anim) {
-		STUBBED_OP(anim);
-	}
+	if(!anim) STUBBED_OP(anim);
 	else {
 		ASSERTLINE(2248, anim); //why?
 		if(--anim->usage > 0) return;
@@ -476,9 +474,7 @@ void fn_80080c00(float param_1,ModelInstance *modelInstance,int idx) {
 	ModelInstanceField20 *field20;
 
 	if(idx <= 2) {
-		if(!modelInstance->mod->vertexAnims) {
-			STUBBED_OP(modelInstance);
-		}
+		if(!modelInstance->mod->vertexAnims) STUBBED_OP(modelInstance);
 		else {
 			field20 = &modelInstance->unk20[idx];
 			field20->vec.x = param_1;
