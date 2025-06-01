@@ -205,13 +205,11 @@ int modelGetAmapSize(uint id,BOOL noAmap,int nAnimations) { //8007cbd0 regswap
 
 int fn_8007D174(short param_1,short param_2,
 uint param_3,Model *model) {
-  int result;
-
-  result = 0;
-  loadAsset_Animation(&result,param_1,param_2,param_3,model);
-  return result;
+	int result;
+	result = 0;
+	loadAsset_Animation(&result,param_1,param_2,param_3,model);
+	return result;
 }
-
 
 int Model_checksumHeader(Model *model) {
 	u8 *data;
@@ -450,8 +448,7 @@ void unloadAnimation(Animation *anim) {
 	int key;
 
 	if(!anim) {
-		//probably a printf or something here
-		anim;
+		STUBBED_OP(anim);
 	}
 	else {
 		ASSERTLINE(2248, anim); //why?
