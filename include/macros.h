@@ -41,6 +41,17 @@
 	*(u8 *)NULL = 0; \
 } while(0)
 
+/* sometimes there are instances of:
+if(foo) {
+    ???
+}
+where the block has to be non-empty, but any statement
+placed in it matches, making the actual contents unknowable.
+use this macro to indicate that we don't know what goes here
+and have just arbitrarily chosen x to be the statement.
+*/
+#define STUBBED_OP(x) x
+
 //really? this isn't defined?
 #define UCHAR_MAX 255u
 

@@ -2,7 +2,8 @@
 #define _GFX_TEXTURES_H_
 
 typedef struct Texture {
-    /* 0x00 */ struct Texture *next;
+    // /* 0x00 */ struct Texture *next;
+    /* 0x00 */ float unk00;
     /* 0x04 */ s8 unk04;
     /* 0x05 */ s8 unk05;
     /* 0x06 */ s8 unk06;
@@ -11,7 +12,8 @@ typedef struct Texture {
     /* 0x09 */ s8 unk09;
     /* 0x0a */ ushort width;
     /* 0x0c */ ushort height;
-    /* 0x0e */ short usage; //ref count
+    /* 0x0e */ u8 flags;
+    /* 0x0f */ u8 unk0F;
     /* 0x10 */ short unk10;
     /* 0x12 */ s8 unk12;
     /* 0x13 */ s8 unk13;

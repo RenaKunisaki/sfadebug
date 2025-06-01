@@ -190,6 +190,13 @@ typedef struct {
 } Model;
 
 typedef struct {
+    /* 0x00 */ Vec vec;
+    /* 0x0c */ u8 unk0c;
+    /* 0x0d */ u8 unk0d;
+    /* 0x0e */ u8 flags;
+} ModelInstanceField20;
+
+typedef struct {
     Mtx44 *jMtxs[2];
     S16Vec unk;
 } ModelInstanceField54;
@@ -206,7 +213,8 @@ typedef struct {
     /* 0x18 */ u16 flags; //ModelFlags18 40:shaders loaded
     /* 0x1a */ s8 unk1a;
     /* 0x1b */ s8 unk1b;
-    /* 0x1c */ S16Vec *vertexPositions[2];
+    /* 0x1c */ S16Vec *vertexPositions;
+    /* 0x20 */ ModelInstanceField20 *unk20;
     /* 0x24 */ AnimInstance *animInstances[2];
     /* 0x2c */ ShaderDef *shaderDefs;
     /* 0x30 */ UNKTYPE *texFuncPtr;

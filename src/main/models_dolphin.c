@@ -51,6 +51,7 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	S16Vec *psVar7;
 	void *pvVar8;
 	S16Vec *pvVar9;
+	ModelInstanceField20 *pField20;
 	AnimInstance *anim2;
 	Texture **param1;
 	int local_40;
@@ -74,16 +75,16 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	minst->unk4c = minst->jMtxs[0];
 	if((model->bCopyVtxsToModelInst == 0) && (model->skin2Matrices == NULL)) {
 		pvVar9 = (S16Vec *)((int)psVar7 + 0x1fU & 0xffffffe0);
-		minst->vertexPositions[0] = pvVar9;
+		minst->vertexPositions = pvVar9;
 		psVar7 = &pvVar9[model->numPositions * 3];
 		minst->vertexPositions2 = psVar7;
 		psVar7 = &psVar7[model->numPositions * 3];
-		memcpy(minst->vertexPositions[0],
+		memcpy(minst->vertexPositions,
 		    model->vertexPositions,
 		    (uint)model->numPositions * 6);
-		DCFlushRange(minst->vertexPositions[0], (uint)model->numPositions * 6);
+		DCFlushRange(minst->vertexPositions, (uint)model->numPositions * 6);
 	} else {
-		minst->vertexPositions[0] = model->vertexPositions;
+		minst->vertexPositions = model->vertexPositions;
 		minst->vertexPositions2 = model->vertexPositions;
 	}
 	anim = (AnimInstance *)alignTo4((uint)psVar7);
@@ -116,16 +117,17 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 		}
 	}
 	if(model->bCopyVtxsToModelInst != 0) {
-		pvVar9 = (S16Vec *)alignTo4((uint)pvVar9);
-		minst->vertexPositions[1] = pvVar9;
+		pvVar9 = (void*)alignTo4((uint)pvVar9);
+		minst->unk20 = (ModelInstanceField20*)pvVar9;
 		pvVar9 = pvVar9 + 8;
 		for(iVar5 = 0; iVar5 < 3; iVar5 = iVar5 + 1) {
-			psVar7 = &minst->vertexPositions[1][iVar5 * 8];
-			*(undefined *)(psVar7 + 6) = 0xff;
-			*(undefined *)((int)psVar7 + 0xd) = 0xff;
-			*(float *)psVar7 = 0.0;
-			*(float *)(psVar7 + 2) = 0.0;
-			*(float *)(psVar7 + 4) = 0.0;
+			pField20 = &minst->unk20[iVar5 * 8];
+
+			pField20->unk0c = 0xff;
+			pField20->unk0d = 0xff;
+			pField20->vec.x = 0.0;
+			pField20->vec.y = 0.0;
+			pField20->vec.z = 0.0;
 		}
 	}
 	if(0 < local_40) {
@@ -470,5 +472,20 @@ void fn_80080ac8(Model **pModel) {
 		vtxAnimFn_800279cc(pModel, 0, -1, -1, 0.0f, 7);
 		vtxAnimFn_800279cc(pModel, 1, -1, -1, 0.0f, 7);
 		vtxAnimFn_800279cc(pModel, 2, -1, -1, 0.0f, 7);
+	}
+}
+
+void fn_80080c00(float param_1,ModelInstance *modelInstance,int idx) {
+	ModelInstanceField20 *field20;
+
+	if(idx <= 2) {
+		if(!modelInstance->mod->vertexAnims) {
+			STUBBED_OP(modelInstance);
+		}
+		else {
+			field20 = &modelInstance->unk20[idx];
+			field20->vec.x = param_1;
+			field20->flags |= 4;
+		}
 	}
 }
