@@ -191,10 +191,10 @@ typedef struct {
 
 typedef struct {
     /* 0x00 */ Vec vec;
-    /* 0x0c */ u8 unk0c;
-    /* 0x0d */ u8 unk0d;
+    /* 0x0c */ s8 unk0c;
+    /* 0x0d */ s8 unk0d;
     /* 0x0e */ u8 flags;
-} ModelInstanceField20;
+} ModelInstanceField20; //size: 0x10
 
 typedef struct {
     Mtx44 *jMtxs[2];
