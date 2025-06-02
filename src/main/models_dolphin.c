@@ -257,6 +257,8 @@ void ModelInstance_loadShaders(ModelInstance *minst, ObjInstance *obj) {
 	REGISTER int iShader;
 	Model *model;
 
+	//alternate match: remove REGISTER and add here: !iShader;
+
 	model = minst->mod;
 	if(!(minst->flags & ModelFlags18_ShadersLoaded)) {
 		minst->flags = minst->flags | ModelFlags18_ShadersLoaded;
@@ -552,4 +554,15 @@ BOOL countModels(void) {
 
 	bHaveAnimTab = FALSE;
 	return TRUE;
+}
+
+void modelGetVtxPosFloat(Model *model, int positionNum, Vec *posVec) {
+	S16Vec *vp;
+
+	ASSERTLINE(3642, posVec);
+	ASSERTLINE(3643, positionNum>=0 && positionNum<model->numPositions);
+	vp = modelGetVtxPos(model, positionNum);
+	posVec->x = vp->x * 1.0f / 256.0f;
+	posVec->y = vp->y * 1.0f / 256.0f;
+	posVec->z = vp->z * 1.0f / 256.0f;
 }
