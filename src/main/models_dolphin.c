@@ -21,7 +21,7 @@
 Animation *getAnimation(short id);
 Animation *modelLoadAnimation(Model *model, int index, int id, AnimCache *dest);
 void unloadAnimation(Animation *anim);
-void * getTable(DataFileId32 file);
+void *getTable(DataFileId32 file);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 80077a78 types may be wrong
 	void *result;
@@ -30,7 +30,7 @@ void *loadModelInstanceAsset(int id, void *buf) { // 80077a78 types may be wrong
 }
 
 int Model_setupAnimInstance(
-    Model *model, uint flags, AnimInstance *anim, int param4);
+    Model *model, int flags, AnimInstance *anim, int param4);
 
 void *loadModelInstance(int id, uint flags) { // 8007C57C
 	void *result;
@@ -76,7 +76,8 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	minst->jMtxs[1] = field54->jMtxs[1];
 	psVar7 = &field54->unk;
 	minst->jMtxs4C = minst->jMtxs[0];
-	if((model->bCopyVtxsToModelInst == 0) && (model->skin2Matrices == NULL)) {
+	if((model->bCopyVtxsToModelInst == 0)
+	    && (model->posFineSkinningConfig == NULL)) {
 		pvVar9 = (S16Vec *)((int)psVar7 + 0x1fU & 0xffffffe0);
 		minst->vertexPositions = pvVar9;
 		psVar7 = &pvVar9[model->numPositions * 3];
@@ -100,22 +101,22 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	if((model->flags & ModelDataFlags2_UseLocalModAnimTab) != 0) {
 		buf3 = (float *)alignTo64((uint)pvVar9);
 		buf4 = minst->animInstances[0];
-		buf4->unk1c = (void *)buf3;
-		buf4->unk20 = (void *)(buf3 + local_30);
+		buf4->anims[0] = (void *)buf3;
+		buf4->anims[1] = (void *)(buf3 + local_30);
 		pvVar8 = (void *)((int)(void *)(buf3 + local_30) + local_30);
-		buf4->unk24 = pvVar8;
+		buf4->anims[2] = pvVar8;
 		pvVar8 = (void *)((int)pvVar8 + local_30);
-		buf4->unk28 = pvVar8;
+		buf4->anims[3] = pvVar8;
 		pvVar9 = (S16Vec *)((int)pvVar8 + local_30);
 		if(minst->animInstances[1] != (AnimInstance *)0x0) {
 			pAVar6 = minst->animInstances[1];
-			pAVar6->unk1c = (float *)pvVar9;
+			pAVar6->anims[0] = (float *)pvVar9;
 			pvVar8 = (void *)((int)&pvVar9->x + local_30);
-			pAVar6->unk20 = pvVar8;
+			pAVar6->anims[1] = pvVar8;
 			pvVar8 = (void *)((int)pvVar8 + local_30);
-			pAVar6->unk24 = pvVar8;
+			pAVar6->anims[2] = pvVar8;
 			pvVar8 = (void *)((int)pvVar8 + local_30);
-			pAVar6->unk28 = pvVar8;
+			pAVar6->anims[3] = pvVar8;
 			pvVar9 = (S16Vec *)((int)pvVar8 + local_30);
 		}
 	}
@@ -136,9 +137,9 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	if(0 < local_40) {
 		uVar2 = alignTo4((uint)pvVar9);
 		minst->unk38 = uVar2;
-		iVar5 = uVar2 + (uint)model->nHitSpheres * 0x10;
+		iVar5 = uVar2 + (uint)model->numHitSpheres * 0x10;
 		minst->unk3c = iVar5;
-		pvVar9 = (S16Vec *)(iVar5 + (uint)model->nHitSpheres * 0x10);
+		pvVar9 = (S16Vec *)(iVar5 + (uint)model->numHitSpheres * 0x10);
 		minst->unk40 = minst->unk38;
 	}
 	if((((model->joints == (Bone *)0x0) || (model->numJoints == 0))
@@ -162,10 +163,10 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 		minst->unk14[6] = (float *)(pfVar3 + bVar1);
 		pvVar9 = (S16Vec *)((int)(pfVar3 + bVar1) + (uint)model->numJoints);
 	}
-	if(model->skin2Matrices != NULL) {
+	if(model->posFineSkinningConfig != NULL) {
 		uVar2 = alignTo4((uint)pvVar9);
 		minst->unk34 = uVar2;
-		pvVar9 = (S16Vec *)(uVar2 + (uint)model->unk72 * 4);
+		pvVar9 = (S16Vec *)(uVar2 + (uint)model->numSkinMtxs * 4);
 	}
 	pSVar4 = (ShaderDef *)alignTo4((uint)pvVar9);
 	minst->shaderDefs = pSVar4;
@@ -186,8 +187,63 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	return minst;
 }
 
-int modelGetAmapSize(uint id, BOOL noAmap, int nAnimations) { // 8007cbd0
-	                                                          // regswap
+
+int Model_setupAnimInstance(Model *model, int flags,
+AnimInstance *anim, int param4) {
+	int iVar1;
+	s8 *result;
+
+	if(model->numAnims) {
+		//final: mtxSize = (model->nBones + model->nVtxGroups) * 0x80
+		anim->mtxSize = (model->numJoints * 64) * 2;
+	}
+	else anim->mtxSize = 0x80;
+
+	if((model->bCopyVtxsToModelInst
+	 || model->posFineSkinningConfig)) {
+		//final: +0x20 => +0x60
+		anim->model = (Model*)(((model->numPositions * 2) * 6) + 0x20);
+	} else {
+		anim->model = NULL;
+	}
+	anim->hitSphereDataSize = (model->numHitSpheres * 16) * 2;
+	anim->nAnims = 0;
+	if((model->flags & ModelDataFlags2_UseLocalModAnimTab) != 0) {
+		anim->animCacheSize = (int)model->animCacheSize;
+		while((int)anim->animCacheSize & 7) anim->animCacheSize++;
+		anim->nAnims = anim->animCacheSize << 2;
+	}
+	anim->unk10 = 0x68;
+	if(flags & 0x80) {
+		anim->unk10 *= 2;
+		anim->nAnims *= 2;
+	}
+	if((((flags & 1) == 0) && (model->bCopyVtxsToModelInst == 0))) {
+		if(param4) {
+			anim->unk10 += 0x30;
+		}
+		iVar1 = anim->mtxSize + anim->hitSphereDataSize + anim->nAnims
+		    + anim->unk10 + 0x5c;
+	} else {
+		iVar1 = anim->nAnims + anim->mtxSize + anim->hitSphereDataSize
+		    + anim->unk10 + 0x5c;
+	}
+	result = &anim->model->usage + iVar1;
+	if(((model->joints != NULL) && (model->numJoints != 0))
+	    && (model->radi != NULL)) {
+		result = result + (uint)model->numJoints * 2
+		    + (uint)model->numJoints * 0x1c + 0x1c;
+	}
+	if(model->posFineSkinningConfig != NULL) {
+		result = result + (model->numSkinMtxs + 1) * 4;
+	}
+	result = result + (uint)model->numShaders * 8;
+	if((flags & 0x8000) != 0) { result = result + 0x1a; }
+	return ((uint)(result + 0x2f) & 0xfffffff0) + 0x10;
+}
+
+
+int modelGetAmapSize(uint id, BOOL noAmap, int nAnimations) { // 8007cbd0 regswap
 	int count;
 	int result;
 
@@ -236,7 +292,7 @@ void Model_freeAnimations(Model *model) {
 	int ii;
 	if(model->anims && model->numAnims) {
 		for(ii = 0; ii < model->numAnims; ii++) {
-			unloadAnimation(model->anims[ii]);
+			unloadAnimation((Animation*)model->anims[ii]);
 		}
 	}
 }
@@ -257,7 +313,7 @@ void ModelInstance_loadShaders(ModelInstance *minst, ObjInstance *obj) {
 	REGISTER int iShader;
 	Model *model;
 
-	//alternate match: remove REGISTER and add here: !iShader;
+	// alternate match: remove REGISTER and add here: !iShader;
 
 	model = minst->mod;
 	if(!(minst->flags & ModelFlags18_ShadersLoaded)) {
@@ -502,8 +558,7 @@ void modelFn_80080c28(float param1, ModelInstance *modelInstance) {
 					field20->vec.x = 0.002f;
 					field20->vec.z = 0.001f;
 					field20->flags = field20->flags & ~4;
-				}
-				else if(field20->vec.x < 0.0f) {
+				} else if(field20->vec.x < 0.0f) {
 					field20->vec.x = 0.99f;
 					field20->vec.z = 0.001f;
 					field20->flags = field20->flags & ~4;
@@ -513,27 +568,26 @@ void modelFn_80080c28(float param1, ModelInstance *modelInstance) {
 	}
 }
 
-void fn_80081084(ModelInstance *modelInstance,Mtx *mtx,undefined *param_3) {
+void fn_80081084(ModelInstance *modelInstance, Mtx *mtx, undefined *param_3) {
 	Mtx *m1;
 	Mtx m2;
 	Model *model;
 	uint iMtx;
 
 	model = modelInstance->mod;
-	if (model->numJoints == 0) {
-		m1 = modelInstGetjMtx(modelInstance,0);
+	if(model->numJoints == 0) {
+		m1 = modelInstGetjMtx(modelInstance, 0);
 		MTXConcat(*mtx, *m1, *m1);
-	}
-	else {
-		for (iMtx = 0; iMtx < model->numJoints; iMtx++) {
-			m1 = modelInstGetjMtx(modelInstance,iMtx);
+	} else {
+		for(iMtx = 0; iMtx < model->numJoints; iMtx++) {
+			m1 = modelInstGetjMtx(modelInstance, iMtx);
 			MTXTrans(m2,
-				-model->joints[iMtx].bindTranslation.x,
-				-model->joints[iMtx].bindTranslation.y,
-				-model->joints[iMtx].bindTranslation.z);
+			    -model->joints[iMtx].bindTranslation.x,
+			    -model->joints[iMtx].bindTranslation.y,
+			    -model->joints[iMtx].bindTranslation.z);
 			MTXConcat(*m1, m2, m2);
-			//XXX figure out type
-			mtxTranspose43(m2, (Mtx *)(param_3 + (iMtx*4) * 12));
+			// XXX figure out type
+			mtxTranspose43(m2, (Mtx *)(param_3 + (iMtx * 4) * 12));
 			MTXConcat(*mtx, *m1, *m1);
 		}
 	}
@@ -548,7 +602,7 @@ BOOL countModels(void) {
 	maxModelNum = 0;
 	while(modelsTab[maxModelNum] != -1) maxModelNum++;
 	maxModelNum--;
-	ASSERTLINE(3301, maxModelNum<=SHRT_MAX);
+	ASSERTLINE(3301, maxModelNum <= SHRT_MAX);
 	animOffsetTbl = getTable(FILE_ANIM_TAB);
 	if(!animOffsetTbl) return FALSE;
 
@@ -559,8 +613,9 @@ BOOL countModels(void) {
 void modelGetVtxPosFloat(Model *model, int positionNum, Vec *posVec) {
 	S16Vec *vp;
 
+	// something bizarre goes on here involving comparing 0 to 0
 	ASSERTLINE(3642, posVec);
-	ASSERTLINE(3643, positionNum>=0 && positionNum<model->numPositions);
+	ASSERTLINE(3643, positionNum >= 0 && positionNum < model->numPositions);
 	vp = modelGetVtxPos(model, positionNum);
 	posVec->x = vp->x * 1.0f / 256.0f;
 	posVec->y = vp->y * 1.0f / 256.0f;
