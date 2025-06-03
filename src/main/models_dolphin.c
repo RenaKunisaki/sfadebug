@@ -190,8 +190,7 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 
 int Model_setupAnimInstance(Model *model, int flags,
 AnimInstance *anim, int param4) {
-	int iVar1;
-	s8 *result;
+	int result;
 
 	if(model->numAnims) {
 		//final: mtxSize = (model->nBones + model->nVtxGroups) * 0x80
@@ -199,49 +198,46 @@ AnimInstance *anim, int param4) {
 	}
 	else anim->mtxSize = 0x80;
 
-	if((model->bCopyVtxsToModelInst
-	 || model->posFineSkinningConfig)) {
+	if((model->bCopyVtxsToModelInst || model->posFineSkinningConfig)) {
 		//final: +0x20 => +0x60
 		anim->model = (Model*)(((model->numPositions * 2) * 6) + 0x20);
-	} else {
-		anim->model = NULL;
-	}
+	} else anim->model = NULL;
+
 	anim->hitSphereDataSize = (model->numHitSpheres * 16) * 2;
 	anim->nAnims = 0;
-	if((model->flags & ModelDataFlags2_UseLocalModAnimTab) != 0) {
+	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		anim->animCacheSize = (int)model->animCacheSize;
 		while((int)anim->animCacheSize & 7) anim->animCacheSize++;
-		anim->nAnims = anim->animCacheSize << 2;
+		anim->nAnims = anim->animCacheSize * 4;
 	}
 	anim->unk10 = 0x68;
 	if(flags & 0x80) {
 		anim->unk10 *= 2;
 		anim->nAnims *= 2;
 	}
-	if((((flags & 1) == 0) && (model->bCopyVtxsToModelInst == 0))) {
-		if(param4) {
-			anim->unk10 += 0x30;
-		}
-		iVar1 = anim->mtxSize + anim->hitSphereDataSize + anim->nAnims
-		    + anim->unk10 + 0x5c;
+	if(flags & 1 || model->bCopyVtxsToModelInst || param4) {
+		anim->unk10 += 0x30;
+		result = 0x54;
+		result += anim->nAnims + anim->unk10;
+		result += anim->mtxSize + anim->hitSphereDataSize + 8;
 	} else {
-		iVar1 = anim->nAnims + anim->mtxSize + anim->hitSphereDataSize
-		    + anim->unk10 + 0x5c;
+		result = 0x54;
+		result += anim->unk10;
+		result += anim->nAnims + anim->mtxSize + anim->hitSphereDataSize + 8;
 	}
-	result = &anim->model->usage + iVar1;
-	if(((model->joints != NULL) && (model->numJoints != 0))
-	    && (model->radi != NULL)) {
-		result = result + (uint)model->numJoints * 2
-		    + (uint)model->numJoints * 0x1c + 0x1c;
+	result += (uint)anim->model;
+	if(model->joints && model->numJoints && model->radi) {
+		result += (uint)model->numJoints * 2
+		    + model->numJoints * 7 * 4 + 0x1c;
 	}
-	if(model->posFineSkinningConfig != NULL) {
-		result = result + (model->numSkinMtxs + 1) * 4;
+	if(model->posFineSkinningConfig) {
+		result += model->numSkinMtxs * 4 + 4;
 	}
-	result = result + (uint)model->numShaders * 8;
-	if((flags & 0x8000) != 0) { result = result + 0x1a; }
-	return ((uint)(result + 0x2f) & 0xfffffff0) + 0x10;
+	result += model->numShaders * 8;
+	if(flags & 0x8000) result += 0x1a;
+	result = ((result + 0x2f) & ~0xf) + 0x10;
+	return result;
 }
-
 
 int modelGetAmapSize(uint id, BOOL noAmap, int nAnimations) { // 8007cbd0 regswap
 	int count;
