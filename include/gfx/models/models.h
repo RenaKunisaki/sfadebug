@@ -224,19 +224,7 @@ typedef struct {
     /* 0x4c */ struct Animation **anims;
     /* 0x50 */ HitSpherePos *curHitSpherePos; //=hitSpherePositions[n] for current frame
     /* 0x54 */ s16 *animIds;
-    /* 0x58 */ UNKTYPE *unk58;
-    /* 0x5c */ u8 unk5c;
-    /* 0x5d */ u8 unk5d;
-    /* 0x5e */ u8 unk5e;
-    /* 0x5f */ u8 unk5f;
-    /* 0x60 */ u8 unk60;
-    /* 0x61 */ u8 unk61;
-    /* 0x62 */ u8 unk62;
-    /* 0x63 */ u8 unk63;
-    /* 0x64 */ u8 unk64;
-    /* 0x65 */ u8 unk65;
-    /* 0x66 */ u8 unk66;
-    /* 0x67 */ u8 unk67;
+    /* 0x58 */ s16 animBank[8];
     /* 0x68 */ u32 animOffset;
     /* 0x6c */ s16 animCacheSize;
     /* 0x6e */ u8 unk6e;
