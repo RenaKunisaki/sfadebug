@@ -22,7 +22,7 @@ Animation *getAnimation(short id);
 Animation *modelLoadAnimation(Model *model, int index, int id, AnimCache *dest);
 void unloadAnimation(Animation *anim);
 void *getTable(DataFileId32 file);
-void loadAnimation(Model *model, short id, short id2, void *dest);
+Animation *loadAnimation(Model *model, short id, short id2, void *dest);
 void debugPrint(const char *fmt, ...);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 80077a78 types may be wrong
@@ -260,18 +260,18 @@ int modelGetAmapSize(
 }
 
 int makeModelAnimation(Model *model, uint animId, HitSpherePos *hits) {
-	uint uVar1;
+	//regswap + string offsets
+	int r29; //r29
 	int iVar2; //r23
-	int iVar4; //r19
-	uint offset; //r20
-	int animBank;
-	int iVar6;
-	int size; //r17
-	int uVar7;
-	HitSpherePos *pHVar8;
 	s16 *amap; //r22
-	s16 someShort; //r24
-	//hits = r27
+	int animBank; //r24
+	int r25; //r25
+	int uVar1; //r28
+	uint offset; //r20
+	int iVar4; //r19
+	int size; //r17
+	int iVar6; //r4
+	int uVar7; //r26
 
 	uVar7 = 0;
 	amap = (s16*)pAmapTab;
@@ -279,17 +279,17 @@ int makeModelAnimation(Model *model, uint animId, HitSpherePos *hits) {
 	offset = amap[0];
 	size   = amap[1];
 	iVar4  = offset;
-	size = (int)(size - offset) >> 1;
-	if(size != model->numAnims) {
+	iVar6  = (int)(size - offset) >> 1;
+	if(iVar6 != model->numAnims) {
 		printf("makeModelAnimation() size mismatch!! (%d,%d)\n",
-		    model->numAnims, size);
-		model->numAnims = (u16)size;
+		    model->numAnims, iVar6);
+		model->numAnims = (u16)iVar6;
 	}
 	if(!model->numAnims) return 0;
 
-	size = model->numAnims * 2 + 8;
-	if(0x800 < size) debugPrint(
-		"Warning: Model animation buffer overflow!! size=%d\n", size);
+	iVar6 = model->numAnims * 2 + 8;
+	if(0x800 < iVar6) debugPrint(
+		"Warning: Model animation buffer overflow!! size=%d\n", iVar6);
 	loadDataFileWithLength(
 		FILE_AMAP_TAB, pAmapTab, (animId & ~3) * 4, 0x20);
 
@@ -298,56 +298,50 @@ int makeModelAnimation(Model *model, uint animId, HitSpherePos *hits) {
 	iVar2 = pAmapTab[uVar1+1] - pAmapTab[uVar1];
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		model->animIds = (s16 *)hits;
-		while(size & 7) size++;
-		amap = (s16*)((s8*)amap + offset);
-		hits = (HitSpherePos*)((u8*)hits + offset);
-		loadDataFileWithLength(FILE_MODANIM_BIN, model->animIds, iVar4, size);
+		while(iVar6 & 7) iVar6++;
+		uVar7 += iVar6;
+		hits = (HitSpherePos*)((u8*)hits + iVar6);
+		loadDataFileWithLength(FILE_MODANIM_BIN, model->animIds, iVar4, iVar6);
 	} else {
 		loadDataFileWithLength(
-			FILE_MODANIM_BIN, globalModAnimBuffer, offset, size);
+			FILE_MODANIM_BIN, globalModAnimBuffer, iVar4, iVar6);
 		model->animIds = globalModAnimBuffer;
 	}
-	someShort = 0;
-	iVar6 = 0;
-	animBank = iVar6;
-	animBank++;
-	model->animBank[animBank] = someShort;
-	for(iVar6=0; iVar6 < model->numAnims; iVar6++) {
-		if(model->animIds[iVar6] == -1) {
-			model->animBank[animBank++] = iVar6 + 1;
+	animBank = 0;
+	model->animBank[animBank++] = 0;
+	for(r25=0; r25 < model->numAnims; r25++) {
+		if(model->animIds[r25] == -1) {
+			model->animBank[animBank++] = r25 + 1;
 		}
 	}
 	if(animBank > 8) printf("ANIMBANK overflow\n");
 	if((model->flags & ModelDataFlags2_UseLocalModAnimTab) == 0) {
 		model->animIds = NULL;
 		model->anims = (struct Animation **)hits;
-		pHVar8 = (HitSpherePos *)(&hits->radius + model->numAnims);
+		hits = (HitSpherePos *)(&hits->radius + model->numAnims);
 		for(uVar7 += model->numAnims * 4; uVar7 & 7; uVar7++) {
-			pHVar8 = (HitSpherePos *)((int)&pHVar8->radius + 1);
+			hits = (HitSpherePos *)((int)&hits->radius + 1);
 		}
-		model->curHitSpherePos = pHVar8;
+		model->curHitSpherePos = hits;
+		hits = (HitSpherePos*)((uint)hits + iVar2);
+		uVar7 += iVar2; //why? it's never used again
 		loadDataFileWithLength(FILE_AMAP_BIN, model->curHitSpherePos,
 			model->animOffset, iVar2);
-		iVar2 = 0;
+		r29 = 0;
 		do {
-			if(globalModAnimBuffer[iVar2] != -1) {
-				loadAnimation(model, globalModAnimBuffer[iVar2], iVar2, NULL);
-				model->anims[iVar2] = (struct Animation*)model;
-				if(!model->anims[iVar2]) {
-					for(iVar4 = 0; iVar4 < iVar2; iVar4++) {
-						unloadAnimation((Animation *)model->anims[iVar4]);
+			if(globalModAnimBuffer[r29] != -1) {
+				model->anims[r29] = (struct Animation*)loadAnimation(model, globalModAnimBuffer[r29], r29, NULL);
+				if(!model->anims[r29]) {
+					for(uVar1 = 0; uVar1 < r29; uVar1++) {
+						unloadAnimation((Animation *)model->anims[uVar1]);
 					}
 					model->anims = NULL;
 					return 1;
 				}
-			} else {
-				model->anims[iVar2] = NULL;
-			}
-			iVar2 += 1;
-		} while(iVar2 < model->numAnims);
-	} else {
-		model->anims = NULL;
-	}
+			} else model->anims[r29] = NULL;
+			r29 += 1;
+		} while(r29 < model->numAnims);
+	} else model->anims = NULL;
 	return 0;
 }
 
@@ -538,10 +532,9 @@ GCPolygon *modelGetGCPoly(Model *model, int polygonNum) {
 	return &model->GCpolygons[polygonNum];
 }
 
-void loadAnimation(Model *model, short id, short id2, void *dest) {
-	if(!dest) getAnimation(id);
-	else
-		modelLoadAnimation(model, id, id2, dest);
+Animation *loadAnimation(Model *model, short id, short id2, void *dest) {
+	if(!dest) return getAnimation(id);
+	else return modelLoadAnimation(model, id, id2, dest);
 }
 
 Animation *modelLoadAnimation(
