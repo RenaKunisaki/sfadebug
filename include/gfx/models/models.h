@@ -202,7 +202,7 @@ typedef struct {
     /* 0x06 */ u8 unk06;
     /* 0x07 */ u8 unk07;
     /* 0x08 */ int headerCksum;
-    /* 0x0c */ int dataSize; //size of this file
+    /* 0x0c */ int size; //size of this file
     /* 0x10 */ u8 unk10;
     /* 0x11 */ u8 unk11;
     /* 0x12 */ u8 unk12;
@@ -285,54 +285,70 @@ typedef struct {
 
 typedef struct { //XXX populate
     /* 0x00 */ s8 usage; //reference count
+    /* 0x01 */ u8 flags01;
+    /* 0x02 */ u8 unk02;
+    /* 0x03 */ u8 unk03;
+    /* 0x04 */ u8 unk04;
+    /* 0x05 */ u8 unk05;
     //...more...
 } Animation;
 
 typedef struct {
-    /* 0x00 */ Model *model;
-    /* 0x04 */ int hitSphereDataSize;
-    /* 0x08 */ float hitboxSize08;
-    /* 0x0c */ uint nAnims;
-    /* 0x10 */ undefined4 unk10;
+    /* 0x00 */ undefined4 unk00;
+    /* 0x04 */ uint hitSphereDataSize;
+    /* 0x08 */ u8 unk08;
+    /* 0x09 */ u8 unk09;
+    /* 0x0a */ u8 unk0A;
+    /* 0x0b */ u8 unk0B;
+    /* 0x0c */ int nAnims;
+    /* 0x10 */ int unk10;
     /* 0x14 */ uint animCacheSize;
     /* 0x18 */ uint mtxSize;
-    /* 0x1c */ void *anims[4];
-    /* 0x2c */ s8 unk2c;
-    /* 0x2d */ s8 unk2d;
-    /* 0x2e */ s8 unk2e;
-    /* 0x2f */ s8 unk2f;
-    /* 0x30 */ int x;
-    /* 0x34 */ int y;
-    /* 0x38 */ int z;
-    /* 0x3c */ undefined4 unk3c;
-    /* 0x40 */ undefined4 unk40;
-    /* 0x44 */ ushort unk44;
+} AnimUnk;
+
+typedef struct {
+    /* 0x00 */ Model *model;
+    /* 0x04 */ float hitboxSize04;
+    /* 0x08 */ float hitboxSize08;
+    /* 0x0c */ float unk0c;
+    /* 0x10 */ undefined4 unk10;
+    /* 0x14 */ float unk14;
+    /* 0x18 */ undefined4 unk18;
+    /* 0x1c */ UNKTYPE *animData[4];
+    /* 0x2c */ undefined unk2c;
+    /* 0x2d */ undefined unk2d;
+    /* 0x2e */ undefined unk2e;
+    /* 0x2f */ undefined unk2f;
+    /* 0x30 */ int unk30;
+    /* 0x34 */ Animation *anim[4];
+    /* 0x44 */ ushort iAnim;
     /* 0x46 */ ushort unk46;
-    /* 0x48 */ undefined2 unk48;
-    /* 0x4a */ undefined2 unk4a;
-    /* 0x4c */ s8 unk4c;
-    /* 0x4d */ s8 unk4d;
-    /* 0x4e */ s8 unk4e;
-    /* 0x4f */ s8 unk4f;
-    /* 0x50 */ s8 unk50;
-    /* 0x51 */ s8 unk51;
-    /* 0x52 */ s8 unk52;
-    /* 0x53 */ s8 unk53;
-    /* 0x54 */ s8 unk54;
-    /* 0x55 */ s8 unk55;
-    /* 0x56 */ s8 unk56;
-    /* 0x57 */ s8 unk57;
+    /* 0x48 */ ushort unk48;
+    /* 0x4a */ ushort unk4a;
+    /* 0x4c */ undefined unk4c;
+    /* 0x4d */ undefined unk4d;
+    /* 0x4e */ undefined unk4e;
+    /* 0x4f */ undefined unk4f;
+    /* 0x50 */ undefined unk50;
+    /* 0x51 */ undefined unk51;
+    /* 0x52 */ undefined unk52;
+    /* 0x53 */ undefined unk53;
+    /* 0x54 */ undefined unk54;
+    /* 0x55 */ undefined unk55;
+    /* 0x56 */ undefined unk56;
+    /* 0x57 */ undefined unk57;
     /* 0x58 */ short unk58;
     /* 0x5a */ short unk5a;
     /* 0x5c */ short unk5c;
     /* 0x5e */ short unk5e;
     /* 0x60 */ s8 unk60;
-    /* 0x61 */ s8 unk61;
-    /* 0x62 */ char unk62;
-    /* 0x63 */ s8 unk63;
-    /* 0x64 */ undefined2 unk64;
-    /* 0x66 */ s8 unk66;
-    /* 0x67 */ s8 unk67;
+    /* 0x61 */ undefined unk61;
+    /* 0x62 */ undefined unk62;
+    /* 0x63 */ u8 flags63;
+    /* 0x64 */ undefined unk64;
+    /* 0x65 */ undefined unk65;
+    /* 0x66 */ undefined unk66;
+    /* 0x67 */ undefined unk67;
 } AnimInstance;
 
 #define ANIMMAP_SIZE 0x80
@@ -370,7 +386,7 @@ typedef struct {
     /* 0x24 */ AnimInstance *animInstances[2];
     /* 0x2c */ ShaderDef *shaderDefs;
     /* 0x30 */ UNKTYPE *texFuncPtr;
-    /* 0x34 */ uint unk34;
+    /* 0x34 */ UNKTYPE *skinVtxs;
     /* 0x38 */ uint unk38;
     /* 0x3c */ int unk3c;
     /* 0x40 */ u32 unk40;

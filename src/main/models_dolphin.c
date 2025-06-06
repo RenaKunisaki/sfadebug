@@ -32,7 +32,7 @@ void *loadModelInstanceAsset(int id, void *buf) { // 80077a78 types may be wrong
 }
 
 int Model_setupAnimInstance(
-    Model *model, int flags, AnimInstance *anim, int param4);
+    Model *model, int flags, AnimUnk *anim, int param4);
 
 void *loadModelInstance(int id, uint flags) { // 8007C57C
 	void *result;
@@ -67,7 +67,7 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 		printf("WARNING :: createModelInstance called with NULL pointer\n");
 		return NULL;
 	}
-	size = Model_setupAnimInstance(model, flags, anim, 0);
+	size = Model_setupAnimInstance(model, flags, (AnimUnk*)anim, 0);
 	minst = (ModelInstance *)mmAlloc(
 	    size, ALLOC_TAG_MODEL_INSTANCE, (volatile u32) "minst");
 	if(!minst) return NULL;
@@ -103,22 +103,22 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	if((model->flags & ModelDataFlags2_UseLocalModAnimTab) != 0) {
 		buf3 = (float *)alignTo64((uint)pvVar9);
 		buf4 = minst->animInstances[0];
-		buf4->anims[0] = (void *)buf3;
-		buf4->anims[1] = (void *)(buf3 + local_30);
+		buf4->animData[0] = (void *)buf3;
+		buf4->animData[1] = (void *)(buf3 + local_30);
 		pvVar8 = (void *)((int)(void *)(buf3 + local_30) + local_30);
-		buf4->anims[2] = pvVar8;
+		buf4->animData[2] = pvVar8;
 		pvVar8 = (void *)((int)pvVar8 + local_30);
-		buf4->anims[3] = pvVar8;
+		buf4->animData[3] = pvVar8;
 		pvVar9 = (S16Vec *)((int)pvVar8 + local_30);
 		if(minst->animInstances[1] != (AnimInstance *)0x0) {
 			pAVar6 = minst->animInstances[1];
-			pAVar6->anims[0] = (float *)pvVar9;
+			pAVar6->animData[0] = (float *)pvVar9;
 			pvVar8 = (void *)((int)&pvVar9->x + local_30);
-			pAVar6->anims[1] = pvVar8;
+			pAVar6->animData[1] = pvVar8;
 			pvVar8 = (void *)((int)pvVar8 + local_30);
-			pAVar6->anims[2] = pvVar8;
+			pAVar6->animData[2] = pvVar8;
 			pvVar8 = (void *)((int)pvVar8 + local_30);
-			pAVar6->anims[3] = pvVar8;
+			pAVar6->animData[3] = pvVar8;
 			pvVar9 = (S16Vec *)((int)pvVar8 + local_30);
 		}
 	}
@@ -167,7 +167,7 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	}
 	if(model->posFineSkinningConfig != NULL) {
 		uVar2 = alignTo4((uint)pvVar9);
-		minst->unk34 = uVar2;
+		minst->skinVtxs = (UNKTYPE *)uVar2;
 		pvVar9 = (S16Vec *)(uVar2 + (uint)model->numSkinMtxs * 4);
 	}
 	pSVar4 = (ShaderDef *)alignTo4((uint)pvVar9);
@@ -189,9 +189,8 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	return minst;
 }
 
-
 int Model_setupAnimInstance(
-    Model *model, int flags, AnimInstance *anim, int param4) {
+    Model *model, int flags, AnimUnk *anim, int param4) {
 	int result;
 
 	if(model->numAnims) {
@@ -202,9 +201,9 @@ int Model_setupAnimInstance(
 
 	if((model->bCopyVtxsToModelInst || model->posFineSkinningConfig)) {
 		// final: +0x20 => +0x60
-		anim->model = (Model *)(((model->numPositions * 2) * 6) + 0x20);
+		anim->unk00 = ((model->numPositions * 2) * 6) + 0x20;
 	} else
-		anim->model = NULL;
+		anim->unk00 = 0;
 
 	anim->hitSphereDataSize = (model->numHitSpheres * 16) * 2;
 	anim->nAnims = 0;
@@ -228,7 +227,7 @@ int Model_setupAnimInstance(
 		result += anim->unk10;
 		result += anim->nAnims + anim->mtxSize + anim->hitSphereDataSize + 8;
 	}
-	result += (uint)anim->model;
+	result += anim->unk00;
 	if(model->joints && model->numJoints && model->radi) {
 		result += (uint)model->numJoints * 2 + model->numJoints * 7 * 4 + 0x1c;
 	}
@@ -260,59 +259,58 @@ int modelGetAmapSize(
 }
 
 int makeModelAnimation(Model *model, uint animId, HitSpherePos *hits) {
-	//regswap + string offsets
-	int r29; //r29
-	int iVar2; //r23
-	s16 *amap; //r22
-	int animBank; //r24
-	int r25; //r25
-	int uVar1; //r28
-	uint offset; //r20
-	int iVar4; //r19
-	int size; //r17
-	int iVar6; //r4
-	int uVar7; //r26
+	// regswap + string offsets
+	int r29; // r29
+	int iVar2; // r23
+	s16 *amap; // r22
+	int animBank; // r24
+	int r25; // r25
+	int uVar1; // r28
+	uint offset; // r20
+	int iVar4; // r19
+	int size; // r17
+	int iVar6; // r4
+	int uVar7; // r26
 
 	uVar7 = 0;
-	amap = (s16*)pAmapTab;
+	amap = (s16 *)pAmapTab;
 	loadDataFileWithLength(FILE_MODANIM_TAB, amap, animId * 2, 0x10);
 	offset = amap[0];
-	size   = amap[1];
-	iVar4  = offset;
-	iVar6  = (int)(size - offset) >> 1;
+	size = amap[1];
+	iVar4 = offset;
+	iVar6 = (int)(size - offset) >> 1;
 	if(iVar6 != model->numAnims) {
 		printf("makeModelAnimation() size mismatch!! (%d,%d)\n",
-		    model->numAnims, iVar6);
+		    model->numAnims,
+		    iVar6);
 		model->numAnims = (u16)iVar6;
 	}
 	if(!model->numAnims) return 0;
 
 	iVar6 = model->numAnims * 2 + 8;
-	if(0x800 < iVar6) debugPrint(
-		"Warning: Model animation buffer overflow!! size=%d\n", iVar6);
-	loadDataFileWithLength(
-		FILE_AMAP_TAB, pAmapTab, (animId & ~3) * 4, 0x20);
+	if(0x800 < iVar6)
+		debugPrint(
+		    "Warning: Model animation buffer overflow!! size=%d\n", iVar6);
+	loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, (animId & ~3) * 4, 0x20);
 
 	uVar1 = animId & 3;
 	model->animOffset = pAmapTab[uVar1];
-	iVar2 = pAmapTab[uVar1+1] - pAmapTab[uVar1];
+	iVar2 = pAmapTab[uVar1 + 1] - pAmapTab[uVar1];
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		model->animIds = (s16 *)hits;
 		while(iVar6 & 7) iVar6++;
 		uVar7 += iVar6;
-		hits = (HitSpherePos*)((u8*)hits + iVar6);
+		hits = (HitSpherePos *)((u8 *)hits + iVar6);
 		loadDataFileWithLength(FILE_MODANIM_BIN, model->animIds, iVar4, iVar6);
 	} else {
 		loadDataFileWithLength(
-			FILE_MODANIM_BIN, globalModAnimBuffer, iVar4, iVar6);
+		    FILE_MODANIM_BIN, globalModAnimBuffer, iVar4, iVar6);
 		model->animIds = globalModAnimBuffer;
 	}
 	animBank = 0;
 	model->animBank[animBank++] = 0;
-	for(r25=0; r25 < model->numAnims; r25++) {
-		if(model->animIds[r25] == -1) {
-			model->animBank[animBank++] = r25 + 1;
-		}
+	for(r25 = 0; r25 < model->numAnims; r25++) {
+		if(model->animIds[r25] == -1) { model->animBank[animBank++] = r25 + 1; }
 	}
 	if(animBank > 8) printf("ANIMBANK overflow\n");
 	if((model->flags & ModelDataFlags2_UseLocalModAnimTab) == 0) {
@@ -323,14 +321,15 @@ int makeModelAnimation(Model *model, uint animId, HitSpherePos *hits) {
 			hits = (HitSpherePos *)((int)&hits->radius + 1);
 		}
 		model->curHitSpherePos = hits;
-		hits = (HitSpherePos*)((uint)hits + iVar2);
-		uVar7 += iVar2; //why? it's never used again
-		loadDataFileWithLength(FILE_AMAP_BIN, model->curHitSpherePos,
-			model->animOffset, iVar2);
+		hits = (HitSpherePos *)((uint)hits + iVar2);
+		uVar7 += iVar2; // why? it's never used again
+		loadDataFileWithLength(
+		    FILE_AMAP_BIN, model->curHitSpherePos, model->animOffset, iVar2);
 		r29 = 0;
 		do {
 			if(globalModAnimBuffer[r29] != -1) {
-				model->anims[r29] = (struct Animation*)loadAnimation(model, globalModAnimBuffer[r29], r29, NULL);
+				model->anims[r29] = (struct Animation *)loadAnimation(
+				    model, globalModAnimBuffer[r29], r29, NULL);
 				if(!model->anims[r29]) {
 					for(uVar1 = 0; uVar1 < r29; uVar1++) {
 						unloadAnimation((Animation *)model->anims[uVar1]);
@@ -338,13 +337,64 @@ int makeModelAnimation(Model *model, uint animId, HitSpherePos *hits) {
 					model->anims = NULL;
 					return 1;
 				}
-			} else model->anims[r29] = NULL;
+			} else
+				model->anims[r29] = NULL;
 			r29 += 1;
 		} while(r29 < model->numAnims);
-	} else model->anims = NULL;
+	} else
+		model->anims = NULL;
 	return 0;
 }
 
+
+void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
+	Animation *anim;
+	Model *model;
+
+	animInstance->iAnim = 0;
+	animInstance->unk5e = 0;
+	animInstance->unk58 = 0;
+	animInstance->unk5a = 0;
+	animInstance->unk5c = 0;
+	animInstance->unk0c = 0.0;
+	animInstance->hitboxSize04 = 0.0;
+	animInstance->unk14 = 0.0;
+	animInstance->unk60 = 0;
+	model = modelInstance->mod;
+	if(model->numAnims != 0) {
+		if((model->flags & ModelDataFlags2_UseLocalModAnimTab) == 0) {
+			anim = (Animation*)model->anims[animInstance->iAnim];
+		} else {
+			loadAnimation(model, *model->animIds, 0, animInstance->animData[0]);
+			loadAnimation(model, *model->animIds, 0, animInstance->animData[1]);
+			loadAnimation(model, *model->animIds, 0, animInstance->animData[2]);
+			loadAnimation(model, *model->animIds, 0, animInstance->animData[3]);
+			animInstance->iAnim = 0;
+			anim = (Animation *)(((u32)animInstance->animData[animInstance->iAnim]
+			    + 0x80));
+		}
+		animInstance->anim[0] = anim + 1;
+		animInstance->unk60 = anim->flags01 & 0xf0;
+		animInstance->unk14
+		    = (float)((double)CONCAT44(0x43300000,
+		                  (uint)animInstance->anim[0]->flags01)
+		        - 4503599627370496.0);
+		if(animInstance->unk60 == 0) {
+			animInstance->unk14 = animInstance->unk14 - 1.0;
+		}
+		animInstance->unk61 = animInstance->unk60;
+		animInstance->anim[1] = animInstance->anim[0];
+		animInstance->unk46 = animInstance->iAnim;
+		animInstance->hitboxSize08 = animInstance->hitboxSize04;
+		animInstance->unk18 = animInstance->unk14;
+		animInstance->unk10 = animInstance->unk0c;
+		animInstance->anim[2] = animInstance->anim[0];
+		animInstance->unk48 = animInstance->iAnim;
+		animInstance->anim[3] = animInstance->anim[0];
+		animInstance->unk4a = animInstance->iAnim;
+	}
+	return;
+}
 
 int fn_8007D174(short param_1, short param_2, uint param_3, Model *model) {
 	int result;
@@ -360,7 +410,7 @@ int Model_checksumHeader(Model *model) {
 
 	result = 0;
 	data = (u8 *)model;
-	pEnd = (u8 *)((uint)model + model->dataSize);
+	pEnd = (u8 *)((uint)model + model->size);
 	for(; data < pEnd; data++) { result += *data; }
 	return result;
 }
@@ -534,7 +584,8 @@ GCPolygon *modelGetGCPoly(Model *model, int polygonNum) {
 
 Animation *loadAnimation(Model *model, short id, short id2, void *dest) {
 	if(!dest) return getAnimation(id);
-	else return modelLoadAnimation(model, id, id2, dest);
+	else
+		return modelLoadAnimation(model, id, id2, dest);
 }
 
 Animation *modelLoadAnimation(
