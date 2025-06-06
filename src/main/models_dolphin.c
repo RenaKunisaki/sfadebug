@@ -361,10 +361,8 @@ void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
 	animInstance->unk14 = 0.0;
 	animInstance->unk60 = 0;
 	model = modelInstance->mod;
-	if(model->numAnims != 0) {
-		if((model->flags & ModelDataFlags2_UseLocalModAnimTab) == 0) {
-			anim = (Animation*)model->anims[animInstance->iAnim];
-		} else {
+	if(model->numAnims) {
+		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 			loadAnimation(model, *model->animIds, 0, animInstance->animData[0]);
 			loadAnimation(model, *model->animIds, 0, animInstance->animData[1]);
 			loadAnimation(model, *model->animIds, 0, animInstance->animData[2]);
@@ -372,15 +370,14 @@ void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
 			animInstance->iAnim = 0;
 			anim = (Animation *)(((u32)animInstance->animData[animInstance->iAnim]
 			    + 0x80));
+		} else {
+			anim = (Animation*)model->anims[animInstance->iAnim];
 		}
 		animInstance->anim[0] = anim + 1;
 		animInstance->unk60 = anim->flags01 & 0xf0;
-		animInstance->unk14
-		    = (float)((double)CONCAT44(0x43300000,
-		                  (uint)animInstance->anim[0]->flags01)
-		        - 4503599627370496.0);
+		animInstance->unk14 = animInstance->anim[0]->flags01;
 		if(animInstance->unk60 == 0) {
-			animInstance->unk14 = animInstance->unk14 - 1.0;
+			animInstance->unk14 -= 1.0f;
 		}
 		animInstance->unk61 = animInstance->unk60;
 		animInstance->anim[1] = animInstance->anim[0];

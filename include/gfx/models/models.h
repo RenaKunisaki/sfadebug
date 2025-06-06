@@ -311,9 +311,9 @@ typedef struct {
     /* 0x04 */ float hitboxSize04;
     /* 0x08 */ float hitboxSize08;
     /* 0x0c */ float unk0c;
-    /* 0x10 */ undefined4 unk10;
+    /* 0x10 */ float unk10;
     /* 0x14 */ float unk14;
-    /* 0x18 */ undefined4 unk18;
+    /* 0x18 */ float unk18;
     /* 0x1c */ UNKTYPE *animData[4];
     /* 0x2c */ undefined unk2c;
     /* 0x2d */ undefined unk2d;
