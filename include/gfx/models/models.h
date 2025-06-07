@@ -195,7 +195,7 @@ typedef struct {
 } FineSkinningPiece;
 
 typedef struct {
-    /* 0x00 */ s8 usage; //ref count
+    /* 0x00 */ u8 usage; //ref count
     /* 0x01 */ u8 unk01;
     /* 0x02 */ u16 flags; //ModelDataFlags2
     /* 0x04 */ short cacheModNo; //model ID, set on load

@@ -21,7 +21,7 @@ SparseArray *modelsLoadedTable;
 UNKTYPE *globalModAnimBufferPlus0x810;
 
 Model* Model_load(uint id);
-ModelInstance *createModelInstance(Model *model, uint flags);
+ModelInstance *createModelInstance(Model *model, uint flags, BOOL bIsNew);
 void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance);
 Animation *getAnimation(short id);
 Animation *modelLoadAnimation(Model *model, int index, int id, AnimCache *dest);
@@ -82,21 +82,19 @@ ModelInstance *loadModelInstance(int modelNum, uint flags) { // 8007db84
 		model->usage++;
 		BADASSERTLINE(237, model->usage<UCHAR_MAX);
 	}
-	modelIdx = countLeadingZeros(1 - (uint)(s8)model->usage);
-	modelInstance = createModelInstance(model, flags/*, modelIdx >> 5*/);
+	modelInstance = createModelInstance(model, flags, model->usage == 1);
 	BADASSERTLINE(243, modelInstance);
 	modelSetupAnims(modelInstance, modelInstance->animInstances[0]);
-	if(modelInstance->animInstances[1] != NULL) {
+	if(modelInstance->animInstances[1]) {
 		modelSetupAnims(modelInstance, modelInstance->animInstances[1]);
 	}
 	Model_initSkinningWeights(model, modelInstance);
-	iVar1 = Model_checksumHeader(model);
-	model->headerCksum = iVar1;
+	model->headerCksum = Model_checksumHeader(model);
 	DCStoreRange(model, model->size);
 	return modelInstance;
 }
 
-ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
+ModelInstance *createModelInstance(Model *model, uint flags, BOOL bIsNew) { // 8007C5B4
 	s8 bVar1;
 	ModelInstance *minst;
 	uint size;
