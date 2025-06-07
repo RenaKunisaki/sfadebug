@@ -17,7 +17,12 @@
 /* 80398a2c */ u32 *animOffsetTbl;
 /* 80398a34 */ BOOL bHaveAnimTab;
 /* 80398a3c */ SparseArray *animsLoadedTable; // -> Animation*
+SparseArray *modelsLoadedTable;
+UNKTYPE *globalModAnimBufferPlus0x810;
 
+Model* Model_load(uint id);
+ModelInstance *createModelInstance(Model *model, uint flags);
+void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance);
 Animation *getAnimation(short id);
 Animation *modelLoadAnimation(Model *model, int index, int id, AnimCache *dest);
 void unloadAnimation(Animation *anim);
@@ -25,39 +30,70 @@ void *getTable(DataFileId32 file);
 Animation *loadAnimation(Model *model, short id, short id2, void *dest);
 void debugPrint(const char *fmt, ...);
 
-void *loadModelInstanceAsset(int id, void *buf) { // 80077a78 types may be wrong
+void *loadModelInstanceAsset(int id, void *buf) { // 8007c57c types may be wrong
 	void *result;
 	loadAsset_modelInstance(&result, id, buf);
 	return result;
 }
 
-int Model_setupAnimInstance(
-    Model *model, int flags, AnimUnk *anim, int param4);
-
-SparseArray *modelsLoadedTable;
-UNKTYPE *globalModAnimBufferPlus0x810;
+int Model_setupAnimInstance(Model *model, int flags, AnimUnk *anim, int param4);
 
 void initModels(void) { // 8007dab0
 	int *mem;
-	modelsLoadedTable = SparseArray_create(0x8c,4);
+	modelsLoadedTable = SparseArray_create(0x8c, 4);
 	BADASSERTLINE(164, modelsLoadedTable);
 
-	animsLoadedTable = SparseArray_create(0xc4,4);
+	animsLoadedTable = SparseArray_create(0xc4, 4);
 	BADASSERTLINE(169, animsLoadedTable);
 
-	mem = mmAlloc(0x830, ALLOC_TAG_ANIMS_COL,(volatile u32)"mod:globalAnimBuffer");
+	mem = mmAlloc(
+	    0x830, ALLOC_TAG_ANIMS_COL, (volatile u32) "mod:globalAnimBuffer");
 	BADASSERTLINE(174, mem);
 
-	globalModAnimBuffer = (s16*)mem;
+	globalModAnimBuffer = (s16 *)mem;
 	pAmapTab = &mem[0x200];
-	globalModAnimBufferPlus0x810 = (UNKTYPE*)&mem[0x200 + 4];
+	globalModAnimBufferPlus0x810 = (UNKTYPE *)&mem[0x200 + 4];
 	countModels();
 }
 
-void *loadModelInstance(int id, uint flags) { // 8007C57C
-	void *result;
-	loadAsset_modelInstance(&result, id, flags);
-	return result;
+ModelInstance *loadModelInstance(int modelNum, uint flags) { // 8007db84
+	uint modelIdx;
+	BOOL found;
+	ModelInstance *modelInstance;
+	int iVar1;
+	Model *model;
+
+	/* final:
+	loadDataFileWithLength(MODELIND.bin,globalModAnimBuffer,id << 1,8);
+	modelIdx = (uint)*globalModAnimBuffer; */
+	modelIdx = Model_lookupModelInd(modelNum);
+	BADASSERTLINE(210, modelNum>=0 && modelNum<maxModelNum);
+	if(!SparseArray_get(modelsLoadedTable, modelIdx, &model)) {
+		model = Model_load(modelIdx);
+		BADASSERTLINE(218, model);
+		if(isModelAnimDisabled()) model->flags |= ModelDataFlags2_NoAnimations;
+		Model_setOffsets(model);
+		Model_loadTextures(model);
+		Model_initShaders(model);
+		makeModelAnimation(model, modelIdx,
+			(HitSpherePos *)((int)model->animBank + model->size + -0x58));
+		SparseArray_set(modelsLoadedTable, (short)modelIdx, &model);
+	} else {
+		model->usage++;
+		BADASSERTLINE(237, model->usage<UCHAR_MAX);
+	}
+	modelIdx = countLeadingZeros(1 - (uint)(s8)model->usage);
+	modelInstance = createModelInstance(model, flags/*, modelIdx >> 5*/);
+	BADASSERTLINE(243, modelInstance);
+	modelSetupAnims(modelInstance, modelInstance->animInstances[0]);
+	if(modelInstance->animInstances[1] != NULL) {
+		modelSetupAnims(modelInstance, modelInstance->animInstances[1]);
+	}
+	Model_initSkinningWeights(model, modelInstance);
+	iVar1 = Model_checksumHeader(model);
+	model->headerCksum = iVar1;
+	DCStoreRange(model, model->size);
+	return modelInstance;
 }
 
 ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
@@ -84,10 +120,10 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	uint local_2c;
 
 	if(!model) {
-		printf("WARNING :: createModelInstance called with NULL pointer\n");
+		printf("WARNING _ createModelInstance called with NULL pointer\n");
 		return NULL;
 	}
-	size = Model_setupAnimInstance(model, flags, (AnimUnk*)anim, 0);
+	size = Model_setupAnimInstance(model, flags, (AnimUnk *)anim, 0);
 	minst = (ModelInstance *)mmAlloc(
 	    size, ALLOC_TAG_MODEL_INSTANCE, (volatile u32) "minst");
 	if(!minst) return NULL;
@@ -387,17 +423,15 @@ void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
 			loadAnimation(model, *model->animIds, 0, animInstance->animData[2]);
 			loadAnimation(model, *model->animIds, 0, animInstance->animData[3]);
 			animInstance->iAnim = 0;
-			anim = (Animation *)(((u32)animInstance->animData[animInstance->iAnim]
-			    + 0x80));
+			anim = (Animation *)((
+			    (u32)animInstance->animData[animInstance->iAnim] + 0x80));
 		} else {
-			anim = (Animation*)model->anims[animInstance->iAnim];
+			anim = (Animation *)model->anims[animInstance->iAnim];
 		}
 		animInstance->anim[0] = anim + 1;
 		animInstance->unk60 = anim->flags01 & 0xf0;
 		animInstance->unk14 = animInstance->anim[0]->flags01;
-		if(animInstance->unk60 == 0) {
-			animInstance->unk14 -= 1.0f;
-		}
+		if(animInstance->unk60 == 0) { animInstance->unk14 -= 1.0f; }
 		animInstance->unk61 = animInstance->unk60;
 		animInstance->anim[1] = animInstance->anim[0];
 		animInstance->unk46 = animInstance->iAnim;
