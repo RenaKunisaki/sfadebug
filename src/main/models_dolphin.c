@@ -34,6 +34,26 @@ void *loadModelInstanceAsset(int id, void *buf) { // 80077a78 types may be wrong
 int Model_setupAnimInstance(
     Model *model, int flags, AnimUnk *anim, int param4);
 
+SparseArray *modelsLoadedTable;
+UNKTYPE *globalModAnimBufferPlus0x810;
+
+void initModels(void) { // 8007dab0
+	int *mem;
+	modelsLoadedTable = SparseArray_create(0x8c,4);
+	BADASSERTLINE(164, modelsLoadedTable);
+
+	animsLoadedTable = SparseArray_create(0xc4,4);
+	BADASSERTLINE(169, animsLoadedTable);
+
+	mem = mmAlloc(0x830, ALLOC_TAG_ANIMS_COL,(volatile u32)"mod:globalAnimBuffer");
+	BADASSERTLINE(174, mem);
+
+	globalModAnimBuffer = (s16*)mem;
+	pAmapTab = &mem[0x200];
+	globalModAnimBufferPlus0x810 = (UNKTYPE*)&mem[0x200 + 4];
+	countModels();
+}
+
 void *loadModelInstance(int id, uint flags) { // 8007C57C
 	void *result;
 	loadAsset_modelInstance(&result, id, flags);
@@ -345,7 +365,6 @@ int makeModelAnimation(Model *model, uint animId, HitSpherePos *hits) {
 		model->anims = NULL;
 	return 0;
 }
-
 
 void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
 	Animation *anim;

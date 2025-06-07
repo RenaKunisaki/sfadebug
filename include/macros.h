@@ -2,6 +2,11 @@
 #define _H_MACROS_
 
 #ifdef DEBUG
+
+//shame on whomever wrote this.
+#define BADASSERTLINE(line, cond) \
+    if(!(cond)) OSPanic(__FILE__, line, "Failed assertion " #cond)
+
 #define ASSERTLINE(line, cond) \
     ((cond) || (OSPanic(__FILE__, line, "Failed assertion " #cond), 0))
 
