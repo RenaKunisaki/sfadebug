@@ -32,6 +32,7 @@ Animation *loadAnimation(Model *model, short id, short id2, void *dest);
 void debugPrint(const char *fmt, ...);
 void ModelInstance_unloadShaders(ModelInstance *minst);
 int Model_lookupModelInd(int id);
+void Model_initSkinningWeights(Model *model,ModelInstance *mInst);
 void Model_freeTextures(Model *model);
 void Model_freeAnimations(Model *model);
 
@@ -567,6 +568,23 @@ int Model_lookupModelInd(int id) {
 }
 
 #pragma peephole on
+
+void Model_initSkinningWeights(Model *model,ModelInstance *mInst) {
+	int ii;
+
+	if(!(model->flags & ModelDataFlags2_CopyVtxsOnLoad)) return;
+	model->posFineSkinningPieces = model->posFineSkinningConfig;
+	for(ii = 0; ii < model->numSkinMtxs; ii++) {
+		mInst->skinVtxs[ii] = (S16Vec*)(
+			(uint)mInst->vertexPositions +
+			model->posFineSkinningConfig[ii].skinDataSrcOffs);
+
+		if(model->posFineSkinningConfig[ii].weightsSrc < model->skinWeights) {
+			model->posFineSkinningConfig[ii].weightsSrc =
+				(UNKTYPE*)((uint)model->skinWeights + (uint)model->posFineSkinningConfig[ii].weightsSrc);
+		}
+	}
+}
 
 void ModelInstance_loadShaders(ModelInstance *minst, ObjInstance *obj) {
 	REGISTER int iShader;

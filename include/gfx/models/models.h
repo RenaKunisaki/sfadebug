@@ -180,7 +180,7 @@ typedef struct {
     /* 0x5e */ u8 unk5e;
     /* 0x5f */ u8 unk5f;
     /* 0x60 */ u32 skinDataSrcOffs;
-    /* 0x64 */ u32 weightsSrc;
+    /* 0x64 */ UNKTYPE *weightsSrc;
     /* 0x68 */ u8 unk68;
     /* 0x69 */ u8 unk69;
     /* 0x6a */ u8 unk6a;
@@ -386,7 +386,7 @@ typedef struct {
     /* 0x24 */ AnimInstance *animInstances[2];
     /* 0x2c */ ShaderDef *shaderDefs;
     /* 0x30 */ UNKTYPE *texFuncPtr;
-    /* 0x34 */ UNKTYPE *skinVtxs;
+    /* 0x34 */ S16Vec **skinVtxs;
     /* 0x38 */ uint unk38;
     /* 0x3c */ int unk3c;
     /* 0x40 */ u32 unk40;
