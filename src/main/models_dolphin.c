@@ -20,7 +20,7 @@
 SparseArray *modelsLoadedTable;
 UNKTYPE *globalModAnimBufferPlus0x810;
 
-Model* Model_load(uint id);
+Model* Model_load(short id);
 ModelInstance *createModelInstance(Model *model, uint flags, BOOL bIsNew);
 void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance);
 Animation *getAnimation(short id);
@@ -488,6 +488,45 @@ int Model_checksumHeader(Model *model) {
 	for(; data < pEnd; data++) { result += *data; }
 	return result;
 }
+
+Model * Model_load(short id) {
+	uint *modelsTab;
+	uint amapSize;
+	uint offset;
+	int noAmap;
+	uint animCacheSize;
+	ushort nAnimations;
+	int size;
+	Model *model;
+
+	modelsTab = (uint *)getTable(FILE_MODELS_tab);
+	offset = modelsTab[id];
+	loadModelsBin(offset, &nAnimations, &animCacheSize,
+		&noAmap, &size);
+	animCacheSize = alignTo8(animCacheSize);
+	animCacheSize += 0xb0;
+	amapSize = modelGetAmapSize(id,noAmap,nAnimations);
+	model = (Model *)mmAlloc(size + amapSize + 500,
+		ALLOC_TAG_MODELS_COL, (volatile u32)"mod");
+	BADASSERTLINE(491, model);
+
+	model = (Model *)alignTo16(model);
+	loadAndDecompressDataFile(FILE_MODELS_bin,
+		(void *)model, offset, size, NULL, id, 0);
+	model->animCacheSize = animCacheSize;
+	model->cacheModNo = id;
+	model->numAnims = nAnimations;
+	model->flags &= ~ModelDataFlags2_UseLocalModAnimTab;
+	model->usage = 1;
+	if(!model->numAnims) {
+		model->flags |= ModelDataFlags2_NoAnimations;
+	}
+	if(noAmap) {
+		model->flags |= ModelDataFlags2_UseLocalModAnimTab;
+	}
+	return model;
+}
+
 
 void Model_freeTextures(Model *model) {
 	int ii;
