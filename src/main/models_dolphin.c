@@ -21,6 +21,7 @@ SparseArray *modelsLoadedTable;
 UNKTYPE *globalModAnimBufferPlus0x810;
 
 Model* Model_load(short id);
+void Model_loadTextures(Model *model);
 ModelInstance *createModelInstance(Model *model, uint flags, BOOL bIsNew);
 void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance);
 Animation *getAnimation(short id);
@@ -33,6 +34,8 @@ void ModelInstance_unloadShaders(ModelInstance *minst);
 int Model_lookupModelInd(int id);
 void Model_freeTextures(Model *model);
 void Model_freeAnimations(Model *model);
+
+Texture* textureLoad(int id, int);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007c57c types may be wrong
 	void *result;
@@ -525,6 +528,15 @@ Model * Model_load(short id) {
 		model->flags |= ModelDataFlags2_UseLocalModAnimTab;
 	}
 	return model;
+}
+
+void Model_loadTextures(Model *model) {
+	int i;
+	BADASSERTLINE(541, model);
+	for(i = 0; i < model->numTextures; i++) {
+		model->GCtextures[i] = textureLoad(-((uint)model->GCtextures[i] | 0x8000), 0);
+		BADASSERTLINE(546, model->GCtextures[i]);
+	}
 }
 
 
