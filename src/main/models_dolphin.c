@@ -29,6 +29,7 @@ void unloadAnimation(Animation *anim);
 void *getTable(DataFileId32 file);
 Animation *loadAnimation(Model *model, short id, short id2, void *dest);
 void debugPrint(const char *fmt, ...);
+int Model_lookupModelInd(int id);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007c57c types may be wrong
 	void *result;
@@ -57,11 +58,10 @@ void initModels(void) { // 8007dab0
 }
 
 ModelInstance *loadModelInstance(int modelNum, uint flags) { // 8007db84
-	uint modelIdx;
-	BOOL found;
 	ModelInstance *modelInstance;
-	int iVar1;
 	Model *model;
+	uint modelIdx;
+	uint dummy;
 
 	/* final:
 	loadDataFileWithLength(MODELIND.bin,globalModAnimBuffer,id << 1,8);
