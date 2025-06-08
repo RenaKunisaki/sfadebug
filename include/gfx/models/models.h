@@ -198,7 +198,7 @@ typedef struct {
     /* 0x00 */ u8 usage; //ref count
     /* 0x01 */ u8 unk01;
     /* 0x02 */ u16 flags; //ModelDataFlags2
-    /* 0x04 */ short cacheModNo; //model ID, set on load
+    /* 0x04 */ ushort cacheModNo; //model ID, set on load
     /* 0x06 */ u8 unk06;
     /* 0x07 */ u8 unk07;
     /* 0x08 */ int headerCksum;

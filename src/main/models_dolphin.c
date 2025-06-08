@@ -29,7 +29,10 @@ void unloadAnimation(Animation *anim);
 void *getTable(DataFileId32 file);
 Animation *loadAnimation(Model *model, short id, short id2, void *dest);
 void debugPrint(const char *fmt, ...);
+void ModelInstance_unloadShaders(ModelInstance *minst);
 int Model_lookupModelInd(int id);
+void Model_freeTextures(Model *model);
+void Model_freeAnimations(Model *model);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007c57c types may be wrong
 	void *result;
@@ -93,6 +96,29 @@ ModelInstance *loadModelInstance(int modelNum, uint flags) { // 8007db84
 	DCStoreRange(model, model->size);
 	return modelInstance;
 }
+
+#pragma peephole on
+void modelInstanceFree(ModelInstance *modelInstance) {
+	char cVar1;
+	Model *model;
+
+	BADASSERTLINE(285, modelInstance);
+	ModelInstance_unloadShaders(modelInstance);
+	model = modelInstance->mod;
+	BADASSERTLINE(292, model);
+	if (modelInstance->unk48) {
+		mmFree(modelInstance->unk48);
+	}
+	mmFree(modelInstance);
+	if(!--model->usage) {
+		SparseArray_remove(modelsLoadedTable,model->cacheModNo);
+		Model_freeTextures(model);
+		Model_freeAnimations(model);
+		mmFree(model);
+	}
+}
+#pragma peephole off
+
 
 ModelInstance *createModelInstance(Model *model, uint flags, BOOL bIsNew) { // 8007C5B4
 	s8 bVar1;
