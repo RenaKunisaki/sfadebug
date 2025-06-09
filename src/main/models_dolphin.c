@@ -33,6 +33,7 @@ void debugPrint(const char *fmt, ...);
 void ModelInstance_unloadShaders(ModelInstance *minst);
 int Model_lookupModelInd(int id);
 void Model_initSkinningWeights(Model *model,ModelInstance *mInst);
+void Model_initShaders(Model *model);
 void Model_freeTextures(Model *model);
 void Model_freeAnimations(Model *model);
 
@@ -585,6 +586,41 @@ void Model_initSkinningWeights(Model *model,ModelInstance *mInst) {
 		}
 	}
 }
+
+void Model_initShaders(Model *model)  {
+	Shader *shader;
+	int iShader;
+	int iLayer;
+	for(iShader=0; iShader<model->numShaders; iShader++) {
+		shader = &model->shaders[iShader];
+		for(iLayer=0; iLayer<shader->numMaterialLayers; iLayer++) {
+			if(shader->layer[iLayer].tex.id != -1) {
+				shader->layer[iLayer].tex.ptr =
+					model->GCtextures[shader->layer[iLayer].tex.id];
+				}
+			else shader->layer[iLayer].tex.ptr = NULL;
+		}
+		if(shader->tex34.id != -1) {
+			shader->tex34.ptr = model->GCtextures[shader->tex34.id];
+		}
+		else shader->tex34.ptr = NULL;
+
+		if(shader->tex1C.id != -1) {
+			if(shader->tex1C.id == -2) shader->tex1C.ptr = NULL;
+			else shader->tex1C.ptr = model->GCtextures[shader->tex1C.id];
+		}
+		else shader->tex1C.ptr = NULL;
+
+		if (shader->tex18.id != -1) {
+			shader->tex18.ptr = model->GCtextures[shader->tex18.id];
+		}
+		else shader->tex18.ptr = NULL;
+
+		if((model->shaderFlags & 0x000c) == 0) shader->unk08 = 0;
+		if((model->shaderFlags & 0x0e00) == 0) shader->unk14 = 0;
+	}
+}
+
 
 void ModelInstance_loadShaders(ModelInstance *minst, ObjInstance *obj) {
 	REGISTER int iShader;

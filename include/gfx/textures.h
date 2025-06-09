@@ -83,4 +83,9 @@ typedef struct Texture {
     /* 0x5f */ s8 unk5f;
 } Texture;
 
+typedef union {
+    Texture *ptr;
+    int id;
+} TexturePtr;
+
 #endif //_GFX_TEXTURES_H_

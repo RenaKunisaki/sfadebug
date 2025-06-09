@@ -11,13 +11,21 @@ typedef enum {
     GCShaderAttribute_IsWater = 128,
 } GCShaderAttributes;
 
+typedef enum {
+    GC_VERTEXFORMAT_NORMAL = 0x01,
+    GC_VERTEXFORMAT_COLOUR = 0x02, //bri'ish innit
+    GC_VERTEXFORMAT_unk04  = 0x04,
+    GC_VERTEXFORMAT_unk08  = 0x08,
+    GC_VERTEXFORMAT_unk10  = 0x10, //related to TEV color
+} ShaderInputFormat;
+
 typedef struct {
     /* 0x0 */ Texture *texture; //actual texture
     /* 0x4 */ UNKTYPE *lighting; //material/lighting - setting texture AND lighting to null causes glitches
 } ShaderDef;
 
 typedef struct {
-    /* 0x0 */ Texture *texture;
+    /* 0x0 */ TexturePtr tex;
     /* 0x4 */ s8 unk04;
     /* 0x5 */ s8 unk05;
     /* 0x6 */ s8 texScrollIdx;
@@ -43,17 +51,17 @@ typedef struct {
     /* 0x12 */ s8 unk12;
     /* 0x13 */ s8 unk13;
     /* 0x14 */ s32 unk14;
-    /* 0x18 */ Texture *tex18;
-    /* 0x1c */ Texture *tex1C;
+    /* 0x18 */ TexturePtr tex18;
+    /* 0x1c */ TexturePtr tex1C;
     /* 0x20 */ s8 unk20;
     /* 0x21 */ s8 unk21;
     /* 0x22 */ s8 unk22;
     /* 0x23 */ s8 unk23;
     /* 0x24 */ ShaderLayer layer[2];
-    /* 0x34 */ Texture *tex34;
+    /* 0x34 */ TexturePtr tex34;
     /* 0x38 */ u16 attributes; //GCShaderAttributes
-    /* 0x3a */ s8 unk3a;
-    /* 0x3b */ s8 numLayers;
+    /* 0x3a */ s8 inputFormat; //ShaderInputFormat
+    /* 0x3b */ u8 numMaterialLayers;
     /* 0x3c */ s8 unk3c;
     /* 0x3d */ s8 unk3d;
     /* 0x3e */ s8 unk3e;
