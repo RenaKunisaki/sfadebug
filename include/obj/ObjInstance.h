@@ -221,7 +221,7 @@ typedef struct ObjInstance {
     /* 0x80 */ Vec oldPos;
     /* 0x8c */ Vec pos_0x8c;
     /* 0x98 */ float animTimer; //controls idle animation
-    /* 0x9c */ float animVal_9c;
+    /* 0x9c */ float frame;
     /* 0xa0 */ s16 animId; //which animation is playing
     /* 0xa2 */ s16 animVal_a2;
     /* 0xa4 */ float depth; //for render sorting

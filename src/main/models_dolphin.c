@@ -36,6 +36,7 @@ void Model_initSkinningWeights(Model *model,ModelInstance *mInst);
 void Model_initShaders(Model *model);
 void Model_freeTextures(Model *model);
 void Model_freeAnimations(Model *model);
+void modelInstSwapJmtxs(ModelInstance *modelInstance);
 
 Texture* textureLoad(int id, int);
 
@@ -618,6 +619,57 @@ void Model_initShaders(Model *model)  {
 
 		if((model->shaderFlags & 0x000c) == 0) shader->unk08 = 0;
 		if((model->shaderFlags & 0x0e00) == 0) shader->unk14 = 0;
+	}
+}
+
+s16 WORD_8039872c;
+s16 WORD_8039872e;
+s16 WORD_80398730;
+void modelAnimFn_8007e974(ModelInstance *modelInstance,
+Model *model,ObjInstance *object,float *modelMatrix) {
+	AnimInstance *animInstance_00;
+	AnimInstance *animInstance;
+	S16Vec local_38;
+	Vec VStack_30;
+
+	BADASSERTLINE(915, modelInstance);
+	BADASSERTLINE(916, model);
+	BADASSERTLINE(917, modelMatrix);
+	BADASSERTLINE(918, object);
+	tiltListFn_8007ebe8((int)object,(int)modelInstance,model);
+	modelInstSwapJmtxs(modelInstance);
+	animInstance = modelInstance->animInstances[0];
+	BADASSERTLINE(924, animInstance);
+	if ((animInstance->flags63 & 4) != 0) {
+		objAnimFn_8008045c(modelInstance, 0, 0, object->animTimer,
+			object->pos.scale, &VStack_30, &local_38);
+		WORD_8039872c = local_38.x;
+		WORD_8039872e = local_38.y;
+		WORD_80398730 = local_38.z;
+	}
+	if ((modelInstance->mod->flags & 8)) {
+		LAB_8007d540(modelMatrix, modelInstance,
+			modelInstance->animInstances[0], object->animTimer, 0x7f);
+	}
+	else if ((modelInstance->animInstances[0]->flags63 & 8)) {
+		animInstance_00 = modelInstance->animInstances[1];
+		LAB_8007d6ec(modelMatrix, modelInstance,
+			animInstance, object->animTimer, 0x7f, 0, 0, 2, 0x14, animInstance->unk5a);
+		LAB_8007d6ec(modelMatrix, modelInstance,
+			animInstance_00, object->frame, 0x7f, 0, 0, 2, 0x18, animInstance_00->unk5a);
+		LAB_8007d6ec(modelMatrix, modelInstance,
+			animInstance, object->animTimer, 0x7f, 0, 0, 0, 7, animInstance_00->unk58);
+		LAB_8007d6ec(modelMatrix, modelInstance,
+			animInstance, object->animTimer, 0x7f, 0, 1, 1, 1, animInstance->unk58);
+	}
+	else {
+		LAB_8007d540(modelMatrix, modelInstance,
+			modelInstance->animInstances[0], object->animTimer, 0x7f);
+		if ((modelInstance->animInstances[1])
+		&& (-1 < object->animVal_a2)) {
+			LAB_8007d540(modelMatrix, modelInstance,
+				modelInstance->animInstances[1], object->frame, -1);
+		}
 	}
 }
 
