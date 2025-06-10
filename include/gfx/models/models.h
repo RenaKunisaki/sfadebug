@@ -308,10 +308,7 @@ typedef struct {
 
 typedef struct {
     /* 0x00 */ Model *model;
-    /* 0x04 */ float hitboxSize04;
-    /* 0x08 */ float hitboxSize08;
-    /* 0x0c */ float unk0c;
-    /* 0x10 */ float unk10;
+    /* 0x04 */ float hitboxSize[4];
     /* 0x14 */ float unk14;
     /* 0x18 */ float unk18;
     /* 0x1c */ UNKTYPE *animData[4];
@@ -387,9 +384,9 @@ typedef struct {
     /* 0x2c */ ShaderDef *shaderDefs;
     /* 0x30 */ UNKTYPE *texFuncPtr;
     /* 0x34 */ S16Vec **skinVtxs;
-    /* 0x38 */ uint unk38;
+    /* 0x38 */ AnimInstance *animInst38;
     /* 0x3c */ int unk3c;
-    /* 0x40 */ u32 unk40;
+    /* 0x40 */ AnimInstance *animInst40;
     /* 0x44 */ uint unk44;
     /* 0x48 */ void *unk48;
     /* 0x4c */ Mtx *jMtxs4C;

@@ -19,8 +19,10 @@
 /* 80398a3c */ SparseArray *animsLoadedTable; // -> Animation*
 SparseArray *modelsLoadedTable;
 UNKTYPE *globalModAnimBufferPlus0x810;
+/* 80398c68 */ extern float playerMapOffsetX;
+/* 80398c6c */ extern float playerMapOffsetZ;
 
-Model* Model_load(short id);
+Model *Model_load(short id);
 void Model_loadTextures(Model *model);
 ModelInstance *createModelInstance(Model *model, uint flags, BOOL bIsNew);
 void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance);
@@ -32,13 +34,13 @@ Animation *loadAnimation(Model *model, short id, short id2, void *dest);
 void debugPrint(const char *fmt, ...);
 void ModelInstance_unloadShaders(ModelInstance *minst);
 int Model_lookupModelInd(int id);
-void Model_initSkinningWeights(Model *model,ModelInstance *mInst);
+void Model_initSkinningWeights(Model *model, ModelInstance *mInst);
 void Model_initShaders(Model *model);
 void Model_freeTextures(Model *model);
 void Model_freeAnimations(Model *model);
 void modelInstSwapJmtxs(ModelInstance *modelInstance);
 
-Texture* textureLoad(int id, int);
+Texture *textureLoad(int id, int);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007c57c types may be wrong
 	void *result;
@@ -76,7 +78,7 @@ ModelInstance *loadModelInstance(int modelNum, uint flags) { // 8007db84
 	loadDataFileWithLength(MODELIND.bin,globalModAnimBuffer,id << 1,8);
 	modelIdx = (uint)*globalModAnimBuffer; */
 	modelIdx = Model_lookupModelInd(modelNum);
-	BADASSERTLINE(210, modelNum>=0 && modelNum<maxModelNum);
+	BADASSERTLINE(210, modelNum >= 0 && modelNum < maxModelNum);
 	if(!SparseArray_get(modelsLoadedTable, modelIdx, &model)) {
 		model = Model_load(modelIdx);
 		BADASSERTLINE(218, model);
@@ -84,12 +86,13 @@ ModelInstance *loadModelInstance(int modelNum, uint flags) { // 8007db84
 		Model_setOffsets(model);
 		Model_loadTextures(model);
 		Model_initShaders(model);
-		makeModelAnimation(model, modelIdx,
-			(HitSpherePos *)((int)model->animBank + model->size + -0x58));
+		makeModelAnimation(model,
+		    modelIdx,
+		    (HitSpherePos *)((int)model->animBank + model->size + -0x58));
 		SparseArray_set(modelsLoadedTable, (short)modelIdx, &model);
 	} else {
 		model->usage++;
-		BADASSERTLINE(237, model->usage<UCHAR_MAX);
+		BADASSERTLINE(237, model->usage < UCHAR_MAX);
 	}
 	modelInstance = createModelInstance(model, flags, model->usage == 1);
 	BADASSERTLINE(243, modelInstance);
@@ -112,12 +115,10 @@ void modelInstanceFree(ModelInstance *modelInstance) {
 	ModelInstance_unloadShaders(modelInstance);
 	model = modelInstance->mod;
 	BADASSERTLINE(292, model);
-	if (modelInstance->unk48) {
-		mmFree(modelInstance->unk48);
-	}
+	if(modelInstance->unk48) { mmFree(modelInstance->unk48); }
 	mmFree(modelInstance);
 	if(!--model->usage) {
-		SparseArray_remove(modelsLoadedTable,model->cacheModNo);
+		SparseArray_remove(modelsLoadedTable, model->cacheModNo);
 		Model_freeTextures(model);
 		Model_freeAnimations(model);
 		mmFree(model);
@@ -126,7 +127,8 @@ void modelInstanceFree(ModelInstance *modelInstance) {
 #pragma peephole off
 
 
-ModelInstance *createModelInstance(Model *model, uint flags, BOOL bIsNew) { // 8007C5B4
+ModelInstance *createModelInstance(
+    Model *model, uint flags, BOOL bIsNew) { // 8007C5B4
 	s8 bVar1;
 	ModelInstance *minst;
 	uint size;
@@ -224,11 +226,11 @@ ModelInstance *createModelInstance(Model *model, uint flags, BOOL bIsNew) { // 8
 	}
 	if(0 < local_40) {
 		uVar2 = alignTo4((uint)pvVar9);
-		minst->unk38 = uVar2;
+		minst->animInst38 = (AnimInstance*)uVar2;
 		iVar5 = uVar2 + (uint)model->numHitSpheres * 0x10;
 		minst->unk3c = iVar5;
 		pvVar9 = (S16Vec *)(iVar5 + (uint)model->numHitSpheres * 0x10);
-		minst->unk40 = minst->unk38;
+		minst->animInst40 = minst->animInst38;
 	}
 	if((((model->joints == (Bone *)0x0) || (model->numJoints == 0))
 	       || (model->radi == NULL))
@@ -441,8 +443,8 @@ void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
 	animInstance->unk58 = 0;
 	animInstance->unk5a = 0;
 	animInstance->unk5c = 0;
-	animInstance->unk0c = 0.0;
-	animInstance->hitboxSize04 = 0.0;
+	animInstance->hitboxSize[2] = 0.0;
+	animInstance->hitboxSize[0] = 0.0;
 	animInstance->unk14 = 0.0;
 	animInstance->unk60 = 0;
 	model = modelInstance->mod;
@@ -465,9 +467,9 @@ void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
 		animInstance->unk61 = animInstance->unk60;
 		animInstance->anim[1] = animInstance->anim[0];
 		animInstance->unk46 = animInstance->iAnim;
-		animInstance->hitboxSize08 = animInstance->hitboxSize04;
+		animInstance->hitboxSize[1] = animInstance->hitboxSize[0];
 		animInstance->unk18 = animInstance->unk14;
-		animInstance->unk10 = animInstance->unk0c;
+		animInstance->hitboxSize[3] = animInstance->hitboxSize[2];
 		animInstance->anim[2] = animInstance->anim[0];
 		animInstance->unk48 = animInstance->iAnim;
 		animInstance->anim[3] = animInstance->anim[0];
@@ -495,7 +497,7 @@ int Model_checksumHeader(Model *model) {
 	return result;
 }
 
-Model * Model_load(short id) {
+Model *Model_load(short id) {
 	uint *modelsTab;
 	uint amapSize;
 	uint offset;
@@ -507,29 +509,24 @@ Model * Model_load(short id) {
 
 	modelsTab = (uint *)getTable(FILE_MODELS_tab);
 	offset = modelsTab[id];
-	loadModelsBin(offset, &nAnimations, &animCacheSize,
-		&noAmap, &size);
+	loadModelsBin(offset, &nAnimations, &animCacheSize, &noAmap, &size);
 	animCacheSize = alignTo8(animCacheSize);
 	animCacheSize += 0xb0;
-	amapSize = modelGetAmapSize(id,noAmap,nAnimations);
-	model = (Model *)mmAlloc(size + amapSize + 500,
-		ALLOC_TAG_MODELS_COL, (volatile u32)"mod");
+	amapSize = modelGetAmapSize(id, noAmap, nAnimations);
+	model = (Model *)mmAlloc(
+	    size + amapSize + 500, ALLOC_TAG_MODELS_COL, (volatile u32) "mod");
 	BADASSERTLINE(491, model);
 
 	model = (Model *)alignTo16(model);
-	loadAndDecompressDataFile(FILE_MODELS_bin,
-		(void *)model, offset, size, NULL, id, 0);
+	loadAndDecompressDataFile(
+	    FILE_MODELS_bin, (void *)model, offset, size, NULL, id, 0);
 	model->animCacheSize = animCacheSize;
 	model->cacheModNo = id;
 	model->numAnims = nAnimations;
 	model->flags &= ~ModelDataFlags2_UseLocalModAnimTab;
 	model->usage = 1;
-	if(!model->numAnims) {
-		model->flags |= ModelDataFlags2_NoAnimations;
-	}
-	if(noAmap) {
-		model->flags |= ModelDataFlags2_UseLocalModAnimTab;
-	}
+	if(!model->numAnims) { model->flags |= ModelDataFlags2_NoAnimations; }
+	if(noAmap) { model->flags |= ModelDataFlags2_UseLocalModAnimTab; }
 	return model;
 }
 
@@ -537,7 +534,8 @@ void Model_loadTextures(Model *model) {
 	int i;
 	BADASSERTLINE(541, model);
 	for(i = 0; i < model->numTextures; i++) {
-		model->GCtextures[i] = textureLoad(-((uint)model->GCtextures[i] | 0x8000), 0);
+		model->GCtextures[i]
+		    = textureLoad(-((uint)model->GCtextures[i] | 0x8000), 0);
 		BADASSERTLINE(546, model->GCtextures[i]);
 	}
 }
@@ -571,51 +569,52 @@ int Model_lookupModelInd(int id) {
 
 #pragma peephole on
 
-void Model_initSkinningWeights(Model *model,ModelInstance *mInst) {
+void Model_initSkinningWeights(Model *model, ModelInstance *mInst) {
 	int ii;
 
 	if(!(model->flags & ModelDataFlags2_CopyVtxsOnLoad)) return;
 	model->posFineSkinningPieces = model->posFineSkinningConfig;
 	for(ii = 0; ii < model->numSkinMtxs; ii++) {
-		mInst->skinVtxs[ii] = (S16Vec*)(
-			(uint)mInst->vertexPositions +
-			model->posFineSkinningConfig[ii].skinDataSrcOffs);
+		mInst->skinVtxs[ii] = (S16Vec *)((uint)mInst->vertexPositions
+		    + model->posFineSkinningConfig[ii].skinDataSrcOffs);
 
 		if(model->posFineSkinningConfig[ii].weightsSrc < model->skinWeights) {
-			model->posFineSkinningConfig[ii].weightsSrc =
-				(UNKTYPE*)((uint)model->skinWeights + (uint)model->posFineSkinningConfig[ii].weightsSrc);
+			model->posFineSkinningConfig[ii].weightsSrc
+			    = (UNKTYPE *)((uint)model->skinWeights
+			        + (uint)model->posFineSkinningConfig[ii].weightsSrc);
 		}
 	}
 }
 
-void Model_initShaders(Model *model)  {
+void Model_initShaders(Model *model) {
 	Shader *shader;
 	int iShader;
 	int iLayer;
-	for(iShader=0; iShader<model->numShaders; iShader++) {
+	for(iShader = 0; iShader < model->numShaders; iShader++) {
 		shader = &model->shaders[iShader];
-		for(iLayer=0; iLayer<shader->numMaterialLayers; iLayer++) {
+		for(iLayer = 0; iLayer < shader->numMaterialLayers; iLayer++) {
 			if(shader->layer[iLayer].tex.id != -1) {
-				shader->layer[iLayer].tex.ptr =
-					model->GCtextures[shader->layer[iLayer].tex.id];
-				}
-			else shader->layer[iLayer].tex.ptr = NULL;
+				shader->layer[iLayer].tex.ptr
+				    = model->GCtextures[shader->layer[iLayer].tex.id];
+			} else
+				shader->layer[iLayer].tex.ptr = NULL;
 		}
 		if(shader->tex34.id != -1) {
 			shader->tex34.ptr = model->GCtextures[shader->tex34.id];
-		}
-		else shader->tex34.ptr = NULL;
+		} else
+			shader->tex34.ptr = NULL;
 
 		if(shader->tex1C.id != -1) {
 			if(shader->tex1C.id == -2) shader->tex1C.ptr = NULL;
-			else shader->tex1C.ptr = model->GCtextures[shader->tex1C.id];
-		}
-		else shader->tex1C.ptr = NULL;
+			else
+				shader->tex1C.ptr = model->GCtextures[shader->tex1C.id];
+		} else
+			shader->tex1C.ptr = NULL;
 
-		if (shader->tex18.id != -1) {
+		if(shader->tex18.id != -1) {
 			shader->tex18.ptr = model->GCtextures[shader->tex18.id];
-		}
-		else shader->tex18.ptr = NULL;
+		} else
+			shader->tex18.ptr = NULL;
 
 		if((model->shaderFlags & 0x000c) == 0) shader->unk08 = 0;
 		if((model->shaderFlags & 0x0e00) == 0) shader->unk14 = 0;
@@ -625,8 +624,8 @@ void Model_initShaders(Model *model)  {
 s16 WORD_8039872c;
 s16 WORD_8039872e;
 s16 WORD_80398730;
-void modelAnimFn_8007e974(ModelInstance *modelInstance,
-Model *model,ObjInstance *object,float *modelMatrix) {
+void modelAnimFn_8007e974(ModelInstance *modelInstance, Model *model,
+    ObjInstance *object, float *modelMatrix) {
 	AnimInstance *animInstance_00;
 	AnimInstance *animInstance;
 	S16Vec local_38;
@@ -636,39 +635,82 @@ Model *model,ObjInstance *object,float *modelMatrix) {
 	BADASSERTLINE(916, model);
 	BADASSERTLINE(917, modelMatrix);
 	BADASSERTLINE(918, object);
-	tiltListFn_8007ebe8((int)object,(int)modelInstance,model);
+	tiltListFn_8007ebe8((int)object, (int)modelInstance, model);
 	modelInstSwapJmtxs(modelInstance);
 	animInstance = modelInstance->animInstances[0];
 	BADASSERTLINE(924, animInstance);
-	if ((animInstance->flags63 & 4) != 0) {
-		objAnimFn_8008045c(modelInstance, 0, 0, object->animTimer,
-			object->pos.scale, &VStack_30, &local_38);
+	if((animInstance->flags63 & 4) != 0) {
+		objAnimFn_8008045c(modelInstance,
+		    0,
+		    0,
+		    object->animTimer,
+		    object->pos.scale,
+		    &VStack_30,
+		    &local_38);
 		WORD_8039872c = local_38.x;
 		WORD_8039872e = local_38.y;
 		WORD_80398730 = local_38.z;
 	}
-	if ((modelInstance->mod->flags & 8)) {
-		LAB_8007d540(modelMatrix, modelInstance,
-			modelInstance->animInstances[0], object->animTimer, 0x7f);
-	}
-	else if ((modelInstance->animInstances[0]->flags63 & 8)) {
+	if((modelInstance->mod->flags & 8)) {
+		LAB_8007d540(modelMatrix,
+		    modelInstance,
+		    modelInstance->animInstances[0],
+		    object->animTimer,
+		    0x7f);
+	} else if((modelInstance->animInstances[0]->flags63 & 8)) {
 		animInstance_00 = modelInstance->animInstances[1];
-		LAB_8007d6ec(modelMatrix, modelInstance,
-			animInstance, object->animTimer, 0x7f, 0, 0, 2, 0x14, animInstance->unk5a);
-		LAB_8007d6ec(modelMatrix, modelInstance,
-			animInstance_00, object->frame, 0x7f, 0, 0, 2, 0x18, animInstance_00->unk5a);
-		LAB_8007d6ec(modelMatrix, modelInstance,
-			animInstance, object->animTimer, 0x7f, 0, 0, 0, 7, animInstance_00->unk58);
-		LAB_8007d6ec(modelMatrix, modelInstance,
-			animInstance, object->animTimer, 0x7f, 0, 1, 1, 1, animInstance->unk58);
-	}
-	else {
-		LAB_8007d540(modelMatrix, modelInstance,
-			modelInstance->animInstances[0], object->animTimer, 0x7f);
-		if ((modelInstance->animInstances[1])
-		&& (-1 < object->animVal_a2)) {
-			LAB_8007d540(modelMatrix, modelInstance,
-				modelInstance->animInstances[1], object->frame, -1);
+		LAB_8007d6ec(modelMatrix,
+		    modelInstance,
+		    animInstance,
+		    object->animTimer,
+		    0x7f,
+		    0,
+		    0,
+		    2,
+		    0x14,
+		    animInstance->unk5a);
+		LAB_8007d6ec(modelMatrix,
+		    modelInstance,
+		    animInstance_00,
+		    object->frame,
+		    0x7f,
+		    0,
+		    0,
+		    2,
+		    0x18,
+		    animInstance_00->unk5a);
+		LAB_8007d6ec(modelMatrix,
+		    modelInstance,
+		    animInstance,
+		    object->animTimer,
+		    0x7f,
+		    0,
+		    0,
+		    0,
+		    7,
+		    animInstance_00->unk58);
+		LAB_8007d6ec(modelMatrix,
+		    modelInstance,
+		    animInstance,
+		    object->animTimer,
+		    0x7f,
+		    0,
+		    1,
+		    1,
+		    1,
+		    animInstance->unk58);
+	} else {
+		LAB_8007d540(modelMatrix,
+		    modelInstance,
+		    modelInstance->animInstances[0],
+		    object->animTimer,
+		    0x7f);
+		if((modelInstance->animInstances[1]) && (-1 < object->animVal_a2)) {
+			LAB_8007d540(modelMatrix,
+			    modelInstance,
+			    modelInstance->animInstances[1],
+			    object->frame,
+			    -1);
 		}
 	}
 }
@@ -882,6 +924,88 @@ void unloadAnimation(Animation *anim) {
 		ASSERTLINE(2258, success);
 		SparseArray_remove(animsLoadedTable, key);
 		mmFree(anim);
+	}
+}
+
+void fn_80080734(ModelInstance *modelInstance, Model *model,
+ObjInstance *object, Mtx *mtx, ObjInstance *parent) {
+	Mtx *m;
+	float fVar1;
+	int frameMax;
+	int frame;
+	int iSphere;
+	Vec local_5c;
+	uint local_50;
+	s64 local_48;
+	undefined4 local_40;
+	uint uStack_3c;
+
+	fVar1 = 0.0;
+	if((parent->hits && parent->data->bDisableHits)
+	&& (frameMax = (int)parent->hits->objHitsSize >> 2, 0 < frameMax)) {
+		uStack_3c = frameMax ^ 0x80000000;
+		local_40 = 0x43300000;
+		frame = (int)(parent->frame
+		    * (float)((double)CONCAT44(0x43300000, uStack_3c)
+		        - 4503601774854144.0));
+		local_48 = frame;
+		if(frameMax <= frame) { frame = frameMax + -1; }
+		fVar1 = *(float *)(&parent->hits->objHits->animId + frame * 2);
+	}
+	if(object->hits != NULL) {
+		object->hits->state2 = object->hits->state2 - 1;
+		if((char)object->hits->state2 < '\0') { object->hits->state2 = 0; }
+		object->hits->unk44 = object->hits->unk40;
+		object->hits->unk40 = fVar1;
+	}
+	modelInstance->flags = modelInstance->flags ^ ModelFlags18_UseOtherHitboxes;
+	local_50 = modelInstance->flags & 1;
+	modelInstance->animInst40
+	    = modelInstance->animInstances[(modelInstance->flags >> 2 & 1) + 5];
+	m = mtx;
+	for(iSphere = 0; iSphere < (int)(uint)model->numHitSpheres; iSphere += 1) {
+		if(mtx == NULL) {
+			m = modelInstGetjMtx(modelInstance,
+			    (int)*(short *)((int)model->sphereHits + iSphere * 0x18));
+		}
+		if((iSphere == 0) && (parent != object)) {
+			local_5c.x = 0.0;
+			local_5c.y = 0.0;
+			local_5c.z = 0.0;
+			MTXMultVec(*m, &local_5c, &local_5c);
+			(object->pos).pos.x = local_5c.x + playerMapOffsetX;
+			(object->pos).pos.y = local_5c.y;
+			(object->pos).pos.z = local_5c.z + playerMapOffsetZ;
+			objMultPosByMtx(object,
+			    &(object->prevPos).x,
+			    &(object->prevPos).y,
+			    &(object->prevPos).z);
+		}
+		local_5c.x = *(float *)((int)model->sphereHits + iSphere * 0x18 + 8);
+		local_5c.y = *(float *)((int)model->sphereHits + iSphere * 0x18 + 0xc);
+		local_5c.z = *(float *)((int)model->sphereHits + iSphere * 0x18 + 0x10);
+		modelInstance->animInst40->hitboxSize[iSphere * 4 + -1]
+		    = *(float *)((int)model->sphereHits + iSphere * 0x18 + 4)
+		    * (parent->pos).scale;
+		MTXMultVec(*m,
+		    &local_5c,
+		    (Vec *)(modelInstance->animInst40->hitboxSize + iSphere * 4));
+		if(parent->heldBy != NULL) {
+			multVectorByObjMtx(
+			    (double)modelInstance->animInst40->hitboxSize[iSphere * 4],
+			    (double)modelInstance->animInst40->hitboxSize[iSphere * 4 + 1],
+			    (double)modelInstance->animInst40->hitboxSize[iSphere * 4 + 2],
+			    modelInstance->animInst40->hitboxSize + iSphere * 4,
+			    modelInstance->animInst40->hitboxSize + iSphere * 4 + 1,
+			    modelInstance->animInst40->hitboxSize + iSphere * 4 + 2,
+			    parent->heldBy);
+			modelInstance->animInst40->hitboxSize[iSphere * 4]
+			    = modelInstance->animInst40->hitboxSize[iSphere * 4]
+			    - playerMapOffsetX;
+			modelInstance->animInst40->hitboxSize[iSphere * 4 + 2]
+			    = modelInstance->animInst40->hitboxSize[iSphere * 4 + 2]
+			    - playerMapOffsetZ;
+		}
 	}
 }
 
