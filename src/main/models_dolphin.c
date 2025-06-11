@@ -140,11 +140,12 @@ ModelInstance *createModelInstance(
 	ShaderDef *pSVar4;
 	int iVar5;
 	AnimInstance *buf4;
-	AnimInstance *pAVar6;
+	AnimInstance *anim3;
 	S16Vec *psVar7;
 	void *pvVar8;
 	S16Vec *pvVar9;
 	ModelInstanceField20 *pField20;
+	AnimInstanceField44 *pAnimField44;
 	AnimInstance *anim2;
 	Texture **param1;
 	int local_40;
@@ -197,16 +198,16 @@ ModelInstance *createModelInstance(
 		buf4->animData[2] = pvVar8;
 		pvVar8 = (void *)((int)pvVar8 + local_30);
 		buf4->animData[3] = pvVar8;
-		pvVar9 = (S16Vec *)((int)pvVar8 + local_30);
+		pAnimField44 = (AnimInstanceField44 *)((int)pvVar8 + local_30);
 		if(minst->animInstances[1] != (AnimInstance *)0x0) {
-			pAVar6 = minst->animInstances[1];
-			pAVar6->animData[0] = (float *)pvVar9;
-			pvVar8 = (void *)((int)&pvVar9->x + local_30);
-			pAVar6->animData[1] = pvVar8;
+			anim3 = minst->animInstances[1];
+			anim3->animData[0] = pAnimField44;
+			pvVar8 = (void *)((int)pAnimField44 + local_30);
+			anim3->animData[1] = pvVar8;
 			pvVar8 = (void *)((int)pvVar8 + local_30);
-			pAVar6->animData[2] = pvVar8;
+			anim3->animData[2] = pvVar8;
 			pvVar8 = (void *)((int)pvVar8 + local_30);
-			pAVar6->animData[3] = pvVar8;
+			anim3->animData[3] = pvVar8;
 			pvVar9 = (S16Vec *)((int)pvVar8 + local_30);
 		}
 	}
@@ -226,11 +227,11 @@ ModelInstance *createModelInstance(
 	}
 	if(0 < local_40) {
 		uVar2 = alignTo4((uint)pvVar9);
-		minst->animInst38 = (AnimInstance*)uVar2;
+		minst->animInst38 = (AnimInstance *)uVar2;
 		iVar5 = uVar2 + (uint)model->numHitSpheres * 0x10;
 		minst->unk3c = iVar5;
 		pvVar9 = (S16Vec *)(iVar5 + (uint)model->numHitSpheres * 0x10);
-		minst->animInst40 = minst->animInst38;
+		minst->activeAnimInst = minst->animInst38;
 	}
 	if((((model->joints == (Bone *)0x0) || (model->numJoints == 0))
 	       || (model->radi == NULL))
@@ -438,7 +439,7 @@ void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
 	Animation *anim;
 	Model *model;
 
-	animInstance->iAnim = 0;
+	animInstance->iAnim[0] = 0;
 	animInstance->unk5e = 0;
 	animInstance->unk58 = 0;
 	animInstance->unk5a = 0;
@@ -446,7 +447,7 @@ void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
 	animInstance->hitboxSize[2] = 0.0;
 	animInstance->hitboxSize[0] = 0.0;
 	animInstance->unk14 = 0.0;
-	animInstance->unk60 = 0;
+	animInstance->unk60[0] = 0;
 	model = modelInstance->mod;
 	if(model->numAnims) {
 		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
@@ -454,26 +455,26 @@ void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
 			loadAnimation(model, *model->animIds, 0, animInstance->animData[1]);
 			loadAnimation(model, *model->animIds, 0, animInstance->animData[2]);
 			loadAnimation(model, *model->animIds, 0, animInstance->animData[3]);
-			animInstance->iAnim = 0;
+			animInstance->iAnim[0] = 0;
 			anim = (Animation *)((
-			    (u32)animInstance->animData[animInstance->iAnim] + 0x80));
+			    (u32)animInstance->animData[animInstance->iAnim[0]] + 0x80));
 		} else {
-			anim = (Animation *)model->anims[animInstance->iAnim];
+			anim = (Animation *)model->anims[animInstance->iAnim[0]];
 		}
 		animInstance->anim[0] = anim + 1;
-		animInstance->unk60 = anim->flags01 & 0xf0;
+		animInstance->unk60[0] = anim->flags01 & 0xf0;
 		animInstance->unk14 = animInstance->anim[0]->flags01;
-		if(animInstance->unk60 == 0) { animInstance->unk14 -= 1.0f; }
-		animInstance->unk61 = animInstance->unk60;
+		if(animInstance->unk60[0] == 0) { animInstance->unk14 -= 1.0f; }
+		animInstance->unk60[1] = animInstance->unk60[0];
 		animInstance->anim[1] = animInstance->anim[0];
-		animInstance->unk46 = animInstance->iAnim;
+		animInstance->iAnim[1] = animInstance->iAnim[0];
 		animInstance->hitboxSize[1] = animInstance->hitboxSize[0];
 		animInstance->unk18 = animInstance->unk14;
 		animInstance->hitboxSize[3] = animInstance->hitboxSize[2];
 		animInstance->anim[2] = animInstance->anim[0];
-		animInstance->unk48 = animInstance->iAnim;
+		animInstance->iAnim[2] = animInstance->iAnim[0];
 		animInstance->anim[3] = animInstance->anim[0];
-		animInstance->unk4a = animInstance->iAnim;
+		animInstance->iAnim[3] = animInstance->iAnim[0];
 	}
 	return;
 }
@@ -930,43 +931,44 @@ void unloadAnimation(Animation *anim) {
 void fn_80080734(ModelInstance *modelInstance, Model *model,
 ObjInstance *object, Mtx *mtx, ObjInstance *parent) {
 	Mtx *m;
-	float fVar1;
-	int frameMax;
+	s16 fVar1;
+	int nObjHits;
 	int frame;
 	int iSphere;
 	Vec local_5c;
 	uint local_50;
-	s64 local_48;
+	double local_48;
 	undefined4 local_40;
-	uint uStack_3c;
+	float uStack_3c;
+	int animTimer;
+	ObjHitsEntry *objHits;
 
-	fVar1 = 0.0;
-	if((parent->hits && parent->data->bDisableHits)
-	&& (frameMax = (int)parent->hits->objHitsSize >> 2, 0 < frameMax)) {
-		uStack_3c = frameMax ^ 0x80000000;
-		local_40 = 0x43300000;
-		frame = (int)(parent->frame
-		    * (float)((double)CONCAT44(0x43300000, uStack_3c)
-		        - 4503601774854144.0));
-		local_48 = frame;
-		if(frameMax <= frame) { frame = frameMax + -1; }
-		fVar1 = *(float *)(&parent->hits->objHits->animId + frame * 2);
+	objHits = NULL;
+	if(parent->hits && parent->data->bDisableHits) {
+		nObjHits = (int)parent->hits->objHitsSize >> 2;
+		if(nObjHits > 0) {
+			objHits = parent->hits->objHits;
+			uStack_3c = parent->animTimer;
+			animTimer = modelInstance->unk08 * uStack_3c;
+			if(frame >= animTimer) frame = animTimer - 1;
+			objHits = &parent->hits->objHits[frame << 2];
+		}
 	}
-	if(object->hits != NULL) {
-		object->hits->state2 = object->hits->state2 - 1;
-		if((char)object->hits->state2 < '\0') { object->hits->state2 = 0; }
-		object->hits->unk44 = object->hits->unk40;
-		object->hits->unk40 = fVar1;
+	if(object->hits) {
+		object->hits->state2 = object->hits->state2 + -1;
+		if(object->hits->state2 < 0) { object->hits->state2 = 0; }
+		object->hits->prevFrame = object->hits->frame;
+		object->hits->frame = frame;
 	}
 	modelInstance->flags = modelInstance->flags ^ ModelFlags18_UseOtherHitboxes;
 	local_50 = modelInstance->flags & 1;
-	modelInstance->animInst40
+	modelInstance->activeAnimInst
 	    = modelInstance->animInstances[(modelInstance->flags >> 2 & 1) + 5];
 	m = mtx;
 	for(iSphere = 0; iSphere < (int)(uint)model->numHitSpheres; iSphere += 1) {
 		if(mtx == NULL) {
-			m = modelInstGetjMtx(modelInstance,
-			    (int)*(short *)((int)model->sphereHits + iSphere * 0x18));
+			m = modelInstGetjMtx(
+			    modelInstance, (int)(short)model->sphereHits[iSphere].bone);
 		}
 		if((iSphere == 0) && (parent != object)) {
 			local_5c.x = 0.0;
@@ -981,29 +983,29 @@ ObjInstance *object, Mtx *mtx, ObjInstance *parent) {
 			    &(object->prevPos).y,
 			    &(object->prevPos).z);
 		}
-		local_5c.x = *(float *)((int)model->sphereHits + iSphere * 0x18 + 8);
-		local_5c.y = *(float *)((int)model->sphereHits + iSphere * 0x18 + 0xc);
-		local_5c.z = *(float *)((int)model->sphereHits + iSphere * 0x18 + 0x10);
-		modelInstance->animInst40->hitboxSize[iSphere * 4 + -1]
-		    = *(float *)((int)model->sphereHits + iSphere * 0x18 + 4)
-		    * (parent->pos).scale;
-		MTXMultVec(*m,
-		    &local_5c,
-		    (Vec *)(modelInstance->animInst40->hitboxSize + iSphere * 4));
+		local_5c.x = model->sphereHits[iSphere].pos.x;
+		local_5c.y = model->sphereHits[iSphere].pos.y;
+		local_5c.z = model->sphereHits[iSphere].pos.z;
+		modelInstance->activeAnimInst->hitboxSize[iSphere * 4 + -1]
+		    = model->sphereHits[iSphere].radius * (parent->pos).scale;
+		MTXMultVec(*m, &local_5c,
+		    (Vec *)(modelInstance->activeAnimInst->hitboxSize + iSphere * 4));
 		if(parent->heldBy != NULL) {
 			multVectorByObjMtx(
-			    (double)modelInstance->animInst40->hitboxSize[iSphere * 4],
-			    (double)modelInstance->animInst40->hitboxSize[iSphere * 4 + 1],
-			    (double)modelInstance->animInst40->hitboxSize[iSphere * 4 + 2],
-			    modelInstance->animInst40->hitboxSize + iSphere * 4,
-			    modelInstance->animInst40->hitboxSize + iSphere * 4 + 1,
-			    modelInstance->animInst40->hitboxSize + iSphere * 4 + 2,
+			    (double)modelInstance->activeAnimInst->hitboxSize[iSphere * 4],
+			    (double)
+			        modelInstance->activeAnimInst->hitboxSize[iSphere * 4 + 1],
+			    (double)
+			        modelInstance->activeAnimInst->hitboxSize[iSphere * 4 + 2],
+			    modelInstance->activeAnimInst->hitboxSize + iSphere * 4,
+			    modelInstance->activeAnimInst->hitboxSize + iSphere * 4 + 1,
+			    modelInstance->activeAnimInst->hitboxSize + iSphere * 4 + 2,
 			    parent->heldBy);
-			modelInstance->animInst40->hitboxSize[iSphere * 4]
-			    = modelInstance->animInst40->hitboxSize[iSphere * 4]
+			modelInstance->activeAnimInst->hitboxSize[iSphere * 4]
+			    = modelInstance->activeAnimInst->hitboxSize[iSphere * 4]
 			    - playerMapOffsetX;
-			modelInstance->animInst40->hitboxSize[iSphere * 4 + 2]
-			    = modelInstance->animInst40->hitboxSize[iSphere * 4 + 2]
+			modelInstance->activeAnimInst->hitboxSize[iSphere * 4 + 2]
+			    = modelInstance->activeAnimInst->hitboxSize[iSphere * 4 + 2]
 			    - playerMapOffsetZ;
 		}
 	}

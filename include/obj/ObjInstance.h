@@ -199,8 +199,8 @@ typedef struct {
     /* 0x3d */ s8 unk3d;
     /* 0x3e */ s8 unk3e;
     /* 0x3f */ s8 unk3f;
-    /* 0x40 */ float unk40;
-    /* 0x44 */ float unk44;
+    /* 0x40 */ int frame;
+    /* 0x44 */ int prevFrame;
     /* 0x48 */ undefined4 unk48;
     /* 0x4c */ s32 unk4c;
     /* 0x50 */ s16 unk50;

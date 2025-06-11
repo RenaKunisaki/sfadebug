@@ -32,6 +32,17 @@ typedef struct {
 } GCPolygon;
 
 typedef struct {
+    /* 0x00 */ u16 bone; //bone idx
+    /* 0x02 */ u16 unk02; //always 0?
+    /* 0x04 */ float radius;
+    /* 0x08 */ Vec pos; //offset from bone
+    /* 0x14 */ u8 unk14; //always 0?
+    /* 0x15 */ u8 unk15; //always 0?
+    /* 0x16 */ u8 unk16; //increments
+    /* 0x17 */ u8 unk17; //same as 0x16?
+} HitSphere; //hitbox in model file
+
+typedef struct {
     /* 0x00 */ void *displayList; //to raw GX commands
     /* 0x04 */ u16 length;
     /* 0x06 */ s8 unk06;
@@ -218,7 +229,7 @@ typedef struct {
     /* 0x34 */ S16Vec *vertexTexCoords;
     /* 0x38 */ Shader *shaders;
     /* 0x3c */ Bone *joints;
-    /* 0x40 */ void *sphereHits;
+    /* 0x40 */ HitSphere *sphereHits;
     /* 0x44 */ GCPolygon *GCpolygons;
     /* 0x48 */ PolygonGroup *polygonGroups;
     /* 0x4c */ struct Animation **anims;
@@ -307,21 +318,23 @@ typedef struct {
 } AnimUnk;
 
 typedef struct {
+    u8 unk[0x48];
+} AnimInstanceField44;
+
+#define MAX_ANIMS 4
+typedef struct {
     /* 0x00 */ Model *model;
-    /* 0x04 */ float hitboxSize[4];
+    /* 0x04 */ float hitboxSize[MAX_ANIMS];
     /* 0x14 */ float unk14;
     /* 0x18 */ float unk18;
-    /* 0x1c */ UNKTYPE *animData[4];
+    /* 0x1c */ AnimInstanceField44 *animData[MAX_ANIMS];
     /* 0x2c */ undefined unk2c;
     /* 0x2d */ undefined unk2d;
     /* 0x2e */ undefined unk2e;
     /* 0x2f */ undefined unk2f;
     /* 0x30 */ int unk30;
-    /* 0x34 */ Animation *anim[4];
-    /* 0x44 */ ushort iAnim;
-    /* 0x46 */ ushort unk46;
-    /* 0x48 */ ushort unk48;
-    /* 0x4a */ ushort unk4a;
+    /* 0x34 */ Animation *anim[MAX_ANIMS];
+    /* 0x44 */ ushort iAnim[MAX_ANIMS];
     /* 0x4c */ undefined unk4c;
     /* 0x4d */ undefined unk4d;
     /* 0x4e */ undefined unk4e;
@@ -338,8 +351,7 @@ typedef struct {
     /* 0x5a */ short unk5a;
     /* 0x5c */ short unk5c;
     /* 0x5e */ short unk5e;
-    /* 0x60 */ s8 unk60;
-    /* 0x61 */ undefined unk61;
+    /* 0x60 */ s8 unk60[2];
     /* 0x62 */ undefined unk62;
     /* 0x63 */ u8 flags63;
     /* 0x64 */ undefined unk64;
@@ -369,10 +381,7 @@ typedef struct {
 typedef struct {
     /* 0x00 */ Model *mod;
     /* 0x04 */ S16Vec *vertexPositions2;
-    /* 0x08 */ s8 unk08;
-    /* 0x09 */ s8 unk09;
-    /* 0x0a */ s8 unk0a;
-    /* 0x0b */ s8 unk0b;
+    /* 0x08 */ s32 unk08;
     /* 0x0c */ Mtx *jMtxs[2]; //joint matrices
     /* 0x14 */ float **unk14;
     /* 0x18 */ u16 flags; //ModelFlags18 40:shaders loaded
@@ -386,7 +395,7 @@ typedef struct {
     /* 0x34 */ S16Vec **skinVtxs;
     /* 0x38 */ AnimInstance *animInst38;
     /* 0x3c */ int unk3c;
-    /* 0x40 */ AnimInstance *animInst40;
+    /* 0x40 */ AnimInstance *activeAnimInst;
     /* 0x44 */ uint unk44;
     /* 0x48 */ void *unk48;
     /* 0x4c */ Mtx *jMtxs4C;
