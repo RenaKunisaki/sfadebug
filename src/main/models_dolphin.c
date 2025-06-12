@@ -941,32 +941,32 @@ ObjInstance *object, Mtx *mtx, ObjInstance *parent) {
 	undefined4 local_40;
 	float uStack_3c;
 	int animTimer;
-	ObjHitsEntry *objHits;
+	s32 objHits;
+	AnimInstance *animInst;
 
-	objHits = NULL;
+	frame = 0;
 	if(parent->hits && parent->data->bDisableHits) {
 		nObjHits = (int)parent->hits->objHitsSize >> 2;
 		if(nObjHits > 0) {
 			objHits = parent->hits->objHits;
-			uStack_3c = parent->animTimer;
-			animTimer = modelInstance->unk08 * uStack_3c;
-			if(frame >= animTimer) frame = animTimer - 1;
-			objHits = &parent->hits->objHits[frame << 2];
+			animTimer = parent->animTimer * animTimer;
+			if(objHits >= animTimer) objHits = animTimer - 1;
+			frame = objHits;
 		}
 	}
 	if(object->hits) {
-		object->hits->state2 = object->hits->state2 + -1;
+		object->hits->state2--;
 		if(object->hits->state2 < 0) { object->hits->state2 = 0; }
 		object->hits->prevFrame = object->hits->frame;
 		object->hits->frame = frame;
 	}
-	modelInstance->flags = modelInstance->flags ^ ModelFlags18_UseOtherHitboxes;
-	local_50 = modelInstance->flags & 1;
-	modelInstance->activeAnimInst
-	    = modelInstance->animInstances[(modelInstance->flags >> 2 & 1) + 5];
+	modelInstance->flags ^= ModelFlags18_UseOtherHitboxes;
+	local_50 = (modelInstance->flags >> 2) & 1;
+	animInst = modelInstance->animInstances[local_50];
+	modelInstance->activeAnimInst = animInst;
 	m = mtx;
-	for(iSphere = 0; iSphere < (int)(uint)model->numHitSpheres; iSphere += 1) {
-		if(mtx == NULL) {
+	for(iSphere = 0; iSphere < model->numHitSpheres; iSphere++) {
+		if(!mtx) {
 			m = modelInstGetjMtx(
 			    modelInstance, (int)(short)model->sphereHits[iSphere].bone);
 		}
@@ -975,38 +975,37 @@ ObjInstance *object, Mtx *mtx, ObjInstance *parent) {
 			local_5c.y = 0.0;
 			local_5c.z = 0.0;
 			MTXMultVec(*m, &local_5c, &local_5c);
-			(object->pos).pos.x = local_5c.x + playerMapOffsetX;
-			(object->pos).pos.y = local_5c.y;
-			(object->pos).pos.z = local_5c.z + playerMapOffsetZ;
+			object->pos.pos.x = local_5c.x + playerMapOffsetX;
+			object->pos.pos.y = local_5c.y;
+			object->pos.pos.z = local_5c.z + playerMapOffsetZ;
 			objMultPosByMtx(object,
-			    &(object->prevPos).x,
-			    &(object->prevPos).y,
-			    &(object->prevPos).z);
+			    &object->prevPos.x,
+			    &object->prevPos.y,
+			    &object->prevPos.z);
 		}
 		local_5c.x = model->sphereHits[iSphere].pos.x;
 		local_5c.y = model->sphereHits[iSphere].pos.y;
 		local_5c.z = model->sphereHits[iSphere].pos.z;
-		modelInstance->activeAnimInst->hitboxSize[iSphere * 4 + -1]
-		    = model->sphereHits[iSphere].radius * (parent->pos).scale;
+		uStack_3c = model->sphereHits[iSphere].radius;
+		//something is wrong with the fields here
+		//there's a random +4
+		//it goes away if we move hitboxSize to offset 0
+		//but there's no way that's right.
+		//hitboxSize might be a Vec*?
+		animInst->hitboxSize[iSphere * 4] = uStack_3c * parent->pos.scale;
 		MTXMultVec(*m, &local_5c,
 		    (Vec *)(modelInstance->activeAnimInst->hitboxSize + iSphere * 4));
-		if(parent->heldBy != NULL) {
+		if(parent->heldBy) {
 			multVectorByObjMtx(
-			    (double)modelInstance->activeAnimInst->hitboxSize[iSphere * 4],
-			    (double)
-			        modelInstance->activeAnimInst->hitboxSize[iSphere * 4 + 1],
-			    (double)
-			        modelInstance->activeAnimInst->hitboxSize[iSphere * 4 + 2],
+			    *(modelInstance->activeAnimInst->hitboxSize + iSphere * 4),
+			    *(modelInstance->activeAnimInst->hitboxSize + iSphere * 4 + 1),
+				*(modelInstance->activeAnimInst->hitboxSize + iSphere * 4 + 2),
 			    modelInstance->activeAnimInst->hitboxSize + iSphere * 4,
 			    modelInstance->activeAnimInst->hitboxSize + iSphere * 4 + 1,
 			    modelInstance->activeAnimInst->hitboxSize + iSphere * 4 + 2,
 			    parent->heldBy);
-			modelInstance->activeAnimInst->hitboxSize[iSphere * 4]
-			    = modelInstance->activeAnimInst->hitboxSize[iSphere * 4]
-			    - playerMapOffsetX;
-			modelInstance->activeAnimInst->hitboxSize[iSphere * 4 + 2]
-			    = modelInstance->activeAnimInst->hitboxSize[iSphere * 4 + 2]
-			    - playerMapOffsetZ;
+			modelInstance->activeAnimInst->hitboxSize[iSphere * 4] -= playerMapOffsetX;
+			modelInstance->activeAnimInst->hitboxSize[iSphere * 4] -= playerMapOffsetZ;
 		}
 	}
 }
