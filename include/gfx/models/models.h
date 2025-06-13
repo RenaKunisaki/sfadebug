@@ -361,7 +361,7 @@ typedef struct {
 #define ANIMMAP_SIZE 0x80
 typedef struct {
     u8 animMap[ANIMMAP_SIZE];
-    Animation animData[];
+    Animation animData[0]; //unknown size
 } AnimCache;
 
 typedef struct {

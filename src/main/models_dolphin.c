@@ -751,7 +751,7 @@ int Model_getShaderTexture(ModelInstance *modelInstance, int shaderNum) {
 	return (int)(&modelInstance->shaderDefs->texture + shaderNum * 2);
 }
 
-Mtx *modelInstGetjMtx(ModelInstance *modelInstance, int iMtx) {
+Mtx44 *modelInstGetjMtx(ModelInstance *modelInstance, int iMtx) {
 	int nMtxs;
 
 	ASSERTLINE(1169, modelInstance);
@@ -761,7 +761,7 @@ Mtx *modelInstGetjMtx(ModelInstance *modelInstance, int iMtx) {
 		nMtxs = 1;
 	if(iMtx >= nMtxs) iMtx = 0;
 
-	return (Mtx*)&(modelInstance->jMtxs[modelInstance->flags & 1][iMtx]);
+	return &(modelInstance->jMtxs[modelInstance->flags & 1][iMtx]);
 }
 
 void modelInstSwapJmtxs(ModelInstance *modelInstance) {
@@ -929,8 +929,8 @@ void unloadAnimation(Animation *anim) {
 }
 
 void fn_80080734(ModelInstance *modelInstance, Model *model,
-ObjInstance *object, Mtx *mtx, ObjInstance *parent) {
-	Mtx *m; //r24
+ObjInstance *object, Mtx44 *mtx, ObjInstance *parent) {
+	Mtx44 *m; //r24
 	int nObjHits; //r25
 	int frame; //r23
 	int iSphere; //r31
@@ -1057,9 +1057,9 @@ void modelFn_80080c28(float param1, ModelInstance *modelInstance) {
 	}
 }
 
-void fn_80081084(ModelInstance *modelInstance, Mtx *mtx, undefined *param_3) {
-	Mtx *m1;
-	Mtx m2;
+void fn_80081084(ModelInstance *modelInstance, Mtx44 *mtx, undefined *param_3) {
+	Mtx44 *m1;
+	Mtx44 m2;
 	Model *model;
 	uint iMtx;
 
