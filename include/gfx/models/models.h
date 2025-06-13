@@ -324,9 +324,7 @@ typedef struct {
 #define MAX_ANIMS 4
 typedef struct {
     /* 0x00 */ Model *model;
-    /* 0x04 */ float hitboxSize[MAX_ANIMS];
-    /* 0x14 */ float unk14;
-    /* 0x18 */ float unk18;
+    /* 0x04 */ float hitboxSize[3][2];
     /* 0x1c */ AnimInstanceField44 *animData[MAX_ANIMS];
     /* 0x2c */ undefined unk2c;
     /* 0x2d */ undefined unk2d;

@@ -179,6 +179,10 @@ typedef struct {
     /* 0x00 */ short animId; //-1 = end of list
     /* 0x02 */ short offset; //into OBJHITS.bin
     /* 0x04 */ short length;
+} ObjHitsEntry_final;
+
+typedef struct {
+    u32 frame;
 } ObjHitsEntry;
 
 #define MAX_HITS 3
@@ -186,8 +190,8 @@ typedef struct {
     /* 0x00 */ struct ObjInstance *curTouchedObject;
     /* 0x04 */ short objHitsSize; //this >> 2 = #ptrs at field 8
     /* 0x06 */ short maxHitsSize;
-    /* 0x08 */ //ObjHitsEntry *objHits; //from OBJHITS.bin
-    s32 objHits;
+    /* 0x08 */ ObjHitsEntry *objHits; //from OBJHITS.bin
+    //s32 objHits;
     /* 0x0c */ float sizeXY_0C;
     /* 0x10 */ Vec pos;
     /* 0x1c */ Vec prevPos;

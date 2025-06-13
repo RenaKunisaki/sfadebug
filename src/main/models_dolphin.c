@@ -444,9 +444,9 @@ void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
 	animInstance->unk58 = 0;
 	animInstance->unk5a = 0;
 	animInstance->unk5c = 0;
-	animInstance->hitboxSize[2] = 0.0;
-	animInstance->hitboxSize[0] = 0.0;
-	animInstance->unk14 = 0.0;
+	animInstance->hitboxSize[1][0] = 0.0;
+	animInstance->hitboxSize[0][0] = 0.0;
+	animInstance->hitboxSize[2][0] = 0.0;
 	animInstance->unk60[0] = 0;
 	model = modelInstance->mod;
 	if(model->numAnims) {
@@ -463,14 +463,14 @@ void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
 		}
 		animInstance->anim[0] = anim + 1;
 		animInstance->unk60[0] = anim->flags01 & 0xf0;
-		animInstance->unk14 = animInstance->anim[0]->flags01;
-		if(animInstance->unk60[0] == 0) { animInstance->unk14 -= 1.0f; }
+		animInstance->hitboxSize[2][0] = animInstance->anim[0]->flags01;
+		if(animInstance->unk60[0] == 0) { animInstance->hitboxSize[2][0] -= 1.0f; }
 		animInstance->unk60[1] = animInstance->unk60[0];
 		animInstance->anim[1] = animInstance->anim[0];
 		animInstance->iAnim[1] = animInstance->iAnim[0];
-		animInstance->hitboxSize[1] = animInstance->hitboxSize[0];
-		animInstance->unk18 = animInstance->unk14;
-		animInstance->hitboxSize[3] = animInstance->hitboxSize[2];
+		animInstance->hitboxSize[0][1] = animInstance->hitboxSize[0][0];
+		animInstance->hitboxSize[2][1] = animInstance->hitboxSize[2][0];
+		animInstance->hitboxSize[1][1] = animInstance->hitboxSize[1][0];
 		animInstance->anim[2] = animInstance->anim[0];
 		animInstance->iAnim[2] = animInstance->iAnim[0];
 		animInstance->anim[3] = animInstance->anim[0];
@@ -930,40 +930,40 @@ void unloadAnimation(Animation *anim) {
 
 void fn_80080734(ModelInstance *modelInstance, Model *model,
 ObjInstance *object, Mtx *mtx, ObjInstance *parent) {
-	Mtx *m;
-	s16 fVar1;
-	int nObjHits;
-	int frame;
-	int iSphere;
+	Mtx *m; //r24
+	int nObjHits; //r25
+	int frame; //r23
+	int iSphere; //r31
 	Vec local_5c;
 	uint local_50;
-	double local_48;
-	undefined4 local_40;
-	float uStack_3c;
-	int animTimer;
-	s32 objHits;
-	AnimInstance *animInst;
+	float radius;
+	int animTimer; //r27
+	ObjHitsEntry *objHits; //r22
+	HitState *hits;
 
 	frame = 0;
 	if(parent->hits && parent->data->bDisableHits) {
-		nObjHits = (int)parent->hits->objHitsSize >> 2;
+		nObjHits = parent->hits->objHitsSize >> 2;
 		if(nObjHits > 0) {
 			objHits = parent->hits->objHits;
-			animTimer = parent->animTimer * animTimer;
-			if(objHits >= animTimer) objHits = animTimer - 1;
-			frame = objHits;
+			animTimer = parent->animTimer * nObjHits;
+			if(animTimer >= nObjHits) animTimer = nObjHits - 1;
+			animTimer = objHits[animTimer].frame;
+			frame = animTimer;
 		}
 	}
 	if(object->hits) {
-		object->hits->state2--;
+		hits = object->hits;
+		hits->state2--;
 		if(object->hits->state2 < 0) { object->hits->state2 = 0; }
 		object->hits->prevFrame = object->hits->frame;
 		object->hits->frame = frame;
 	}
 	modelInstance->flags ^= ModelFlags18_UseOtherHitboxes;
-	local_50 = (modelInstance->flags >> 2) & 1;
-	animInst = modelInstance->animInstances[local_50];
-	modelInstance->activeAnimInst = animInst;
+	frame = (modelInstance->flags >> 2) & 1;
+	local_50 = modelInstance->flags & 1;
+	modelInstance->activeAnimInst =
+		modelInstance->animInstances[frame];
 	m = mtx;
 	for(iSphere = 0; iSphere < model->numHitSpheres; iSphere++) {
 		if(!mtx) {
@@ -986,26 +986,25 @@ ObjInstance *object, Mtx *mtx, ObjInstance *parent) {
 		local_5c.x = model->sphereHits[iSphere].pos.x;
 		local_5c.y = model->sphereHits[iSphere].pos.y;
 		local_5c.z = model->sphereHits[iSphere].pos.z;
-		uStack_3c = model->sphereHits[iSphere].radius;
+		radius = model->sphereHits[iSphere].radius;
 		//something is wrong with the fields here
 		//there's a random +4
 		//it goes away if we move hitboxSize to offset 0
 		//but there's no way that's right.
-		//hitboxSize might be a Vec*?
-		animInst->hitboxSize[iSphere * 4] = uStack_3c * parent->pos.scale;
+		modelInstance->activeAnimInst->hitboxSize[0][iSphere * 4] = radius * parent->pos.scale;
 		MTXMultVec(*m, &local_5c,
 		    (Vec *)(modelInstance->activeAnimInst->hitboxSize + iSphere * 4));
 		if(parent->heldBy) {
 			multVectorByObjMtx(
-			    *(modelInstance->activeAnimInst->hitboxSize + iSphere * 4),
-			    *(modelInstance->activeAnimInst->hitboxSize + iSphere * 4 + 1),
-				*(modelInstance->activeAnimInst->hitboxSize + iSphere * 4 + 2),
-			    modelInstance->activeAnimInst->hitboxSize + iSphere * 4,
-			    modelInstance->activeAnimInst->hitboxSize + iSphere * 4 + 1,
-			    modelInstance->activeAnimInst->hitboxSize + iSphere * 4 + 2,
+			    (modelInstance->activeAnimInst->hitboxSize[iSphere * 2][0]),
+			    (modelInstance->activeAnimInst->hitboxSize[iSphere * 2][1]),
+				(modelInstance->activeAnimInst->hitboxSize[iSphere * 2][2]),
+			    &(modelInstance->activeAnimInst->hitboxSize[iSphere * 2][0]),
+			    &(modelInstance->activeAnimInst->hitboxSize[iSphere * 2][1]),
+				&(modelInstance->activeAnimInst->hitboxSize[iSphere * 2][2]),
 			    parent->heldBy);
-			modelInstance->activeAnimInst->hitboxSize[iSphere * 4] -= playerMapOffsetX;
-			modelInstance->activeAnimInst->hitboxSize[iSphere * 4] -= playerMapOffsetZ;
+			modelInstance->activeAnimInst->hitboxSize[iSphere * 2][0] -= playerMapOffsetX;
+			modelInstance->activeAnimInst->hitboxSize[iSphere * 2][2] -= playerMapOffsetZ;
 		}
 	}
 }
