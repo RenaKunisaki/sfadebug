@@ -761,7 +761,7 @@ Mtx *modelInstGetjMtx(ModelInstance *modelInstance, int iMtx) {
 		nMtxs = 1;
 	if(iMtx >= nMtxs) iMtx = 0;
 
-	return (Mtx *)(&modelInstance->jMtxs[modelInstance->flags & 1][iMtx]);
+	return (Mtx*)&(modelInstance->jMtxs[modelInstance->flags & 1][iMtx]);
 }
 
 void modelInstSwapJmtxs(ModelInstance *modelInstance) {
