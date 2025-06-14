@@ -327,7 +327,7 @@ typedef struct ObjInstance {
     /* 0x5c */ Model *models;
     /* 0x60 */ ObjEventData *pEventName;
     /* 0x64 */ Shadow *shadow;
-    /* 0x68 */ DLL *dll; //can be NULL; XXX is it LoadedDLL?
+    /* 0x68 */ LoadedDLL *dll; //can be NULL
     /* 0x6c */ Joint *joints;
     /* 0x70 */ astruct_53 **pTextures; //count = file->count59
     /* 0x74 */ RomLockData *romLockdata;

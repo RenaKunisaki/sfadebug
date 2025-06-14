@@ -443,7 +443,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 	result->dll = NULL;
 	if(objData->dll_id) {
 		// probably wrong return type here
-		result->dll = (DLL *)DLL_setup((u32)objData->dll_id, 6U, 1);
+		result->dll = (LoadedDLL *)DLL_setup((u32)objData->dll_id, 6U, 1);
 		if(!result->dll) printf("OBJECTS: warning DLL load failed\n");
 	}
 
@@ -636,4 +636,20 @@ void objSetup(ObjInstance *object, uint bAddToLoadedObjs) {
 	if((object->data->flags & ObjFileStructFlags44_DifferentLightColor) != 0) {
 		objAddObjectType(object, 0x38);
 	}
+}
+
+//XXX size param is probably wrong
+int objGetExtraSize(ObjInstance *object,int size) {
+    switch(object->romdefno) {
+        case ObjDefNo_Krystal:
+        case ObjDefNo_Sabre:
+            return 0x8c4; //sizeof(PlayerState)
+
+        default:
+            if(object->dll && object->dll->funcs->Object.getExtraSize) {
+                return (*object->dll->funcs->Object.getExtraSize)(
+                    object, size);
+            }
+            return 0;
+    }
 }
