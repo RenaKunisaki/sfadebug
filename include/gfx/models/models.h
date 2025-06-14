@@ -190,7 +190,7 @@ typedef struct {
     /* 0x5d */ u8 unk5d;
     /* 0x5e */ u8 unk5e;
     /* 0x5f */ u8 unk5f;
-    /* 0x60 */ u32 skinDataSrcOffs;
+    /* 0x60 */ u32 vertSrc;
     /* 0x64 */ UNKTYPE *weightsSrc;
     /* 0x68 */ u8 unk68;
     /* 0x69 */ u8 unk69;
@@ -204,6 +204,19 @@ typedef struct {
     /* 0x72 */ u8 skinMeOffs;
     /* 0x73 */ u8 skinSrcBlockCount;
 } FineSkinningPiece;
+
+typedef struct {
+    /* 0x00 */ u16 unk00;
+    /* 0x02 */ u16 numPieces;
+    /* 0x04 */ u16 unk04;
+    /* 0x06 */ u8 posNrmShift; //aka quantizeScale
+    /* 0x07 */ u8 unk07;
+    /* 0x08 */ u8 unk08;
+    /* 0x09 */ u8 unk09;
+    /* 0x0a */ u8 unk0a;
+    /* 0x0b */ u8 unk0b;
+    /* 0x0c */ FineSkinningPiece *sk2ListArray;
+} FineSkinningConfig;
 
 typedef struct {
     /* 0x00 */ u8 usage; //ref count
@@ -222,7 +235,10 @@ typedef struct {
     /* 0x18 */ float *radi;
     /* 0x1c */ u32 *exT; //extraAmapSize (dlInfoSize?)
     /* 0x20 */ Texture **GCtextures; // -> texture IDs that get turned into pointers
-    /* 0x24 */ Vec *normals; //either 1 or 3 vecs per (presumably) face
+    /* 0x24 */ u8 normalFlags; //ModelNormalFlags
+    /* 0x25 */ u8 unk25;
+    /* 0x26 */ u8 unk26;
+    /* 0x27 */ u8 unk27;
     /* 0x28 */ S16Vec *vertexPositions;
     /* 0x2c */ S16Vec *vertexNormals;
     /* 0x30 */ u16 *vertexColours;
@@ -240,18 +256,7 @@ typedef struct {
     /* 0x6c */ s16 animCacheSize;
     /* 0x6e */ u8 unk6e;
     /* 0x6f */ u8 unk6f;
-    /* 0x70 */ u8 unk70;
-    /* 0x71 */ u8 unk71;
-    /* 0x72 */ ushort numSkinMtxs;
-    /* 0x74 */ u8 unk74;
-    /* 0x75 */ u8 unk75;
-    /* 0x76 */ u8 unk76;
-    /* 0x77 */ u8 unk77;
-    /* 0x78 */ u8 unk78;
-    /* 0x79 */ u8 unk79;
-    /* 0x7a */ u8 unk7a;
-    /* 0x7b */ u8 unk7b;
-    /* 0x7c */ FineSkinningPiece *posFineSkinningPieces;
+    /* 0x70 */ FineSkinningConfig skin;
     /* 0x80 */ u8 unk80;
     /* 0x81 */ u8 unk81;
     /* 0x82 */ u8 unk82;
@@ -268,8 +273,7 @@ typedef struct {
     /* 0x90 */ UNKTYPE *skinWeights;
     /* 0x94 */ DisplayList *displayLists;
     /* 0x98 */ BitStream *renderStream;
-    /* 0x9c */ u8 unk9c;
-    /* 0x9d */ u8 unk9d;
+    /* 0x9c */ u16 renderStreamLen;
     /* 0x9e */ u8 unk9e;
     /* 0x9f */ u8 unk9f;
     /* 0xa0 */ undefined4 *vertexAnims;
@@ -376,28 +380,36 @@ typedef struct {
     S16Vec unk;
 } ModelInstanceField54;
 
+typedef void(*TexFuncPtr)(struct ObjInstance *obj, struct ModelInstance *mInst, int shaderNum);
+
+typedef struct {
+    S16Vec pos[4]; //vertices
+    s8 state; //0:not calculated, 1:OK, -1:invalid
+    s8 unk19; //padding?
+} TexturedShadow;
+
 typedef struct {
     /* 0x00 */ Model *mod;
     /* 0x04 */ S16Vec *vertexPositions2;
     /* 0x08 */ s32 unk08;
     /* 0x0c */ Mtx44 *jMtxs[2]; //joint matrices
     /* 0x14 */ float **unk14;
-    /* 0x18 */ u16 flags; //ModelFlags18 40:shaders loaded
+    /* 0x18 */ u16 flags; //ModelFlags18
     /* 0x1a */ s8 unk1a;
     /* 0x1b */ s8 unk1b;
     /* 0x1c */ S16Vec *vertexPositions;
     /* 0x20 */ ModelInstanceField20 *unk20;
-    /* 0x24 */ AnimInstance *animInstances[2];
+    /* 0x24 */ AnimInstance *animInstances[2]; //only one in final?
     /* 0x2c */ ShaderDef *shaderDefs;
-    /* 0x30 */ UNKTYPE *texFuncPtr;
+    /* 0x30 */ TexFuncPtr texFuncPtr;
     /* 0x34 */ S16Vec **skinVtxs;
     /* 0x38 */ AnimInstance *animInst38;
     /* 0x3c */ int unk3c;
     /* 0x40 */ AnimInstance *activeAnimInst;
-    /* 0x44 */ uint unk44;
+    /* 0x44 */ TexturedShadow *shadow;
     /* 0x48 */ void *unk48;
     /* 0x4c */ Mtx44 *jMtxs4C;
-    /* 0x50 */ s8 unk50;
+    /* 0x50 */ s8 bUseVertexPositions1C;
     /* 0x51 */ s8 unk51;
     /* 0x52 */ s8 unk52;
     /* 0x53 */ s8 unk53;

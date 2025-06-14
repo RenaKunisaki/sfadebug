@@ -257,16 +257,16 @@ ModelInstance *createModelInstance(
 	if(model->posFineSkinningConfig != NULL) {
 		uVar2 = alignTo4((uint)pvVar9);
 		minst->skinVtxs = (UNKTYPE *)uVar2;
-		pvVar9 = (S16Vec *)(uVar2 + (uint)model->numSkinMtxs * 4);
+		pvVar9 = (S16Vec *)(uVar2 + (uint)model->skin.numPieces);
 	}
 	pSVar4 = (ShaderDef *)alignTo4((uint)pvVar9);
 	minst->shaderDefs = pSVar4;
 	param1 = &pSVar4->texture + (uint)model->numShaders * 2;
 	if((flags & 0x8000) != 0) {
 		uVar2 = alignTo2((uint)param1);
-		minst->unk44 = uVar2;
-		param1 = (Texture **)(uVar2 + 0x1a);
-		*(undefined *)(minst->unk44 + 0x18) = 0;
+		minst->shadow = (TexturedShadow *)uVar2;
+		param1 = (Texture **)((TexturedShadow *)uVar2) + 1;
+		minst->shadow->state = 0;
 	}
 	if((int)size <= (int)param1 - (int)minst) {
 		printf(
@@ -274,7 +274,7 @@ ModelInstance *createModelInstance(
 	}
 	minst->unk48 = NULL;
 	minst->mod = model;
-	minst->unk50 = 0;
+	minst->bUseVertexPositions1C = 0;
 	return minst;
 }
 
@@ -320,7 +320,9 @@ int Model_setupAnimInstance(
 	if(model->joints && model->numJoints && model->radi) {
 		result += (uint)model->numJoints * 2 + model->numJoints * 7 * 4 + 0x1c;
 	}
-	if(model->posFineSkinningConfig) { result += model->numSkinMtxs * 4 + 4; }
+	if(model->posFineSkinningConfig) {
+		result += model->skin.numPieces * 4 + 4;
+	}
 	result += model->numShaders * 8;
 	if(flags & 0x8000) result += 0x1a;
 	result = ((result + 0x2f) & ~0xf) + 0x10;
@@ -464,7 +466,9 @@ void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
 		animInstance->anim[0] = anim + 1;
 		animInstance->unk60[0] = anim->flags01 & 0xf0;
 		animInstance->hitboxSize[2][0] = animInstance->anim[0]->flags01;
-		if(animInstance->unk60[0] == 0) { animInstance->hitboxSize[2][0] -= 1.0f; }
+		if(animInstance->unk60[0] == 0) {
+			animInstance->hitboxSize[2][0] -= 1.0f;
+		}
 		animInstance->unk60[1] = animInstance->unk60[0];
 		animInstance->anim[1] = animInstance->anim[0];
 		animInstance->iAnim[1] = animInstance->iAnim[0];
@@ -574,10 +578,10 @@ void Model_initSkinningWeights(Model *model, ModelInstance *mInst) {
 	int ii;
 
 	if(!(model->flags & ModelDataFlags2_CopyVtxsOnLoad)) return;
-	model->posFineSkinningPieces = model->posFineSkinningConfig;
-	for(ii = 0; ii < model->numSkinMtxs; ii++) {
+	model->skin.sk2ListArray = model->posFineSkinningConfig;
+	for(ii = 0; ii < model->skin.numPieces; ii++) {
 		mInst->skinVtxs[ii] = (S16Vec *)((uint)mInst->vertexPositions
-		    + model->posFineSkinningConfig[ii].skinDataSrcOffs);
+		    + model->skin.sk2ListArray[ii].vertSrc);
 
 		if(model->posFineSkinningConfig[ii].weightsSrc < model->skinWeights) {
 			model->posFineSkinningConfig[ii].weightsSrc
@@ -929,16 +933,16 @@ void unloadAnimation(Animation *anim) {
 }
 
 void fn_80080734(ModelInstance *modelInstance, Model *model,
-ObjInstance *object, Mtx44 *mtx, ObjInstance *parent) {
-	Mtx44 *m; //r24
-	int nObjHits; //r25
-	int frame; //r23
-	int iSphere; //r31
+    ObjInstance *object, Mtx44 *mtx, ObjInstance *parent) {
+	Mtx44 *m; // r24
+	int nObjHits; // r25
+	int frame; // r23
+	int iSphere; // r31
 	Vec local_5c;
 	uint local_50;
 	float radius;
-	int animTimer; //r27
-	ObjHitsEntry *objHits; //r22
+	int animTimer; // r27
+	ObjHitsEntry *objHits; // r22
 	HitState *hits;
 
 	frame = 0;
@@ -962,8 +966,7 @@ ObjInstance *object, Mtx44 *mtx, ObjInstance *parent) {
 	modelInstance->flags ^= ModelFlags18_UseOtherHitboxes;
 	frame = (modelInstance->flags >> 2) & 1;
 	local_50 = modelInstance->flags & 1;
-	modelInstance->activeAnimInst =
-		modelInstance->animInstances[frame];
+	modelInstance->activeAnimInst = modelInstance->animInstances[frame];
 	m = mtx;
 	for(iSphere = 0; iSphere < model->numHitSpheres; iSphere++) {
 		if(!mtx) {
@@ -987,24 +990,28 @@ ObjInstance *object, Mtx44 *mtx, ObjInstance *parent) {
 		local_5c.y = model->sphereHits[iSphere].pos.y;
 		local_5c.z = model->sphereHits[iSphere].pos.z;
 		radius = model->sphereHits[iSphere].radius;
-		//something is wrong with the fields here
-		//there's a random +4
-		//it goes away if we move hitboxSize to offset 0
-		//but there's no way that's right.
-		modelInstance->activeAnimInst->hitboxSize[0][iSphere * 4] = radius * parent->pos.scale;
-		MTXMultVec(*m, &local_5c,
+		// something is wrong with the fields here
+		// there's a random +4
+		// it goes away if we move hitboxSize to offset 0
+		// but there's no way that's right.
+		modelInstance->activeAnimInst->hitboxSize[0][iSphere * 4]
+		    = radius * parent->pos.scale;
+		MTXMultVec(*m,
+		    &local_5c,
 		    (Vec *)(modelInstance->activeAnimInst->hitboxSize + iSphere * 4));
 		if(parent->heldBy) {
 			multVectorByObjMtx(
 			    (modelInstance->activeAnimInst->hitboxSize[iSphere * 2][0]),
 			    (modelInstance->activeAnimInst->hitboxSize[iSphere * 2][1]),
-				(modelInstance->activeAnimInst->hitboxSize[iSphere * 2][2]),
+			    (modelInstance->activeAnimInst->hitboxSize[iSphere * 2][2]),
 			    &(modelInstance->activeAnimInst->hitboxSize[iSphere * 2][0]),
 			    &(modelInstance->activeAnimInst->hitboxSize[iSphere * 2][1]),
-				&(modelInstance->activeAnimInst->hitboxSize[iSphere * 2][2]),
+			    &(modelInstance->activeAnimInst->hitboxSize[iSphere * 2][2]),
 			    parent->heldBy);
-			modelInstance->activeAnimInst->hitboxSize[iSphere * 2][0] -= playerMapOffsetX;
-			modelInstance->activeAnimInst->hitboxSize[iSphere * 2][2] -= playerMapOffsetZ;
+			modelInstance->activeAnimInst->hitboxSize[iSphere * 2][0]
+			    -= playerMapOffsetX;
+			modelInstance->activeAnimInst->hitboxSize[iSphere * 2][2]
+			    -= playerMapOffsetZ;
 		}
 	}
 }
