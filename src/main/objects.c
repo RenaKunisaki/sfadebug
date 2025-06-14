@@ -70,7 +70,7 @@ ObjDefEnum mapGetPlayerObjType(int *outWhichObjs); /* extern */
 f32 mathFn_80294204(f32, f32); /* extern */
 void memclr(void *param1, size_t param2); /* extern */
 void memcpy_src_dst_len(void *param1, void *param2, size_t param3); /* extern */
-undefined2 modelGetFieldA4(Model *model); /* extern */
+u16 modelGetFieldA4(Model *model); /* extern */
 void modelInstanceFree(ModelInstance *modelInstance); /* extern */
 void mtx44Transpose(Mtx44 *src, Mtx44 *dst); /* extern */
 void mtxRotateByVec3s(Mtx44 *mtx, S16Vec *rot); /* extern */
@@ -705,6 +705,26 @@ ObjDef *objDef, uint flags) {
         size += (uint)objData->numLockData * 5;
     }
     return size;
+}
+
+float objModelFn_800839d4(ObjInstance *object) {
+    ModelInstance *mInst;
+    float result;
+    s32 ii;
+
+    result = 10.0f;
+    for(ii = 0; ii < object->data->nModels; ii++) {
+        if((int)object->modelInstances[ii]) {
+            mInst = object->modelInstances[ii];
+            if(modelGetFieldA4(mInst->mod) > result) {
+                result = modelGetFieldA4(mInst->mod);
+            }
+        }
+    }
+    if (result < object->data->unk9c) {
+        result = 16.0f * object->data->unk9c;
+    }
+    return result;
 }
 
 void Object_freeModels(ObjInstance *object, int count) {

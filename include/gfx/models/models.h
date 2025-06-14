@@ -285,7 +285,7 @@ typedef struct {
     /* 0x9e */ u8 unk9e;
     /* 0x9f */ u8 unk9f;
     /* 0xa0 */ undefined4 *vertexAnims;
-    /* 0xa4 */ undefined2 unka4;
+    /* 0xa4 */ u16 unka4;
     /* 0xa6 */ u16 shaderFlags; //ModelShaderFlags
     /* 0xa8 */ ushort numPositions;
     /* 0xaa */ s8 numNormals;
