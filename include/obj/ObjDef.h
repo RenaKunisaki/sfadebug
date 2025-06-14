@@ -1479,6 +1479,70 @@
 #define ObjDefNo_WC_LandingP 2185
 #define ObjDefNo_None -1
 
+#define ObjCat_Player	0
+#define ObjCat_Tricky	1
+#define ObjCat_Fireball	2	//light? also DrakorMissile
+#define ObjCat_NPC	3	//Baddie, BabyCloudRunner
+#define ObjCat_Collectible	4	//also WM_Column, MMP_moonrock
+#define ObjCat_Pushable	5
+#define ObjCat_Parent	6	//obj that has children
+#define ObjCat_StaticCamera	7
+#define ObjCat_PlayerObj	8	//Sabre, Tricky, FrontFox, LargeCrate
+#define ObjCat_LevelControl	9	//and Shop
+#define ObjCat_Rideable	10	//Bike, CloudRunner
+#define ObjCat_ECSH_Shrine	11	//Test of Skill
+#define ObjCat_Door	14
+#define ObjCat_LockOrSeqObj	15
+#define ObjCat_Carryable	16
+#define ObjCat_DIMDIsmountPoint	19	//also DR_CloudPerch
+#define ObjCat_WaterCurrent	20
+#define ObjCat_Unk16	22	//Spellstone?, bomb barrel, conveyor
+#define ObjCat_DFropenode	23
+#define ObjCat_DR_CageWithCloudRunner	24
+#define ObjCat_GunPowderBarrel	25
+#define ObjCat_ExplodeAnimator	26
+#define ObjCat_WaveAnimator	27
+#define ObjCat_LFXEmitter	28
+#define ObjCat_TrickyGuardSpot	30	//also Attractor, DBHoleControl1, SpellStone; baddie related?
+#define ObjCat_BabyCloudRunner	32
+#define ObjCat_Explodable	33
+#define ObjCat_WallAnimator	35
+#define ObjCat_DBEgg	36
+#define ObjCat_Player25	37
+#define ObjCat_Rideable26	38	//Hightop, Arwing, DR_CloudRunner
+#define ObjCat_MoonSeedPlantingSpot	46
+#define ObjCat_RollingBarrel	47
+#define ObjCat_Firefly	48
+#define ObjCat_TrickyInteractable	49	//things Tricky can activate
+#define ObjCat_TrickyAutoHeel	50
+#define ObjCat_MagicPlant	52
+#define ObjCat_PointLight	53
+#define ObjCat_DR_Shackle	55
+#define ObjCat_DR_CloudPerch	57
+#define ObjCat_BarrelGenerator	58
+#define ObjCat_NW_ice	60
+#define ObjCat_NW_animice	61
+#define ObjCat_DLL_F7	62	//also magicplant
+#define ObjCat_CCgasvent	63
+#define ObjCat_siderepel	64
+#define ObjCat_StaffActivated	65
+#define ObjCat_BossDrakor	69
+#define ObjCat_DrakorHoverPad	70
+#define ObjCat_Food	71
+#define ObjCat_Lightning	72
+#define ObjCat_WindLift	73
+#define ObjCat_FirePipe	74
+#define ObjCat_TrickyWarp	75
+#define ObjCat_Timer	76
+#define ObjCat_Speakable	77	//NPC you can talk to
+#define ObjCat_SpiritDoorSpirit	78
+#define ObjCat_FuelCell	79
+#define ObjCat_Whirlpool	80
+#define ObjCat_XYZAnimator	81
+#define ObjCat_ArwingBomb	82
+#define ObjCat_PressureSwitch	83
+#define ObjCat_MAX_OBJTYPES	84
+
 typedef enum {
     RomListLoadFlag_isLevelObject = 1,
     RomListLoadFlag_isManualLoad = 2,

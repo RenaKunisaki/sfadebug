@@ -2,6 +2,8 @@
 #define _OBJ_OBJINSTANCE_H_
 #include "gfx/models/models.h"
 
+#define MAX_OBJECTS 350
+
 typedef struct {
     /* 0x0 */ S16Vec rotation;
     /* 0x6 */ s16 flags; //ObjInstance_Flags06
@@ -24,6 +26,18 @@ struct ObjInstance;
 #define ObjInstance_FlagsB0_DontUseRenderCallback 16384
 #define ObjInstance_FlagsB0_DontUpdate 32768
 
+#define ObjFileStructFlags44_HaveModels	1
+#define ObjFileStructFlags44_DifferentLightColor	16
+#define ObjFileStructFlags44_ModelRelated	32
+#define ObjFileStructFlags44_IsWorldObj	64
+#define ObjFileStructFlags44_EnableCulling	1024
+#define ObjFileStructFlags44_UseDifferentModelLoading	2048
+#define ObjFileStructFlags44_LockAnimsAndControls	262144
+#define ObjFileStructFlags44_FixedDepth	524288	//o->data->depth is the Z depth for sorting
+#define ObjFileStructFlags44_OpacityDrawGroupFlag_0x100000	1048576	//affects whether opacity is used to calc draw group
+#define ObjFileStructFlags44_KeepHitboxWhenInvisible	2097152
+#define ObjFileStructFlags44_HasEvent	4194304
+#define ObjFileStructFlags44_DidLoadModels	8388608
 
 #define ObjData_Flag_FixedDepth 0x80000
 
@@ -171,8 +185,7 @@ typedef struct {
     /* 0x9d */ u8 fixedDepth; //mult by 100, used if flags & FIxedDepth
     /* 0x9e */ s8 unk9e;
     /* 0x9f */ s8 unk9f;
-    /* 0xa0 */ s8 unka0;
-    /* 0xa1 */ s8 unka1;
+    /* 0xa0 */ s16 unka0;
 } ObjData;
 
 typedef struct {
@@ -330,7 +343,7 @@ typedef struct ObjInstance {
     /* 0xa8 */ float cullDistance; //affects brightness and opacity; multiplied by scale; fuzz?
     /* 0xac */ u8 mapId; //MapId8 crashes if < 0x80; passed to loadCharacter but not used?
     /* 0xad */ s8 curModel; //which model index to use
-    /* 0xae */ u8 priority; //0x50 for most
+    /* 0xae */ s8 priority; //0x50 for most
     /* 0xaf */ u8 flags_0xaf; //ObjInstance_FlagsAF 28=don't render something (no models?)
     /* 0xb0 */ u16 flags_0xb0; //ObjInstance_FlagsB0
     /* 0xb2 */ s16 romDefNo;
