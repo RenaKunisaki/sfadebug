@@ -146,7 +146,7 @@ typedef struct {
     /* 0x6f */ s8 unk6f;
     /* 0x70 */ s8 noplacements; //related to hitbox (height?)
     /* 0x71 */ u8 nTextures;
-    /* 0x72 */ s8 nJoints;
+    /* 0x72 */ u8 nJoints;
     /* 0x73 */ s8 stateVar73; //1=translucent; 3=invincible - not flags
     /* 0x74 */ bool bDisableHits;
     /* 0x75 */ s8 unk75;
@@ -169,7 +169,7 @@ typedef struct {
     /* 0x8c */ s8 nLights;
     /* 0x8d */ s8 lightIdx;
     /* 0x8e */ s8 unk8e; //related to textures; 1=dark, 2=default, 3+=corrupt, 77=crash, 0=normal
-    /* 0x8f */ s8 maybeNumHits; //related to hitbox
+    /* 0x8f */ u8 maybeNumHits; //related to hitbox
     /* 0x90 */ HitboxFlags62 hitbox_flagsB6; // < 0xE = invincible
     /* 0x92 */ s8 unk92;
     /* 0x93 */ u8 flags93;

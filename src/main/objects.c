@@ -653,3 +653,56 @@ int objGetExtraSize(ObjInstance *object,int size) {
             return 0;
     }
 }
+
+uint objGetTotalDataSize(ObjInstance *obj, ObjData *objData,
+ObjDef *objDef, uint flags) {
+    uint size;
+
+    size = sizeof(ObjInstance);
+    size += objData->nModels * 4;
+    size += objGetExtraSize(obj,size);
+    if(flags & 0x40) {
+        size = (int)alignTo4((void*)size);
+        size += 8;
+        size = alignTo8(size);
+        size += 0x50;
+    }
+    if(flags & 0x100) {
+        size = (int)alignTo4((void*)size);
+        size += 8;
+        size = alignTo8(size);
+        size += 0x400;
+    }
+    if(flags & 2 && objData->shadowType != ObjShadowType_None) {
+        size = (int)alignTo4((void*)size);
+        size += 0x44;
+    }
+    if(objData->maybeNumHits) {
+        size = (uint)alignTo4((void*)size);
+        size += 0xa4;
+        if ((objData->flags93 & 8) != 0) {
+            size += 0x110;
+        }
+    }
+    if(objData->nJoints) {
+        size = (int)alignTo4((void*)size);
+        size += (uint)objData->nJoints * 0x12;
+    }
+    if(objData->nTextures) {
+        size = (int)alignTo4((void*)size);
+        size += (uint)objData->nTextures * 0x10;
+    }
+    if(objData->numLockData) {
+        size = (int)alignTo4((void*)size);
+        size += (uint)objData->numLockData * 0x18;
+    }
+    if(objData->maybeNumHits && objData->bDisableHits) {
+        size = alignTo8(size);
+        size += 300;
+    }
+    if(objData->numLockData) {
+        size = (int)alignTo4((void*)size);
+        size += (uint)objData->numLockData * 5;
+    }
+    return size;
+}

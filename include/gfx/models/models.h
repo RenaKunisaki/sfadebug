@@ -8,6 +8,14 @@
 #include "sys/SparseArray.h"
 
 typedef enum {
+    ObjShadowType_None,
+    ObjShadowType_BigBoxShadow,
+    ObjShadowType_GeomShadow,
+    ObjShadowType_Textured,
+    ObjShadowType_BlueGlowingRect,
+} ObjShadowType;
+
+typedef enum {
     ModelDataFlags2_NoAnimations       =     2,
     ModelDataFlags2_CopyVtxsOnLoad     =    16,
     ModelDataFlags2_BoneRelated        =    32,
