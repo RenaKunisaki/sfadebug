@@ -91,7 +91,7 @@ double sqrt(double __x); /* extern */
 void texFreeTexture(Texture *tex); /* extern */
 void trackFreeMap(mapId32 mapNo); /* extern */
 void worldMapListFn_800aac60(mapId32 mapNo, int param2); /* extern */
-void Object_freeModels(ObjInstance *this, int count, int); /* static */
+void Object_freeModels(ObjInstance *object, int count); /* static */
 ModelFlags_loadCharacter Object_getModelFlags(ObjInstance *obj); /* static */
 void *Object_objInitState(ObjInstance *this, void *ptr); /* static */
 ObjData *Object_objLoadData(int objType); /* static */
@@ -513,7 +513,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 		}
 	}
 	if(bModelFailed) {
-		Object_freeModels(result, nModels, realType); // unsure of last arg
+		Object_freeModels(result, nModels);
 		objFreeObjdef(realType);
 		return NULL;
 	}
@@ -705,4 +705,15 @@ ObjDef *objDef, uint flags) {
         size += (uint)objData->numLockData * 5;
     }
     return size;
+}
+
+void Object_freeModels(ObjInstance *object, int count) {
+    s32 spC;
+    s32 ii;
+
+    for(ii = 0; ii < count; ii++) {
+        if((int)object->modelInstances[ii]) {
+            modelInstanceFree(object->modelInstances[ii]);
+        }
+    }
 }
