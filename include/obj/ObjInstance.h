@@ -369,7 +369,7 @@ typedef struct ObjInstance {
     /* 0xe6 */ s16 _E6;
     /* 0xe8 */ s8 hintTextIdx;
     /* 0xe9 */ s8 nTouchCallbacks;
-    /* 0xea */ s8 lockedFreeTick;
+    /* 0xea */ u8 lockedFreeTick;
     /* 0xeb */ u8 nChildren;
     /* 0xec */ u32 colorEC;
     /* 0xf0 */ s8 _F0;

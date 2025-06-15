@@ -42,7 +42,7 @@ void *alignTo64(void *); /* extern */
 void debugPrint(char *fmt, ...); /* extern */
 void dll_26F_init(ObjInstance *this, ObjDef *objDef, ObjInstance *obj2,
     /* DllInitFlags*/ uint flags, float x, float y, float z); /* extern */
-void objStopSounds(ObjInstance *this, u8 flags); /* extern */
+void objStopSounds(ObjInstance *pbj,u8 flags,char *file,int line); /* extern */
 void fn_8007FCF8(); /* extern */
 void fn_8008607C(s16 *); /* extern */
 mapId32 mapCoordsToId(float x, float z); /* extern */
@@ -127,7 +127,7 @@ extern void *DWORD_80398a94;
 extern s16 *Object_contNoBuf;
 extern s32 Object_delList;
 extern ObjInstance **Object_loadedObjs;
-extern s32 Object_lockList;
+extern ObjInstance **Object_lockList;
 extern s32 Object_lockListLen;
 extern s32 Object_maxObjId;
 extern s32 Object_maxObjType;
@@ -339,7 +339,7 @@ ObjInstance *Object_findByUniqueId(u32 id) {
 	return NULL;
 }
 
-s32 Object_getNumLoadedObjs(void) {
+s32 Object_getObjListSize(void) {
 	return ObjListSize;
 }
 
@@ -353,9 +353,9 @@ s32 *getTablesBinEntry(s32 idx) {
 	return (s32 *)((u32)tables_bin + tables_tab[idx] * 4);
 }
 
-ObjInstance *objInstantiateCharacter(ObjDef *def, uint flags, int mapId,
-int objNo, float *pMatrix) {
-    ObjInstance *obj;
+ObjInstance *objInstantiateCharacter(
+    ObjDef *def, uint flags, int mapId, int objNo, float *pMatrix) {
+	ObjInstance *obj;
 
 	obj = NULL;
 	if(getPiLockedFlags() & 1) STUBBED_OP(obj);
@@ -584,16 +584,15 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 
 void objSetup(ObjInstance *object, uint bAddToLoadedObjs) {
 	if(object->heldBy) {
-		multVectorByObjMtx(
-            object->pos.pos.x,
-            object->pos.pos.y,
-            object->pos.pos.z,
+		multVectorByObjMtx(object->pos.pos.x,
+		    object->pos.pos.y,
+		    object->pos.pos.z,
 		    &(object->prevPos).x,
 		    &(object->prevPos).y,
 		    &(object->prevPos).z,
 		    object->heldBy);
 	} else {
-        object->prevPos.x = object->pos.pos.x;
+		object->prevPos.x = object->pos.pos.x;
 		object->prevPos.y = object->pos.pos.y;
 		object->prevPos.z = object->pos.pos.z;
 	}
@@ -614,126 +613,173 @@ void objSetup(ObjInstance *object, uint bAddToLoadedObjs) {
 	}
 	if(-1 < object->data->unka0) {
 		worldMapListFn_800aac60(
-            (int)*(short *)&object->data->unka0, (int)object);
+		    (int)*(short *)&object->data->unka0, (int)object);
 	}
 	if((object->data->flags & ObjFileStructFlags44_IsWorldObj)) {
-        Object_objAddObjectType(object, ObjCat_StaticCamera);
+		Object_objAddObjectType(object, ObjCat_StaticCamera);
 		if(object->priority != 0x5a) { Object_setPriority(object, 0x5a); }
-    } else {
+	} else {
 		if(object->priority == 0) { Object_setPriority(object, 0x50); }
-
 	}
 	if((bAddToLoadedObjs & 1) != 0) {
 		object->flags_0xb0 |= ObjInstance_FlagsB0_IsInGlobalObjList;
 		Object_loadedObjs[ObjListSize++] = object;
-        ASSERTLINE(1202, ObjListSize<MAX_OBJECTS);
+		ASSERTLINE(1202, ObjListSize < MAX_OBJECTS);
 		LAB_80083bd4(object);
 	}
 	if('\0' < (char)object->data->numSeqs) {
 		objAddObjectType(object, ObjCat_LevelControl);
 	}
-	if((object->data->flags & ObjFileStructFlags44_HaveModels) != 0) { clearNVisibleObjs(); }
+	if((object->data->flags & ObjFileStructFlags44_HaveModels) != 0) {
+		clearNVisibleObjs();
+	}
 	if((object->data->flags & ObjFileStructFlags44_DifferentLightColor) != 0) {
 		objAddObjectType(object, 0x38);
 	}
 }
 
-//XXX size param is probably wrong
-int objGetExtraSize(ObjInstance *object,int size) {
-    switch(object->romdefno) {
-        case ObjDefNo_Krystal:
-        case ObjDefNo_Sabre:
-            return 0x8c4; //sizeof(PlayerState)
+// XXX size param is probably wrong
+int objGetExtraSize(ObjInstance *object, int size) {
+	switch(object->romdefno) {
+		case ObjDefNo_Krystal:
+		case ObjDefNo_Sabre: return 0x8c4; // sizeof(PlayerState)
 
-        default:
-            if(object->dll && object->dll->funcs->Object.getExtraSize) {
-                return (*object->dll->funcs->Object.getExtraSize)(
-                    object, size);
-            }
-            return 0;
-    }
+		default:
+			if(object->dll && object->dll->funcs->Object.getExtraSize) {
+				return (*object->dll->funcs->Object.getExtraSize)(object, size);
+			}
+			return 0;
+	}
 }
 
-uint objGetTotalDataSize(ObjInstance *obj, ObjData *objData,
-ObjDef *objDef, uint flags) {
-    uint size;
+uint objGetTotalDataSize(
+    ObjInstance *obj, ObjData *objData, ObjDef *objDef, uint flags) {
+	uint size;
 
-    size = sizeof(ObjInstance);
-    size += objData->nModels * 4;
-    size += objGetExtraSize(obj,size);
-    if(flags & 0x40) {
-        size = (int)alignTo4((void*)size);
-        size += 8;
-        size = alignTo8(size);
-        size += 0x50;
-    }
-    if(flags & 0x100) {
-        size = (int)alignTo4((void*)size);
-        size += 8;
-        size = alignTo8(size);
-        size += 0x400;
-    }
-    if(flags & 2 && objData->shadowType != ObjShadowType_None) {
-        size = (int)alignTo4((void*)size);
-        size += 0x44;
-    }
-    if(objData->maybeNumHits) {
-        size = (uint)alignTo4((void*)size);
-        size += 0xa4;
-        if ((objData->flags93 & 8) != 0) {
-            size += 0x110;
-        }
-    }
-    if(objData->nJoints) {
-        size = (int)alignTo4((void*)size);
-        size += (uint)objData->nJoints * 0x12;
-    }
-    if(objData->nTextures) {
-        size = (int)alignTo4((void*)size);
-        size += (uint)objData->nTextures * 0x10;
-    }
-    if(objData->numLockData) {
-        size = (int)alignTo4((void*)size);
-        size += (uint)objData->numLockData * 0x18;
-    }
-    if(objData->maybeNumHits && objData->bDisableHits) {
-        size = alignTo8(size);
-        size += 300;
-    }
-    if(objData->numLockData) {
-        size = (int)alignTo4((void*)size);
-        size += (uint)objData->numLockData * 5;
-    }
-    return size;
+	size = sizeof(ObjInstance);
+	size += objData->nModels * 4;
+	size += objGetExtraSize(obj, size);
+	if(flags & 0x40) {
+		size = (int)alignTo4((void *)size);
+		size += 8;
+		size = alignTo8(size);
+		size += 0x50;
+	}
+	if(flags & 0x100) {
+		size = (int)alignTo4((void *)size);
+		size += 8;
+		size = alignTo8(size);
+		size += 0x400;
+	}
+	if(flags & 2 && objData->shadowType != ObjShadowType_None) {
+		size = (int)alignTo4((void *)size);
+		size += 0x44;
+	}
+	if(objData->maybeNumHits) {
+		size = (uint)alignTo4((void *)size);
+		size += 0xa4;
+		if((objData->flags93 & 8) != 0) { size += 0x110; }
+	}
+	if(objData->nJoints) {
+		size = (int)alignTo4((void *)size);
+		size += (uint)objData->nJoints * 0x12;
+	}
+	if(objData->nTextures) {
+		size = (int)alignTo4((void *)size);
+		size += (uint)objData->nTextures * 0x10;
+	}
+	if(objData->numLockData) {
+		size = (int)alignTo4((void *)size);
+		size += (uint)objData->numLockData * 0x18;
+	}
+	if(objData->maybeNumHits && objData->bDisableHits) {
+		size = alignTo8(size);
+		size += 300;
+	}
+	if(objData->numLockData) {
+		size = (int)alignTo4((void *)size);
+		size += (uint)objData->numLockData * 5;
+	}
+	return size;
 }
 
 float objModelFn_800839d4(ObjInstance *object) {
-    ModelInstance *mInst;
-    float result;
-    s32 ii;
+	ModelInstance *mInst;
+	float result;
+	s32 ii;
 
-    result = 10.0f;
-    for(ii = 0; ii < object->data->nModels; ii++) {
-        if((int)object->modelInstances[ii]) {
-            mInst = object->modelInstances[ii];
-            if(modelGetFieldA4(mInst->mod) > result) {
-                result = modelGetFieldA4(mInst->mod);
-            }
-        }
-    }
-    if (result < object->data->unk9c) {
-        result = 16.0f * object->data->unk9c;
-    }
-    return result;
+	result = 10.0f;
+	for(ii = 0; ii < object->data->nModels; ii++) {
+		if((int)object->modelInstances[ii]) {
+			mInst = object->modelInstances[ii];
+			if(modelGetFieldA4(mInst->mod) > result) {
+				result = modelGetFieldA4(mInst->mod);
+			}
+		}
+	}
+	if(result < object->data->unk9c) { result = 16.0f * object->data->unk9c; }
+	return result;
 }
 
 void Object_freeModels(ObjInstance *object, int count) {
-    s32 spC;
-    s32 ii;
+	s32 spC;
+	s32 ii;
 
-    for(ii = 0; ii < count; ii++) {
-        if((int)object->modelInstances[ii]) {
-            modelInstanceFree(object->modelInstances[ii]);
+	for(ii = 0; ii < count; ii++) {
+		if((int)object->modelInstances[ii]) {
+			modelInstanceFree(object->modelInstances[ii]);
+		}
+	}
+}
+
+void objFreeObject(ObjInstance *obj) {
+	int iVar2;
+	int dVar3;
+
+    ASSERTLINE(1467, obj);
+	if(obj->flags_0xb0 & ObjInstance_FlagsB0_IsFreed) return;
+    objStopSounds(obj, 0x7f, __FILE__, 1474);
+
+    if(obj->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList) {
+        for(iVar2 = 0; iVar2 < ObjListSize; iVar2++) {
+            if(Object_loadedObjs[iVar2] == obj) break;
         }
+        if(iVar2 < ObjListSize) {
+            ObjListSize--;
+            for(dVar3=iVar2; dVar3 < ObjListSize; dVar3++) {
+                Object_loadedObjs[dVar3] = Object_loadedObjs[dVar3+1];
+            }
+        }
+        objFreeFn_80083b54(obj);
+        clearNVisibleObjs();
     }
+    obj->flags_0xb0 |= ObjInstance_FlagsB0_IsFreed;
+    LAB_8018fb20(obj, obj->romdefno);
+    if(obj->lockedFreeTick) {
+        for(dVar3 = 0; dVar3 < ObjListSize; dVar3++) {
+            if(Object_loadedObjs[dVar3] == obj) break;
+        }
+        if(dVar3 == Object_lockListLen) {
+            Object_lockList[Object_lockListLen] = obj;
+            Object_lockListLen++;
+        } else {
+            printf("objFreeTick %08x locked %d,already on list\n",
+                obj, obj->lockedFreeTick);
+        }
+    } else if(var_80396D08 == 2) {
+        dVar3 = Object_objDelListCount;
+        if(Object_objDelListCount != 0) {
+            for(dVar3 = 0; dVar3 < ObjListSize; dVar3++) {
+                if(Object_loadedObjs[dVar3] == obj) break;
+            }
+        }
+        if(dVar3 == Object_objDelListCount) {
+            *(ObjInstance **)(Object_delList + Object_objDelListCount * 4) = obj;
+            Object_objDelListCount += 1;
+            if(Object_objDelListCount == 200) {
+                printf("objFreeObject: delete list size overrun\n");
+                Object_objDelListCount -= 1;
+            }
+        }
+    } else worldProcessObjFreeList(obj, var_80396D08 == 0);
 }
