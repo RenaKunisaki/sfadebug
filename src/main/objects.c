@@ -125,7 +125,7 @@ extern int DWORD_80396d10;
 extern int DWORD_80398a88;
 extern void *DWORD_80398a94;
 extern s16 *Object_contNoBuf;
-extern s32 Object_delList;
+extern ObjInstance **Object_delList;
 extern ObjInstance **Object_loadedObjs;
 extern ObjInstance **Object_lockList;
 extern s32 Object_lockListLen;
@@ -733,33 +733,36 @@ void Object_freeModels(ObjInstance *object, int count) {
 }
 
 void objFreeObject(ObjInstance *obj) {
-	int iVar2;
-	int dVar3;
+	int ii, jj;
 
     ASSERTLINE(1467, obj);
 	if(obj->flags_0xb0 & ObjInstance_FlagsB0_IsFreed) return;
     objStopSounds(obj, 0x7f, __FILE__, 1474);
 
     if(obj->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList) {
-        for(iVar2 = 0; iVar2 < ObjListSize; iVar2++) {
-            if(Object_loadedObjs[iVar2] == obj) break;
+        //find this object's index in the global object list
+        for(ii = 0; ii < ObjListSize; ii++) {
+            if(Object_loadedObjs[ii] == obj) break;
         }
-        if(iVar2 < ObjListSize) {
+        if(ii < ObjListSize) {
+            //shift all following entries down
             ObjListSize--;
-            for(dVar3=iVar2; dVar3 < ObjListSize; dVar3++) {
-                Object_loadedObjs[dVar3] = Object_loadedObjs[dVar3+1];
+            for(jj=ii; jj < ObjListSize; jj++) {
+                Object_loadedObjs[jj] = Object_loadedObjs[jj+1];
             }
         }
         objFreeFn_80083b54(obj);
         clearNVisibleObjs();
     }
     obj->flags_0xb0 |= ObjInstance_FlagsB0_IsFreed;
+
     LAB_8018fb20(obj, obj->romdefno);
     if(obj->lockedFreeTick) {
-        for(dVar3 = 0; dVar3 < ObjListSize; dVar3++) {
-            if(Object_loadedObjs[dVar3] == obj) break;
+        //add to the lock list if not already present
+        for(ii = 0; ii < ObjListSize; ii++) {
+            if(Object_loadedObjs[ii] == obj) break;
         }
-        if(dVar3 == Object_lockListLen) {
+        if(ii == Object_lockListLen) {
             Object_lockList[Object_lockListLen] = obj;
             Object_lockListLen++;
         } else {
@@ -767,19 +770,22 @@ void objFreeObject(ObjInstance *obj) {
                 obj, obj->lockedFreeTick);
         }
     } else if(var_80396D08 == 2) {
-        dVar3 = Object_objDelListCount;
+        //add to delete list if not already present
+        ii = Object_objDelListCount;
         if(Object_objDelListCount != 0) {
-            for(dVar3 = 0; dVar3 < ObjListSize; dVar3++) {
-                if(Object_loadedObjs[dVar3] == obj) break;
+            for(ii = 0; ii < ObjListSize; ii++) {
+                if(Object_loadedObjs[ii] == obj) break;
             }
         }
-        if(dVar3 == Object_objDelListCount) {
-            *(ObjInstance **)(Object_delList + Object_objDelListCount * 4) = obj;
+        if(ii == Object_objDelListCount) {
+            Object_delList[Object_objDelListCount] = obj;
             Object_objDelListCount += 1;
             if(Object_objDelListCount == 200) {
                 printf("objFreeObject: delete list size overrun\n");
                 Object_objDelListCount -= 1;
             }
         }
-    } else worldProcessObjFreeList(obj, var_80396D08 == 0);
+    }
+    //else delete it now
+    else worldProcessObjFreeList(obj, var_80396D08 == 0);
 }
