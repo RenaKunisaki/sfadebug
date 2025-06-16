@@ -100,8 +100,7 @@ void Object_objLoadEventData(ObjInstance *object, int romdefno,
     ObjEventData *event, int animId, bool bImmediate); /* static */
 void *Object_objSetupEvents(
     int romdefno, ObjInstance *obj, void *ptr); /* static */
-void *Object_objSetupModels(int romdefno, ModelInstance *modelInstances,
-    ObjInstance *obj, void *ptr); /* static */
+void* Object_objSetupModels(int romdefno,Model *model,ObjInstance *object,void *ptr); /* static */
 void Object_setPriority(ObjInstance *obj, s8 priority); /* static */
 void objSetupDll(ObjInstance *object,ObjDef *def,void *param); /* static */
 void Object_worldProcessObjFreeList(ObjInstance *obj, int param2); /* static */
@@ -469,7 +468,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 	memcpy_src_dst_len(&objTmp, result, sizeof(ObjInstance));
 	memclr(result + 1, totalSize - sizeof(ObjInstance));
 	nModels = objData->nModels;
-	result->modelInstances = (ModelInstance **)&result[1];
+	result->frames = (ModelInstance **)&result[1];
 
 	ii = 0;
 	bModelFailed = false;
@@ -477,36 +476,36 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 		if(modelFlags & 0x400) { // OnlyLoadOneModel
 			iModelInst = (modelFlags >> 0xBU) & 0xF;
 			if(iModelInst < nModels) {
-				result->modelInstances[iModelInst] = loadModelInstance(
+				result->frames[iModelInst] = loadModelInstance(
 				    -objData->pModelList[iModelInst], modelFlags);
-				if(!(s32)result->modelInstances[iModelInst]) {
+				if(!(s32)result->frames[iModelInst]) {
 					bModelFailed = true;
 				} else {
 					ModelInstance_loadShaders(
-					    result->modelInstances[iModelInst], result);
+					    result->frames[iModelInst], result);
 					modelInitSkeleton(
-					    result->pos.scale, result->modelInstances[iModelInst]);
+					    result->pos.scale, result->frames[iModelInst]);
 					if(result->data->flags & 0x800) {
 						Modelnstance_setTexFuncPtr(
-						    result->modelInstances[iModelInst],
+						    result->frames[iModelInst],
 						    modelLoadCb_800c5b80);
 					}
 				}
 			}
 		} else {
 			while(ii < nModels) {
-				result->modelInstances[ii] = loadModelInstance(
+				result->frames[ii] = loadModelInstance(
 				    -(s32)objData->pModelList[ii], modelFlags);
-				if((s32)result->modelInstances[ii] == 0) {
+				if((s32)result->frames[ii] == 0) {
 					bModelFailed = true;
 				} else {
 					ModelInstance_loadShaders(
-					    result->modelInstances[ii], result);
+					    result->frames[ii], result);
 					modelInitSkeleton(
-					    (f64)result->pos.scale, result->modelInstances[ii]);
+					    (f64)result->pos.scale, result->frames[ii]);
 					if(result->data->flags & 0x800) {
 						Modelnstance_setTexFuncPtr(
-						    result->modelInstances[ii], modelLoadCb_800c5b80);
+						    result->frames[ii], modelLoadCb_800c5b80);
 					}
 				}
 				ii += 1;
@@ -518,14 +517,14 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 		objFreeObjdef(realType);
 		return NULL;
 	}
-	next = &result->modelInstances[objData->nModels];
+	next = &result->frames[objData->nModels];
 	next = Object_objInitState(result, next);
 	if(modelFlags & 0x40) {
 		next = Object_objSetupEvents((s32)result->romdefno, result, next);
 	}
 	if(modelFlags & 0x100) {
 		next = Object_objSetupModels(
-		    result->romdefno, result->modelInstances[0], result, next);
+		    result->romdefno, result->frames[0]->mod, result, next);
 	}
 	if((modelFlags & 2) && ((s16)objData->shadowType != 0)) {
 		next = Object_objLoadShadow(result, next, 0);
@@ -556,7 +555,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 	if(((u8)objData->maybeNumHits != 0) && ((u8)objData->bDisableHits != 0)) {
 		next = alignTo4(next);
 		next = Object_objSetupHits((s32)result->romdefno,
-		    (ModelInstance *)result->modelInstances[0],
+		    (ModelInstance *)result->frames[0],
 		    result->hits,
 		    next,
 		    result);
@@ -710,8 +709,8 @@ float objModelFn_800839d4(ObjInstance *object) {
 
 	result = 10.0f;
 	for(ii = 0; ii < object->data->nModels; ii++) {
-		if((int)object->modelInstances[ii]) {
-			mInst = object->modelInstances[ii];
+		if((int)object->frames[ii]) {
+			mInst = object->frames[ii];
 			if(modelGetFieldA4(mInst->mod) > result) {
 				result = modelGetFieldA4(mInst->mod);
 			}
@@ -726,8 +725,8 @@ void Object_freeModels(ObjInstance *object, int count) {
 	s32 ii;
 
 	for(ii = 0; ii < count; ii++) {
-		if((int)object->modelInstances[ii]) {
-			modelInstanceFree(object->modelInstances[ii]);
+		if((int)object->frames[ii]) {
+			modelInstanceFree(object->frames[ii]);
 		}
 	}
 }
@@ -931,4 +930,18 @@ ObjEventData *event,int animId,bool bImmediate) {
             return;
         }
     }
+}
+
+
+void* Object_objSetupModels(int romdefno, Model *model,
+ObjInstance *object,void *ptr) {
+    if(!model) return ptr;
+
+    ptr = alignTo4(ptr);
+    object->models = ptr;
+    ptr = (void*)((uint)ptr + 8);
+    ptr = (void*)alignTo8(ptr);
+    *(uint *)&object->models->cacheModNo = (uint)ptr;
+    ptr = (void *)((uint)ptr + 0x400);
+    return ptr;
 }
