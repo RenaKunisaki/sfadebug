@@ -876,3 +876,18 @@ void* Object_objInitState(ObjInstance *object,void *state) {
     }
     return state;
 }
+
+//return: ModelFlags_loadCharacter
+u32 Object_getModelFlags(ObjInstance *object) {
+    switch(object->romdefno) {
+        case ObjDefNo_Krystal:
+        case ObjDefNo_Sabre:
+            return 0x1cb;
+
+        default:
+            if(object->dll && object->dll->funcs->Object.getModelFlags) {
+				return (*object->dll->funcs->Object.getModelFlags)(object);
+			}
+			else return 0;
+    }
+}
