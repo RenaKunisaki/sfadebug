@@ -293,7 +293,8 @@ typedef struct {
 } ObjInstanceField58;
 
 typedef struct {
-    int TODO;
+    u32 size;
+    void *data;
 } ObjEventData;
 
 typedef struct {

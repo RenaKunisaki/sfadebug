@@ -891,3 +891,16 @@ u32 Object_getModelFlags(ObjInstance *object) {
 			else return 0;
     }
 }
+
+void* Object_objSetupEvents(int romdefno, ObjInstance *object, void *ptr) {
+    ptr = (ObjEventData *)alignTo4(ptr);
+    object->pEventName = ptr;
+
+    ptr = (void*)((uint)ptr + sizeof(ObjEventData));
+    ptr = (void *)alignTo8(ptr);
+    object->pEventName->data = ptr;
+
+    ptr = (void *)((uint)ptr + 0x50);
+    objLoadEventData(object,romdefno,object->pEventName,0,true);
+    return ptr;
+}
