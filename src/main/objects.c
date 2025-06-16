@@ -841,6 +841,24 @@ void objSetupDll(ObjInstance *object,ObjDef *def,void *param) {
     object->pos_0x8c.x = object->pos.pos.x;
     object->pos_0x8c.y = object->pos.pos.y;
     object->pos_0x8c.z = object->pos.pos.z;
-    return;
 }
 
+//probably objMove or such
+void fn_80084238(ObjInstance *object) {
+    ObjDefEnum OVar1;
+
+    if ((object->flags_0xb0 & ObjInstance_FlagsB0_DontMove) == 0) {
+        switch(object->romdefno) {
+            case ObjDefNo_Krystal:
+            case ObjDefNo_Sabre:
+                LAB_801929c4(object);
+                break;
+
+            default:
+                if(!object->dll) return;
+                (*object->dll->funcs->Object.hitDetect)(object);
+        }
+        objMultPosByMtx(object,
+            &object->prevPos.x,&object->prevPos.y,&object->prevPos.z);
+    }
+}
