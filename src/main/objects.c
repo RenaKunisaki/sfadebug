@@ -42,7 +42,8 @@ void *alignTo64(void *); /* extern */
 void debugPrint(char *fmt, ...); /* extern */
 void dll_26F_init(ObjInstance *this, ObjDef *objDef, ObjInstance *obj2,
     /* DllInitFlags*/ uint flags, float x, float y, float z); /* extern */
-void objStopSounds(ObjInstance *pbj,u8 flags,char *file,int line); /* extern */
+void objStopSounds(
+    ObjInstance *pbj, u8 flags, char *file, int line); /* extern */
 void fn_8007FCF8(); /* extern */
 void fn_8008607C(s16 *); /* extern */
 mapId32 mapCoordsToId(float x, float z); /* extern */
@@ -79,7 +80,7 @@ void multVectorByObjMtx(double x, double y, double z, float *outX, float *outY,
 void objFn_8002aac8(s16 *); /* extern */
 void objFreeAll(void); /* extern */
 void objListAdd(
-    ObjInstance **param_1, ObjInstance *obj1, ObjInstance *obj2); /* extern */
+    ObjListStruct *param_1, ObjInstance *obj1, ObjInstance *obj2); /* extern */
 void objModelMtxFn_8007b0c0(ObjInstance *obj, f32 (*)[4]); /* extern */
 void objMultPosByMtx(
     ObjInstance *obj, float *x, float *y, float *z); /* extern */
@@ -182,6 +183,7 @@ extern s32 *tables_bin;
 extern s32 *tables_tab;
 extern f32 timeDelta;
 extern s32 var_80396D08;
+ObjListStruct objList_80398a88;
 
 /**
  * @brief Reset nVisibleObjs.
@@ -732,60 +734,84 @@ void Object_freeModels(ObjInstance *object, int count) {
 	}
 }
 
+//something like "add to global(?) object list"
+void fn_80083bd4(ObjInstance *object) {
+    int sp10;
+    s16 size; //spC
+	ObjInstance *r30;
+	ObjInstance *r31;
+
+	if(!(object->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList)) return;
+
+    size = objList_80398a88.objSize;
+    r30 = NULL;
+    r31 = objList_80398a88.obj;
+    for(sp10 = (int)r31;
+    (int)r31 && object->priority < r31->priority;
+    r31 = (ObjInstance*)sp10) {
+        r30 = r31;
+        sp10 += size;
+    }
+    objListAdd(&objList_80398a88, r30, object);
+}
+
 void objFreeObject(ObjInstance *obj) {
 	int ii, jj;
 
-    ASSERTLINE(1467, obj);
+	ASSERTLINE(1467, obj);
 	if(obj->flags_0xb0 & ObjInstance_FlagsB0_IsFreed) return;
-    objStopSounds(obj, 0x7f, __FILE__, 1474);
+	objStopSounds(obj, 0x7f, __FILE__, 1474);
 
-    if(obj->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList) {
-        //find this object's index in the global object list
-        for(ii = 0; ii < ObjListSize; ii++) {
-            if(Object_loadedObjs[ii] == obj) break;
-        }
-        if(ii < ObjListSize) {
-            //shift all following entries down
-            ObjListSize--;
-            for(jj=ii; jj < ObjListSize; jj++) {
-                Object_loadedObjs[jj] = Object_loadedObjs[jj+1];
-            }
-        }
-        objFreeFn_80083b54(obj);
-        clearNVisibleObjs();
-    }
-    obj->flags_0xb0 |= ObjInstance_FlagsB0_IsFreed;
+	if(obj->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList) {
+		// find this object's index in the global object list
+		for(ii = 0; ii < ObjListSize; ii++) {
+			if(Object_loadedObjs[ii] == obj) break;
+		}
+		if(ii < ObjListSize) {
+			// shift all following entries down
+			ObjListSize--;
+			for(jj = ii; jj < ObjListSize; jj++) {
+				Object_loadedObjs[jj] = Object_loadedObjs[jj + 1];
+			}
+		}
+		objFreeFn_80083b54(obj);
+		clearNVisibleObjs();
+	}
+	obj->flags_0xb0 |= ObjInstance_FlagsB0_IsFreed;
 
-    LAB_8018fb20(obj, obj->romdefno);
-    if(obj->lockedFreeTick) {
-        //add to the lock list if not already present
-        for(ii = 0; ii < ObjListSize; ii++) {
-            if(Object_loadedObjs[ii] == obj) break;
-        }
-        if(ii == Object_lockListLen) {
-            Object_lockList[Object_lockListLen] = obj;
-            Object_lockListLen++;
-        } else {
-            printf("objFreeTick %08x locked %d,already on list\n",
-                obj, obj->lockedFreeTick);
-        }
-    } else if(var_80396D08 == 2) {
-        //add to delete list if not already present
-        ii = Object_objDelListCount;
-        if(Object_objDelListCount != 0) {
-            for(ii = 0; ii < ObjListSize; ii++) {
-                if(Object_loadedObjs[ii] == obj) break;
-            }
-        }
-        if(ii == Object_objDelListCount) {
-            Object_delList[Object_objDelListCount] = obj;
-            Object_objDelListCount += 1;
-            if(Object_objDelListCount == 200) {
-                printf("objFreeObject: delete list size overrun\n");
-                Object_objDelListCount -= 1;
-            }
-        }
-    }
-    //else delete it now
-    else worldProcessObjFreeList(obj, var_80396D08 == 0);
+	LAB_8018fb20(obj, obj->romdefno);
+	if(obj->lockedFreeTick) {
+		// add to the lock list if not already present
+		for(ii = 0; ii < ObjListSize; ii++) {
+			if(Object_loadedObjs[ii] == obj) break;
+		}
+		if(ii == Object_lockListLen) {
+			Object_lockList[Object_lockListLen] = obj;
+			Object_lockListLen++;
+		} else {
+			printf("objFreeTick %08x locked %d,already on list\n",
+			    obj,
+			    obj->lockedFreeTick);
+		}
+	} else if(var_80396D08 == 2) {
+		// add to delete list if not already present
+		ii = Object_objDelListCount;
+		if(Object_objDelListCount != 0) {
+			for(ii = 0; ii < ObjListSize; ii++) {
+				if(Object_loadedObjs[ii] == obj) break;
+			}
+		}
+		if(ii == Object_objDelListCount) {
+			Object_delList[Object_objDelListCount] = obj;
+			Object_objDelListCount += 1;
+			if(Object_objDelListCount == 200) {
+				printf("objFreeObject: delete list size overrun\n");
+				Object_objDelListCount -= 1;
+			}
+		}
+	}
+	// else delete it now
+	else
+		worldProcessObjFreeList(obj, var_80396D08 == 0);
 }
+
