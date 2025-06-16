@@ -3,6 +3,7 @@
 #include "types.h"
 #include "global.h"
 #include "sys/n64.h"
+#include "sys/files.h"
 #include "gfx/gbi.h"
 #include "gfx/render.h"
 #include "sys/alloc.h"
@@ -11,7 +12,6 @@
 #include "obj/ObjInstance.h"
 #include "gfx/models/models.h"
 
-typedef int DataFileId32;
 typedef int mapId32;
 typedef uint DataFileLoadedFlags;
 typedef int ObjDefEnum;
@@ -898,9 +898,39 @@ void* Object_objSetupEvents(int romdefno, ObjInstance *object, void *ptr) {
 
     ptr = (void*)((uint)ptr + sizeof(ObjEventData));
     ptr = (void *)alignTo8(ptr);
-    object->pEventName->data = ptr;
+    object->pEventName->data = (ObjEventData2*)ptr;
 
-    ptr = (void *)((uint)ptr + 0x50);
+    ptr = (void *)((uint)ptr + sizeof(ObjEventData2));
     objLoadEventData(object,romdefno,object->pEventName,0,true);
     return ptr;
+}
+
+void Object_objLoadEventData(ObjInstance *object,int romdefno,
+ObjEventData *event,int animId,bool bImmediate) {
+    int sVar1;
+    int iVar2;
+    s16 *evtIds;
+
+    evtIds = (s16 *)object->data->pEvent;
+    event->size = 0;
+    if(!evtIds) return;
+
+    for(iVar2 = 0; evtIds[iVar2] != -1; iVar2 += 3) {
+        if (animId == evtIds[iVar2]) {
+            sVar1 = evtIds[iVar2 + 1];
+            event->size = (int)evtIds[iVar2 + 2];
+            //0x50 might be sizeof(ObjEventData2)
+            if((int)event->size > 0x50) {
+                printf("objects.c: event data size overflow\n");
+                event->size = 0x50;
+            }
+            if (!bImmediate) {
+                loadAsset_fileWithOffsetLength(event->data,
+                    FILE_OBJEVENT_bin, sVar1, event->size);
+                return;
+            }
+            loadDataFileWithLength(FILE_OBJEVENT_bin,event->data,(int)sVar1,event->size);
+            return;
+        }
+    }
 }
