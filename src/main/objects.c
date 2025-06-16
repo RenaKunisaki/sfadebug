@@ -182,6 +182,8 @@ extern s32 *tables_tab;
 extern f32 timeDelta;
 extern s32 var_80396D08;
 ObjListStruct objList_80398a88;
+ObjData **objDefNoList; //80398a60
+u8 *objDefNoUsage; //80398a64
 
 /**
  * @brief Reset nVisibleObjs.
@@ -945,3 +947,22 @@ ObjInstance *object,void *ptr) {
     ptr = (void *)((uint)ptr + 0x400);
     return ptr;
 }
+
+
+void objFreeObjdef(int defNo) {
+    ObjData *data;
+
+    if(objDefNoUsage[defNo] == 0) {
+        debugPrint("objFreeObjdef: Error!! (%d)\n",defNo);
+    }
+    else {
+        objDefNoUsage[defNo]--;
+        if(!objDefNoUsage[defNo]) {
+            data = objDefNoList[defNo];
+            if(data->pModLines) mmFree(data->pModLines);
+            if(data->wObjList) mmFree(data->wObjList);
+            mmFree(data);
+        }
+    }
+}
+
