@@ -734,6 +734,12 @@ void Object_freeModels(ObjInstance *object, int count) {
 	}
 }
 
+void objFreeFn_80083b54(ObjInstance *object) {
+    if(object->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList) {
+        objRemoveFromList(&objList_80398a88, object);
+    }
+}
+
 //something like "add to global(?) object list"
 void fn_80083bd4(ObjInstance *object) {
     int sp10;
