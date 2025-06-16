@@ -907,29 +907,27 @@ void* Object_objSetupEvents(int romdefno, ObjInstance *object, void *ptr) {
 
 void Object_objLoadEventData(ObjInstance *object,int romdefno,
 ObjEventData *event,int animId,bool bImmediate) {
-    int sVar1;
-    int iVar2;
-    s16 *evtIds;
+    int offset;
+    int ii;
+    s16 *evtData;
 
-    evtIds = (s16 *)object->data->pEvent;
+    evtData = (s16 *)object->data->pEvent;
     event->size = 0;
-    if(!evtIds) return;
+    if(!evtData) return;
 
-    for(iVar2 = 0; evtIds[iVar2] != -1; iVar2 += 3) {
-        if (animId == evtIds[iVar2]) {
-            sVar1 = evtIds[iVar2 + 1];
-            event->size = (int)evtIds[iVar2 + 2];
+    for(ii = 0; evtData[ii] != -1; ii += 3) {
+        if(animId == evtData[ii]) {
+            offset = evtData[ii + 1];
+            event->size = evtData[ii + 2];
             //0x50 might be sizeof(ObjEventData2)
-            if((int)event->size > 0x50) {
+            if(event->size > 0x50) {
                 printf("objects.c: event data size overflow\n");
                 event->size = 0x50;
             }
-            if (!bImmediate) {
-                loadAsset_fileWithOffsetLength(event->data,
-                    FILE_OBJEVENT_bin, sVar1, event->size);
-                return;
-            }
-            loadDataFileWithLength(FILE_OBJEVENT_bin,event->data,(int)sVar1,event->size);
+            if(!bImmediate) loadAsset_fileWithOffsetLength(event->data,
+                FILE_OBJEVENT_bin, offset, event->size);
+            else loadDataFileWithLength(FILE_OBJEVENT_bin,
+                event->data,offset,event->size);
             return;
         }
     }

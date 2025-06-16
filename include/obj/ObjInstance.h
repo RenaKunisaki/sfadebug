@@ -113,7 +113,9 @@ typedef struct {
     /* 0x14 */ void *unk14;
     /* 0x18 */ ObjSeqCmd *offset_0x18; //[OPTIONAL] a file containing functions
     /* 0x1c */ u16 *pSeq; //[OPTIONAL] -> seq IDs
-    /* 0x20 */ void *pEvent; //[OPTIONAL] -> event IDs, ends with -1
+    /* 0x20 */ s16 *pEvent; //[OPTIONAL] -> event IDs, ends with -1
+        //triples of [animId, offset, size, animId, offset...]
+        //but is not a struct
     /* 0x24 */ void *pHits; //[OPTIONAL]
     /* 0x28 */ ObjWeaponData *pWeaponDa; //[OPTIONAL]
     /* 0x2c */ AttachPoint *pAttachPoints;
@@ -297,7 +299,7 @@ typedef struct {
 } ObjEventData2;
 
 typedef struct {
-    u32 size;
+    int size;
     ObjEventData2 *data;
 } ObjEventData;
 
