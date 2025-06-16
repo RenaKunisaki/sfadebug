@@ -639,15 +639,14 @@ void objSetup(ObjInstance *object, uint bAddToLoadedObjs) {
 	}
 }
 
-// XXX size param is probably wrong
-int objGetExtraSize(ObjInstance *object, int size) {
+int objGetExtraSize(ObjInstance *object, void *state) {
 	switch(object->romdefno) {
 		case ObjDefNo_Krystal:
 		case ObjDefNo_Sabre: return 0x8c4; // sizeof(PlayerState)
 
 		default:
 			if(object->dll && object->dll->funcs->Object.getExtraSize) {
-				return (*object->dll->funcs->Object.getExtraSize)(object, size);
+				return (*object->dll->funcs->Object.getExtraSize)(object, state);
 			}
 			return 0;
 	}
@@ -659,7 +658,7 @@ uint objGetTotalDataSize(
 
 	size = sizeof(ObjInstance);
 	size += objData->nModels * 4;
-	size += objGetExtraSize(obj, size);
+	size += objGetExtraSize(obj, (void*)size);
 	if(flags & 0x40) {
 		size = (int)alignTo4((void *)size);
 		size += 8;
@@ -861,4 +860,19 @@ void fn_80084238(ObjInstance *object) {
         objMultPosByMtx(object,
             &object->prevPos.x,&object->prevPos.y,&object->prevPos.z);
     }
+}
+
+void* Object_objInitState(ObjInstance *object,void *state) {
+    int size;
+
+    state = (void *)alignTo4(state);
+    size = objGetExtraSize(object, state);
+    if(size) {
+        object->state = (undefined *)state;
+        state = (void *)((int)state + size);
+    }
+    else {
+        object->state = NULL;
+    }
+    return state;
 }

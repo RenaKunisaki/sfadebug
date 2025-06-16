@@ -22,7 +22,7 @@ typedef struct {
             /* 0x10 */ void(*render)(struct ObjInstance *object, undefined4 param2, undefined4 param3, undefined4 param4, undefined4 param5, BOOL shouldRender);
             /* 0x14 */ void(*onFreeObjDef)(struct ObjInstance *object, undefined4);
             /* 0x18 */ u32 (*getModelFlags)(struct ObjInstance *object); //in final, this is done inline
-            /* 0x1c */ int (*getExtraSize)(struct ObjInstance *object, int size); //returns sizeof(this obj's State)
+            /* 0x1c */ int (*getExtraSize)(struct ObjInstance *object, void *state); //returns sizeof(this obj's State)
             /* 0x20 */ UNKTYPE *setScale;
             /* 0x24 */ UNKTYPE *unk24;
             /* 0x28 */ void (*modelMtxFn_0x28)(struct ObjInstance *object, undefined4, Vec * );
