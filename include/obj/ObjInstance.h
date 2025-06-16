@@ -297,7 +297,27 @@ typedef struct {
 } ObjEventData;
 
 typedef struct {
-    int TODO;
+    /* 0x00 */ float unk00; //copied from ObjectFileStruct field 0
+    /* 0x04 */ Texture *texture;
+    /* 0x08 */ u8 unk08;
+    /* 0x09 */ u8 unk09;
+    /* 0x0a */ u8 unk0a;
+    /* 0x0b */ u8 unk0b;
+    /* 0x0c */ int unk0c;
+    /* 0x10 */ int unk10;
+    /* 0x14 */ Vec unk14; //size?
+    /* 0x20 */ Vec pos;
+    /* 0x2c */ float unk2c;
+    /* 0x30 */ uint flags; //8=initialized?
+    /* 0x34 */ u8 unk34;
+    /* 0x35 */ u8 unk35;
+    /* 0x36 */ short opacityChange;
+    /* 0x38 */ u32 color; //Color4b
+    /* 0x3c */ u8 unk3c;
+    /* 0x3d */ u8 unk3d;
+    /* 0x3e */ u8 unk3e;
+    /* 0x3f */ u8 unk3f;
+    /* 0x40 */ u8 opacity;
 } Shadow;
 
 typedef struct {

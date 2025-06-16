@@ -27,10 +27,10 @@ void Modelnstance_setTexFuncPtrsetTexFuncPtr(
     ModelInstance *modelInstance, undefined *cb); /* extern */
 void ModelInstance_unloadShaders(ModelInstance *modelInstance); /* extern */
 void Object_freeFn_80092460(ObjInstance *obj); /* extern */
-void Object_objAddObjectType(ObjInstance *this, int type); /* extern */
-void *Object_objLoadShadow(ObjInstance *this, void *ptr, s32); /* extern */
-void *Object_objSetupField58(ObjInstance *this, void *ptr); /* extern */
-void *Object_objSetupHitState(ObjInstance *this, void *ptr); /* extern */
+void Object_objAddObjectType(ObjInstance *object, int type); /* extern */
+void *Object_objLoadShadow(ObjInstance *object, void *ptr, s32); /* extern */
+void *Object_objSetupField58(ObjInstance *object, void *ptr); /* extern */
+void *Object_objSetupHitState(ObjInstance *object, void *ptr); /* extern */
 void *Object_objSetupHits(int romdefno, ModelInstance *minst,
     HitState *hitState, void *buf, ObjInstance *obj); /* extern */
 ObjInstance **Object_playerGetObject(int typ, int *outNumObjs); /* extern */
@@ -40,7 +40,7 @@ void Object_streamFn_8018fa50(ObjInstance *obj, int romDefNo); /* extern */
 void *alignTo4(void *); /* extern */
 void *alignTo64(void *); /* extern */
 void debugPrint(char *fmt, ...); /* extern */
-void dll_26F_init(ObjInstance *this, ObjDef *objDef, ObjInstance *obj2,
+void dll_26F_init(ObjInstance *object, ObjDef *objDef, ObjInstance *obj2,
     /* DllInitFlags*/ uint flags, float x, float y, float z); /* extern */
 void objStopSounds(
     ObjInstance *pbj, u8 flags, char *file, int line); /* extern */
@@ -85,7 +85,7 @@ void objModelMtxFn_8007b0c0(ObjInstance *obj, f32 (*)[4]); /* extern */
 void objMultPosByMtx(
     ObjInstance *obj, float *x, float *y, float *z); /* extern */
 void objRemoveFromList(ObjListStruct *entry, ObjInstance *obj); /* extern */
-void playerOnLoad(ObjInstance *this); /* extern */
+void playerOnLoad(ObjInstance *object, ObjDef *def, void *param); /* extern */
 void playerUpdateFn_800ae404(void); /* extern */
 void setShadowFlag_803db658(s8 param_1); /* extern */
 double sqrt(double __x); /* extern */
@@ -94,17 +94,16 @@ void trackFreeMap(mapId32 mapNo); /* extern */
 void worldMapListFn_800aac60(mapId32 mapNo, int param2); /* extern */
 void Object_freeModels(ObjInstance *object, int count); /* static */
 ModelFlags_loadCharacter Object_getModelFlags(ObjInstance *obj); /* static */
-void *Object_objInitState(ObjInstance *this, void *ptr); /* static */
+void *Object_objInitState(ObjInstance *object, void *ptr); /* static */
 ObjData *Object_objLoadData(int objType); /* static */
-void Object_objLoadEventData(ObjInstance *this, int romdefno,
+void Object_objLoadEventData(ObjInstance *object, int romdefno,
     ObjEventData *event, int animId, bool bImmediate); /* static */
 void *Object_objSetupEvents(
     int romdefno, ObjInstance *obj, void *ptr); /* static */
 void *Object_objSetupModels(int romdefno, ModelInstance *modelInstances,
     ObjInstance *obj, void *ptr); /* static */
 void Object_setPriority(ObjInstance *obj, s8 priority); /* static */
-void Object_setup(
-    ObjInstance *this, ObjDef *def, undefined4 param_3); /* static */
+void objSetupDll(ObjInstance *object,ObjDef *def,void *param); /* static */
 void Object_worldProcessObjFreeList(ObjInstance *obj, int param2); /* static */
 void fn_80083B94(ObjInstance *outNumObjs); /* static */
 void fn_80085D68(ObjInstance *outNumObjs); /* static */
@@ -116,7 +115,7 @@ void objFreezeFn_80085e2c(ObjInstance *object, undefined4 fieldE6, undefined4 r,
     undefined4 g, undefined4 b, uint a); /* static */
 uint objGetTotalDataSize(ObjInstance *obj, ObjData *objData, ObjDef *objDef,
     uint flags); /* static */
-float objModelFn_800839d4(ObjInstance *this); /* static */
+float objModelFn_800839d4(ObjInstance *object); /* static */
 void objSetup(ObjInstance *object, uint bAddToLoadedObjs); /* static */
 extern u8 BYTE_802eca98;
 extern u8 BYTE_80398a91;
@@ -819,5 +818,29 @@ void objFreeObject(ObjInstance *obj) {
 	// else delete it now
 	else
 		worldProcessObjFreeList(obj, var_80396D08 == 0);
+}
+
+void objSetupDll(ObjInstance *object,ObjDef *def,void *param) {
+    ObjDefEnum sVar1;
+
+    switch(object->romdefno) {
+		case ObjDefNo_Krystal:
+		case ObjDefNo_Sabre:
+            playerOnLoad(object, def, param);
+            break;
+
+        default:
+            if(object->dll) {
+                (*object->dll->funcs->_4.Object_onLoad)(object, def, param);
+            }
+    }
+    if(object->shadow) object->shadow->flags |= 8;
+    object->oldPos.x   = object->pos.pos.x;
+    object->oldPos.y   = object->pos.pos.y;
+    object->oldPos.z   = object->pos.pos.z;
+    object->pos_0x8c.x = object->pos.pos.x;
+    object->pos_0x8c.y = object->pos.pos.y;
+    object->pos_0x8c.z = object->pos.pos.z;
+    return;
 }
 

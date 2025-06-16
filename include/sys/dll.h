@@ -12,7 +12,7 @@ typedef struct {
     /* 0x4 */ union {
         int (*onUnload)(void *thisdll);
         void (*func1)(void);
-        void(*Object_onLoad)(struct ObjInstance *object); //XXX does this really exist?
+        void(*Object_onLoad)(struct ObjInstance *object, void *param2, void *param3);
     } _4;
     /* 0x8 */ //int (*func[0])(); //func 0 is a model callback
     /* 0x8 */ union {
