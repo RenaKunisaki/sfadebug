@@ -1064,3 +1064,18 @@ u8 Object_objTypeGetClass(int objType) {
 	data = (ObjData*)((u32)Object_objTypes + Object_pObjectsTab[objType]);
   	return data->class_;
 }
+
+ObjDef * objAlloc(uint size,ObjDefEnum type) {
+	ObjDef *odef;
+
+	odef = (ObjDef *)mmAlloc(size,
+		ALLOC_TAG_OBJECTS_COL,(volatile u32)"romdef");
+	memclr(odef,size);
+	odef->id         = -1;
+	odef->bound      = 100;
+	odef->cullDist   = 50;
+	odef->loadFlags  = RomListLoadFlag_AllocatedByCode;
+	odef->mapStates2 = 4;
+	odef->objType    = type;
+	return odef;
+}
