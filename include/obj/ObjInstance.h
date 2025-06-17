@@ -145,7 +145,7 @@ typedef struct {
     /* 0x5e */ u8 numSeqs;
     /* 0x5f */ char name[15];
     /* 0x6e */ s8 unk6e;
-    /* 0x6f */ s8 unk6f;
+    /* 0x6f */ u8 class_;
     /* 0x70 */ s8 noplacements; //related to hitbox (height?)
     /* 0x71 */ u8 nTextures;
     /* 0x72 */ u8 nJoints;

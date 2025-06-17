@@ -1049,3 +1049,18 @@ ObjFileStructFlags44 Object_objTypeGetFlags(int objType) {
 	data = (ObjData*)((u32)Object_objTypes + Object_pObjectsTab[objType]);
 	return data->flags;
 }
+
+u8 Object_objTypeGetClass(int objType) {
+	ObjData *data;
+
+	if(objType > Object_maxObjType) {
+		printf("objTypeGetClass objtype out of range %d/%d\n",
+			objType, Object_maxObjType);
+		return 0;
+	}
+	objType = Object_pObjIndex[objType];
+	if(objType >= Object_maxObjId) return 0;
+
+	data = (ObjData*)((u32)Object_objTypes + Object_pObjectsTab[objType]);
+  	return data->class_;
+}
