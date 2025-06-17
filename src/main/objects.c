@@ -132,7 +132,7 @@ extern s32 Object_maxObjId;
 extern s32 Object_maxObjType;
 extern s32 ObjListSize;
 extern s32 Object_objDelListCount;
-extern s32 Object_objTypes;
+extern ObjData *Object_objTypes;
 extern s16 *Object_pObjIndex;
 extern s32 *Object_pObjectsTab;
 extern s32 defList;
@@ -1033,4 +1033,19 @@ int Object_objGetControlNo(int objType) { //regalloc
 		8);
 	index = contNoBuf[count];
 	return index;
+}
+
+ObjFileStructFlags44 Object_objTypeGetFlags(int objType) {
+	ObjData *data;
+
+	if(objType > Object_maxObjType) {
+		printf("objTypeGetFlags objtype out of range %d/%d\n",
+			objType, Object_maxObjType);
+		return 0;
+	}
+	objType = Object_pObjIndex[objType];
+	if(objType >= Object_maxObjId) return 0;
+
+	data = (ObjData*)((u32)Object_objTypes + Object_pObjectsTab[objType]);
+	return data->flags;
 }
