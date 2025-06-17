@@ -994,3 +994,7 @@ ModLine* loadModLine(int lineNo, s16 *outCount) { //regswap
 
 void nop_800849FC() {
 }
+
+int Object_getMaxObjType() {
+	return Object_maxObjType;
+}
