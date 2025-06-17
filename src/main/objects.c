@@ -134,7 +134,7 @@ extern s32 ObjListSize;
 extern s32 Object_objDelListCount;
 extern s32 Object_objTypes;
 extern s16 *Object_pObjIndex;
-extern s32 Object_pObjectsTab;
+extern s32 *Object_pObjectsTab;
 extern s32 defList;
 extern s32 defNo;
 extern s8 effectBoxes;
@@ -181,6 +181,7 @@ extern s32 *tables_bin;
 extern s32 *tables_tab;
 extern f32 timeDelta;
 extern s32 var_80396D08;
+s16 *contNoBuf; //80398a44
 ObjListStruct objList_80398a88;
 ObjData **objDefNoList; //80398a60
 u8 *objDefNoUsage; //80398a64
@@ -1002,4 +1003,34 @@ int Object_getMaxObjType() {
 BOOL ObjEdit_isObjIndexNotEmpty(int idx) {
 	if(idx > Object_maxObjType) return false;
 	return Object_pObjIndex[idx] != -1;
+}
+
+int Object_objGetControlNo(int objType) { //regalloc
+	u8 wat[180];
+	uint ii;
+	uint offset;
+	int count;
+	int index;
+
+	if (objType > Object_maxObjType) {
+		printf("objGetControlNo objtype out of range %d/%d\n",
+			objType, Object_maxObjType);
+		return 0;
+	}
+	index = Object_pObjIndex[objType];
+	if(index == -1) return 0;
+
+	//wtf is this?
+	count = 0;
+	for (ii = &wat[90] - &wat[0]; (ii & 1) != 0; count++) {
+		ii--;
+	}
+
+	offset = Object_pObjectsTab[index] + ii;
+	loadAsset_fileWithOffsetLength(
+		contNoBuf, FILE_OBJECTS_bin,
+		offset,
+		8);
+	index = contNoBuf[count];
+	return index;
 }
