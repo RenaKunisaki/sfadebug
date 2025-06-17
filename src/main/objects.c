@@ -991,3 +991,6 @@ ModLine* loadModLine(int lineNo, s16 *outCount) { //regswap
     *outCount = size / 0x14;
     return dest;
 }
+
+void nop_800849FC() {
+}
