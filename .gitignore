@@ -24,3 +24,4 @@ notes/srcfiles.ods
 notes/srcfiles.csv
 src/main/models_dolphin.c.orig
 *.m2c
+.cache/*
