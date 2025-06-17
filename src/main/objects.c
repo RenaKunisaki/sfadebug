@@ -998,3 +998,8 @@ void nop_800849FC() {
 int Object_getMaxObjType() {
 	return Object_maxObjType;
 }
+
+BOOL ObjEdit_isObjIndexNotEmpty(int idx) {
+	if(idx > Object_maxObjType) return false;
+	return Object_pObjIndex[idx] != -1;
+}
