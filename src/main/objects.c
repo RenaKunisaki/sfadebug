@@ -107,7 +107,7 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2); /* static */
 void fn_80083B94(ObjInstance *outNumObjs); /* static */
 void fn_80085D68(ObjInstance *outNumObjs); /* static */
 void fn_80085DDC(ObjInstance *outNumObjs); /* static */
-ModLine *loadModLine(int lineNo, u16 *outCount); /* static */
+ModLine *loadModLine(int lineNo, s16 *outCount); /* static */
 void modelInitSkeleton(double scale, ModelInstance *model); /* static */
 void objFreeObjdef(int defNo); /* static */
 void objFreezeFn_80085e2c(ObjInstance *object, undefined4 fieldE6, undefined4 r,
@@ -966,3 +966,28 @@ void objFreeObjdef(int defNo) {
     }
 }
 
+ModLine* loadModLine(int lineNo, s16 *outCount) { //regswap
+    ModLine *dest;
+    uint offset;
+    uint *tempIdx;
+    uint size;
+    int fileSize;
+
+    dest = NULL;
+    fileSize = (getLoadedDataFileSize(FILE_MODLINES_tab) - 4) >> 2;
+    if(lineNo > fileSize) return NULL;
+
+    tempIdx = mmAlloc(0x10,ALLOC_TAG_TEST_COL,(volatile u32)"obj:tempindex");
+    lineNo *= 4;
+    loadDataFileWithLength(FILE_MODLINES_tab, tempIdx, lineNo, 8);
+
+    offset = tempIdx[0];
+    size = tempIdx[1] - tempIdx[0];
+    if((int)size > 0) {
+        dest = mmAlloc(size, ALLOC_TAG_TRACK_COL, (volatile u32)"obj:templine");
+        loadDataFileWithLength(FILE_MODLINES_bin, dest, offset, size);
+    }
+    mmFree(tempIdx);
+    *outCount = size / 0x14;
+    return dest;
+}
