@@ -568,8 +568,8 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 		result->lockdata = next;
 		for(iLock = 0; iLock < objData->numLockData; iLock++) {
 			result->lockdata[iLock].flags = objData->lockdata[iLock].flags;
-			result->lockdata[iLock].fieldC = objData->lockdata[iLock].unk0C;
-			result->lockdata[iLock].fieldF = objData->lockdata[iLock].unk0F;
+			result->lockdata[iLock].fieldC = objData->lockdata[iLock].fieldC;
+			result->lockdata[iLock].fieldF = objData->lockdata[iLock].fieldF;
 			result->lockdata[iLock].combatCamDist
 			    = objData->lockdata[iLock].combatCamDist;
 			result->lockdata[iLock].maxDist = objData->lockdata[iLock].maxDist;
@@ -1221,6 +1221,26 @@ int combatCamDist, u8 fieldF, u8 flags) {
 			if(maxDist) lock->maxDist = maxDist >> 2;
 			if(fieldF) lock->fieldF = fieldF;
 			if(flags) lock->flags = flags;
+		}
+	}
+}
+
+//something like "copy latest ROM lockdata to RAM lockdata"
+void objFn_800858B0(ObjInstance *object) {
+	RomLockData *rom;
+	RamLockData *ram;
+	u8 iLock;
+
+	if(object) {
+		ram = object->lockdata;
+		if(ram) {
+			rom = object->data->lockdata + object->lockCountE4;
+			ram += object->lockCountE4;
+			ram->fieldC = rom->fieldC;
+			ram->combatCamDist = rom->combatCamDist;
+			ram->maxDist = rom->maxDist;
+			ram->fieldF = rom->fieldF;
+			ram->flags = rom->flags;
 		}
 	}
 }

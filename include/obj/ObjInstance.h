@@ -56,10 +56,10 @@ typedef struct {
     /* 0x02 */ short unk02;
     /* 0x04 */ short unk04;
     /* 0x06 */ S16Vec unk08;
-    /* 0x0c */ u8 unk0C;
+    /* 0x0c */ u8 fieldC;
     /* 0x0d */ u8 combatCamDist; //deactivate combat mode when further away than (this << 2)
     /* 0x0e */ u8 maxDist;
-    /* 0x0f */ u8 unk0F;
+    /* 0x0f */ u8 fieldF;
     /* 0x10 */ u8 flags; //RomLockData_Flag_*
     /* 0x11 */ u8 unk11;
     /* 0x12 */ u8 unk12;
