@@ -1165,3 +1165,18 @@ void Object_setPriority(ObjInstance *obj, s8 priority) {
 	}
 	else obj->priority = priority;
 }
+
+void objSetModelNo(ObjInstance *object,int modelNo) {
+	if (modelNo != object->modelno) {
+		if (modelNo < 0) modelNo = 0;
+		else if(modelNo >= object->data->nModels) {
+			modelNo = object->data->nModels + -1;
+		}
+		//unload previous shaders and load new ones
+		ModelInstance_unloadShaders(
+			object->frames[object->modelno]);
+		ModelInstance_loadShaders(
+			object->frames[modelNo],object);
+		object->modelno = modelNo;
+	}
+}
