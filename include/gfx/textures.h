@@ -1,6 +1,6 @@
 #ifndef _GFX_TEXTURES_H_
 #define _GFX_TEXTURES_H_
-
+#include "../types.h"
 typedef struct Texture {
     // /* 0x00 */ struct Texture *next;
     /* 0x00 */ float unk00;

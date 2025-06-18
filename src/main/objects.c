@@ -1079,3 +1079,23 @@ ObjDef * objAlloc(uint size,ObjDefEnum type) {
 	odef->objType    = type;
 	return odef;
 }
+
+//unsure what object this is
+typedef struct {
+	ObjDef def;
+	u8 param0, param1;
+	//probably more...
+} ObjDef_802ed010_t;
+ObjDef_802ed010_t ObjDef_802ed010;
+
+void fn_80085448(ObjInstance *object, int objType) { //reloc
+	ObjDef_802ed010_t *objdef = (ObjDef_802ed010_t*)object->def;
+	ObjDef_802ed010.def.objType = objType;
+	ObjDef_802ed010.def.pos.x = (object->prevPos).x;
+	ObjDef_802ed010.def.pos.y = (object->prevPos).y;
+	ObjDef_802ed010.def.pos.z = (object->prevPos).z;
+	ObjDef_802ed010.param0 = objdef->param0;
+	ObjDef_802ed010.param1 = objdef->param1;
+	objInstantiateCharacter(&ObjDef_802ed010.def,
+		ObjSpawnFlags_KeepLoaded,-1,-1,NULL);
+}

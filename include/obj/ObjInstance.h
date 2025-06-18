@@ -1,6 +1,8 @@
 #ifndef _OBJ_OBJINSTANCE_H_
 #define _OBJ_OBJINSTANCE_H_
 #include "gfx/models/models.h"
+#include "obj/ObjDef.h"
+#include "sys/dll.h"
 
 #define MAX_OBJECTS 350
 

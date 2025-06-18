@@ -1,5 +1,9 @@
 #ifndef _OBJ_OBJDEF_H_
 #define _OBJ_OBJDEF_H_
+
+#include "../types.h"
+#include "dolphin/mtx.h"
+
 #define ObjDefNo_Sabre 0
 #define ObjDefNo_SH_newseqob 2
 #define ObjDefNo_checkpoint4 5
@@ -1555,6 +1559,11 @@ typedef enum {
 typedef enum {
     objSetupObjectActual_SkipObjInd = 2
 } objSetupObjectActual_flags;
+
+typedef enum {
+    ObjSpawnFlags_KeepLoaded = 1,
+    ObjSpawnFlags_DontUseObjIndexBin = 2,
+} ObjSpawnFlags;
 
 typedef struct {
     //this is the common header for all ObjDef structs

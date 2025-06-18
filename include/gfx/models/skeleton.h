@@ -1,5 +1,7 @@
 #ifndef _GFX_MODELS_SKELETON_H_
 #define _GFX_MODELS_SKELETON_H_
+#include "../types.h"
+#include "dolphin/mtx.h"
 typedef struct {
     /* 0x00 */ s8 parent; //high bit is a flag?
     /* 0x01 */ s8 idx[3]; //idx to write to?
