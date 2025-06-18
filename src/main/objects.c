@@ -137,7 +137,7 @@ extern s16 *Object_pObjIndex;
 extern s32 *Object_pObjectsTab;
 extern s32 defList;
 extern s32 defNo;
-extern s8 effectBoxes;
+extern ObjInstance **effectBoxes;
 extern s8 lbl_802ECCE4;
 extern s8 lbl_802ECCF0;
 extern s8 lbl_802ECDE4;
@@ -168,7 +168,7 @@ extern f32 lbl_8039A9CC;
 void modelLoadCb_800c5b80(int param_1, ModelInstance *param_2);
 extern s32 nTablesTab;
 extern s16 nVisibleObjs;
-extern u8 numEffectBoxes;
+extern s8 numEffectBoxes;
 extern void **pDll05;
 extern void **pDll_ObjSeq;
 extern void **pDll_SaveGame;
@@ -1178,5 +1178,14 @@ void objSetModelNo(ObjInstance *object,int modelNo) {
 		ModelInstance_loadShaders(
 			object->frames[modelNo],object);
 		object->modelno = modelNo;
+	}
+}
+
+void Object_objAddEffectBox(ObjInstance *object) {
+	int iVar1;
+
+	effectBoxes[numEffectBoxes++] = object;
+	if(numEffectBoxes == 20) {
+		printf("warning: objAddEffectBox max effect boxes\n");
 	}
 }
