@@ -396,7 +396,7 @@ typedef struct ObjInstance {
     /* 0xe1 */ s8 _E1;
     /* 0xe2 */ s8 _E2;
     /* 0xe3 */ u8 flags_e3;
-    /* 0xe4 */ u8 _E4; //related to field_0x74
+    /* 0xe4 */ u8 lockCountE4;
     /* 0xe5 */ u8 stateFlags; //ObjStateFlags
     /* 0xe6 */ s16 _E6;
     /* 0xe8 */ s8 hintTextIdx;
