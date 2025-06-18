@@ -1216,9 +1216,9 @@ int combatCamDist, u8 fieldF, u8 flags) {
 		lock = object->lockdata;
 		if(lock) {
 			lock += object->lockCountE4;
-			if(fieldC) lock->fieldC = (u8)(fieldC >> 2);
-			if(combatCamDist) lock->combatCamDist = (u8)(combatCamDist >> 2);
-			if(maxDist) lock->maxDist = (u8)(maxDist >> 2);
+			if(fieldC) lock->fieldC = fieldC >> 2;
+			if(combatCamDist) lock->combatCamDist = combatCamDist >> 2;
+			if(maxDist) lock->maxDist = maxDist >> 2;
 			if(fieldF) lock->fieldF = fieldF;
 			if(flags) lock->flags = flags;
 		}
