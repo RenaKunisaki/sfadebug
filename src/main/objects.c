@@ -137,7 +137,7 @@ extern s16 *Object_pObjIndex;
 extern s32 *Object_pObjectsTab;
 extern s32 defList;
 extern s32 defNo;
-extern ObjInstance **effectBoxes;
+extern ObjInstance *effectBoxes[MAX_EFFECT_BOXES];
 extern s8 lbl_802ECCE4;
 extern s8 lbl_802ECCF0;
 extern s8 lbl_802ECDE4;
@@ -1184,8 +1184,30 @@ void objSetModelNo(ObjInstance *object,int modelNo) {
 void Object_objAddEffectBox(ObjInstance *object) {
 	int iVar1;
 
-	effectBoxes[numEffectBoxes++] = object;
-	if(numEffectBoxes == 20) {
+	iVar1 = (int)numEffectBoxes;
+	numEffectBoxes = numEffectBoxes + 1;
+	effectBoxes[iVar1] = object;
+	if (numEffectBoxes == MAX_EFFECT_BOXES) {
 		printf("warning: objAddEffectBox max effect boxes\n");
+	}
+}
+
+void Object_objFreeEffectBox(ObjInstance *box) {
+	int ii;
+	ObjInstance **boxes;
+
+	boxes = effectBoxes;
+	ii = 0;
+	while(ii < numEffectBoxes && (boxes[ii] != box)) {
+		ii++;
+	}
+	if (ii == numEffectBoxes) {
+		printf("objFreeEffectBox: Not found\n");
+	}
+	else {
+		for (; ii < numEffectBoxes-1; ii++) {
+			boxes[ii] = boxes[ii + 1];
+		}
+		numEffectBoxes--;
 	}
 }

@@ -5,6 +5,7 @@
 #include "sys/dll.h"
 
 #define MAX_OBJECTS 350
+#define MAX_EFFECT_BOXES 20
 
 typedef struct {
     /* 0x0 */ S16Vec rotation;
