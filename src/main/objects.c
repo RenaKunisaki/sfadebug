@@ -1266,3 +1266,9 @@ void vecToObjSpace(ObjInstance *object,Vec *vIn,Vec *vOut) {
 	vOut->x = vOut->x + playerMapOffsetX;
 	vOut->z = vOut->z + playerMapOffsetZ;
 }
+
+void lightVecFn_80085c50(ObjInstance *obj, Vec *vIn, Vec *vOut) {
+	Mtx44 mtx;
+	objModelMtxFn_800859e8(obj,(Mtx*)&mtx);
+	MTXMultVecSR(mtx,vIn,vOut);
+}
