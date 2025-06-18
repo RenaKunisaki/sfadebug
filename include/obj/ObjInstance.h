@@ -146,7 +146,7 @@ typedef struct {
     /* 0x58 */ u16 dll_id;
     /* 0x5a */ u16 objId;
     /* 0x5c */ s8 modLinesSize; //ignored in file
-    /* 0x5d */ s8 nModels;
+    /* 0x5d */ s8 noframes; //model count
     /* 0x5e */ u8 numSeqs;
     /* 0x5f */ char name[15];
     /* 0x6e */ s8 unk6e;
@@ -353,7 +353,7 @@ typedef struct ObjInstance {
     /* 0x48 */ s16 realType;
     /* 0x4a */ s16 _4A;
     /* 0x4c */ ObjDef *def;
-    /* 0x50 */ ObjData *data;
+    /* 0x50 */ ObjData *objdata;
     /* 0x54 */ HitState *hits;
     /* 0x58 */ ObjInstanceField58 *_58;
     /* 0x5c */ Model *models;

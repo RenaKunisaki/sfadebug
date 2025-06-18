@@ -946,7 +946,7 @@ void fn_80080734(ModelInstance *modelInstance, Model *model,
 	HitState *hits;
 
 	frame = 0;
-	if(parent->hits && parent->data->bDisableHits) {
+	if(parent->hits && parent->objdata->bDisableHits) {
 		nObjHits = parent->hits->objHitsSize >> 2;
 		if(nObjHits > 0) {
 			objHits = parent->hits->objHits;

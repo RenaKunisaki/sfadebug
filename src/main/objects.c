@@ -1,5 +1,6 @@
 #include "dolphin.h"
 #include "dolphin/mtx.h"
+#include "macros.h"
 #include "types.h"
 #include "global.h"
 #include "sys/n64.h"
@@ -222,7 +223,7 @@ int getNumVisibleObjects(s32 *outNumObjs) {
 	while(result <= nObjs) {
 		stop = 0;
 		while(result <= nObjsStart2 && !stop) {
-			if(Object_loadedObjs[result]->data->flags & 1) {
+			if(Object_loadedObjs[result]->objdata->flags & 1) {
 				result++;
 			} else
 				stop = -1;
@@ -230,7 +231,7 @@ int getNumVisibleObjects(s32 *outNumObjs) {
 
 		stop = 0;
 		while(nObjs >= nObjsStart && !stop) {
-			if(!(Object_loadedObjs[nObjs]->data->flags & 1)) {
+			if(!(Object_loadedObjs[nObjs]->objdata->flags & 1)) {
 				nObjs--;
 			} else
 				stop = -1;
@@ -258,8 +259,8 @@ void depthSortObjects_doSort(s32 arg0, s32 arg1) {
 
 	for(ii = arg0; ii <= arg1; ii++) {
 		obj = Object_loadedObjs[ii];
-		if(obj->data->flags & ObjData_Flag_FixedDepth) {
-			obj->depth = obj->data->fixedDepth * 100;
+		if(obj->objdata->flags & ObjData_Flag_FixedDepth) {
+			obj->depth = obj->objdata->fixedDepth * 100;
 		} else {
 			obj->depth = -getCameraDepth(
 			    obj->prevPos.x, obj->prevPos.y, obj->prevPos.z);
@@ -402,7 +403,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 	memclr(&objTmp, sizeof(ObjInstance));
 	result = &objTmp;
 	objData = Object_objLoadData(realType);
-	result->data = objData;
+	result->objdata = objData;
 	if((!objData) || ((s32)objData == -1)) {
 		debugPrint(
 		    "Warning: Unknown object type '%d/%d romdefno %d', using "
@@ -470,7 +471,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 	}
 	memcpy_src_dst_len(&objTmp, result, sizeof(ObjInstance));
 	memclr(result + 1, totalSize - sizeof(ObjInstance));
-	nModels = objData->nModels;
+	nModels = objData->noframes;
 	result->frames = (ModelInstance **)&result[1];
 
 	ii = 0;
@@ -488,7 +489,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 					    result->frames[iModelInst], result);
 					modelInitSkeleton(
 					    result->pos.scale, result->frames[iModelInst]);
-					if(result->data->flags & 0x800) {
+					if(result->objdata->flags & 0x800) {
 						Modelnstance_setTexFuncPtr(
 						    result->frames[iModelInst],
 						    modelLoadCb_800c5b80);
@@ -506,7 +507,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 					    result->frames[ii], result);
 					modelInitSkeleton(
 					    (f64)result->pos.scale, result->frames[ii]);
-					if(result->data->flags & 0x800) {
+					if(result->objdata->flags & 0x800) {
 						Modelnstance_setTexFuncPtr(
 						    result->frames[ii], modelLoadCb_800c5b80);
 					}
@@ -520,7 +521,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 		objFreeObjdef(realType);
 		return NULL;
 	}
-	next = &result->frames[objData->nModels];
+	next = &result->frames[objData->noframes];
 	next = Object_objInitState(result, next);
 	if(modelFlags & 0x40) {
 		next = Object_objSetupEvents((s32)result->romdefno, result, next);
@@ -614,11 +615,11 @@ void objSetup(ObjInstance *object, uint bAddToLoadedObjs) {
 		object->hits->prevPos.z = object->pos.pos.y;
 		object->hits->size = object->pos.pos.z;
 	}
-	if(-1 < object->data->unka0) {
+	if(-1 < object->objdata->unka0) {
 		worldMapListFn_800aac60(
-		    (int)*(short *)&object->data->unka0, (int)object);
+		    (int)*(short *)&object->objdata->unka0, (int)object);
 	}
-	if((object->data->flags & ObjFileStructFlags44_IsWorldObj)) {
+	if((object->objdata->flags & ObjFileStructFlags44_IsWorldObj)) {
 		Object_objAddObjectType(object, ObjCat_StaticCamera);
 		if(object->priority != 0x5a) { Object_setPriority(object, 0x5a); }
 	} else {
@@ -630,13 +631,13 @@ void objSetup(ObjInstance *object, uint bAddToLoadedObjs) {
 		ASSERTLINE(1202, ObjListSize < MAX_OBJECTS);
 		LAB_80083bd4(object);
 	}
-	if('\0' < (char)object->data->numSeqs) {
+	if('\0' < (char)object->objdata->numSeqs) {
 		objAddObjectType(object, ObjCat_LevelControl);
 	}
-	if((object->data->flags & ObjFileStructFlags44_HaveModels) != 0) {
+	if((object->objdata->flags & ObjFileStructFlags44_HaveModels) != 0) {
 		clearNVisibleObjs();
 	}
-	if((object->data->flags & ObjFileStructFlags44_DifferentLightColor) != 0) {
+	if((object->objdata->flags & ObjFileStructFlags44_DifferentLightColor) != 0) {
 		objAddObjectType(object, 0x38);
 	}
 }
@@ -659,7 +660,7 @@ uint objGetTotalDataSize(
 	uint size;
 
 	size = sizeof(ObjInstance);
-	size += objData->nModels * 4;
+	size += objData->noframes * 4;
 	size += objGetExtraSize(obj, (void*)size);
 	if(flags & 0x40) {
 		size = (int)alignTo4((void *)size);
@@ -711,7 +712,7 @@ float objModelFn_800839d4(ObjInstance *object) {
 	s32 ii;
 
 	result = 10.0f;
-	for(ii = 0; ii < object->data->nModels; ii++) {
+	for(ii = 0; ii < object->objdata->noframes; ii++) {
 		if((int)object->frames[ii]) {
 			mInst = object->frames[ii];
 			if(modelGetFieldA4(mInst->mod) > result) {
@@ -719,7 +720,7 @@ float objModelFn_800839d4(ObjInstance *object) {
 			}
 		}
 	}
-	if(result < object->data->unk9c) { result = 16.0f * object->data->unk9c; }
+	if(result < object->objdata->unk9c) { result = 16.0f * object->objdata->unk9c; }
 	return result;
 }
 
@@ -913,7 +914,7 @@ ObjEventData *event,int animId,bool bImmediate) {
     int ii;
     s16 *evtData;
 
-    evtData = (s16 *)object->data->pEvent;
+    evtData = (s16 *)object->objdata->pEvent;
     event->size = 0;
     if(!evtData) return;
 
@@ -1160,7 +1161,7 @@ int objMove(ObjInstance *obj, float x, float y, float z) {
 
 void Object_setPriority(ObjInstance *obj, s8 priority) {
 	if((priority == OBJ_PRIORITY_WORLD)
-	&& ((obj->data->flags & ObjFileStructFlags44_IsWorldObj) == 0)) {
+	&& ((obj->objdata->flags & ObjFileStructFlags44_IsWorldObj) == 0)) {
 		printf("WARNING Cannot set priority Level to WORLD if not world object  \n");
 	}
 	else obj->priority = priority;
@@ -1169,8 +1170,8 @@ void Object_setPriority(ObjInstance *obj, s8 priority) {
 void objSetModelNo(ObjInstance *object,int modelNo) {
 	if (modelNo != object->modelno) {
 		if (modelNo < 0) modelNo = 0;
-		else if(modelNo >= object->data->nModels) {
-			modelNo = object->data->nModels + -1;
+		else if(modelNo >= object->objdata->noframes) {
+			modelNo = object->objdata->noframes + -1;
 		}
 		//unload previous shaders and load new ones
 		ModelInstance_unloadShaders(
@@ -1234,7 +1235,7 @@ void objFn_800858B0(ObjInstance *object) {
 	if(object) {
 		ram = object->lockdata;
 		if(ram) {
-			rom = object->data->lockdata + object->lockCountE4;
+			rom = object->objdata->lockdata + object->lockCountE4;
 			ram += object->lockCountE4;
 			ram->fieldC = rom->fieldC;
 			ram->combatCamDist = rom->combatCamDist;
@@ -1248,4 +1249,9 @@ void objFn_800858B0(ObjInstance *object) {
 void objInstantiateCharacterAtObj(ObjInstance *object, ObjDef *odef) {
 	objInstantiateCharacter(odef, 5,
 		object->mapId, -1, object->heldBy);
+}
+
+ModelInstance* objGetModelInstance(ObjInstance *object) {
+	ASSERTLINE(3178, object->modelno>=0 && object->modelno<object->objdata->noframes);
+	return object->frames[object->modelno];
 }
