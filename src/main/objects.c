@@ -1123,3 +1123,7 @@ ObjInstance* Object_getSidekicksLoaded(void) {
 	if(nObj) return *objs;
 	else return NULL;
 }
+
+void objClearMapId(ObjInstance *object) {
+	object->mapId = -1;
+}

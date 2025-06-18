@@ -370,7 +370,7 @@ typedef struct ObjInstance {
     /* 0xa2 */ s16 animVal_a2;
     /* 0xa4 */ float depth; //for render sorting
     /* 0xa8 */ float cullDistance; //affects brightness and opacity; multiplied by scale; fuzz?
-    /* 0xac */ u8 mapId; //MapId8 crashes if < 0x80; passed to loadCharacter but not used?
+    /* 0xac */ s8 mapId; //MapId8 crashes if < 0x80; passed to loadCharacter but not used?
     /* 0xad */ s8 curModel; //which model index to use
     /* 0xae */ s8 priority; //0x50 for most
     /* 0xaf */ u8 flags_0xaf; //ObjInstance_FlagsAF 28=don't render something (no models?)
