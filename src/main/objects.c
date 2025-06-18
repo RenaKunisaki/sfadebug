@@ -1272,3 +1272,7 @@ void lightVecFn_80085c50(ObjInstance *obj, Vec *vIn, Vec *vOut) {
 	objModelMtxFn_800859e8(obj,(Mtx*)&mtx);
 	MTXMultVecSR(mtx,vIn,vOut);
 }
+
+u8 objGetStateFlagBit1(ObjInstance *object) {
+	return object->stateFlags & 1;
+}
