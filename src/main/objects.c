@@ -1124,6 +1124,21 @@ ObjInstance* Object_getSidekicksLoaded(void) {
 	else return NULL;
 }
 
+/**
+ * @brief Set the object's map ID to -1.
+ *
+ *  @param object The object.
+ */
 void objClearMapId(ObjInstance *object) {
 	object->mapId = -1;
 }
+
+/**
+ * @brief Set the object's map ID to the map it's in.
+ *
+ *  @param object The object.
+ */
+void objResetMapId(ObjInstance *object) {
+	object->mapId = mapCoordsToId(object->pos.pos.x, object->pos.pos.z);
+}
+
