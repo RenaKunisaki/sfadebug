@@ -1158,3 +1158,10 @@ int objMove(ObjInstance *obj, float x, float y, float z) {
 	return 0;
 }
 
+void Object_setPriority(ObjInstance *obj, s8 priority) {
+	if((priority == OBJ_PRIORITY_WORLD)
+	&& ((obj->data->flags & ObjFileStructFlags44_IsWorldObj) == 0)) {
+		printf("WARNING Cannot set priority Level to WORLD if not world object  \n");
+	}
+	else obj->priority = priority;
+}
