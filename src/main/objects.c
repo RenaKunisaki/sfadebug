@@ -1182,12 +1182,8 @@ void objSetModelNo(ObjInstance *object,int modelNo) {
 }
 
 void Object_objAddEffectBox(ObjInstance *object) {
-	int iVar1;
-
-	iVar1 = (int)numEffectBoxes;
-	numEffectBoxes = numEffectBoxes + 1;
-	effectBoxes[iVar1] = object;
-	if (numEffectBoxes == MAX_EFFECT_BOXES) {
+	effectBoxes[numEffectBoxes++] = object;
+	if(numEffectBoxes == MAX_EFFECT_BOXES) {
 		printf("warning: objAddEffectBox max effect boxes\n");
 	}
 }
