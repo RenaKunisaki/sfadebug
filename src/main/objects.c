@@ -1111,3 +1111,15 @@ ObjInstance* Object_objGetMain(void) {
 	if(nObj) return *objs;
 	else return NULL;
 }
+
+ObjInstance* Object_getSidekicksLoaded(void) {
+	ObjInstance **objs;
+	int nObj;
+
+	objs = Object_playerGetObject(1,&nObj);
+	if (1 < nObj) {
+		printf(" ERROR : ERROR : Error in Get Sidekicks Loaded  ");
+	}
+	if(nObj) return *objs;
+	else return NULL;
+}
