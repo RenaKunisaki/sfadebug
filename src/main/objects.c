@@ -1142,3 +1142,19 @@ void objResetMapId(ObjInstance *object) {
 	object->mapId = mapCoordsToId(object->pos.pos.x, object->pos.pos.z);
 }
 
+/**
+ * @brief Add specified values to object's position.
+ *
+ *  @param obj The object.
+ *  @param x X value to add.
+ *  @param y Y value to add.
+ *  @param z Z value to add.
+ *  @return int Always zero.
+ */
+int objMove(ObjInstance *obj, float x, float y, float z) {
+	obj->pos.pos.x += x;
+	obj->pos.pos.y += y;
+	obj->pos.pos.z += z;
+	return 0;
+}
+
