@@ -61,7 +61,7 @@ void intersectModLineBuild(ObjData *data); /* extern */
 BOOL isModelAnimDisabled(void); /* extern */
 void krystalFree(ObjInstance *obj); /* extern */
 void loadAsset_Character(ObjInstance **result, ObjDef *def, uint flags,
-    int mapId, int objNo, float *pMatrix, undefined4 param7); /* extern */
+    int mapId, int objNo, ObjInstance *heldBy, undefined4 param7); /* extern */
 void loadAsset_fileWithOffsetLength(
     void *dest, DataFileId32 file, int offset, int length); /* extern */
 void *loadDataFileWithLength(
@@ -357,13 +357,13 @@ s32 *getTablesBinEntry(s32 idx) {
 }
 
 ObjInstance *objInstantiateCharacter(
-    ObjDef *def, uint flags, int mapId, int objNo, float *pMatrix) {
+    ObjDef *def, uint flags, int mapId, int objNo, ObjInstance *heldBy) {
 	ObjInstance *obj;
 
 	obj = NULL;
 	if(getPiLockedFlags() & 1) STUBBED_OP(obj);
 
-	loadAsset_Character(&obj, def, flags, mapId, objNo, pMatrix, 0);
+	loadAsset_Character(&obj, def, flags, mapId, objNo, heldBy, 0);
 	if(obj) objSetup(obj, flags);
 
 	if(getPiLockedFlags() & 1) STUBBED_OP(obj);
@@ -1245,3 +1245,7 @@ void objFn_800858B0(ObjInstance *object) {
 	}
 }
 
+void objInstantiateCharacterAtObj(ObjInstance *object, ObjDef *odef) {
+	objInstantiateCharacter(odef, 5,
+		object->mapId, -1, object->heldBy);
+}
