@@ -1086,9 +1086,9 @@ typedef struct {
 	u8 param0, param1;
 	//probably more...
 } ObjDef_802ed010_t;
-ObjDef_802ed010_t ObjDef_802ed010;
 
 void fn_80085448(ObjInstance *object, int objType) { //reloc
+	static ObjDef_802ed010_t ObjDef_802ed010;
 	ObjDef_802ed010_t *objdef = (ObjDef_802ed010_t*)object->def;
 	ObjDef_802ed010.def.objType = objType;
 	ObjDef_802ed010.def.pos.x = (object->prevPos).x;
