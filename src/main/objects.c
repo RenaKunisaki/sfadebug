@@ -1099,3 +1099,15 @@ void fn_80085448(ObjInstance *object, int objType) { //reloc
 	objInstantiateCharacter(&ObjDef_802ed010.def,
 		ObjSpawnFlags_KeepLoaded,-1,-1,NULL);
 }
+
+ObjInstance* Object_objGetMain(void) {
+	ObjInstance **objs;
+	int nObj;
+
+	objs = Object_playerGetObject(0,&nObj);
+	if (1 < nObj) {
+		printf(" ERROR : Error in Get Main More Players Loaded ");
+	}
+	if(nObj) return *objs;
+	else return NULL;
+}
