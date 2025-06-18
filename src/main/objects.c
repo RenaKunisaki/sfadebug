@@ -117,6 +117,8 @@ uint objGetTotalDataSize(ObjInstance *obj, ObjData *objData, ObjDef *objDef,
     uint flags); /* static */
 float objModelFn_800839d4(ObjInstance *object); /* static */
 void objSetup(ObjInstance *object, uint bAddToLoadedObjs); /* static */
+void objModelMtxFn_800859e8(ObjInstance *object,Mtx *modelMatrix);
+
 extern u8 BYTE_802eca98;
 extern u8 BYTE_80398a91;
 extern f64 DOUBLE_8039a990;
@@ -1254,4 +1256,13 @@ void objInstantiateCharacterAtObj(ObjInstance *object, ObjDef *odef) {
 ModelInstance* objGetModelInstance(ObjInstance *object) {
 	ASSERTLINE(3178, object->modelno>=0 && object->modelno<object->objdata->noframes);
 	return object->frames[object->modelno];
+}
+
+void vecToObjSpace(ObjInstance *object,Vec *vIn,Vec *vOut) {
+	Mtx44 mtx;
+
+	objModelMtxFn_800859e8(object, (Mtx*)&mtx);
+	MTXMultVec(mtx, vIn, vOut);
+	vOut->x = vOut->x + playerMapOffsetX;
+	vOut->z = vOut->z + playerMapOffsetZ;
 }
