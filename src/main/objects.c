@@ -89,7 +89,7 @@ void objRemoveFromList(ObjListStruct *entry, ObjInstance *obj); /* extern */
 void playerOnLoad(ObjInstance *object, ObjDef *def, void *param); /* extern */
 void playerUpdateFn_800ae404(void); /* extern */
 void setShadowFlag_803db658(s8 param_1); /* extern */
-double sqrt(double __x); /* extern */
+float sqrt(float __x); /* extern */
 void texFreeTexture(Texture *tex); /* extern */
 void trackFreeMap(mapId32 mapNo); /* extern */
 void worldMapListFn_800aac60(mapId32 mapNo, int param2); /* extern */
@@ -109,7 +109,7 @@ void fn_80083B94(ObjInstance *outNumObjs); /* static */
 void fn_80085D68(ObjInstance *outNumObjs); /* static */
 void fn_80085DDC(ObjInstance *outNumObjs); /* static */
 ModLine *loadModLine(int lineNo, s16 *outCount); /* static */
-void modelInitSkeleton(double scale, ModelInstance *model); /* static */
+void modelInitSkeleton(float scale, ModelInstance *model); /* static */
 void objFreeObjdef(int defNo); /* static */
 void objFreezeFn_80085e2c(ObjInstance *object, undefined4 fieldE6, undefined4 r,
     undefined4 g, undefined4 b, uint a); /* static */
@@ -490,8 +490,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 				} else {
 					ModelInstance_loadShaders(
 					    result->frames[iModelInst], result);
-					modelInitSkeleton(
-					    result->pos.scale, result->frames[iModelInst]);
+					modelInitSkeleton(result->pos.scale, result->frames[iModelInst]);
 					if(result->objdata->flags & 0x800) {
 						Modelnstance_setTexFuncPtr(
 						    result->frames[iModelInst],
@@ -508,8 +507,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 				} else {
 					ModelInstance_loadShaders(
 					    result->frames[ii], result);
-					modelInitSkeleton(
-					    (f64)result->pos.scale, result->frames[ii]);
+					modelInitSkeleton(result->pos.scale, result->frames[ii]);
 					if(result->objdata->flags & 0x800) {
 						Modelnstance_setTexFuncPtr(
 						    result->frames[ii], modelLoadCb_800c5b80);
@@ -707,6 +705,50 @@ uint objGetTotalDataSize(
 		size += (uint)objData->numLockData * 5;
 	}
 	return size;
+}
+
+void modelInitSkeleton(float scale, ModelInstance *modelInstance) {
+	int iParent;
+	float *radi;
+	Model *model;
+	ModelSkeletonStruct *skel;
+	int iJoint;
+	float dist;
+	Vec distV;
+	float distances[MAX_JOINTS];
+
+	model = modelInstance->mod;
+	if(!modelInstance->mod->numJoints) return;
+	radi = modelInstance->mod->radi;
+	if(!radi) return;
+	if(!modelInstance->skeleton) return;
+
+	skel = modelInstance->skeleton;
+	skel->unk04[0] = radi[0] * scale;
+	if(!skel->unk04[0]) skel->unk04[0] = radi[1] * scale;
+
+	skel->unk08[0] = skel->unk04[0] * skel->unk04[0];
+	skel->jointDist[0] = 0.01;
+	skel->totalDist[0] = skel->unk04[0];
+	distances[0] = 0.0;
+
+	for(iJoint = 1; iJoint < modelInstance->mod->numJoints; iJoint++) {
+		skel->unk04[iJoint] = scale * radi[iJoint];
+		skel->unk08[iJoint] = skel->unk04[iJoint] * skel->unk04[iJoint];
+
+		iParent = model->joints[iJoint].parent;
+		distV.x = model->joints[iJoint].translation.x;
+		distV.y = model->joints[iJoint].translation.y;
+		distV.z = model->joints[iJoint].translation.z;
+		dist = distV.x * distV.x + distV.y * distV.y + distV.z * distV.z;
+		skel->jointDist[iJoint] = scale * sqrt(dist);
+
+		if(!skel->jointDist[iJoint]) skel->jointDist[iJoint] = 0.1;
+		if(model->exT[iJoint] >= 1.0f) skel->jointDist[iJoint] *= model->exT[iJoint];
+		distances[iJoint] = distances[iParent] + skel->jointDist[iJoint];
+		if(!radi[iJoint]) skel->totalDist[iJoint] = -100.0;
+		else skel->totalDist[iJoint] = distances[iJoint] + skel->unk04[iJoint];
+	}
 }
 
 float objModelFn_800839d4(ObjInstance *object) {

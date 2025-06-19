@@ -236,22 +236,22 @@ ModelInstance *createModelInstance(
 	if((((model->joints == (Bone *)0x0) || (model->numJoints == 0))
 	       || (model->radi == NULL))
 	    || (model->exT == (u32 *)0x0)) {
-		minst->unk14 = NULL;
+		minst->skeleton = NULL;
 	} else {
 		pfVar3 = (float **)alignTo4((uint)pvVar9);
-		minst->unk14 = pfVar3;
+		minst->skeleton = pfVar3;
 		pfVar3 = pfVar3 + 7;
-		minst->unk14[0] = (float *)pfVar3;
+		minst->skeleton[0] = (float *)pfVar3;
 		pfVar3 = pfVar3 + (uint)model->numJoints * 3;
-		minst->unk14[1] = (float *)pfVar3;
+		minst->skeleton[1] = (float *)pfVar3;
 		pfVar3 = pfVar3 + model->numJoints;
-		minst->unk14[2] = (float *)pfVar3;
+		minst->skeleton[2] = (float *)pfVar3;
 		pfVar3 = pfVar3 + model->numJoints;
-		minst->unk14[3] = (float *)pfVar3;
+		minst->skeleton[3] = (float *)pfVar3;
 		pfVar3 = pfVar3 + model->numJoints;
-		minst->unk14[4] = (float *)pfVar3;
+		minst->skeleton[4] = (float *)pfVar3;
 		bVar1 = model->numJoints;
-		minst->unk14[6] = (float *)(pfVar3 + bVar1);
+		minst->skeleton[6] = (float *)(pfVar3 + bVar1);
 		pvVar9 = (S16Vec *)((int)(pfVar3 + bVar1) + (uint)model->numJoints);
 	}
 	if(model->posFineSkinningConfig != NULL) {

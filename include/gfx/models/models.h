@@ -241,7 +241,7 @@ typedef struct {
     /* 0x13 */ u8 unk13;
     /* 0x14 */ float *skeleton;
     /* 0x18 */ float *radi;
-    /* 0x1c */ u32 *exT; //extraAmapSize (dlInfoSize?)
+    /* 0x1c */ float *exT; //extraAmapSize (dlInfoSize?)
     /* 0x20 */ Texture **GCtextures; // -> texture IDs that get turned into pointers
     /* 0x24 */ u8 normalFlags; //ModelNormalFlags
     /* 0x25 */ u8 unk25;
@@ -401,7 +401,7 @@ typedef struct {
     /* 0x04 */ S16Vec *vertexPositions2;
     /* 0x08 */ s32 unk08;
     /* 0x0c */ Mtx44 *jMtxs[2]; //joint matrices
-    /* 0x14 */ float **unk14;
+    /* 0x14 */ ModelSkeletonStruct *skeleton;
     /* 0x18 */ u16 flags; //ModelFlags18
     /* 0x1a */ s8 unk1a;
     /* 0x1b */ s8 unk1b;
