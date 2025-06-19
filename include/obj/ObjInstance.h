@@ -16,6 +16,10 @@ typedef struct {
 
 struct ObjInstance;
 
+typedef enum {
+    OBJ_STATE_IS_FROZEN = 0x01,
+} ObjStateFlags;
+
 #define OBJ_PRIORITY_WORLD 90
 
 #define ObjInstance_FlagsB0_WhichParentHitbox 7
@@ -398,13 +402,13 @@ typedef struct ObjInstance {
     /* 0xe3 */ u8 flags_e3;
     /* 0xe4 */ u8 lockCountE4;
     /* 0xe5 */ u8 stateFlags; //ObjStateFlags
-    /* 0xe6 */ s16 timerE6;
+    /* 0xe6 */ s16 timerE6; //related to modelInstance and/or being frozen
     /* 0xe8 */ s8 hintTextIdx;
     /* 0xe9 */ s8 nTouchCallbacks;
     /* 0xea */ u8 lockedFreeTick;
     /* 0xeb */ u8 nChildren;
     /* 0xec */ u32 colorEC;
-    /* 0xf0 */ s8 _F0;
+    /* 0xf0 */ s8 _F0; //related to modelInstance and/or being frozen
     /* 0xf1 */ u8 brightness;
     /* 0xf2 */ u8 colorIdx;
     /* 0xf3 */ s8 _F3;

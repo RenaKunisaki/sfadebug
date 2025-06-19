@@ -118,6 +118,7 @@ uint objGetTotalDataSize(ObjInstance *obj, ObjData *objData, ObjDef *objDef,
 float objModelFn_800839d4(ObjInstance *object); /* static */
 void objSetup(ObjInstance *object, uint bAddToLoadedObjs); /* static */
 void objModelMtxFn_800859e8(ObjInstance *object,Mtx *modelMatrix);
+void ModelInstance_freeField48(ModelInstance *modelInstance);
 
 extern u8 BYTE_802eca98;
 extern u8 BYTE_80398a91;
@@ -1273,13 +1274,20 @@ void lightVecFn_80085c50(ObjInstance *obj, Vec *vIn, Vec *vOut) {
 	MTXMultVecSR(mtx,vIn,vOut);
 }
 
-u8 objGetStateFlagBit1(ObjInstance *object) {
-	return object->stateFlags & 1;
+u8 objIsFrozen(ObjInstance *object) {
+	return object->stateFlags & OBJ_STATE_IS_FROZEN;
 }
-
 
 void fn_80085dc8(ObjInstance *object) {
 	object->timerE6 -= timeDelta;
 	if(object->timerE6 <= 0) fn_80085DDC(object);
+}
+
+void fn_80085DDC(ObjInstance *object) {
+	object->timerE6 = 0;
+	object->stateFlags &= ~OBJ_STATE_IS_FROZEN;
+	object->_F0 = 0;
+	ModelInstance_freeField48(objGetModelInstance(object));
+	return;
 }
 
