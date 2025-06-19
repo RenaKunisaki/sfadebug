@@ -398,7 +398,7 @@ typedef struct ObjInstance {
     /* 0xe3 */ u8 flags_e3;
     /* 0xe4 */ u8 lockCountE4;
     /* 0xe5 */ u8 stateFlags; //ObjStateFlags
-    /* 0xe6 */ s16 _E6;
+    /* 0xe6 */ s16 timerE6;
     /* 0xe8 */ s8 hintTextIdx;
     /* 0xe9 */ s8 nTouchCallbacks;
     /* 0xea */ u8 lockedFreeTick;

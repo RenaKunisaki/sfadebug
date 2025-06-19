@@ -1276,3 +1276,10 @@ void lightVecFn_80085c50(ObjInstance *obj, Vec *vIn, Vec *vOut) {
 u8 objGetStateFlagBit1(ObjInstance *object) {
 	return object->stateFlags & 1;
 }
+
+
+void fn_80085dc8(ObjInstance *object) {
+	object->timerE6 -= timeDelta;
+	if(object->timerE6 <= 0) fn_80085DDC(object);
+}
+
