@@ -21,6 +21,7 @@ typedef enum {
 } ObjStateFlags;
 
 #define OBJ_PRIORITY_WORLD 90
+#define OBJ_PRIORITY_DEFAULT 80
 
 #define ObjInstance_FlagsB0_WhichParentHitbox 7
 #define ObjInstance_FlagsB0_ScalingFlag08 8

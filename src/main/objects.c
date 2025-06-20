@@ -622,9 +622,13 @@ void objSetup(ObjInstance *object, uint bAddToLoadedObjs) {
 	}
 	if((object->objdata->flags & ObjFileStructFlags44_IsWorldObj)) {
 		Object_objAddObjectType(object, ObjCat_StaticCamera);
-		if(object->priority != 0x5a) { Object_setPriority(object, 0x5a); }
+		if(object->priority != OBJ_PRIORITY_WORLD) {
+			Object_setPriority(object, OBJ_PRIORITY_WORLD);
+		}
 	} else {
-		if(object->priority == 0) { Object_setPriority(object, 0x50); }
+		if(object->priority == 0) {
+			Object_setPriority(object, OBJ_PRIORITY_DEFAULT);
+		}
 	}
 	if((bAddToLoadedObjs & 1) != 0) {
 		object->flags_0xb0 |= ObjInstance_FlagsB0_IsInGlobalObjList;
@@ -787,7 +791,7 @@ void objFreeFn_80083b54(ObjInstance *object) {
 }
 
 //something like "add to global(?) object list"
-void fn_80083bd4(ObjInstance *object) {
+void fn_80083B94(ObjInstance *object) {
     int sp10;
     s16 size; //spC
 	ObjInstance *r30;
@@ -798,12 +802,12 @@ void fn_80083bd4(ObjInstance *object) {
     size = objList_80398a88.objSize;
     r30 = NULL;
     r31 = objList_80398a88.obj;
-    for(sp10 = (int)r31;
-    (int)r31 && object->priority < r31->priority;
-    r31 = (ObjInstance*)sp10) {
-        r30 = r31;
+	sp10 = (int)r31;
+	while((int)r31 && object->priority < r31->priority) {
+		r31 = (ObjInstance*)sp10;
+		r30 = r31;
         sp10 += size;
-    }
+	}
     objListAdd(&objList_80398a88, r30, object);
 }
 
