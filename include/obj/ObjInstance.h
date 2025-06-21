@@ -7,6 +7,10 @@
 #define MAX_OBJECTS 350
 #define MAX_EFFECT_BOXES 20
 
+#define ObjInstance_Flags06_DontTrackOldPositions 8
+#define ObjInstance_Flags06_DontSave 8192
+#define ObjInstance_Flags06_Invisible 16384
+
 typedef struct {
     /* 0x0 */ S16Vec rotation;
     /* 0x6 */ s16 flags; //ObjInstance_Flags06
@@ -301,8 +305,14 @@ typedef struct {
 } HitState;
 
 typedef struct {
-    int TODO;
-} ObjInstanceField58;
+    u8 unk00[0x80];
+    Mtx44 mtx[2];
+    u8 unk100[0xc];
+    u8 mtxIdx;
+    u8 unk10d;
+    u8 unk10e;
+    u8 unk10f;
+} ObjPolyHits;
 
 typedef struct {
     u8 unk[0x50];
@@ -341,6 +351,12 @@ typedef struct {
     int TODO;
 } astruct_53;
 
+#define ObjInstance_FlagsAF_CanPressAToTalk 1
+#define ObjInstance_FlagsAF_FieldB8TimeCanBeNegative 4
+#define ObjInstance_FlagsAF_ModelDisableFlag08 8
+#define ObjInstance_FlagsAF_PlayerIsDisguised 16
+#define ObjInstance_FlagsAF_ModelDisableFlag20 32
+
 typedef struct ObjInstance {
     /* 0x00 */ ObjPos pos;
     /* 0x18 */ Vec prevPos; //maybe "viewPos"
@@ -360,7 +376,7 @@ typedef struct ObjInstance {
     /* 0x4c */ ObjDef *def;
     /* 0x50 */ ObjData *objdata;
     /* 0x54 */ HitState *hits;
-    /* 0x58 */ ObjInstanceField58 *_58;
+    /* 0x58 */ ObjPolyHits *polyHits;
     /* 0x5c */ Model *models;
     /* 0x60 */ ObjEventData *pEventName;
     /* 0x64 */ Shadow *shadow;

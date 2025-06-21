@@ -78,7 +78,7 @@ void mtx44Transpose(Mtx44 *src, Mtx44 *dst); /* extern */
 void mtxRotateByVec3s(Mtx44 *mtx, S16Vec *rot); /* extern */
 void multVectorByObjMtx(double x, double y, double z, float *outX, float *outY,
     float *outZ, ObjInstance *obj); /* extern */
-void objFn_8002aac8(s16 *); /* extern */
+void objFn_8002aac8(ObjInstance *); /* extern */
 void objFreeAll(void); /* extern */
 void objListAdd(
     ObjListStruct *param_1, ObjInstance *obj1, ObjInstance *obj2); /* extern */
@@ -119,6 +119,7 @@ float objModelFn_800839d4(ObjInstance *object); /* static */
 void objSetup(ObjInstance *object, uint bAddToLoadedObjs); /* static */
 void objModelMtxFn_800859e8(ObjInstance *object,Mtx *modelMatrix);
 void ModelInstance_freeField48(ModelInstance *modelInstance);
+void fn_80085dc8(ObjInstance *object);
 
 extern u8 BYTE_802eca98;
 extern u8 BYTE_80398a91;
@@ -892,6 +893,79 @@ void objSetupDll(ObjInstance *object,ObjDef *def,void *param) {
     object->pos_0x8c.x = object->pos.pos.x;
     object->pos_0x8c.y = object->pos.pos.y;
     object->pos_0x8c.z = object->pos.pos.z;
+}
+
+void fn_80083F50(ObjInstance *object) {
+	if(object->flags_0xb0 & ObjInstance_FlagsB0_IsFreed) return;
+
+	if((object->objId == 0x1D) && (BYTE_80398a91 & 1)) {
+		if(object->hits) {
+			object->hits->unk48 = 0;
+			object->hits->nSpheres = 0;
+		}
+		return;
+	} else if((object->objId == 2) && (BYTE_80398a91 & 2)) {
+		if(object->hits) {
+			object->hits->unk48 = 0;
+			object->hits->nSpheres = 0;
+		}
+		return;
+	} else if(object->pObj_0xc0) {
+		if(object->child[0] && object->child[0]->hits) {
+			object->child[0]->hits->unk48 = 0;
+			object->child[0]->hits->nSpheres = 0;
+		}
+		if(!object->hits) return;
+		object->hits->unk48 = 0;
+		object->hits->nSpheres = 0;
+		return;
+	}
+	if(!(object->pos.flags & ObjInstance_Flags06_DontTrackOldPositions)) {
+		(object->oldPos).x = (object->pos).pos.x;
+		(object->oldPos).y = (object->pos).pos.y;
+		(object->oldPos).z = (object->pos).pos.z;
+		(object->pos_0x8c).x = (object->prevPos).x;
+		(object->pos_0x8c).y = (object->prevPos).y;
+		(object->pos_0x8c).z = (object->prevPos).z;
+	}
+	if(object->stateFlags) {
+		if(!object->parent) {
+			if(object->stateFlags & 1) fn_80085dc8(object);
+			if(object->stateFlags & 2) objFn_8002aac8(object);
+		}
+	}
+	if(getPiLockedFlags() & 2) STUBBED_OP(object);
+	if(!(object->flags_0xb0 & ObjInstance_FlagsB0_DontUpdate)) {
+		switch(object->romdefno) {
+			case ObjDefNo_Krystal:
+			case ObjDefNo_Sabre:
+				playerFn801925a0(object);
+				break;
+			default:
+				if(!object->dll) goto l953;
+				(*object->dll->funcs->Object.update)(object);
+				break;
+		}
+		objMultPosByMtx(object,
+		    &object->prevPos.x,
+		    &object->prevPos.y,
+		    &object->prevPos.z);
+	}
+
+l953:
+	if(getPiLockedFlags() & 2) STUBBED_OP(object);
+	if(object->hits) {
+		if(object->child[0] && object->child[0]->hits) {
+			object->child[0]->hits->unk48 = 0;
+			object->child[0]->hits->nSpheres = 0;
+		}
+		object->hits->unk4c = 0;
+		object->hits->unk48 = 0;
+		object->hits->nSpheres = 0;
+	}
+	if(object->polyHits) object->polyHits->unk10f = 0;
+	object->flags_0xaf = object->flags_0xaf & ~7;
+	return;
 }
 
 //probably objMove or such
