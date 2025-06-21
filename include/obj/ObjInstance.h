@@ -1,8 +1,10 @@
 #ifndef _OBJ_OBJINSTANCE_H_
 #define _OBJ_OBJINSTANCE_H_
 #include "gfx/models/models.h"
+#include "gfx/textures.h"
 #include "obj/ObjDef.h"
 #include "sys/dll.h"
+#include "types.h"
 
 #define MAX_OBJECTS 350
 #define MAX_EFFECT_BOXES 20
@@ -124,15 +126,15 @@ typedef struct {
     /* 0x00 */ float unk00; //copied to shadow field 0
     /* 0x04 */ float scale;
     /* 0x08 */ u32 *pModelList; //-> list of model IDs
-    /* 0x0c */ void *textures;
-    /* 0x10 */ void *jointRelated10;
+    /* 0x0c */ TexturePtr textures;
+    /* 0x10 */ Joint *joints;
     /* 0x14 */ void *unk14;
     /* 0x18 */ ObjSeqCmd *offset_0x18; //[OPTIONAL] a file containing functions
     /* 0x1c */ u16 *pSeq; //[OPTIONAL] -> seq IDs
     /* 0x20 */ s16 *pEvent; //[OPTIONAL] -> event IDs, ends with -1
         //triples of [animId, offset, size, animId, offset...]
         //but is not a struct
-    /* 0x24 */ void *pHits; //[OPTIONAL]
+    /* 0x24 */ UNKTYPE *pHits; //[OPTIONAL]
     /* 0x28 */ ObjWeaponData *pWeaponDa; //[OPTIONAL]
     /* 0x2c */ AttachPoint *pAttachPoints;
     /* 0x30 */ ModLine *pModLines; //ignored in file (zeroed on load)

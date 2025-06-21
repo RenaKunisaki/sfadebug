@@ -1,5 +1,6 @@
 #include "dolphin.h"
 #include "dolphin/mtx.h"
+#include "gfx/textures.h"
 #include "macros.h"
 #include "types.h"
 #include "global.h"
@@ -995,6 +996,53 @@ int *outData, int id, bool loadAsync) {
 	}
 }
 
+ObjData *Object_objLoadData(int objType) {
+	ObjData *objData;
+	ModLine *lines;
+	uint size;
+	uint offset;
+
+	if(objType >= (int)Object_maxObjId) return NULL;
+	if(objDefNoUsage[objType] != 0) {
+		objDefNoUsage[objType] = objDefNoUsage[objType] + 1;
+		return objDefNoList[objType];
+
+	}
+	offset = Object_pObjectsTab[objType];
+	size = Object_pObjectsTab[objType + 1] - offset;
+	objData = (ObjData *)mmAlloc(size,
+		ALLOC_TAG_OBJECTS_COL, (volatile u32)"obj:def");
+	if(objData) {
+		loadDataFileWithLength(FILE_OBJECTS_bin, objData, offset, size);
+		if(objData->pEvent) OFFSET_TO_PTR(s16, objData, pEvent);
+		if(objData->pHits) OFFSET_TO_PTR(UNKTYPE, objData, pHits);
+		if(objData->pWeaponDa) OFFSET_TO_PTR(ObjWeaponData, objData, pWeaponDa);
+		OFFSET_TO_PTR(u32, objData, pModelList);
+		OFFSET_TO_PTR(Texture, objData, textures.ptr);
+		OFFSET_TO_PTR(Joint, objData, joints);
+		if(objData->offset_0x18) OFFSET_TO_PTR(ObjSeqCmd, objData, offset_0x18);
+		if(objData->lockdata) OFFSET_TO_PTR(RomLockData, objData, lockdata);
+		if(objData->pSeq) OFFSET_TO_PTR(u16, objData, pSeq);
+		OFFSET_TO_PTR(AttachPoint, objData, pAttachPoints);
+		objData->pModLines = NULL;
+		objData->wObjList = NULL;
+
+		if(objData->modLineNo > -1) {
+			printf("ob %d fileno %d\n", objType, (int)objData->modLineNo);
+			lines = loadModLine((int)objData->modLineNo,
+				&objData->modLineCount);
+			objData->pModLines = lines;
+			intersectModLineBuild(objData);
+		}
+		objDefNoList[objType] = objData;
+		objDefNoUsage[objType] = 1;
+		return objData;
+	}
+	else {
+		printf("Objects out of ram(1) !!\n");
+		return NULL;
+	}
+}
 
 //probably objMove or such
 void fn_80084238(ObjInstance *object) {
