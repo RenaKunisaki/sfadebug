@@ -965,8 +965,36 @@ l953:
 	}
 	if(object->polyHits) object->polyHits->unk10f = 0;
 	object->flags_0xaf = object->flags_0xaf & ~7;
-	return;
 }
+
+void Object_objLoadWeaponData(ObjInstance *object, int objType,
+int *outData, int id, bool loadAsync) {
+	int ii;
+	int offset;
+	s16 *data;
+
+	data = (s16*)object->objdata->pWeaponDa; //ObjWeaponData*
+	*outData = 0;
+	if(data) {
+		for(ii = 0; data[ii] != -1; ii += 3) {
+			if(id == data[ii]) {
+				offset = data[ii+1]; //.offset;
+				*outData = data[ii+2]; //.size;
+				if(0x400 < *outData) {
+					*outData = 0x400;
+					printf("Weapon data array size overflow\n");
+				}
+				if(loadAsync) loadAsset_fileWithOffsetLength(
+						(void *)outData[1], FILE_WEAPONDA_bin,
+					    (int)offset, *outData);
+				else loadDataFileWithLength(
+				    FILE_WEAPONDA_bin, (void *)outData[1], (int)offset, *outData);
+				return;
+			}
+		}
+	}
+}
+
 
 //probably objMove or such
 void fn_80084238(ObjInstance *object) {

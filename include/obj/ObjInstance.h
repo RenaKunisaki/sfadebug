@@ -96,7 +96,9 @@ typedef struct {
 } ObjSeqCmd;
 
 typedef struct {
-    int TODO;
+    s16 id;
+    s16 offset; // WEAPONDA.bin
+    s16 size;
 } ObjWeaponData;
 
 typedef struct {
