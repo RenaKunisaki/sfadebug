@@ -998,15 +998,14 @@ int *outData, int id, bool loadAsync) {
 
 ObjData *Object_objLoadData(int objType) {
 	ObjData *objData;
-	ModLine *lines;
-	uint size;
 	uint offset;
+	uint size;
 
 	if(objType >= (int)Object_maxObjId) return NULL;
 	if(objDefNoUsage[objType] != 0) {
-		objDefNoUsage[objType] = objDefNoUsage[objType] + 1;
-		return objDefNoList[objType];
-
+		objDefNoUsage[objType]++;
+		objData = objDefNoList[objType];
+		return objData;
 	}
 	offset = Object_pObjectsTab[objType];
 	size = Object_pObjectsTab[objType + 1] - offset;
@@ -1029,19 +1028,18 @@ ObjData *Object_objLoadData(int objType) {
 
 		if(objData->modLineNo > -1) {
 			printf("ob %d fileno %d\n", objType, (int)objData->modLineNo);
-			lines = loadModLine((int)objData->modLineNo,
+			objData->pModLines = loadModLine((int)objData->modLineNo,
 				&objData->modLineCount);
-			objData->pModLines = lines;
 			intersectModLineBuild(objData);
 		}
 		objDefNoList[objType] = objData;
 		objDefNoUsage[objType] = 1;
-		return objData;
 	}
 	else {
 		printf("Objects out of ram(1) !!\n");
 		return NULL;
 	}
+	return objData;
 }
 
 //probably objMove or such

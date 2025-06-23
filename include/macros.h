@@ -62,6 +62,6 @@ and have just arbitrarily chosen x to be the statement.
 #define SHRT_MAX 32767
 
 #define OFFSET_TO_PTR(type, obj, field) \
-    (obj)->field = (type*)((uint)(obj)->field + (uint)(obj))
+    (obj)->field = (type*)((uint)(obj) + (uint)(obj)->field)
 
 #endif // _H_MACROS_
