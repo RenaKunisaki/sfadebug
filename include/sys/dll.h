@@ -1,8 +1,10 @@
 #ifndef _SYS_DLL_H_
 #define _SYS_DLL_H_
 //XXX file here is DLL*
+#include "obj/ObjInstance.h"
 typedef int (*DLL_func)(void *file);
 
+//this is a bit gross
 typedef struct {
     /* 0x0 */ union {
         //possibly the onLoad signature is only newer game versions?
@@ -14,7 +16,6 @@ typedef struct {
         void (*func1)(void);
         void(*Object_onLoad)(struct ObjInstance *object, void *param2, void *param3);
     } _4;
-    /* 0x8 */ //int (*func[0])(); //func 0 is a model callback
     /* 0x8 */ union {
         struct {
             /* 0x08 */ void(*update)(struct ObjInstance *object);
@@ -28,7 +29,63 @@ typedef struct {
             /* 0x28 */ void (*modelMtxFn_0x28)(struct ObjInstance *object, undefined4, Vec * );
             /* 0x2c */ UNKTYPE *render2C; //called for child of player object with ID 0x2d
         } Object;
+
+        //many of the following need their args and return types
+        //filled in, and may have more functions.
+        struct {
+            void(*func03)();
+            void(*func04)();
+            void(*func05)();
+            void(*func06)();
+            void(*func07)();
+            void(*func08)();
+            void(*func09)();
+            void(*func0A)();
+            void(*func0B)();
+            void(*func0C)();
+            void(*func0D)();
+            void(*func0E)();
+            void(*func0F)();
+            void(*func10)();
+            void(*func11)();
+            void(*func12)();
+            void(*func13_nop)(struct ObjInstance *obj);
+        } Dll05;
+
+        struct {
+            void(*func04)();
+            void(*func05)();
+            void(*func06)();
+            void(*func07)();
+            void(*func08)();
+            void(*func09)();
+            void(*func0A)();
+            void(*func0B)();
+            void(*func0C)(struct ObjInstance *obj);
+        } ModGfx;
+
+        struct {
+            void(*func03)();
+            void(*func04)();
+            void(*func05)();
+            void(*func06)();
+            void(*func07)();
+            void(*func08)();
+            void(*func09)();
+            void(*func0A)();
+            void(*func0B)();
+            void(*func0C)();
+            void(*func0D)();
+            void(*func0E)();
+            void(*func0F)();
+            void(*func10)();
+            void(*func11)();
+            void(*func12)();
+            void(*func13)();
+            void(*endObjSequence)(int slot);
+        } Checkpoint; //XXX must be wrong name
     };
+
 } DLL_funcs;
 
 typedef struct DLL {

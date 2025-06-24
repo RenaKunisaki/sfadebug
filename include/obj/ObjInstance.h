@@ -159,7 +159,7 @@ typedef struct {
     /* 0x58 */ u16 dll_id;
     /* 0x5a */ u16 objId;
     /* 0x5c */ s8 modLinesSize; //ignored in file
-    /* 0x5d */ s8 noframes; //model count
+    /* 0x5d */ s8 noframes; //model count, aka nModels
     /* 0x5e */ u8 numSeqs;
     /* 0x5f */ char name[15];
     /* 0x6e */ s8 unk6e;
@@ -330,12 +330,9 @@ typedef struct {
 typedef struct {
     /* 0x00 */ float unk00; //copied from ObjectFileStruct field 0
     /* 0x04 */ Texture *texture;
-    /* 0x08 */ u8 unk08;
-    /* 0x09 */ u8 unk09;
-    /* 0x0a */ u8 unk0a;
-    /* 0x0b */ u8 unk0b;
+    /* 0x08 */ Texture *texture2;
     /* 0x0c */ int unk0c;
-    /* 0x10 */ int unk10;
+    /* 0x10 */ UNKTYPE *unk10;
     /* 0x14 */ Vec unk14; //size?
     /* 0x20 */ Vec pos;
     /* 0x2c */ float unk2c;
@@ -384,7 +381,7 @@ typedef struct ObjInstance {
     /* 0x5c */ Model *models;
     /* 0x60 */ ObjEventData *pEventName;
     /* 0x64 */ Shadow *shadow;
-    /* 0x68 */ LoadedDLL *dll; //can be NULL
+    /* 0x68 */ struct LoadedDLL *dll; //can be NULL
     /* 0x6c */ Joint *joints;
     /* 0x70 */ astruct_53 **pTextures; //count = file->count59
     /* 0x74 */ RomLockData *romLockdata;
@@ -404,7 +401,7 @@ typedef struct ObjInstance {
     /* 0xaf */ u8 flags_0xaf; //ObjInstance_FlagsAF 28=don't render something (no models?)
     /* 0xb0 */ u16 flags_0xb0; //ObjInstance_FlagsB0
     /* 0xb2 */ s16 romDefNo;
-    /* 0xb4 */ s16 curSeq;
+    /* 0xb4 */ s16 curSeqSlot;
     /* 0xb6 */ s8 _B6; //padding?
     /* 0xb7 */ s8 _B7;
     /* 0xb8 */ void *state; //type depends on object
@@ -425,7 +422,7 @@ typedef struct ObjInstance {
     /* 0xe5 */ u8 stateFlags; //ObjStateFlags
     /* 0xe6 */ s16 timerE6; //related to modelInstance and/or being frozen
     /* 0xe8 */ s8 hintTextIdx;
-    /* 0xe9 */ s8 nTouchCallbacks;
+    /* 0xe9 */ u8 nTouchCallbacks;
     /* 0xea */ u8 lockedFreeTick;
     /* 0xeb */ u8 nChildren;
     /* 0xec */ u32 colorEC;

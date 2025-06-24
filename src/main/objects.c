@@ -9,9 +9,9 @@
 #include "gfx/gbi.h"
 #include "gfx/render.h"
 #include "sys/alloc.h"
-#include "sys/dll.h"
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"
+#include "sys/dll.h"
 #include "gfx/models/models.h"
 
 typedef int mapId32;
@@ -61,7 +61,7 @@ int getLoadedDataFileSize(DataFileId32 param1); /* extern */
 DataFileLoadedFlags getPiLockedFlags(void); /* extern */
 void intersectModLineBuild(ObjData *data); /* extern */
 BOOL isModelAnimDisabled(void); /* extern */
-void krystalFree(ObjInstance *obj); /* extern */
+void krystalFree(ObjInstance *obj, int unused); /* extern */
 void loadAsset_Character(ObjInstance **result, ObjDef *def, uint flags,
     int mapId, int objNo, ObjInstance *heldBy, undefined4 param7); /* extern */
 void loadAsset_fileWithOffsetLength(
@@ -175,11 +175,11 @@ void modelLoadCb_800c5b80(int param_1, ModelInstance *param_2);
 extern s32 nTablesTab;
 extern s16 nVisibleObjs;
 extern s8 numEffectBoxes;
-extern void **pDll05;
-extern void **pDll_ObjSeq;
-extern void **pDll_SaveGame;
-extern void **pDll_checkpoint;
-extern void **pDll_modgfx;
+extern LoadedDLL *pDll05;
+extern LoadedDLL *pDll_ObjSeq;
+extern LoadedDLL *pDll_SaveGame;
+extern LoadedDLL *pDll_checkpoint;
+extern LoadedDLL *pDll_modgfx;
 extern f32 playerMapOffsetX;
 extern f32 playerMapOffsetZ;
 extern s16 playerObjIds[2];
@@ -443,7 +443,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 	result->romDefNo = romDefNo;
 	result->mapId = (s8)mapId;
 	result->animVal_a2 = -1;
-	result->curSeq = -1;
+	result->curSeqSlot = -1;
 	result->newOpacity = 0xFF;
 	result->msgQueue = NULL;
 	result->camDistVar3C = ((u8)def->bound * 8);
@@ -452,7 +452,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 	result->dll = NULL;
 	if(objData->dll_id) {
 		// probably wrong return type here
-		result->dll = (LoadedDLL *)DLL_setup((u32)objData->dll_id, 6U, 1);
+		result->dll = (struct LoadedDLL *)DLL_setup((u32)objData->dll_id, 6U, 1);
 		if(!result->dll) printf("OBJECTS: warning DLL load failed\n");
 	}
 
@@ -655,8 +655,8 @@ int objGetExtraSize(ObjInstance *object, void *state) {
 		case ObjDefNo_Sabre: return 0x8c4; // sizeof(PlayerState)
 
 		default:
-			if(object->dll && object->dll->funcs->Object.getExtraSize) {
-				return (*object->dll->funcs->Object.getExtraSize)(object, state);
+			if(object->dll && ((LoadedDLL*)object->dll)->funcs->Object.getExtraSize) {
+				return (*((LoadedDLL*)object->dll)->funcs->Object.getExtraSize)(object, state);
 			}
 			return 0;
 	}
@@ -870,7 +870,7 @@ void objFreeObject(ObjInstance *obj) {
 	}
 	// else delete it now
 	else
-		worldProcessObjFreeList(obj, var_80396D08 == 0);
+		Object_worldProcessObjFreeList(obj, var_80396D08 == 0);
 }
 
 void objSetupDll(ObjInstance *object,ObjDef *def,void *param) {
@@ -884,7 +884,7 @@ void objSetupDll(ObjInstance *object,ObjDef *def,void *param) {
 
         default:
             if(object->dll) {
-                (*object->dll->funcs->_4.Object_onLoad)(object, def, param);
+                (*((LoadedDLL*)object->dll)->funcs->_4.Object_onLoad)(object, def, param);
             }
     }
     if(object->shadow) object->shadow->flags |= 8;
@@ -944,7 +944,7 @@ void fn_80083F50(ObjInstance *object) {
 				break;
 			default:
 				if(!object->dll) goto l953;
-				(*object->dll->funcs->Object.update)(object);
+				(*((LoadedDLL*)object->dll)->funcs->Object.update)(object);
 				break;
 		}
 		objMultPosByMtx(object,
@@ -1055,7 +1055,7 @@ void fn_80084238(ObjInstance *object) {
 
             default:
                 if(!object->dll) return;
-                (*object->dll->funcs->Object.hitDetect)(object);
+                (*((LoadedDLL*)object->dll)->funcs->Object.hitDetect)(object);
         }
         objMultPosByMtx(object,
             &object->prevPos.x,&object->prevPos.y,&object->prevPos.z);
@@ -1085,8 +1085,8 @@ u32 Object_getModelFlags(ObjInstance *object) {
             return 0x1cb;
 
         default:
-            if(object->dll && object->dll->funcs->Object.getModelFlags) {
-				return (*object->dll->funcs->Object.getModelFlags)(object);
+            if(object->dll && ((LoadedDLL*)object->dll)->funcs->Object.getModelFlags) {
+				return (*((LoadedDLL*)object->dll)->funcs->Object.getModelFlags)(object);
 			}
 			else return 0;
     }
@@ -1261,6 +1261,114 @@ u8 Object_objTypeGetClass(int objType) {
 
 	data = (ObjData*)((u32)Object_objTypes + Object_pObjectsTab[objType]);
   	return data->class_;
+}
+
+void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
+	s8 sVar1;
+	int iVar2;
+	ObjInstance **ppOVar3;
+	ObjInstance *pOVar4;
+	int iVar5;
+	ObjInstance *local_f0[51];
+
+	ASSERTLINE(2275, obj);
+	ASSERTLINE(2276, obj->objdata);
+	if(obj->nTouchCallbacks) freeFn_80092460(obj);
+
+	switch(obj->romdefno) {
+        case ObjDefNo_Krystal:
+        	krystalFree(obj, param2);
+			break;
+		default:
+			if(obj->dll) {
+			if(((LoadedDLL*)obj->dll)->funcs->Object.onFreeObjDef) {
+				(*((LoadedDLL*)obj->dll)->funcs->Object.onFreeObjDef)(obj, param2);
+			}
+			DLL_free(((LoadedDLL*)obj->dll));
+			obj->dll = NULL;
+		}
+	}
+	pDll05->funcs->Dll05.func13_nop(obj);
+	pDll_modgfx->funcs->ModGfx.func0C(obj);
+	if(obj->objdata
+	&& obj->objdata->flags & ObjFileStructFlags44_DifferentLightColor) {
+		objRemoveObjectType(obj, 0x38);
+	}
+	if(((obj->objdata->flags & ObjFileStructFlags44_IsWorldObj) != 0)
+	&& (objRemoveObjectType(obj, 7), param2 == 0)) {
+		iVar2 = 0;
+		for(iVar5 = 0; iVar5 < (int)ObjListSize; iVar5 += 1) {
+			pOVar4 = Object_loadedObjs[iVar5];
+			if(((int)pOVar4->heldBy == (int)obj)
+			&& (pOVar4->heldBy = NULL, pOVar4->def)) {
+				local_f0[iVar2] = pOVar4;
+				iVar2 += 1;
+				if(iVar2 >= 0x27) printf("world free obj list overflow\n");
+			}
+		}
+		for(iVar5 = 0; iVar5 < iVar2; iVar5 += 1) {
+			objFreeObject(local_f0[iVar5]);
+		}
+		trackFreeMap((uint)obj->map);
+	}
+	if((param2 == 0) && (obj->objId == 0x10)) {
+		for(iVar2 = 0; iVar2 < (int)ObjListSize; iVar2 += 1) {
+			if(Object_loadedObjs[iVar2]->pObj_0xc0 == obj) {
+				Object_loadedObjs[iVar2]->pObj_0xc0 = NULL;
+			}
+		}
+	}
+	iVar2 = 0;
+	while(true) {
+		if((int)ObjListSize <= iVar2) break;
+		if((Object_loadedObjs[iVar2]->objId == 0x10)
+		&& (ppOVar3 = Object_loadedObjs[iVar2]->state, *ppOVar3 == obj)) {
+			*ppOVar3 = NULL;
+			*(undefined *)(ppOVar3 + 0x22) = 1;
+		}
+		iVar2 += 1;
+	}
+	if('\0' < (char)obj->objdata->numSeqs) { objRemoveObjectType(obj, 9); }
+	if(obj->shadow) {
+		if(obj->objdata->shadowType == ObjShadowType_BigBoxShadow) {
+			setShadowFlag_803db658(1);
+		}
+		if(obj->shadow->texture) {
+			texFreeTexture(obj->shadow->texture);
+		}
+		if(obj->shadow->texture2) {
+			texFreeTexture(obj->shadow->texture2);
+		}
+		if((obj->shadow->unk10)
+		    && ((int)obj->shadow->unk10 != -1)) {
+			mmFree(obj->shadow->unk10);
+		}
+	}
+	if(obj->msgQueue) {
+		mmFree(obj->msgQueue);
+		obj->msgQueue = NULL;
+	}
+	sVar1 = obj->objdata->noframes;
+	iVar2 = 0;
+	while(true) {
+		if(sVar1 <= iVar2) break;
+		if(obj->frames[iVar2]) {
+			modelInstanceFree(obj->frames[iVar2]);
+		}
+		iVar2 += 1;
+	}
+	if(obj->stateFlags & 1) fn_80085DDC(obj);
+	if(obj->stateFlags & 2) LAB_800860ac(obj);
+	objFreeObjdef(obj->realType);
+	if((obj->curSeqSlot > -1) && (param2 == 0)) {
+		pDll_checkpoint->funcs->Checkpoint.endObjSequence(obj->curSeqSlot);
+		obj->curSeqSlot = -1;
+	}
+	if((obj->pos.flags & ObjInstance_Flags06_DontSave) && obj->def) {
+		mmFree(obj->def);
+	}
+	memclr(obj, 0xfc);
+	mmFree(obj);
 }
 
 ObjDef * objAlloc(uint size,ObjDefEnum type) {
