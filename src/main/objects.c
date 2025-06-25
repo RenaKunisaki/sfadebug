@@ -1267,6 +1267,7 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 	int noframes;
 	int ii;
 	int jj;
+	int kk;
 	ObjInstance **state;
 	ObjInstance *that;
 	ObjInstance *freelist[50];
@@ -1300,12 +1301,15 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 			ii = 0;
 			for(jj = 0; jj < (int)ObjListSize; jj += 1) {
 				that = Object_loadedObjs[jj];
-				if(((int)that->heldBy == (int)obj)
-				&& (that->heldBy = NULL, that->def)) {
-					freelist[ii] = that;
-					ii += 1;
-					//no idea where this number comes from
-					if(ii >= 39) printf("world free obj list overflow\n");
+				if(PTR_EQ(that->heldBy, obj)) {
+					that->heldBy = NULL;
+					if(that->def) {
+						freelist[ii] = that;
+						ii += 1;
+						//no idea where this number comes from
+						//typo? since the list is 50 elements
+						if(ii >= 40) printf("world free obj list overflow\n");
+					}
 				}
 			}
 			for(jj = 0; jj < ii; jj += 1) {
@@ -1315,15 +1319,15 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 		}
 	}
 	if(param2 == 0 && obj->objId == 0x10) {
-		for(ii = 0; ii < (int)ObjListSize; ii += 1) {
-			that = Object_loadedObjs[ii];
-			if((int)that->pObj_0xc0 == (int)obj) {
+		for(jj = 0; jj < (int)ObjListSize; jj += 1) {
+			that = Object_loadedObjs[jj];
+			if(PTR_EQ(that->pObj_0xc0, obj)) {
 				that->pObj_0xc0 = NULL;
 			}
 		}
 	}
-	for(ii = 0; ii < ObjListSize; ii++) {
-		that = Object_loadedObjs[ii];
+	for(kk = 0; kk < ObjListSize; kk++) {
+		that = Object_loadedObjs[kk];
 		if(that->objId == 0x10) {
 			state = that->state; //XXX type
 			if(*state == obj) {
@@ -1348,9 +1352,9 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 		obj->msgQueue = NULL;
 	}
 	noframes = obj->objdata->noframes;
-	for(ii = 0; noframes < ii; ii++) {
-		if((int)obj->frames[ii]) {
-			modelInstanceFree(obj->frames[ii]);
+	for(kk = 0; noframes < kk; kk++) {
+		if((int)obj->frames[kk]) {
+			modelInstanceFree(obj->frames[kk]);
 		}
 	}
 	if(obj->stateFlags & 1) fn_80085DDC(obj);

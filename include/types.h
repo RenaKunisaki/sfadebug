@@ -27,9 +27,18 @@ typedef unsigned char uchar;
 // Pointer to unknown, to be determined at a later date.
 typedef void* unkptr;
 
+typedef int intptr_t;
+
 #define SBig(x) x
 
 #define ARRAY_SIZE(arr) static_cast< int >(sizeof(arr) / sizeof(arr[0]))
+
+//there are many cases of pointer comparisons that
+//use cmpw instead of cmplw, which seems to only]
+//happen if the pointers are cast to int.
+//presumably this was some kind of macro which used
+//to do additional validation?
+#define PTR_EQ(a, b) ((intptr_t)(a) == (intptr_t)(b))
 
 #ifdef __cplusplus
 }
