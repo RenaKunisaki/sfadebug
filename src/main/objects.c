@@ -1264,12 +1264,12 @@ u8 Object_objTypeGetClass(int objType) {
 }
 
 void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
-	s8 sVar1;
-	int iVar2;
-	ObjInstance **ppOVar3;
-	ObjInstance *pOVar4;
-	int iVar5;
-	ObjInstance *local_f0[51];
+	int noframes;
+	int ii;
+	int jj;
+	ObjInstance **state;
+	ObjInstance *that;
+	ObjInstance *freelist[50];
 
 	ASSERTLINE(2275, obj);
 	ASSERTLINE(2276, obj->objdata);
@@ -1294,53 +1294,52 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 	&& obj->objdata->flags & ObjFileStructFlags44_DifferentLightColor) {
 		objRemoveObjectType(obj, 0x38);
 	}
-	if(((obj->objdata->flags & ObjFileStructFlags44_IsWorldObj) != 0)
-	&& (objRemoveObjectType(obj, 7), param2 == 0)) {
-		iVar2 = 0;
-		for(iVar5 = 0; iVar5 < (int)ObjListSize; iVar5 += 1) {
-			pOVar4 = Object_loadedObjs[iVar5];
-			if(((int)pOVar4->heldBy == (int)obj)
-			&& (pOVar4->heldBy = NULL, pOVar4->def)) {
-				local_f0[iVar2] = pOVar4;
-				iVar2 += 1;
-				if(iVar2 >= 0x27) printf("world free obj list overflow\n");
+	if(obj->objdata->flags & ObjFileStructFlags44_IsWorldObj) {
+		objRemoveObjectType(obj, 7);
+		if(!param2) {
+			ii = 0;
+			for(jj = 0; jj < (int)ObjListSize; jj += 1) {
+				that = Object_loadedObjs[jj];
+				if(((int)that->heldBy == (int)obj)
+				&& (that->heldBy = NULL, that->def)) {
+					freelist[ii] = that;
+					ii += 1;
+					//no idea where this number comes from
+					if(ii >= 39) printf("world free obj list overflow\n");
+				}
+			}
+			for(jj = 0; jj < ii; jj += 1) {
+				objFreeObject(freelist[jj]);
+			}
+			trackFreeMap((uint)obj->map);
+		}
+	}
+	if(param2 == 0 && obj->objId == 0x10) {
+		for(ii = 0; ii < (int)ObjListSize; ii += 1) {
+			that = Object_loadedObjs[ii];
+			if((int)that->pObj_0xc0 == (int)obj) {
+				that->pObj_0xc0 = NULL;
 			}
 		}
-		for(iVar5 = 0; iVar5 < iVar2; iVar5 += 1) {
-			objFreeObject(local_f0[iVar5]);
-		}
-		trackFreeMap((uint)obj->map);
 	}
-	if((param2 == 0) && (obj->objId == 0x10)) {
-		for(iVar2 = 0; iVar2 < (int)ObjListSize; iVar2 += 1) {
-			if(Object_loadedObjs[iVar2]->pObj_0xc0 == obj) {
-				Object_loadedObjs[iVar2]->pObj_0xc0 = NULL;
+	for(ii = 0; ii < ObjListSize; ii++) {
+		that = Object_loadedObjs[ii];
+		if(that->objId == 0x10) {
+			state = that->state; //XXX type
+			if(*state == obj) {
+				*state = NULL;
+				*(undefined *)(state + 0x22) = 1;
 			}
 		}
 	}
-	iVar2 = 0;
-	while(true) {
-		if((int)ObjListSize <= iVar2) break;
-		if((Object_loadedObjs[iVar2]->objId == 0x10)
-		&& (ppOVar3 = Object_loadedObjs[iVar2]->state, *ppOVar3 == obj)) {
-			*ppOVar3 = NULL;
-			*(undefined *)(ppOVar3 + 0x22) = 1;
-		}
-		iVar2 += 1;
-	}
-	if('\0' < (char)obj->objdata->numSeqs) { objRemoveObjectType(obj, 9); }
+	if(obj->objdata->numSeqs > 0) objRemoveObjectType(obj, 9);
 	if(obj->shadow) {
 		if(obj->objdata->shadowType == ObjShadowType_BigBoxShadow) {
 			setShadowFlag_803db658(1);
 		}
-		if(obj->shadow->texture) {
-			texFreeTexture(obj->shadow->texture);
-		}
-		if(obj->shadow->texture2) {
-			texFreeTexture(obj->shadow->texture2);
-		}
-		if((obj->shadow->unk10)
-		    && ((int)obj->shadow->unk10 != -1)) {
+		if(obj->shadow->texture) texFreeTexture(obj->shadow->texture);
+		if(obj->shadow->texture2) texFreeTexture(obj->shadow->texture2);
+		if((obj->shadow->unk10) && ((uint)obj->shadow->unk10 != -1)) {
 			mmFree(obj->shadow->unk10);
 		}
 	}
@@ -1348,14 +1347,11 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 		mmFree(obj->msgQueue);
 		obj->msgQueue = NULL;
 	}
-	sVar1 = obj->objdata->noframes;
-	iVar2 = 0;
-	while(true) {
-		if(sVar1 <= iVar2) break;
-		if(obj->frames[iVar2]) {
-			modelInstanceFree(obj->frames[iVar2]);
+	noframes = obj->objdata->noframes;
+	for(ii = 0; noframes < ii; ii++) {
+		if((int)obj->frames[ii]) {
+			modelInstanceFree(obj->frames[ii]);
 		}
-		iVar2 += 1;
 	}
 	if(obj->stateFlags & 1) fn_80085DDC(obj);
 	if(obj->stateFlags & 2) LAB_800860ac(obj);

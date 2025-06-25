@@ -160,7 +160,7 @@ typedef struct {
     /* 0x5a */ u16 objId;
     /* 0x5c */ s8 modLinesSize; //ignored in file
     /* 0x5d */ s8 noframes; //model count, aka nModels
-    /* 0x5e */ u8 numSeqs;
+    /* 0x5e */ s8 numSeqs;
     /* 0x5f */ char name[15];
     /* 0x6e */ s8 unk6e;
     /* 0x6f */ u8 class_;
