@@ -1438,7 +1438,7 @@ void mapSetupPlayer(void) {
 			heldBy->mtxIdx = (u8)ii;
 		}
 		/* getCurCharPos */
-		charPos = (CharPos *)(**(code **)(pDll_SaveGame->id + 0x90))();
+		charPos = (CharPos *)pDll_SaveGame->funcs->gplay.getCurCharPos();
 		x = (double)(charPos->pos).x;
 		y = (double)(charPos->pos).y;
 		z = (double)(charPos->pos).z;

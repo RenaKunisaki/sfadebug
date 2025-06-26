@@ -4,7 +4,9 @@
 #include "obj/ObjInstance.h"
 typedef int (*DLL_func)(void *file);
 
-//this is a bit gross
+//this is a bit gross. eventually it should be replaced
+//with some kind of build system that puts each DLL
+//in its own file.
 typedef struct {
     /* 0x0 */ union {
         //possibly the onLoad signature is only newer game versions?
@@ -51,6 +53,58 @@ typedef struct {
             void(*func12)();
             void(*func13_nop)(struct ObjInstance *obj);
         } Dll05;
+
+        struct {
+            void(*func03_nop)();
+            void(*newgame)();
+            void(*func05)();
+            void(*func06_nop)();
+            void(*func07)();
+            void(*func08)();
+            void(*savePoint)();
+            void(*gotoSavegame)();
+            void(*restartPoint)();
+            void(*gotoRestartPoint)();
+            void(*clearRestartPoint)();
+            void(*haveRestartPoint)();
+            void(*func0F)();
+            void(*loadOptions)();
+            void(*func11)();
+            void(*getAct)();
+            void(*gplaySetAct)();
+            void(*setMapAct)();
+            void(*getObjGroups)();
+            void(*setObjGroups)();
+            void(*getMapObjGroups)();
+            void(*setMapObjGroups)();
+            void(*getMapObjGroups_19)();
+            void(*resetMapState)();
+            void(*gplayAddTime)();
+            void(*shouldNotSaveTime)();
+            void(*func1D)();
+            void(*updateTime)();
+            void(*func1F)();
+            void(*setPlayerNo)();
+            void(*getSavedObjPositions)();
+            void(*getNumSavedObjPositions)();
+            void(*func23)();
+            void(*func24)();
+            void(*getCurCharState)();
+            struct CharPos* (*getCurCharPos)();
+            void(*func27)();
+            void(*gplayGetCurrentPlayerLactions)();
+            void(*gplayGetCurrentPlayerEnvactions)();
+            void(*func2A)();
+            void(*func2B)();
+            void(*func2C)();
+            void(*func2D)();
+            void(*isCheatUnlocked)();
+            void(*unlockCheat)();
+            void(*isCheatUnlockedAndEnabled)();
+            void(*toggleCheatEnabled)();
+            void(*isCinemaUnlocked)();
+            void(*unlockCinema)();
+        } gplay;
 
         struct {
             void(*func04)();
