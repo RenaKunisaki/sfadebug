@@ -11,8 +11,10 @@
 #include "sys/alloc.h"
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"
+#include "obj/Camera.h"
 #include "sys/dll.h"
 #include "gfx/models/models.h"
+#include "save/SaveGame.h"
 
 typedef int mapId32;
 typedef uint DataFileLoadedFlags;
@@ -1384,6 +1386,110 @@ ObjDef * objAlloc(uint size,ObjDefEnum type) {
 	odef->mapStates2 = 4;
 	odef->objType    = type;
 	return odef;
+}
+
+void mapSetupPlayer(void) {
+	int mapType;
+	ObjDefEnum playerType;
+	Camera *pCVar1;
+	CharPos *charPos;
+	ObjInstance *charObj;
+	int ii;
+	ObjInstance *heldBy;
+	double z;
+	double y;
+	double x;
+	float fVar2;
+	int iStack_68;
+	ObjDef chrDef;
+
+	mapType = getCurMapType();
+	if((mapType == 2) || (mapType == 3)) {
+		objFreeAll();
+	} else {
+		heldBy = NULL;
+		playerType = mapGetPlayerObjType(&iStack_68);
+		if(playerType != ObjDefNo_Sabre) {
+			chrDef.pos.x = 0.0;
+			chrDef.pos.y = 0.0;
+			chrDef.pos.z = 0.0;
+			chrDef.loadFlags = RomListLoadFlag_isLevelObject;
+			chrDef.mapStates2 = 4;
+			chrDef.bound = 0xff;
+			chrDef.cullDist = 0xff;
+			chrDef.objType = playerType;
+			heldBy = objInstantiateCharacter(&chrDef, ObjSpawnFlags_KeepLoaded, -1, -1, NULL);
+			heldBy->def = NULL;
+			(heldBy->pos).pos.x = 0.0;
+			(heldBy->pos).pos.y = 0.0;
+			(heldBy->pos).pos.z = 0.0;
+			(heldBy->pos).rotation.x = 0;
+			(heldBy->pos).rotation.y = 0;
+			(heldBy->pos).rotation.z = 0;
+			Camera_setPlayerNo(0);
+			pCVar1 = getCurCamera();
+			pCVar1->obj40 = heldBy;
+			for(ii = 0; ii < (int)ObjListSize; ii += 1) {
+				if(Object_loadedObjs[ii] != heldBy) {
+					Object_loadedObjs[ii]->heldBy = heldBy;
+				}
+			}
+			ii = Camera_addWorldMtx(&heldBy->pos);
+			heldBy->mtxIdx = (u8)ii;
+		}
+		/* getCurCharPos */
+		charPos = (CharPos *)(**(code **)(pDll_SaveGame->id + 0x90))();
+		x = (double)(charPos->pos).x;
+		y = (double)(charPos->pos).y;
+		z = (double)(charPos->pos).z;
+		charObj = NULL;
+		if(mapType != 4) {
+			memclr(&chrDef, 0x18);
+			chrDef.id = -1;
+			chrDef.mapStates1 = 0;
+			chrDef.loadFlags = isLevelObject;
+			chrDef.mapStates2 = 4;
+			chrDef.bound = 0xff;
+			chrDef.cullDist = 100;
+			chrDef.objType = Krystal;
+			chrDef.allocatedSize = 0x18;
+			chrDef.pos.x = (float)x;
+			chrDef.pos.y = (float)y;
+			chrDef.pos.z = (float)z;
+			charObj
+			    = objInstantiateCharacter(&chrDef, KeepLoaded, -1, -1, heldBy);
+		}
+		fVar2 = distanceFn_80293e80(
+		    ((float)((double)CONCAT44(
+		                 0x43300000, (int)charPos->rotX << 8 ^ 0x80000000)
+		         - 4503601774854144.0)
+		        * 3.141593)
+		    / 32767.0);
+		ObjDef_802eca98.pos.x = (float)((double)fVar2 * 60.0 + x);
+		ObjDef_802eca98.pos.y = (float)(y + 40.0);
+		y = (double)(((float)((double)CONCAT44(0x43300000,
+		                          (int)charPos->rotX << 8 ^ 0x80000000)
+		                  - 4503601774854144.0)
+		                 * 3.141593)
+		    / 32767.0);
+		mathFn_80294204(y);
+		ObjDef_802eca98.pos.z = (float)(y * 60.0 + z);
+		/* camcontrol_func03 */
+		(**(code **)(*(int *)pDll_camcontrol + 4))(
+		    (double)ObjDef_802eca98.pos.x,
+		    (double)ObjDef_802eca98.pos.y,
+		    (double)ObjDef_802eca98.pos.z,
+		    charObj);
+		/* camcontrol_func09 */
+		(**(code **)(*(int *)pDll_camcontrol + 0x1c))(
+		    0x50, 0, 0, 0x20, &ObjDef_802eca98, 0, 0xff);
+		/* camcontrol_func04 */
+		(**(code **)(*(int *)pDll_camcontrol + 8))(1);
+		/* Dummy04_func06_nop */
+		(**(code **)(*(int *)pDll05 + 0x10))(charObj);
+		playerHeldBy = heldBy;
+		playerUpdateFn_800ae404();
+	}
 }
 
 //unsure what object this is
