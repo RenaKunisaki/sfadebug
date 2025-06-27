@@ -72,7 +72,7 @@ void *loadDataFileWithLength(
     DataFileId32 file, void *dest, uint offset, u32 len); /* extern */
 ModelInstance *loadModelInstance(int id, uint flags); /* extern */
 ObjDefEnum mapGetPlayerObjType(int *outWhichObjs); /* extern */
-f32 mathFn_80294204(f32, f32); /* extern */
+f32 mathFn_80294204(f32); /* extern */
 void memclr(void *param1, size_t param2); /* extern */
 void memcpy_src_dst_len(void *param1, void *param2, size_t param3); /* extern */
 u16 modelGetFieldA4(Model *model); /* extern */
@@ -1388,6 +1388,11 @@ ObjDef * objAlloc(uint size,ObjDefEnum type) {
 	return odef;
 }
 
+ObjDef ObjDef_802eca98;
+LoadedDLL *pDll_camcontrol;
+LoadedDLL *pDll_dummy04;
+ObjInstance *playerHeldBy; //80398a94
+
 void mapSetupPlayer(void) {
 	int mapType;
 	ObjDefEnum playerType;
@@ -1447,17 +1452,18 @@ void mapSetupPlayer(void) {
 			memclr(&chrDef, 0x18);
 			chrDef.id = -1;
 			chrDef.mapStates1 = 0;
-			chrDef.loadFlags = isLevelObject;
+			chrDef.loadFlags = RomListLoadFlag_isLevelObject;
 			chrDef.mapStates2 = 4;
 			chrDef.bound = 0xff;
 			chrDef.cullDist = 100;
-			chrDef.objType = Krystal;
+			chrDef.objType = ObjDefNo_Krystal;
 			chrDef.allocatedSize = 0x18;
 			chrDef.pos.x = (float)x;
 			chrDef.pos.y = (float)y;
 			chrDef.pos.z = (float)z;
-			charObj
-			    = objInstantiateCharacter(&chrDef, KeepLoaded, -1, -1, heldBy);
+			charObj = objInstantiateCharacter(&chrDef,
+				ObjSpawnFlags_KeepLoaded, -1, -1,
+				heldBy);
 		}
 		fVar2 = distanceFn_80293e80(
 		    ((float)((double)CONCAT44(
@@ -1474,19 +1480,14 @@ void mapSetupPlayer(void) {
 		    / 32767.0);
 		mathFn_80294204(y);
 		ObjDef_802eca98.pos.z = (float)(y * 60.0 + z);
-		/* camcontrol_func03 */
-		(**(code **)(*(int *)pDll_camcontrol + 4))(
-		    (double)ObjDef_802eca98.pos.x,
-		    (double)ObjDef_802eca98.pos.y,
-		    (double)ObjDef_802eca98.pos.z,
-		    charObj);
-		/* camcontrol_func09 */
-		(**(code **)(*(int *)pDll_camcontrol + 0x1c))(
+		pDll_camcontrol->funcs->camcontrol.func03(charObj,
+		    ObjDef_802eca98.pos.x,
+		    ObjDef_802eca98.pos.y,
+		    ObjDef_802eca98.pos.z);
+		pDll_camcontrol->funcs->camcontrol.func09(
 		    0x50, 0, 0, 0x20, &ObjDef_802eca98, 0, 0xff);
-		/* camcontrol_func04 */
-		(**(code **)(*(int *)pDll_camcontrol + 8))(1);
-		/* Dummy04_func06_nop */
-		(**(code **)(*(int *)pDll05 + 0x10))(charObj);
+		pDll_camcontrol->funcs->camcontrol.func04(1);
+		pDll_dummy04->funcs->Dummy04.func06_nop(charObj);
 		playerHeldBy = heldBy;
 		playerUpdateFn_800ae404();
 	}

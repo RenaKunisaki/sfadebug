@@ -19,21 +19,39 @@ typedef struct {
         void(*Object_onLoad)(struct ObjInstance *object, void *param2, void *param3);
     } _4;
     /* 0x8 */ union {
-        struct {
-            /* 0x08 */ void(*update)(struct ObjInstance *object);
-            /* 0x0c */ void(*hitDetect)(struct ObjInstance *object);
-            /* 0x10 */ void(*render)(struct ObjInstance *object, undefined4 param2, undefined4 param3, undefined4 param4, undefined4 param5, BOOL shouldRender);
-            /* 0x14 */ void(*onFreeObjDef)(struct ObjInstance *object, undefined4);
-            /* 0x18 */ u32 (*getModelFlags)(struct ObjInstance *object); //in final, this is done inline
-            /* 0x1c */ int (*getExtraSize)(struct ObjInstance *object, void *state); //returns sizeof(this obj's State)
-            /* 0x20 */ UNKTYPE *setScale;
-            /* 0x24 */ UNKTYPE *unk24;
-            /* 0x28 */ void (*modelMtxFn_0x28)(struct ObjInstance *object, undefined4, Vec * );
-            /* 0x2c */ UNKTYPE *render2C; //called for child of player object with ID 0x2d
-        } Object;
-
         //many of the following need their args and return types
         //filled in, and may have more functions.
+        struct {
+            void (*func03)(struct ObjInstance *obj,float x,float y,float z);
+            void (*func04)(int);
+            void (*func05)();
+            void (*func06)();
+            void (*func07)();
+            void (*func08)();
+            void (*func09)(int param1,s8 param2,s8 param3,uint len,ObjDef *odef,int param6,s8 param7);
+        } camcontrol;
+
+        struct {
+            void(*func03)();
+            void(*func04)();
+            void(*func05)();
+            void(*func06)();
+            void(*func07)();
+            void(*func08)();
+            void(*func09)();
+            void(*func0A)();
+            void(*func0B)();
+            void(*func0C)();
+            void(*func0D)();
+            void(*func0E)();
+            void(*func0F)();
+            void(*func10)();
+            void(*func11)();
+            void(*func12)();
+            void(*func13)();
+            void(*endObjSequence)(int slot);
+        } Checkpoint; //XXX must be wrong name
+
         struct {
             void(*func03)();
             void(*func04)();
@@ -53,6 +71,13 @@ typedef struct {
             void(*func12)();
             void(*func13_nop)(struct ObjInstance *obj);
         } Dll05;
+
+        struct {
+            void(*func03)();
+            void(*func04)();
+            void(*func05)();
+            void (*func06_nop)(struct ObjInstance *obj);
+        } Dummy04;
 
         struct {
             void(*func03_nop)();
@@ -119,25 +144,17 @@ typedef struct {
         } ModGfx;
 
         struct {
-            void(*func03)();
-            void(*func04)();
-            void(*func05)();
-            void(*func06)();
-            void(*func07)();
-            void(*func08)();
-            void(*func09)();
-            void(*func0A)();
-            void(*func0B)();
-            void(*func0C)();
-            void(*func0D)();
-            void(*func0E)();
-            void(*func0F)();
-            void(*func10)();
-            void(*func11)();
-            void(*func12)();
-            void(*func13)();
-            void(*endObjSequence)(int slot);
-        } Checkpoint; //XXX must be wrong name
+            /* 0x08 */ void(*update)(struct ObjInstance *object);
+            /* 0x0c */ void(*hitDetect)(struct ObjInstance *object);
+            /* 0x10 */ void(*render)(struct ObjInstance *object, undefined4 param2, undefined4 param3, undefined4 param4, undefined4 param5, BOOL shouldRender);
+            /* 0x14 */ void(*onFreeObjDef)(struct ObjInstance *object, undefined4);
+            /* 0x18 */ u32 (*getModelFlags)(struct ObjInstance *object); //in final, this is done inline
+            /* 0x1c */ int (*getExtraSize)(struct ObjInstance *object, void *state); //returns sizeof(this obj's State)
+            /* 0x20 */ UNKTYPE *setScale;
+            /* 0x24 */ UNKTYPE *unk24;
+            /* 0x28 */ void (*modelMtxFn_0x28)(struct ObjInstance *object, undefined4, Vec * );
+            /* 0x2c */ UNKTYPE *render2C; //called for child of player object with ID 0x2d
+        } Object;
     };
 
 } DLL_funcs;
