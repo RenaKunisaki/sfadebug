@@ -28,7 +28,7 @@ typedef struct {
             void (*func06)();
             void (*func07)();
             void (*func08)();
-            void (*func09)(int param1,s8 param2,s8 param3,uint len,ObjDef *odef,int param6,s8 param7);
+            void (*func09)(int param1,s8 param2,s8 param3,uint len,ObjDef *odef,int param6,u8 param7);
         } camcontrol;
 
         struct {
@@ -114,8 +114,8 @@ typedef struct {
             void(*getNumSavedObjPositions)();
             void(*func23)();
             void(*func24)();
-            void(*getCurCharState)();
             struct CharPos* (*getCurCharPos)();
+            void(*getCurCharState)();
             void(*func27)();
             void(*gplayGetCurrentPlayerLactions)();
             void(*gplayGetCurrentPlayerEnvactions)();

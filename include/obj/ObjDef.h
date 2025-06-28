@@ -1572,8 +1572,8 @@ typedef struct {
     /* 0x03 */ u8 mapStates1; //whether to NOT load in states 1-8
     /* 0x04 */ u8 loadFlags; //RomListObjLoadFlags
     /* 0x05 */ u8 mapStates2; //whether to NOT load in states 15-9 (low bit unused?)
-    /* 0x06 */ s8 bound; //load if in range (bound<<3) of player
-    /* 0x07 */ s8 cullDist;
+    /* 0x06 */ u8 bound; //load if in range (bound<<3) of player
+    /* 0x07 */ u8 cullDist;
     /* 0x08 */ Vec pos;
     /* 0x14 */ s32 id; //unique ID
 } ObjDef;

@@ -60,6 +60,7 @@ and have just arbitrarily chosen x to be the statement.
 //really? this isn't defined?
 #define UCHAR_MAX 255u
 #define SHRT_MAX 32767
+#define PI 3.141593f
 
 #define OFFSET_TO_PTR(type, obj, field) \
     (obj)->field = (type*)((uint)(obj) + (uint)(obj)->field)
