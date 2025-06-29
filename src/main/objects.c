@@ -114,8 +114,7 @@ void fn_80085DDC(ObjInstance *outNumObjs); /* static */
 ModLine *loadModLine(int lineNo, s16 *outCount); /* static */
 void modelInitSkeleton(float scale, ModelInstance *model); /* static */
 void objFreeObjdef(int defNo); /* static */
-void objFreezeFn_80085e2c(ObjInstance *object, undefined4 fieldE6, undefined4 r,
-    undefined4 g, undefined4 b, uint a); /* static */
+void objSetFrozen(ObjInstance *object,int freezeTimer,uint r,uint g,uint b,uint a); /* static */
 uint objGetTotalDataSize(ObjInstance *obj, ObjData *objData, ObjDef *objDef,
     uint flags); /* static */
 float objModelFn_800839d4(ObjInstance *object); /* static */
@@ -1710,19 +1709,40 @@ void lightVecFn_80085c50(ObjInstance *obj, Vec *vIn, Vec *vOut) {
 	MTXMultVecSR(mtx,vIn,vOut);
 }
 
+
+void fn_80085d10(ObjInstance *object, int timerE6) {
+	int dummy[4];
+	Mtx mtx;
+
+	if(object->objdata->unkb4 & ObjDataFlagsB4_CanFreeze) {
+		if(object->impendingFreezeTimer < 10) {
+			object->impendingFreezeTimer++;
+			objSetFrozen(object, 30, 0xa0, 0xff, 0xff, 0);
+		}
+		if(object->impendingFreezeTimer == 10) {
+			if(object->stateFlags & 2) LAB_800860ac(object);
+			object->freezeTimer = timerE6;
+			object->stateFlags |= OBJ_STATE_ISFROZEN;
+			objModelMtxFn_800859e8(object, &mtx);
+			freezeModelFn_8007f184(objGetModelInstance(object),
+				&mtx, true);
+		}
+	}
+}
+
 u8 objIsFrozen(ObjInstance *object) {
-	return object->stateFlags & OBJ_STATE_IS_FROZEN;
+	return object->stateFlags & OBJ_STATE_ISFROZEN;
 }
 
 void fn_80085dc8(ObjInstance *object) {
-	object->timerE6 -= timeDelta;
-	if(object->timerE6 <= 0) fn_80085DDC(object);
+	object->freezeTimer -= timeDelta;
+	if(object->freezeTimer <= 0) fn_80085DDC(object);
 }
 
 void fn_80085DDC(ObjInstance *object) {
-	object->timerE6 = 0;
-	object->stateFlags &= ~OBJ_STATE_IS_FROZEN;
-	object->_F0 = 0;
+	object->freezeTimer = 0;
+	object->stateFlags &= ~OBJ_STATE_ISFROZEN;
+	object->impendingFreezeTimer = 0;
 	ModelInstance_freeField48(objGetModelInstance(object));
 	return;
 }

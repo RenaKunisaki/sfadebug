@@ -23,7 +23,9 @@ typedef struct {
 struct ObjInstance;
 
 typedef enum {
-    OBJ_STATE_IS_FROZEN = 0x01,
+    OBJ_STATE_ISFROZEN = 0x01, //official name
+    //0x02: related to freezing
+    //0x04: related to freezing
 } ObjStateFlags;
 
 #define OBJ_PRIORITY_WORLD 90
@@ -122,6 +124,10 @@ typedef s16 ObjFileStruct_ShadowType;
 typedef u16 HitboxFlags60;
 typedef u16 HitboxFlags62;
 
+enum {
+    ObjDataFlagsB4_CanFreeze = 0x01,
+} ObjDataFlagsB4;
+
 typedef struct {
     /* 0x00 */ float unk00; //copied to shadow field 0
     /* 0x04 */ float scale;
@@ -206,6 +212,24 @@ typedef struct {
     /* 0x9e */ s8 unk9e;
     /* 0x9f */ s8 unk9f;
     /* 0xa0 */ s16 unka0;
+    /* 0xa2 */ s16 unka2;
+    /* 0xa4 */ s8 unka4;
+    /* 0xa5 */ s8 unka5;
+    /* 0xa6 */ s8 unka6;
+    /* 0xa7 */ s8 unka7;
+    /* 0xa8 */ s8 unka8;
+    /* 0xa9 */ s8 unka9;
+    /* 0xaa */ s8 unkaa;
+    /* 0xab */ s8 unkab;
+    /* 0xac */ s8 unkac;
+    /* 0xad */ s8 unkad;
+    /* 0xae */ s8 unkae;
+    /* 0xaf */ s8 unkaf;
+    /* 0xb0 */ s8 unkb0;
+    /* 0xb1 */ s8 unkb1;
+    /* 0xb2 */ s8 unkb2;
+    /* 0xb3 */ s8 unkb3;
+    /* 0xb4 */ s8 unkb4; //ObjDataFlagsB4
 } ObjData;
 
 typedef struct {
@@ -420,13 +444,13 @@ typedef struct ObjInstance {
     /* 0xe3 */ u8 flags_e3;
     /* 0xe4 */ u8 lockCountE4;
     /* 0xe5 */ u8 stateFlags; //ObjStateFlags
-    /* 0xe6 */ s16 timerE6; //related to modelInstance and/or being frozen
+    /* 0xe6 */ s16 freezeTimer;
     /* 0xe8 */ s8 hintTextIdx;
     /* 0xe9 */ u8 nTouchCallbacks;
     /* 0xea */ u8 lockedFreeTick;
     /* 0xeb */ u8 nChildren;
-    /* 0xec */ u32 colorEC;
-    /* 0xf0 */ s8 _F0; //related to modelInstance and/or being frozen
+    /* 0xec */ u32 freezeColor;
+    /* 0xf0 */ u8 impendingFreezeTimer; //related to modelInstance and/or being frozen
     /* 0xf1 */ u8 brightness;
     /* 0xf2 */ u8 colorIdx;
     /* 0xf3 */ s8 _F3;
