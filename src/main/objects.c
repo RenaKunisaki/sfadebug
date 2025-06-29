@@ -21,7 +21,7 @@ typedef uint DataFileLoadedFlags;
 typedef int ObjDefEnum;
 typedef u32 ModelFlags_loadCharacter;
 
-s8 Camera_addWorldMtx(void *); /* extern */
+int Camera_addWorldMtx(void *); /* extern */
 void Camera_setPlayerNo(int); /* extern */
 DLL_func **DLL_setup(
     uint dllId, ushort exportCount, BOOL bDontCallInit); /* extern */
@@ -1441,7 +1441,7 @@ void mapSetupPlayer(void) {
 			}
 		}
 		//game is using r0 instead of r3 as temporary here
-		heldBy->mtxIdx = (int)Camera_addWorldMtx(&heldBy->pos);
+		heldBy->mtxIdx = Camera_addWorldMtx(&heldBy->pos);
 	}
 	playerIdx = 1;
 	charPos = (CharPos *)pDll_SaveGame->funcs->gplay.getCurCharPos();

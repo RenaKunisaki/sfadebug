@@ -364,7 +364,7 @@ typedef struct ObjInstance {
     /* 0x24 */ Vec vel;
     /* 0x30 */ struct ObjInstance *heldBy; //can be null
     /* 0x34 */ u8 map; //MapId8 related to children and/or player objects
-    /* 0x35 */ u8 mtxIdx;
+    /* 0x35 */ s8 mtxIdx;
     /* 0x36 */ u8 newOpacity;
     /* 0x37 */ u8 opacity; //is set to newOpacity each frame
     /* 0x38 */ struct ObjInstance *next; //list is not necessarily in order
