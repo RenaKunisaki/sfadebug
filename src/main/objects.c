@@ -1663,6 +1663,21 @@ void vecToObjSpace(ObjInstance *object,Vec *vIn,Vec *vOut) {
 	vOut->z = vOut->z + playerMapOffsetZ;
 }
 
+void objModelMtxFn_800859e8(ObjInstance *object, Mtx *modelMatrix) {
+	int dummy;
+	ASSERTLINE(0xc98, object);
+	ASSERTLINE(0xc99, modelMatrix);
+	if(!object->heldBy) {
+		object->pos.pos.x -= playerMapOffsetX;
+		object->pos.pos.z -= playerMapOffsetZ;
+	}
+	objModelMtxFn_8007b0c0(object, *modelMatrix);
+	if(!object->heldBy) {
+		object->pos.pos.x += playerMapOffsetX;
+		object->pos.pos.z += playerMapOffsetZ;
+	}
+}
+
 void lightVecFn_80085c50(ObjInstance *obj, Vec *vIn, Vec *vOut) {
 	Mtx44 mtx;
 	objModelMtxFn_800859e8(obj,(Mtx*)&mtx);
