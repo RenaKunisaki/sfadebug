@@ -1678,6 +1678,32 @@ void objModelMtxFn_800859e8(ObjInstance *object, Mtx *modelMatrix) {
 	}
 }
 
+void objModelMtxFn_80085ab8(ObjInstance *object, Mtx *modelMatrix) {
+	int dummy;
+	Mtx44 mtx;
+	ObjPos xf;
+
+	ASSERTLINE(0xcc4, object);
+	ASSERTLINE(0xcc5, modelMatrix);
+	if(!object->heldBy) {
+		object->pos.pos.x -= playerMapOffsetX;
+		object->pos.pos.z -= playerMapOffsetZ;
+	}
+	xf.pos.x = -object->pos.pos.x;
+	xf.pos.y = -object->pos.pos.y;
+	xf.pos.z = -object->pos.pos.z;
+	xf.rotation.x = -object->pos.rotation.x;
+	xf.rotation.y = -object->pos.rotation.y;
+	xf.rotation.z = -object->pos.rotation.z;
+	xf.scale = 1.0;
+	mtxRotateByVec3s(&mtx, &xf.rotation);
+	mtx44Transpose(&mtx, (Mtx44 *)modelMatrix);
+	if(!object->heldBy) {
+		object->pos.pos.x += playerMapOffsetX;
+		object->pos.pos.z += playerMapOffsetZ;
+	}
+}
+
 void lightVecFn_80085c50(ObjInstance *obj, Vec *vIn, Vec *vOut) {
 	Mtx44 mtx;
 	objModelMtxFn_800859e8(obj,(Mtx*)&mtx);
