@@ -14,13 +14,12 @@ typedef struct {
         void (*func0)(void);
     } _0;
     /* 0x4 */ union {
+        //many of the following need their args and return types
+        //filled in, and may have more functions.
+
         int (*onUnload)(void *thisdll);
         void (*func1)(void);
         void(*Object_onLoad)(struct ObjInstance *object, void *param2, void *param3);
-    } _4;
-    /* 0x8 */ union {
-        //many of the following need their args and return types
-        //filled in, and may have more functions.
         struct {
             void (*func03)(struct ObjInstance *obj,float x,float y,float z);
             void (*func04)(int);
@@ -114,8 +113,8 @@ typedef struct {
             void(*getNumSavedObjPositions)();
             void(*func23)();
             void(*func24)();
-            struct CharPos* (*getCurCharPos)();
             void(*getCurCharState)();
+            struct CharPos* (*getCurCharPos)();
             void(*func27)();
             void(*gplayGetCurrentPlayerLactions)();
             void(*gplayGetCurrentPlayerEnvactions)();

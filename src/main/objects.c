@@ -886,7 +886,7 @@ void objSetupDll(ObjInstance *object,ObjDef *def,void *param) {
 
         default:
             if(object->dll) {
-                (*((LoadedDLL*)object->dll)->funcs->_4.Object_onLoad)(object, def, param);
+                (*((LoadedDLL*)object->dll)->funcs->Object_onLoad)(object, def, param);
             }
     }
     if(object->shadow) object->shadow->flags |= 8;
@@ -1395,23 +1395,20 @@ ObjInstance *playerHeldBy; //80398a94
 float distanceFn_80293e80(float);
 
 void mapSetupPlayer(void) {
-	int mapType;
-	Camera *cam;
-	ObjDefEnum playerType;
-	CharPos *charPos;
-	ObjInstance *charObj;
-	ObjInstance *heldBy;
-	float x;
-	float y;
-	float z;
+	ObjInstance *heldBy; //r31
+	CharPos *charPos; //r29
+	int ii; //r28
+	ObjDefEnum playerType; //r26
+	Camera *cam; //r25
+	ObjInstance *charObj; //r24
+	float x, y, z;
 	ObjDef chrDef;
-	int whichObjs;
-	int foo;
-	int foo1;
-	int ii;
+	int whichObjs; //sp10
+	volatile int playerIdx; //sp0C
+	volatile int mapType; //sp08
 
 	mapType = getCurMapType();
-	if((mapType == 2) || (mapType == 3)) {
+	if(mapType == 2 || mapType == 3) {
 		objFreeAll();
 		return;
 	}
@@ -1443,15 +1440,16 @@ void mapSetupPlayer(void) {
 				Object_loadedObjs[ii]->heldBy = heldBy;
 			}
 		}
+		//game is using r0 instead of r3 as temporary here
 		heldBy->mtxIdx = (int)Camera_addWorldMtx(&heldBy->pos);
 	}
-	mapType = 1; //maybe wrong var
+	playerIdx = 1;
 	charPos = (CharPos *)pDll_SaveGame->funcs->gplay.getCurCharPos();
 	x = charPos->pos.x;
 	y = charPos->pos.y;
 	z = charPos->pos.z;
 	charObj = NULL;
-	if(playerType > -1 && mapType != 4) {
+	if(playerIdx > -1 && mapType != 4) {
 		memclr(&chrDef, sizeof(ObjDef));
 		chrDef.id = -1;
 		chrDef.mapStates1 = 0;
@@ -1459,7 +1457,7 @@ void mapSetupPlayer(void) {
 		chrDef.mapStates2 = 4;
 		chrDef.bound = 0xff;
 		chrDef.cullDist = 100;
-		chrDef.objType = playerObjIds[playerType];
+		chrDef.objType = playerObjIds[playerIdx];
 		chrDef.allocatedSize = sizeof(ObjDef);
 		chrDef.pos.x = x;
 		chrDef.pos.y = y;
