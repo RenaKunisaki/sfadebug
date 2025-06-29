@@ -114,7 +114,7 @@ void fn_80085DDC(ObjInstance *outNumObjs); /* static */
 ModLine *loadModLine(int lineNo, s16 *outCount); /* static */
 void modelInitSkeleton(float scale, ModelInstance *model); /* static */
 void objFreeObjdef(int defNo); /* static */
-void objSetFrozen(ObjInstance *object,int freezeTimer,uint r,uint g,uint b,uint a); /* static */
+void objSetFrozen(ObjInstance *object,int freezeTimer,u8 r, u8 g, u8 b, u8 a); /* static */
 uint objGetTotalDataSize(ObjInstance *obj, ObjData *objData, ObjDef *objDef,
     uint flags); /* static */
 float objModelFn_800839d4(ObjInstance *object); /* static */
@@ -1747,3 +1747,21 @@ void fn_80085DDC(ObjInstance *object) {
 	return;
 }
 
+void objSetFrozen(ObjInstance *object, int freezeTimer,
+u8 r, u8 g, u8 b, u8 a) {
+	int ii;
+
+	ASSERTLINE(0xd9f, !(object->stateFlags&OBJ_STATE_ISFROZEN));
+	object->freezeTimer = (short)freezeTimer;
+	object->stateFlags &= ~4;
+	object->stateFlags |= 2;
+	object->freezeColor.r = r;
+	object->freezeColor.g = g;
+	object->freezeColor.b = b;
+	if(a) object->freezeColor.a = 180;
+	else object->freezeColor.a = 0;
+	for(ii = 0; ii < object->nChildren; ii++) {
+		objSetFrozen(object->child[ii], freezeTimer, r, g, b, a);
+	}
+	return;
+}

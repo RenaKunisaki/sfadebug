@@ -1,5 +1,6 @@
 #ifndef _OBJ_OBJINSTANCE_H_
 #define _OBJ_OBJINSTANCE_H_
+#include "dolphin/gx/GXStruct.h"
 #include "gfx/models/models.h"
 #include "gfx/textures.h"
 #include "obj/ObjDef.h"
@@ -449,7 +450,7 @@ typedef struct ObjInstance {
     /* 0xe9 */ u8 nTouchCallbacks;
     /* 0xea */ u8 lockedFreeTick;
     /* 0xeb */ u8 nChildren;
-    /* 0xec */ u32 freezeColor;
+    /* 0xec */ GXColor freezeColor;
     /* 0xf0 */ u8 impendingFreezeTimer; //related to modelInstance and/or being frozen
     /* 0xf1 */ u8 brightness;
     /* 0xf2 */ u8 colorIdx;
