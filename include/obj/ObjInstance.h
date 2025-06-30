@@ -112,12 +112,12 @@ typedef struct {
 
 typedef struct {
     /* 0x00 */ S16Vec unk00;
-    /* 0x06 */ s32 unk06;
-    /* 0x08 */ s32 unk08;
-    /* 0x0a */ s32 unk0a;
-    /* 0x0c */ s32 unk0c;
-    /* 0x0e */ s32 unk0e;
-    /* 0x10 */ s32 unk10;
+    /* 0x06 */ s16 unk06;
+    /* 0x08 */ s16 unk08;
+    /* 0x0a */ s16 unk0a;
+    /* 0x0c */ s16 unk0c;
+    /* 0x0e */ s16 unk0e;
+    /* 0x10 */ s16 unk10;
 } Joint;
 
 typedef uint ObjFileStructFlags44;
@@ -393,8 +393,8 @@ typedef struct ObjInstance {
     /* 0x36 */ u8 newOpacity;
     /* 0x37 */ u8 opacity; //is set to newOpacity each frame
     /* 0x38 */ struct ObjInstance *next; //list is not necessarily in order
-    /* 0x3c */ float camDistVar3C; //same value as 0x40
-    /* 0x40 */ float camDistVar40; //2040=100% opacity, 128=~50% - camera distance?
+    /* 0x3c */ float bound; //same value as 0x40
+    /* 0x40 */ float cullDist; //2040=100% opacity, 128=~50% - camera distance?
     /* 0x44 */ s16 objId; //same for multiple objs
     /* 0x46 */ s16 romdefno; //ObjDefEnum
     /* 0x48 */ s16 realType;

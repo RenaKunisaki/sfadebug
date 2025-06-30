@@ -208,12 +208,12 @@ void clearNVisibleObjs(void) {
  *  @note Caches the result.
  */
 int getNumVisibleObjects(s32 *outNumObjs) {
-	int result; // r31
-	s32 nObjs; // r30
-	s32 stop; // r29
-	s32 nObjsStart; // r28
-	s32 nObjsStart2; // r27
-	ObjInstance *obj; // r26
+	int result;
+	s32 nObjs;
+	s32 stop;
+	s32 nObjsStart;
+	s32 nObjsStart2;
+	ObjInstance *obj;
 
 	*outNumObjs = ObjListSize;
 	if(isModelAnimDisabled()) {
@@ -363,8 +363,8 @@ s32 *getTablesBinEntry(s32 idx) {
 	return (s32 *)((u32)tables_bin + tables_tab[idx] * 4);
 }
 
-ObjInstance *objInstantiateCharacter(
-    ObjDef *def, uint flags, int mapId, int objNo, ObjInstance *heldBy) {
+ObjInstance *objInstantiateCharacter(ObjDef *def, uint flags, int mapId,
+int objNo, ObjInstance *heldBy) {
 	ObjInstance *obj;
 
 	obj = NULL;
@@ -378,7 +378,7 @@ ObjInstance *objInstantiateCharacter(
 }
 
 ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
-    s32 romDefNo, struct ObjInstance *heldBy) {
+s32 romDefNo, struct ObjInstance *heldBy) {
 	// should be down to regswap and string offsets
 	ObjInstance objTmp;
 	ObjData *objData;
@@ -399,8 +399,7 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 	else {
 		if(oType > Object_maxObjType) {
 			printf("objSetupObjectActual objtype out of range %d/%d\n",
-			    oType,
-			    Object_maxObjType);
+			    oType, Object_maxObjType);
 			return NULL;
 		}
 		realType = Object_pObjIndex[oType];
@@ -411,16 +410,12 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 	objData = Object_objLoadData(realType);
 	result->objdata = objData;
 	if((!objData) || ((s32)objData == -1)) {
-		debugPrint(
-		    "Warning: Unknown object type '%d/%d romdefno %d', using "
+		debugPrint("Warning: Unknown object type '%d/%d romdefno %d', using "
 		    "DummyObject (128)\n",
-		    oType,
-		    def->objType,
-		    result->romdefno);
+		    oType, def->objType, result->romdefno);
 		if((s32)objData == -1) {
-			//@bug missing newline
-			debugPrint(
-			    "Warning: Object romdefno is -1, check the object is in "
+			//@bug missing newline in message
+			debugPrint("Warning: Object romdefno is -1, check the object is in "
 			    "objects.spec");
 		}
 		return NULL;
@@ -431,9 +426,8 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 	if(0.0f == result->pos.scale) result->pos.scale = 1.0f;
 	result->pos.flags = 2;
 	if(objData->flags & 0x80) result->pos.flags |= 0x80;
-	if(objData->flags & 0x40000)
-		result->flags_0xb0 |= 0x80; // LockAnimsAndControls
-	if(flags & 4) result->pos.flags |= 0x2000; // DontSave
+	if(objData->flags & 0x40000) result->flags_0xb0 |= ObjInstance_FlagsB0_LockAnimsAndControls;
+	if(flags & 4) result->pos.flags |= ObjInstance_Flags06_DontSave;
 
 	result->pos.pos.x = def->pos.x;
 	result->pos.pos.y = def->pos.y;
@@ -442,13 +436,13 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 	result->def = def;
 	result->romdefno = oType;
 	result->romDefNo = romDefNo;
-	result->mapId = (s8)mapId;
+	result->mapId = mapId;
 	result->animVal_a2 = -1;
 	result->curSeqSlot = -1;
 	result->newOpacity = 0xFF;
 	result->msgQueue = NULL;
-	result->camDistVar3C = ((u8)def->bound * 8);
-	result->camDistVar40 = ((u8)def->cullDist * 8);
+	result->bound = def->bound * 8;
+	result->cullDist = def->cullDist * 8;
 
 	result->dll = NULL;
 	if(objData->dll_id) {
@@ -457,19 +451,17 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 		if(!result->dll) printf("OBJECTS: warning DLL load failed\n");
 	}
 
-	if(result->romdefno == 0xF7) { result; }
+	if(result->romdefno == 0xF7) { STUBBED_OP(result); }
 	modelFlags = Object_getModelFlags(result);
 	if(objData->flags & 0x20) modelFlags &= ~1;
-	else
-		modelFlags |= 1;
+	else modelFlags |= 1;
 	if(objData->shadowType != 0) modelFlags |= 2;
-	else
-		modelFlags &= ~2;
+	else modelFlags &= ~2;
 	if(objData->shadowType == 3) modelFlags |= 0x8000; // HasShadow
 
 	totalSize = objGetTotalDataSize(result, objData, def, modelFlags);
-	result = (ObjInstance *)mmAlloc(
-	    totalSize, ALLOC_TAG_OBJECTS_COL, (volatile u32) "obj");
+	result = (ObjInstance *)mmAlloc(totalSize,
+		ALLOC_TAG_OBJECTS_COL, (volatile u32) "obj");
 	if(!result) {
 		printf("ObjSetupObject(3) Memory fail!!\n");
 		objFreeObjdef(realType);
@@ -488,15 +480,14 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 			if(iModelInst < nModels) {
 				result->frames[iModelInst] = loadModelInstance(
 				    -objData->pModelList[iModelInst], modelFlags);
-				if(!(s32)result->frames[iModelInst]) {
-					bModelFailed = true;
-				} else {
+				if(!(s32)result->frames[iModelInst]) bModelFailed = true;
+				else {
 					ModelInstance_loadShaders(
 					    result->frames[iModelInst], result);
-					modelInitSkeleton(result->pos.scale, result->frames[iModelInst]);
+					modelInitSkeleton(result->pos.scale,
+						result->frames[iModelInst]);
 					if(result->objdata->flags & 0x800) {
-						Modelnstance_setTexFuncPtr(
-						    result->frames[iModelInst],
+						Modelnstance_setTexFuncPtr(result->frames[iModelInst],
 						    modelLoadCb_800c5b80);
 					}
 				}
@@ -505,11 +496,9 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 			while(ii < nModels) {
 				result->frames[ii] = loadModelInstance(
 				    -(s32)objData->pModelList[ii], modelFlags);
-				if((s32)result->frames[ii] == 0) {
-					bModelFailed = true;
-				} else {
-					ModelInstance_loadShaders(
-					    result->frames[ii], result);
+				if((s32)result->frames[ii] == 0) bModelFailed = true;
+				else {
+					ModelInstance_loadShaders(result->frames[ii], result);
 					modelInitSkeleton(result->pos.scale, result->frames[ii]);
 					if(result->objdata->flags & 0x800) {
 						Modelnstance_setTexFuncPtr(
@@ -528,7 +517,8 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 	next = &result->frames[objData->noframes];
 	next = Object_objInitState(result, next);
 	if(modelFlags & 0x40) {
-		next = Object_objSetupEvents((s32)result->romdefno, result, next);
+		next = Object_objSetupEvents((s32)result->romdefno,
+			result, next);
 	}
 	if(modelFlags & 0x100) {
 		next = Object_objSetupModels(
@@ -591,15 +581,14 @@ ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 }
 
 void objSetup(ObjInstance *object, uint bAddToLoadedObjs) {
-	if(object->heldBy) {
-		multVectorByObjMtx(object->pos.pos.x,
-		    object->pos.pos.y,
-		    object->pos.pos.z,
-		    &(object->prevPos).x,
-		    &(object->prevPos).y,
-		    &(object->prevPos).z,
-		    object->heldBy);
-	} else {
+	if(object->heldBy) multVectorByObjMtx(object->pos.pos.x,
+		object->pos.pos.y,
+		object->pos.pos.z,
+		&(object->prevPos).x,
+		&(object->prevPos).y,
+		&(object->prevPos).z,
+		object->heldBy);
+	else {
 		object->prevPos.x = object->pos.pos.x;
 		object->prevPos.y = object->pos.pos.y;
 		object->prevPos.z = object->pos.pos.z;
@@ -628,24 +617,22 @@ void objSetup(ObjInstance *object, uint bAddToLoadedObjs) {
 		if(object->priority != OBJ_PRIORITY_WORLD) {
 			Object_setPriority(object, OBJ_PRIORITY_WORLD);
 		}
-	} else {
-		if(object->priority == 0) {
-			Object_setPriority(object, OBJ_PRIORITY_DEFAULT);
-		}
+	} else if(object->priority == 0) {
+		Object_setPriority(object, OBJ_PRIORITY_DEFAULT);
 	}
-	if((bAddToLoadedObjs & 1) != 0) {
+	if(bAddToLoadedObjs & 1) {
 		object->flags_0xb0 |= ObjInstance_FlagsB0_IsInGlobalObjList;
 		Object_loadedObjs[ObjListSize++] = object;
 		ASSERTLINE(1202, ObjListSize < MAX_OBJECTS);
 		LAB_80083bd4(object);
 	}
-	if('\0' < (char)object->objdata->numSeqs) {
+	if(0 < object->objdata->numSeqs) {
 		objAddObjectType(object, ObjCat_LevelControl);
 	}
-	if((object->objdata->flags & ObjFileStructFlags44_HaveModels) != 0) {
+	if(object->objdata->flags & ObjFileStructFlags44_HaveModels) {
 		clearNVisibleObjs();
 	}
-	if((object->objdata->flags & ObjFileStructFlags44_DifferentLightColor) != 0) {
+	if(object->objdata->flags & ObjFileStructFlags44_DifferentLightColor) {
 		objAddObjectType(object, 0x38);
 	}
 }
@@ -684,7 +671,7 @@ uint objGetTotalDataSize(
 	}
 	if(flags & 2 && objData->shadowType != ObjShadowType_None) {
 		size = (int)alignTo4((void *)size);
-		size += 0x44;
+		size += sizeof(Shadow);
 	}
 	if(objData->maybeNumHits) {
 		size = (uint)alignTo4((void *)size);
@@ -693,7 +680,7 @@ uint objGetTotalDataSize(
 	}
 	if(objData->nJoints) {
 		size = (int)alignTo4((void *)size);
-		size += (uint)objData->nJoints * 0x12;
+		size += (uint)objData->nJoints * sizeof(Joint);
 	}
 	if(objData->nTextures) {
 		size = (int)alignTo4((void *)size);
@@ -701,7 +688,7 @@ uint objGetTotalDataSize(
 	}
 	if(objData->numLockData) {
 		size = (int)alignTo4((void *)size);
-		size += (uint)objData->numLockData * 0x18;
+		size += (uint)objData->numLockData * sizeof(RomLockData);
 	}
 	if(objData->maybeNumHits && objData->bDisableHits) {
 		size = alignTo8(size);
@@ -709,7 +696,7 @@ uint objGetTotalDataSize(
 	}
 	if(objData->numLockData) {
 		size = (int)alignTo4((void *)size);
-		size += (uint)objData->numLockData * 5;
+		size += (uint)objData->numLockData * sizeof(RamLockData);
 	}
 	return size;
 }
