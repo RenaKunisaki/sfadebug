@@ -108,7 +108,7 @@ void* Object_objSetupModels(int romdefno,Model *model,ObjInstance *object,void *
 void Object_setPriority(ObjInstance *obj, s8 priority); /* static */
 void objSetupDll(ObjInstance *object,ObjDef *def,void *param); /* static */
 void Object_worldProcessObjFreeList(ObjInstance *obj, int param2); /* static */
-void fn_80083B94(ObjInstance *outNumObjs); /* static */
+void fn_80083B94(ObjInstance *object); /* static */
 void fn_80085D68(ObjInstance *outNumObjs); /* static */
 void fn_80085DDC(ObjInstance *outNumObjs); /* static */
 ModLine *loadModLine(int lineNo, s16 *outCount); /* static */
@@ -782,23 +782,22 @@ void objFreeFn_80083b54(ObjInstance *object) {
 
 //something like "add to global(?) object list"
 void fn_80083B94(ObjInstance *object) {
-    int sp10;
-    s16 size; //spC
+	int dummy;
+	int dummy2;
+	ObjInstance *sp10;
 	ObjInstance *r30;
-	ObjInstance *r31;
+	volatile s16 size; //spC
 
 	if(!(object->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList)) return;
 
-    size = objList_80398a88.objSize;
-    r30 = NULL;
-    r31 = objList_80398a88.obj;
-	sp10 = (int)r31;
-	while((int)r31 && object->priority < r31->priority) {
-		r31 = (ObjInstance*)sp10;
-		r30 = r31;
-        sp10 += size;
+	size = objList_80398a88.objSize;
+	sp10 = NULL;
+	for(r30 = objList_80398a88.obj;
+	((int)r30 && object->priority < r30->priority);
+	r30 = *(ObjInstance **)((int)r30 + size)) {
+		sp10 = r30;
 	}
-    objListAdd(&objList_80398a88, r30, object);
+	objListAdd(&objList_80398a88, sp10, object);
 }
 
 void objFreeObject(ObjInstance *obj) {
