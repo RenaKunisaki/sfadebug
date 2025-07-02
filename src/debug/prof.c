@@ -87,6 +87,12 @@ void debugSaveFn_8017a688(void);
 void nop_800BFC0C(void *param);
 int retM1_afterLoadAsset(void *param_1,void *param_2,int param_3);
 int retM1_800BFBFC(void *param_1,int param_2,int param_3);
+void initPerfMon(void);
+void nop_800BFC04(u32 addrStart,u32 addrEnd);
+void nop_800BFC08(u32 addrStart,u32 addrEnd);
+void dprintReset(void);
+void dprintSetBgColor(u8 r,u8 g,u8 b,u8 a);
+void * memset_(void *__s,int __c,size_t __n);
 
 void diProfReset(void) { // 80179B60
 	if(!diStack) diStack = diStackCreate(10, 4);
@@ -224,7 +230,7 @@ void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8 matching except string off
 		debugSaveFn_8017a688();
 		diFlag_803997d0 = 0;
 	} else if(param1 == 1) {
-		fn_8017AFD8();
+		diMenuHide();
 		debugSaveFn_8017a688();
 		pMeterPerfdata1 = mmAlloc2(0x286e0, 0xff00ff, "meter:perfdata1");
 		pMeterPerfdata2 = (DebugSaveStruct *)mmAlloc2(
@@ -237,9 +243,9 @@ void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8 matching except string off
 		diFlag_803997d0 = 0;
 		nop_800BFC04(0x80000000, 0x9FFFFFFF);
 		nop_800BFC08(0x80000000, 0x9FFFFFFF);
-		pDll_SaveGame->funcs->func[6]();
+		pDll_SaveGame->funcs->gplay.gotoSavegame();
 	} else if(param1 == 2) {
-		fn_8017AFD8();
+		diMenuHide();
 		debugSaveFn_8017a688();
 		pMeterPerfdata1 = mmAlloc2(0x5c, 0xff00ff, "meter:perfdata3");
 		pMeterPerfdata2 = (DebugSaveStruct *)mmAlloc2(
@@ -252,7 +258,7 @@ void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8 matching except string off
 		DWORD_803997c8 = 4;
 		diFlag_803997d0 = 0;
 	} else if(param1 == 3) {
-		fn_8017AFD8();
+		diMenuHide();
 		diFlag_803997d0 = 1;
 		param1 = 1;
 		DWORD_803997c8 = 5;
@@ -362,9 +368,9 @@ void debugSaveFn_8017a688(void) { // 8017A688 does this belong here?
 	if(((pMeterPerfdata1 != 0) && (DWORD_803997c8 != 1))
 	    && (DWORD_803997c8 != 3)) {
 		/* {@symbol 8012da28} */
-		pos = (Vec *)pDll_SaveGame->funcs->func[34]();
+		pos = (Vec *)pDll_SaveGame->funcs->gplay.getCurCharPos();
 		/* {@symbol 8012d9a0} */
-		uVar1 = pDll_SaveGame->funcs->func[27]() & 0xFF;
+		uVar1 = pDll_SaveGame->funcs->gplay.func1F() & 0xFF;
 
 		pMeterPerfdata2->unk0 = 0x124;
 		pMeterPerfdata2->unk4 = 0x5c;

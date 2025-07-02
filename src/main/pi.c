@@ -5,7 +5,6 @@
 #include "sys/n64.h"
 #include "gfx/gbi.h"
 #include "gfx/render.h"
-#include "gfx/models/animation.h"
 #include "gfx/textures.h"
 #include "sys/dll.h"
 #include "obj/ObjDef.h"
@@ -27,6 +26,8 @@ enum AssetTypeEnum {
 };
 
 void* loadDataFile(DataFileId32 file, int);
+u32 loadDataFileToBuf(DataFileId32 file,void *buf);
+void * loadDataFileWithLength(DataFileId32 file,void *dest,uint offset,u32 len);
 Texture* textureLoad(int id, int);
 ObjInstance* Object_objSetupObjectActual(ObjDef *objDef,
     objSetupObjectActual_flags flags,
@@ -90,9 +91,17 @@ static struct {
     AssetDef adef;
 } AssetDef_80352f00;
 
+int loadAsset(AssetDef *load);
+
 //this buffer is only passed to some functions
 //that don't do anything with it
 u8 DAT_80352f30[0x7EF];
+
+//XXX where does this go?
+int retM1_afterLoadAsset(void *param_1,undefined *param_2,int param_3) {
+    return -1;
+}
+
 
 void loadAsset_file(void **dest, DataFileId32 file) { //800777F0
     AssetDef_80352f00.adef.header.unk00 = true;
@@ -234,6 +243,6 @@ int loadAsset(AssetDef *load) { //80077B68
                 (void *)load->anim.objFlags);
             break;
     }
-    return retM1_afterLoadAsset(&AssetDef_80352f00, 0, 0);
+    return retM1_afterLoadAsset(&AssetDef_80352f00, NULL, 0);
 }
 

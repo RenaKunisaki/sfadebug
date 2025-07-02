@@ -2,7 +2,48 @@
 #define _SYS_DLL_H_
 //XXX file here is DLL*
 #include "obj/ObjInstance.h"
+#include "types.h"
 typedef int (*DLL_func)(void *file);
+
+enum {
+    /*  0 */ MAINDLL_gplay,
+    /*  1 */ MAINDLL_ObjSeq,
+    /*  2 */ MAINDLL_checkpoint,
+    /*  3 */ MAINDLL_newfog,
+    /*  4 */ MAINDLL_08,
+    /*  5 */ MAINDLL_newstars,
+    /*  6 */ MAINDLL_0A,
+    /*  7 */ MAINDLL_expgfx,
+    /*  8 */ MAINDLL_camcontrol,
+    /*  9 */ MAINDLL_Dummy04,
+    /* 10 */ MAINDLL_05,
+    /* 11 */ MAINDLL_05_2,
+    /* 12 */ MAINDLL_modgfx,
+    /* 13 */ MAINDLL_projgfx,
+    /* 14 */ MAINDLL_0E,
+    /* 15 */ MAINDLL_partfx,
+    /* 16 */ MAINDLL_objfsa,
+    /* 17 */ MAINDLL_11,
+    /* 18 */ MAINDLL_gametext,
+    /* 19 */ MAINDLL_subtitles,
+    /* 20 */ MAINDLL_Dummy15,
+    /* 21 */ MAINDLL_waterfx,
+    /* 22 */ MAINDLL_TrickyWalk,
+    /* 23 */ MAINDLL_curve,
+    /* 24 */ MAINDLL_RomCurve,
+    /* 25 */ MAINDLL_frontend_control,
+    /* 26 */ MAINDLL_47,
+    /* 27 */ MAINDLL_1A,
+    /* 28 */ MAINDLL_SaveGame,
+    /* 29 */ MAINDLL_36,
+    /* 30 */ MAINDLL_modelfx,
+    /* 31 */ MAINDLL_48,
+    /* 32 */ MAINDLL_baddieControl,
+    /* 33 */ MAINDLL_partfx1F,
+    /* 34 */ MAINDLL_n_POST,
+    /* 35 */ MAINDLL_projLib,
+    /* 36 */ NUM_MAIN_DLLS
+} MainDllIdx; //index into mainDlls[]
 
 //this is a bit gross. eventually it should be replaced
 //with some kind of build system that puts each DLL
@@ -72,6 +113,16 @@ typedef struct {
         } Dll05;
 
         struct {
+            void(*func03)(u8,uint);
+            void(*func04)(struct Gfx**, Mtx44**, UNKTYPE **vtx);
+            void(*func05)(uint, u8);
+            void(*func06)(uint, u8);
+            void(*func07)(float, uint, u8);
+            u8(*func08)(void);
+            float(*func09)(void);
+        } Dll1A;
+
+        struct {
             void(*func03)();
             void(*func04)();
             void(*func05)();
@@ -79,7 +130,18 @@ typedef struct {
         } Dummy04;
 
         struct {
-            void(*func03_nop)();
+            void(*func03_nop)(void);
+            void(*func04_nop)(void);
+            void(*func05_nop)(void);
+            int(*func06_ret0)(void);
+            void(*func07_nop)(void);
+            void(*func08_nop)(void);
+            void(*func09)(void*);
+            void(*func0A_nop)(void);
+        } Dummy15;
+
+        struct {
+            void(*func03_nop)(struct Gfx**, Mtx44**, UNKTYPE **vtx);
             void(*newgame)();
             void(*func05)();
             void(*func06_nop)();
@@ -107,7 +169,7 @@ typedef struct {
             void(*shouldNotSaveTime)();
             void(*func1D)();
             void(*updateTime)();
-            void(*func1F)();
+            u8(*func1F)();
             void(*setPlayerNo)();
             void(*getSavedObjPositions)();
             void(*getNumSavedObjPositions)();
@@ -129,6 +191,15 @@ typedef struct {
             void(*isCinemaUnlocked)();
             void(*unlockCinema)();
         } gplay;
+
+        struct {
+            void(*func03_nop)();
+            void(*func04_nop)();
+            void(*func05)(ObjInstance*, undefined4, float*);
+            void(*func06_nop)();
+            void(*func07)(struct Gfx*, float**, int*);
+            void(*func08_nop)();
+        } modelfx;
 
         struct {
             void(*func04)();
@@ -154,6 +225,43 @@ typedef struct {
             /* 0x28 */ void (*modelMtxFn_0x28)(struct ObjInstance *object, undefined4, Vec * );
             /* 0x2c */ UNKTYPE *render2C; //called for child of player object with ID 0x2d
         } Object;
+
+        struct {
+            /*  0 */ void (*init)(void);
+            /*  1 */ void (*activate)(int idx,undefined2 param2,undefined2 len);
+            /*  2 */ void (*setFlag)(int iFlag,s8 val);
+            /*  3 */ int (*getFlag)(int iFlag);
+            /*  4 */ void (*camCtrl)(float param_1,ObjInstance *param_2,uint param_3);
+            /*  5 */ void (*func08)(void);
+            /*  6 */ void (*func09)(UNKTYPE *param1,ObjDef *objDef);
+            /*  7 */ void (*func0A)(UNKTYPE *param1);
+            /*  8 */ void (*func0B)(UNKTYPE *param1);
+            /*  9 */ void (*func0C)(float param_1);
+            /* 10 */ void (*func0D)(UNKTYPE *param_1);
+            /* 11 */ undefined4 (*func0E_ret0)(void);
+            /* 12 */ BOOL (*func0F)(void);
+            /* 13 */ undefined4 (*func10)(void);
+            /* 14 */ void (*func11)(undefined4 param1);
+            /* 15 */ undefined4 (*func12_ret0)(void);
+            /* 16 */ void (*func13_nop)(void);
+            /* 17 */ void (*startObjSequence)(int seqNo,ObjInstance *obj,uint flags);
+            /* 18 */ void (*endObjSequence)(int seqNo);
+            /* 19 */ void (*func16)(undefined4 param1,undefined4 param2,undefined4 param3,undefined4 param4);
+            /* 20 */ void (*preemptSequenceTime)(ObjInstance *obj,int time);
+            /* 21 */ void (*func18)(UNKTYPE *param1,undefined4 param2);
+            /* 22 */ s8 (*func19)(void);
+            /* 23 */ void (*func1A)(s8 param1);
+            /* 24 */ s16 (*func1B)(void);
+            /* 25 */ void (*func1C)(s16 param1);
+            /* 26 */ s16 (*func1D)(void);
+            /* 27 */ void (*func1E)(s16 param1);
+            /* 28 */ void (*func1F)(int param1,s16 param2);
+            /* 29 */ void (*func20)(ObjInstance *param_1,int param_2,short param3,short param4,short param5, short param6,short param7);
+            /* 30 */ undefined4 (*func21)(int param1,ObjInstance *override,s8 param3);
+            /* 31 */ BOOL (*func22)(float x,float y,float z);
+            /* 32 */ undefined4 (*func23)(undefined4 param_1,int param2);
+            /* 33 */ char* (*func24)(ObjInstance *obj);
+        } ObjSeq;
     };
 
 } DLL_funcs;
