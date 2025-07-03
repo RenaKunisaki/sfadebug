@@ -62,13 +62,34 @@ typedef struct {
         void (*func1)(void);
         void(*Object_onLoad)(struct ObjInstance *object, void *param2, void *param3);
         struct {
-            void (*func03)(struct ObjInstance *obj,float x,float y,float z);
-            void (*func04)(int);
-            void (*func05)();
-            void (*func06)();
-            void (*func07)();
-            void (*func08)();
-            void (*func09)(int param1,s8 param2,s8 param3,uint len,ObjDef *odef,int param6,u8 param7);
+            void (*func03)(ObjInstance *obj,float x,float y,float z);
+            void (*func04)(int param_1);
+            struct Camera* (* getCurCamera)(void);
+            int (*func06)(void);
+            int (*func07)(void);
+            struct CamControlAttention* (* getAttentionCam)(void);
+            void (*setupCamControl1)(int param1,s8 param2,s8 param3,uint len,ObjDef *odef,int param6,s8 param7);
+            void (*getCamAction)(int actNo);
+            void (*func0B)(int param1,uint param2);
+            void (*setObjA0)(ObjInstance *param1);
+            void (*setPosCC)(float x,float y,float z);
+            void (*moveBy)(float x,float y,float z);
+            void (*func0F)(float param1,float param2,float param3,float param4,float param5,float *param6);
+            void (*func10)(float param1,ObjInstance *param2,float *param3,float *param4,float *param5,float *param6);
+            struct CameraLock* (*getLock)(void);
+            struct CameraLock* (*getLock114)(void);
+            void (*func13)(BOOL param1);
+            void (*setLock)(struct CameraLock *lock);
+            void (*setField110)(undefined4 param1);
+            uint (*isFieldE4Negative)(void);
+            void (*func17)(void);
+            void (*func18)(struct Gfx **gfx,Mtx44 **mtx,undefined4 *param3,undefined4 *param4);
+            void (*func19)(int param1,BOOL param2);
+            void (*func1A)(undefined4 param1,undefined4 param2);
+            int (*func1B)(void);
+            void (*func1C)(s8 param1);
+            void (*func1D)(int param1);
+            void (*func1E)(int param1,s8 param2);
         } camcontrol;
 
         struct {
@@ -168,7 +189,7 @@ typedef struct {
             void(*gplayAddTime)();
             void(*shouldNotSaveTime)();
             void(*func1D)();
-            void(*updateTime)();
+            void(*updateTimes)();
             u8(*func1F)();
             void(*setPlayerNo)();
             void(*getSavedObjPositions)();
@@ -262,6 +283,15 @@ typedef struct {
             /* 32 */ undefined4 (*func23)(undefined4 param_1,int param2);
             /* 33 */ char* (*func24)(ObjInstance *obj);
         } ObjSeq;
+
+        struct {
+            void (*func03)(void);
+            void (*func04)(s8 param1);
+            int (*func05)(void);
+            undefined4 (*tasktextGetTaskName)(s8 task);
+            void (*func07)(void);
+            int (*func08)(void);
+        } SaveGame;
     };
 
 } DLL_funcs;

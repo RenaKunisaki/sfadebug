@@ -666,7 +666,7 @@ void gameUpdate(void) { //80078BBC
 
     player = Object_objGetMain();
     mainDlls[MAINDLL_camcontrol]->funcs->camcontrol.func17();
-    mainDlls[MAINDLL_Dummy15]->funcs->func[4]();
+    mainDlls[MAINDLL_Dummy15]->funcs->Dummy15.func04_nop();
     if(videoBackendRun() == FALSE) {
         int bHeld = getEnabledButtonsHeld(0);
         bPressed = getEnabledButtonsPressed(0);
@@ -691,7 +691,7 @@ void gameUpdate(void) { //80078BBC
                     }
                 }
             }
-            pDll_SaveGame->funcs->func[26](); //updateTimes
+            mainDlls[MAINDLL_gplay]->funcs->gplay.updateTimes();
         }
         else objUpdateFn_800823dc();
         if(!screenBlankFrameCount) updatePlayerPosLog();
@@ -792,13 +792,13 @@ int param4) { //80079068
     mapDoDebugSetupPoint();
     clearPlayerPosLog();
     pDll_modelfx->funcs->_4.func1();
-    pDll_SaveGame->funcs->func[0](0); //newgame
-    pDll_SaveGame->funcs->func[28](playerNo & 0xFF); //setPlayerNo
-    playerPos = (CharPos*)pDll_SaveGame->funcs->func[34](); //getCurCharPos
+    mainDlls[MAINDLL_SaveGame]->funcs->func[0](0); //newgame
+    mainDlls[MAINDLL_SaveGame]->funcs->func[28](playerNo & 0xFF); //setPlayerNo
+    playerPos = (CharPos*)mainDlls[MAINDLL_SaveGame]->funcs->func[34](); //getCurCharPos
     mapLoadFn_800ad69c(mapNo,setupPoint,
         &playerPos->pos.x,&playerPos->pos.y,&playerPos->pos.z,
         &playerPos->layer);
-    pDll_SaveGame->funcs->func[5](
+    mainDlls[MAINDLL_SaveGame]->funcs->func[5](
         playerPos, 0, 0, playerPos->layer);
     if (mapGetPlayerObjType(NULL) != ObjDefNo_Sabre) {
         playerPos->pos.x = 0.0f;
@@ -824,10 +824,10 @@ volatile uint playerNo) { //800791F8
     pos.y = y;
     pos.z = z;
     setDebugMenuState(0);
-    pDll_SaveGame->funcs->func[0](0); //newgame
-    pDll_SaveGame->funcs->func[28](playerNo & 0xFF); //setPlayerNo
-    pDll_SaveGame->funcs->func[5](&pos, 0, 0, 0);
-    pDll_SaveGame->funcs->func[6]();
+    mainDlls[MAINDLL_SaveGame]->funcs->func[0](0); //newgame
+    mainDlls[MAINDLL_SaveGame]->funcs->func[28](playerNo & 0xFF); //setPlayerNo
+    mainDlls[MAINDLL_SaveGame]->funcs->func[5](&pos, 0, 0, 0);
+    mainDlls[MAINDLL_SaveGame]->funcs->func[6]();
 }
 
 void mapReload(void) { //800792B0
@@ -904,7 +904,7 @@ void initBitTable(void) { //800794F0
     //this bug persists to final versions (maybe they were
     //2 bytes wide before?)
     numGameBits = getLoadedDataFileSize(FILE_BITTABLE_bin) >> 1;
-    pLastSavedGame = (SaveGame*)pDll_SaveGame->funcs->func[32]();
+    pLastSavedGame = (SaveGame*)mainDlls[MAINDLL_SaveGame]->funcs->func[32]();
 }
 
 void mainSetBits(int bitNo,uint value) { //80079544
