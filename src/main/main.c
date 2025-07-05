@@ -84,9 +84,9 @@ extern char _defaultBits[];
 /* 803989E4 */ extern int frameCount_playerPosLog;
 /* 803989e8 */ extern Mtx44 *mtx;
 /* 803989ec */ extern Mtx44 *main_mtx[2];
-/* 803989f4 */ extern Gfx *cur_gfx;
-/* 803989f8 */ extern Gfx *gfx;
-/* 803989fc */ extern Gfx *main_gfx[2];
+/* 803989f4 */ extern Gfx_ *cur_gfx;
+/* 803989f8 */ extern Gfx_ *gfx;
+/* 803989fc */ extern Gfx_ *main_gfx[2];
 /* 80398e44 */ extern UNKTYPE *currentScreen;
 /* 80398e48 */ extern UNKTYPE *otherZbuf;
 /* 803997d0 */ extern int diFlag_803997d0;
@@ -97,7 +97,7 @@ ObjInstance* Object_objGetMain(void);
 BOOL videoBackendRun(void);
 bool checkSomeDebugFlags_8017c4f8(); //8017c4f8
 u16 getEnabledButtonsHeld(int pad);
-void nop_8009FA00(Gfx **buf);
+void nop_8009FA00(Gfx_ **buf);
 int getDebugMenuState(void);
 void objUpdateFn_80081f94(void);
 void objUpdateFn_80082238(void);
@@ -113,13 +113,13 @@ void trackIntersect(void);
 void playerUpdateFn_800ae404(void);
 void doPendingMapLoads(void);
 void updateObjMtxs(void);
-void Trackdraw(Gfx **rspCmdBuf,Mtx44 **mtxBuf,N64Vertex **vtxBuf,
+void Trackdraw(Gfx_ **rspCmdBuf,Mtx44 **mtxBuf,N64Vertex **vtxBuf,
     Pol **polBuf, N64Vertex **diVtx, Pol **diPol);
-void cameraFn_800698b4(Gfx **cmdBuf,Mtx44 **mtxBuf);
+void cameraFn_800698b4(Gfx_ **cmdBuf,Mtx44 **mtxBuf);
 void updateViewMatrix(void);
-void callGfxFuncPtr3(Gfx **cmdBuf,Mtx44 **mtxBuf,
+void callGfxFuncPtr3(Gfx_ **cmdBuf,Mtx44 **mtxBuf,
     N64Vertex **vtxBuf,Pol **param_4);
-void gxResetScissor(Gfx **cmdBuf);
+void gxResetScissor(Gfx_ **cmdBuf);
 void disableDebugObjSequencer(void);
 void cutsceneExit(void);
 undefined4 piRomFreeLevel(int map,uint flags);
@@ -136,20 +136,20 @@ void setFrameTime(OSTime);
 void diProfReset(void);
 void nop_8017a328(void);
 void beginFrame(void);
-void RSP_segSetBase(Gfx**, int, void*);
-void freakFn_800a58d0(Gfx**, int);
+void RSP_segSetBase(Gfx_**, int, void*);
+void freakFn_800a58d0(Gfx_**, int);
 void fn_8018F55C(void);
 void RSP_initSp(void);
 void RSP_initDp(void);
 int getRenderFlags(void);
 BOOL isCloudy(void);
-void nop_8009E5EC(Gfx**, Mtx44**, u8);
+void nop_8009E5EC(Gfx_**, Mtx44**, u8);
 BOOL isHeapDebugDisplayEnabled();
-void drawHeapInfo(Gfx**, Mtx44**, N64Vertex**);
+void drawHeapInfo(Gfx_**, Mtx44**, N64Vertex**);
 void perfFn_8018f5cc(void);
-int mainRender(Gfx*, Mtx44*, int);
-Gfx* rspFn_8017c278(void);
-void listCodeRender(Gfx*);
+int mainRender(Gfx_*, Mtx44*, int);
+Gfx_* rspFn_8017c278(void);
+void listCodeRender(Gfx_*);
 int finishFrame(void);
 void joyRead(void);
 void amAudioTick(void);
@@ -543,7 +543,7 @@ void gameLoop(void) { //800781d4
     perfFn_8018f5cc();
     mainRender(main_gfx[main_framebuf_idx], mtx, 0);
     listCodeRender(rspFn_8017c278());
-    mainDlls[MAINDLL_1A]->funcs->Dll1A.func04((struct Gfx**)&gfx, &mtx, &cur_vtx);
+    mainDlls[MAINDLL_1A]->funcs->Dll1A.func04(&gfx, &mtx, &cur_vtx);
     mainDlls[MAINDLL_Dummy15]->funcs->Dummy15.func09(&gfx);
     finishFrame();
     joyRead();
@@ -651,7 +651,7 @@ void showExpansionPakNeededScreen(void) { //800789a0
     videoBackendRun();
     callGfxFuncPtr3(&gfx, &mtx, &cur_vtx, &cur_pol);
     nop_80077B60();
-    mainDlls[MAINDLL_gplay]->funcs->gplay.func03_nop((struct Gfx**)&gfx, &mtx, &cur_vtx);
+    mainDlls[MAINDLL_gplay]->funcs->gplay.func03_nop(&gfx, &mtx, &cur_vtx);
     gDPFullSync(gfx++);
     gSync(gfx++, 0);
     joyRead();
@@ -702,7 +702,7 @@ void gameUpdate(void) { //80078BBC
         playerUpdateFn_800ae404();
         doPendingMapLoads();
         updateObjMtxs();
-        pDll_Dummy04->funcs->func[13]();
+        mainDlls[MAINDLL_Dummy04]->funcs->Dummy04.func0B_ret0();
         if(screenBlankFrameCount == 0) {
             if(ret0_8017C358() == 0) {
                 Trackdraw(&gfx,&mtx,&cur_vtx,
@@ -712,13 +712,13 @@ void gameUpdate(void) { //80078BBC
                 if (checkSomeDebugFlags_8017c4f8()) {
                     if (mapEditFlag803999d0 == 0) {
                         if (objSeqEditFlag80399a74 == 0) {
-                            pDll_Dummy04->funcs->func[14](
-                                &gfx,&cur_di_vtx,&cur_di_pol); //checkpoint related
+                            mainDlls[MAINDLL_checkpoint]->funcs->Checkpoint.func0C(
+                                &gfx,&cur_di_vtx,&cur_di_pol);
                         }
-                        pDll_RomCurve->funcs->func[41](
+                        mainDlls[MAINDLL_RomCurve]->funcs->curve.func2D(
                             &gfx,&cur_di_vtx,&cur_di_pol);
-                        pDll_checkpoint->funcs->func[15](
-                            &gfx,&cur_di_vtx,&cur_di_pol,&mtx);
+                        mainDlls[MAINDLL_checkpoint]->funcs->Checkpoint.func0C(
+                            &gfx,&cur_di_vtx,&cur_di_pol/*,&mtx*/);
                     }
                 }
             }
@@ -726,7 +726,7 @@ void gameUpdate(void) { //80078BBC
                 bHeld &= ~(PAD_TRIGGER_Z|PAD_TRIGGER_R|PAD_TRIGGER_L);
             }
         }
-        pDll_gametext->funcs->func[1](&gfx); //free
+        //mainDlls[MAINDLL_gametext]->funcs->func[1](&gfx); //free
         callGfxFuncPtr3(&gfx,&mtx, &cur_vtx, &cur_pol);
         gxResetScissor(&gfx);
         if((e3MenuFrameCount_80398909 -= framesThisStep) < 0) {
@@ -746,10 +746,10 @@ void mapChangeFn_80078e98(void) { //80078e98
     nop_800BF4AC(14, 0, 0);
     fn_800A6FFC(0);
     setDrawTrackSky(FALSE);
-    pDll05->funcs->func[5](3);
-    pDll05->funcs->func[5](0);
-    pDll05->funcs->func[5](1);
-    mainDlls[MAINDLL_Dummy15]->funcs->func[3](); //free
+    mainDlls[MAINDLL_05]->funcs->Dll05.free(3);
+    mainDlls[MAINDLL_05]->funcs->Dll05.free(0);
+    mainDlls[MAINDLL_05]->funcs->Dll05.free(1);
+    mainDlls[MAINDLL_Dummy15]->funcs->Dummy15.free_nop(); //free
     cutsceneExit();
     mainChangeMap(1,0,1,0xffffffff);
 }
@@ -774,8 +774,8 @@ void doQueuedLoads(void) { //80078f48
             mapParam_80396c28 = -1;
         }
         beginLoadingMap();
-        if (pDll_waterfx) {
-            pDll_waterfx->funcs->func[1](1);
+        if (mainDlls[MAINDLL_waterfx]) {
+            mainDlls[MAINDLL_waterfx]->funcs->waterfx.func03(1);
         }
         mmSetDelay(2);
         BYTE_803989d0 = true;
@@ -791,14 +791,14 @@ int param4) { //80079068
     if(playerNo < 0) playerNo = 0;
     mapDoDebugSetupPoint();
     clearPlayerPosLog();
-    pDll_modelfx->funcs->_4.func1();
-    mainDlls[MAINDLL_SaveGame]->funcs->func[0](0); //newgame
-    mainDlls[MAINDLL_SaveGame]->funcs->func[28](playerNo & 0xFF); //setPlayerNo
-    playerPos = (CharPos*)mainDlls[MAINDLL_SaveGame]->funcs->func[34](); //getCurCharPos
+    mainDlls[MAINDLL_modelfx]->funcs->modelfx.func04_nop();
+    mainDlls[MAINDLL_gplay]->funcs->gplay.newgame(0);
+    mainDlls[MAINDLL_gplay]->funcs->gplay.setPlayerNo(playerNo & 0xFF);
+    playerPos = (CharPos*)mainDlls[MAINDLL_gplay]->funcs->gplay.getCurCharPos();
     mapLoadFn_800ad69c(mapNo,setupPoint,
         &playerPos->pos.x,&playerPos->pos.y,&playerPos->pos.z,
         &playerPos->layer);
-    mainDlls[MAINDLL_SaveGame]->funcs->func[5](
+    mainDlls[MAINDLL_gplay]->funcs->gplay.func05(
         playerPos, 0, 0, playerPos->layer);
     if (mapGetPlayerObjType(NULL) != ObjDefNo_Sabre) {
         playerPos->pos.x = 0.0f;
@@ -824,10 +824,10 @@ volatile uint playerNo) { //800791F8
     pos.y = y;
     pos.z = z;
     setDebugMenuState(0);
-    mainDlls[MAINDLL_SaveGame]->funcs->func[0](0); //newgame
-    mainDlls[MAINDLL_SaveGame]->funcs->func[28](playerNo & 0xFF); //setPlayerNo
-    mainDlls[MAINDLL_SaveGame]->funcs->func[5](&pos, 0, 0, 0);
-    mainDlls[MAINDLL_SaveGame]->funcs->func[6]();
+    mainDlls[MAINDLL_gplay]->funcs->gplay.newgame(0);
+    mainDlls[MAINDLL_gplay]->funcs->gplay.setPlayerNo(playerNo & 0xFF);
+    mainDlls[MAINDLL_gplay]->funcs->gplay.setPos(&pos, 0, 0, 0);
+    mainDlls[MAINDLL_gplay]->funcs->gplay.savePoint();
 }
 
 void mapReload(void) { //800792B0
@@ -869,7 +869,7 @@ void cutsceneExit(void) { //800793A8
 }
 
 void allocFrameBuffers(void) { //800793B4
-    main_gfx[0] = (Gfx *)mmAlloc(160000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:gfx");
+    main_gfx[0] = (Gfx_ *)mmAlloc(160000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:gfx");
     main_gfx[1] = main_gfx[0] + 10000;
     main_mtx[0] = (Mtx44 *)mmAlloc(0x19000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:mtx");
     main_mtx[1] = main_mtx[0] + 800;
@@ -904,7 +904,7 @@ void initBitTable(void) { //800794F0
     //this bug persists to final versions (maybe they were
     //2 bytes wide before?)
     numGameBits = getLoadedDataFileSize(FILE_BITTABLE_bin) >> 1;
-    pLastSavedGame = (SaveGame*)mainDlls[MAINDLL_SaveGame]->funcs->func[32]();
+    pLastSavedGame = (SaveGame*)mainDlls[MAINDLL_gplay]->funcs->gplay.func1D();
 }
 
 void mainSetBits(int bitNo,uint value) { //80079544
@@ -932,8 +932,7 @@ void mainSetBits(int bitNo,uint value) { //80079544
                 case 3: bits = pLastSavedGame->gameBits3; break;
             }
             if(bitTable[bitNo].flags & GAMEBIT_FLAG_HAS_HINT_TEXT) {
-                //this must be wrong DLL name
-                pDll_modelfx->funcs->func[0](
+                mainDlls[MAINDLL_SaveGame]->funcs->SaveGame.func03(
                     bitTable[bitNo].hintTextIdx);
             }
             offsBit = bitTable[bitNo].iBit; //bit offset
@@ -1109,18 +1108,18 @@ BOOL DLL_removeTempDll(int id) { //80079B80
 }
 
 void loadDlls47_48(void) { //80079C40
-    if(!pDLL_48) {
-        pDLL_47 = runlinkDownloadCode(0x47,10);
-        pDLL_48 = runlinkDownloadCode(0x48,3);
+    if(!mainDlls[MAINDLL_48]) {
+        mainDlls[MAINDLL_47] = runlinkDownloadCode(0x47,10);
+        mainDlls[MAINDLL_48] = runlinkDownloadCode(0x48,3);
     }
 }
 
 void freeDlls47_48(void) { //80079C88
-    if(pDLL_48) {
-        DLL_free(pDLL_47);
-        pDLL_47 = NULL;
-        DLL_free(pDLL_48);
-        pDLL_48 = NULL;
+    if(mainDlls[MAINDLL_48]) {
+        DLL_free(mainDlls[MAINDLL_47]);
+        mainDlls[MAINDLL_47] = NULL;
+        DLL_free(mainDlls[MAINDLL_48]);
+        mainDlls[MAINDLL_48] = NULL;
     }
 }
 

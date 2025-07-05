@@ -34,7 +34,7 @@ typedef int intptr_t;
 #define ARRAY_SIZE(arr) static_cast< int >(sizeof(arr) / sizeof(arr[0]))
 
 //there are many cases of pointer comparisons that
-//use cmpw instead of cmplw, which seems to only]
+//use cmpw instead of cmplw, which seems to only
 //happen if the pointers are cast to int.
 //presumably this was some kind of macro which used
 //to do additional validation?

@@ -1,8 +1,12 @@
 #ifndef _SYS_DLL_H_
 #define _SYS_DLL_H_
-//XXX file here is DLL*
+#include "gfx/gametext.h"
+#include "gfx/render.h"
 #include "obj/ObjInstance.h"
+#include "obj/Curve.h"
 #include "types.h"
+
+//XXX file here is DLL*
 typedef int (*DLL_func)(void *file);
 
 enum {
@@ -83,7 +87,7 @@ typedef struct {
             void (*setField110)(undefined4 param1);
             uint (*isFieldE4Negative)(void);
             void (*func17)(void);
-            void (*func18)(struct Gfx **gfx,Mtx44 **mtx,undefined4 *param3,undefined4 *param4);
+            void (*func18)(Gfx_ **gfx,Mtx44 **mtx,undefined4 *param3,undefined4 *param4);
             void (*func19)(int param1,BOOL param2);
             void (*func1A)(undefined4 param1,undefined4 param2);
             int (*func1B)(void);
@@ -93,28 +97,72 @@ typedef struct {
         } camcontrol;
 
         struct {
-            void(*func03)();
-            void(*func04)();
-            void(*func05)();
-            void(*func06)();
-            void(*func07)();
-            void(*func08)();
-            void(*func09)();
-            void(*func0A)();
-            void(*func0B)();
-            void(*func0C)();
-            void(*func0D)();
-            void(*func0E)();
-            void(*func0F)();
-            void(*func10)();
-            void(*func11)();
-            void(*func12)();
-            void(*func13)();
-            void(*endObjSequence)(int slot);
-        } Checkpoint; //XXX must be wrong name
+            void (*reset)(void);
+            void (*Add)(ObjDef *def);
+            void (*Remove)(ObjDef *def);
+            void (*calcPosition)(ObjPos *obj,struct CheckpointStruct10 *param2,int param3);
+            void (*racePostion)(ObjInstance *param_1,undefined *param_2,undefined4 param_3,int param_4);
+            void (*func08)(double param_1_00,short *param_2,int param_3,int param4,uint param5,char param6);
+            undefined4 (*func09_ret1)(void);
+            void (*func0A)(int param1,float *param2,char *param3);
+            struct CheckpointStruct2* (*find)(int id,int *outIdx);
+            void (*func0C)(Gfx_ **gfx,N64Vertex **vtx,Pol **pol);
+            void (*func0D)(undefined4 param1);
+            undefined* (*func0E)(int *param1);
+            int (*func0F)(undefined *param1);
+            int (*func10)(int param1);
+            void (*func11)(void);
+            void (*func12)(Gfx_ **gfx,N64Vertex **vtx,Pol **pol);
+        } Checkpoint;
 
         struct {
-            void(*func03)();
+            void (*clear)(void);
+            void (*addCurveDef)(ObjDef_RomCurve *curve);
+            void (*remove)(ObjDef_RomCurve *curve);
+            ObjDef_RomCurve** (*getCurves)(int *outNum);
+            int (*find)(double x,double y,double z,int *types,int nTypes,int action);
+            void (*findNearObj)(ObjInstance *obj,undefined *param_2,int param3,int param4,s8 param5);
+            ObjDef_RomCurve* (*getById)(uint id);
+            void (*func0A)(double param_1,double param2,double param3,int type,int action,float *outX,float *outY,float *outZ);
+            float (*distFn0B)(Vec *param1,uint id);
+            float (*distXZ)(float x,float z,uint id);
+            void (*func0D)(undefined4 *param1,int *param2);
+            BOOL (*isPoint)(ObjDef_RomCurve *curve);
+            BOOL (*isNotPoint)(ObjDef_RomCurve *curve);
+            int (*findFn10)(ObjDef_RomCurve *curve,undefined *param2,int param3,int *outId);
+            void (*func11)(ObjDef_RomCurve *curve,int type,int action,int *outId);
+            int (*findByAction)(int action);
+            void (*func13)(uint param_1,int type,uint param3,int *param4);
+            int (*distanceToNearestOfType16)(float x,float y,float z,int mapId);
+            void (*distFn15)(double x,double y,double z,uint id,float *dist);
+            uint (*func16)(float x,float y,float z);
+            int (*getRandomPoint)(ObjDef_RomCurve *curve,int exceptThis);
+            int (*getIds_18)(ObjDef_RomCurve *curve,int id,undefined *param3);
+            void (*func19)(ObjDef_RomCurve *curve,int param_2,float x,float y,float z);
+            int (*getRandomPoint1A)(ObjDef_RomCurve *curve,int exceptThis);
+            void (*func1B)(ObjDef_RomCurve *curve,int param_2,float x,float y,float z);
+            void (*search)(ObjDef_RomCurve *curve,undefined4 param_2,undefined4 param_3,int *outId);
+            void (*getIds_1D)(ObjDef_RomCurve *curve,int *outIds);
+            undefined4 (*func1E)(undefined *param1,float *outX,float *outY,float *outZ);
+            int (*countRandomPoints)(ObjDef_RomCurve *curve);
+            int (*func20)(ObjDef_RomCurve *curve,float *outX,float *outY,float *outZ,u8 *outType);
+            void (*func21)(undefined *param_1,float x,float y,float z,float *outX,float *outY,float *outZ);
+            ObjDef_RomCurve* (*func22)(ObjDef_RomCurve *curve,float *out,float x,float y,float z);
+            void (*getPos)(double scale,ObjDef_RomCurve *curve,float *outX,float *outY,float *outZ);
+            float (*func24)(ObjDef_RomCurve *curve1,ObjDef_RomCurve *curve2,Vec *pos2,Vec *pos1,float param_5,float param_6);
+            void (*func25)(double param_1_00,Curve *curve,ObjInstance *obj,int param4,int param5);
+            undefined4 (*func26)(Curve *param1);
+            undefined4 (*setClosed)(Curve *curve,float param2);
+            void (*setA4)(Curve *param1,int param2);
+            undefined4 (*func29)(Curve *curve,int param2);
+            int (*func2A)(undefined *param1,int param2,int idx);
+            int (*func2B)(ObjDef_RomCurve *curve,int id,int branch);
+            undefined4 (*func2C)(Curve *curve,undefined4 param_2,uint id);
+            void (*func2D)(Gfx_ **gfx,N64Vertex **param_3,Pol **param3);
+        } curve; //aka RomCurve
+
+        struct {
+            void(*free)(int);
             void(*func04)();
             void(*func05)();
             void(*func06)();
@@ -135,7 +183,7 @@ typedef struct {
 
         struct {
             void(*func03)(u8,uint);
-            void(*func04)(struct Gfx**, Mtx44**, UNKTYPE **vtx);
+            void(*func04)(Gfx_**, Mtx44**, N64Vertex **vtx);
             void(*func05)(uint, u8);
             void(*func06)(uint, u8);
             void(*func07)(float, uint, u8);
@@ -144,14 +192,45 @@ typedef struct {
         } Dll1A;
 
         struct {
-            void(*func03)();
-            void(*func04)();
-            void(*func05)();
-            void (*func06_nop)(struct ObjInstance *obj);
+            int (*set_retM1)(void *param_1,undefined param_2,char *file,int line,char *code);
+            void (*free_nop)(ObjInstance *param_1,undefined param_2,char *file,int line,char *code);
+            undefined4 (*func05_ret0)(void);
+            void (*func06_nop)(ObjInstance *param_1);
+            void (*func07_nop)(void);
+            void (*func08_nop)(int param_1,int param_2,int param_3,int param_4,int param_5);
+            void (*func09_nop)(int param_1);
+            undefined4 (*func0A_ret0)(void);
+            undefined4 (*func0B_ret0)(void);
+            void (*func0C_nop)(void);
+            undefined4 (*func0D_ret0)(void);
+            void (*func0E_nop)(void);
+            undefined4 (*func0F_ret0)(void);
+            void (*func10_nop)(int param_1,s8 param_2);
+            undefined4 (*func11_ret0)(void);
+            void (*func12_nop)(void);
+            void (*func13_nop)(void);
+            void (*func14_nop)(ObjInstance *param_1);
+            void (*func15_nop)(void);
+            void (*func16_nop)(void);
+            void (*func17_nop)(void);
+            void (*func18_nop)(void);
+            void (*func19_nop)(void);
+            void (*func1A_nop)(void);
+            void (*func1B_nop)(void);
+            void (*func1C_nop)(void);
+            undefined4 (*func1D_ret0)(void);
+            void (*func1E_nop)(void);
+            void (*func1F_nop)(void);
+            void (*func20_nop)(void);
+            undefined4 (*func21_ret0)(void);
+            undefined4 (*func22_ret0x7F)(void);
+            void (*func23_nop)(void);
+            undefined4 (*func24_ret0)(void);
+            void (*func25_nop)(void);
         } Dummy04;
 
         struct {
-            void(*func03_nop)(void);
+            void(*free_nop)(void);
             void(*func04_nop)(void);
             void(*func05_nop)(void);
             int(*func06_ret0)(void);
@@ -162,12 +241,21 @@ typedef struct {
         } Dummy15;
 
         struct {
-            void(*func03_nop)(struct Gfx**, Mtx44**, UNKTYPE **vtx);
-            void(*newgame)();
+            int (*getNumLanguages)(void);
+            int (*getNumTexts)(void);
+            void (*gametextLoadLanguage)(s8 lang);
+            s8 (*getCurLanguage)(void);
+            GameTextGroup* (*loadTextGroup)(uint id);
+            char* (*loadTextGroupString)(ushort textId,ushort param2);
+            void (*func09)(s8 *param1,int param2);
+        } gametext;
+        struct {
+            void(*func03_nop)(Gfx_**, Mtx44**, N64Vertex **vtx);
+            void(*newgame)(int);
             void(*func05)();
             void(*func06_nop)();
             void(*func07)();
-            void(*func08)();
+            void(*setPos)(Vec*, int, int, int);
             void(*savePoint)();
             void(*gotoSavegame)();
             void(*restartPoint)();
@@ -188,7 +276,7 @@ typedef struct {
             void(*resetMapState)();
             void(*gplayAddTime)();
             void(*shouldNotSaveTime)();
-            void(*func1D)();
+            struct SaveGame* (*func1D)();
             void(*updateTimes)();
             u8(*func1F)();
             void(*setPlayerNo)();
@@ -218,7 +306,7 @@ typedef struct {
             void(*func04_nop)();
             void(*func05)(ObjInstance*, undefined4, float*);
             void(*func06_nop)();
-            void(*func07)(struct Gfx*, float**, int*);
+            void(*func07)(Gfx_**, Mtx**, int*);
             void(*func08_nop)();
         } modelfx;
 
@@ -285,13 +373,24 @@ typedef struct {
         } ObjSeq;
 
         struct {
-            void (*func03)(void);
+            void (*func03)(s8 hintTextIdx);
             void (*func04)(s8 param1);
             int (*func05)(void);
             undefined4 (*tasktextGetTaskName)(s8 task);
             void (*func07)(void);
             int (*func08)(void);
         } SaveGame;
+
+        struct {
+            void (*func03)(int);
+            void (*func04)(float param_1_00,undefined2 *param_2,uint param_3,undefined *param4,int param5);
+            void (*func05)(Gfx_ **gfx,float **param2);
+            void (*func06)(float x,float y,float z,float param_4);
+            void (*func07)(float param1,float param2,float param3,float param4,undefined2 param5,undefined2 param6);
+            void (*func08)(double param1,double param2,double param3,double param4,undefined2 param5);
+            void (*func09)(void);
+            void (*func0A)(float param1,int param2);
+        } waterfx;
     };
 
 } DLL_funcs;
