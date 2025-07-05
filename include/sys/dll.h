@@ -9,46 +9,6 @@
 //XXX file here is DLL*
 typedef int (*DLL_func)(void *file);
 
-enum {
-    /*  0 */ MAINDLL_gplay,
-    /*  1 */ MAINDLL_ObjSeq,
-    /*  2 */ MAINDLL_checkpoint,
-    /*  3 */ MAINDLL_newfog,
-    /*  4 */ MAINDLL_08,
-    /*  5 */ MAINDLL_newstars,
-    /*  6 */ MAINDLL_0A,
-    /*  7 */ MAINDLL_expgfx,
-    /*  8 */ MAINDLL_camcontrol,
-    /*  9 */ MAINDLL_Dummy04,
-    /* 10 */ MAINDLL_05,
-    /* 11 */ MAINDLL_05_2,
-    /* 12 */ MAINDLL_modgfx,
-    /* 13 */ MAINDLL_projgfx,
-    /* 14 */ MAINDLL_0E,
-    /* 15 */ MAINDLL_partfx,
-    /* 16 */ MAINDLL_objfsa,
-    /* 17 */ MAINDLL_11,
-    /* 18 */ MAINDLL_gametext,
-    /* 19 */ MAINDLL_subtitles,
-    /* 20 */ MAINDLL_Dummy15,
-    /* 21 */ MAINDLL_waterfx,
-    /* 22 */ MAINDLL_TrickyWalk,
-    /* 23 */ MAINDLL_curve,
-    /* 24 */ MAINDLL_RomCurve,
-    /* 25 */ MAINDLL_frontend_control,
-    /* 26 */ MAINDLL_47,
-    /* 27 */ MAINDLL_1A,
-    /* 28 */ MAINDLL_SaveGame,
-    /* 29 */ MAINDLL_36,
-    /* 30 */ MAINDLL_modelfx,
-    /* 31 */ MAINDLL_48,
-    /* 32 */ MAINDLL_baddieControl,
-    /* 33 */ MAINDLL_partfx1F,
-    /* 34 */ MAINDLL_n_POST,
-    /* 35 */ MAINDLL_projLib,
-    /* 36 */ NUM_MAIN_DLLS
-} MainDllIdx; //index into mainDlls[]
-
 //this is a bit gross. eventually it should be replaced
 //with some kind of build system that puts each DLL
 //in its own file.
@@ -163,9 +123,9 @@ typedef struct {
         } curve; //aka RomCurve
 
         struct {
-            void(*free)(int);
+            void(*func03)();
             void(*func04)();
-            void(*func05)();
+            void(*free)(int);
             void(*func06)();
             void(*func07)();
             void(*func08)();
@@ -251,7 +211,6 @@ typedef struct {
             void (*func09)(s8 *param1,int param2);
         } gametext;
         struct {
-            void(*func02)();
             void(*func03_nop)(Gfx_**, Mtx44**, N64Vertex **vtx);
             void(*newgame)(int);
             void(*func05)();

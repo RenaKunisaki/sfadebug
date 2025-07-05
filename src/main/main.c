@@ -72,7 +72,42 @@ extern char _defaultBits[];
 /* 80398928 */ extern u8 no_diprintf;
 /* 8039892c */ extern u32 piLockedFlags;
 /* 80398930 */ extern bool isProgressiveScan;
-/* 80398934 */ LoadedDLL *mainDlls[NUM_MAIN_DLLS] = {0};
+/* 80398934 */ LoadedDLL *pDll_gplay = NULL;
+LoadedDLL *pDll_ObjSeq = NULL;
+LoadedDLL *pDll_checkpoint = NULL;
+LoadedDLL *pDll_newfog = NULL;
+LoadedDLL *pDll_08 = NULL;
+LoadedDLL *pDll_newstars = NULL;
+LoadedDLL *pDll_0A = NULL;
+LoadedDLL *pDll_expgfx = NULL;
+LoadedDLL *pDll_camcontrol = NULL;
+LoadedDLL *pDll_Dummy04 = NULL;
+LoadedDLL *pDll_05 = NULL;
+LoadedDLL *pDll_05_2 = NULL;
+LoadedDLL *pDll_modgfx = NULL;
+LoadedDLL *pDll_projgfx = NULL;
+LoadedDLL *pDll_0E = NULL;
+LoadedDLL *pDll_partfx = NULL;
+LoadedDLL *pDll_objfsa = NULL;
+LoadedDLL *pDll_11 = NULL;
+LoadedDLL *pDll_gametext = NULL;
+LoadedDLL *pDll_subtitles = NULL;
+LoadedDLL *pDll_Dummy15 = NULL;
+LoadedDLL *pDll_waterfx = NULL;
+LoadedDLL *pDll_TrickyWalk = NULL;
+LoadedDLL *pDll_curve = NULL;
+LoadedDLL *pDll_RomCurve = NULL;
+LoadedDLL *pDll_frontend_control = NULL;
+LoadedDLL *pDll_47 = NULL;
+LoadedDLL *pDll_1A = NULL;
+LoadedDLL *pDll_SaveGame = NULL;
+LoadedDLL *pDll_36 = NULL;
+LoadedDLL *pDll_modelfx = NULL;
+LoadedDLL *pDll_48 = NULL;
+LoadedDLL *pDll_baddieControl = NULL;
+LoadedDLL *pDll_partfx1F = NULL;
+LoadedDLL *pDll_n_POST = NULL;
+LoadedDLL *pDll_projLib = NULL;
 /* 803989c4 */ extern int frameTimeArrayIdx;
 /* 803989c8 */ extern u32 rspFramesLastStep;
 /* 803989cc */ extern BOOL bEnablePartdev;
@@ -370,48 +405,48 @@ void init(void) { //80077d14
     diMenuInit(enterMainDebugMenu, 0);
     globalMapInit();
     if(n64RamSize != N64_RAM_SIZE) {
-        mainDlls[MAINDLL_05]        = runlinkDownloadCode(5,0x24);
-        mainDlls[MAINDLL_05_2]      = mainDlls[MAINDLL_05];
-        mainDlls[MAINDLL_subtitles] = runlinkDownloadCode(0x14,6);
-        mainDlls[MAINDLL_SaveGame]  = runlinkDownloadCode(0x1c,0x2f);
-        mainDlls[MAINDLL_gplay]     = runlinkDownloadCode(0x1b,4);
+        pDll_05        = runlinkDownloadCode(5,0x24);
+        pDll_05_2      = pDll_05;
+        pDll_subtitles = runlinkDownloadCode(0x14,6);
+        pDll_SaveGame  = runlinkDownloadCode(0x1c,0x2f);
+        pDll_gplay     = runlinkDownloadCode(0x1b,4);
     }
     else {
-        mainDlls[MAINDLL_camcontrol]       = runlinkDownloadCode(1,0xf);
-        mainDlls[MAINDLL_ObjSeq]           = runlinkDownloadCode(2,0x17);
-        mainDlls[MAINDLL_waterfx]          = runlinkDownloadCode(0x16,8);
-        mainDlls[MAINDLL_11]               = runlinkDownloadCode(0x11,0x16);
-        mainDlls[MAINDLL_checkpoint]       = runlinkDownloadCode(3,0x1e);
-        mainDlls[MAINDLL_gplay]            = runlinkDownloadCode(0x1b,5);
-        mainDlls[MAINDLL_curve]            = runlinkDownloadCode(0x18,0x10);
-        mainDlls[MAINDLL_newfog]           = runlinkDownloadCode(7,0xf);
-        mainDlls[MAINDLL_08]               = runlinkDownloadCode(8,0xc);
-        mainDlls[MAINDLL_newstars]         = runlinkDownloadCode(9,8);
-        mainDlls[MAINDLL_0A]               = runlinkDownloadCode(10,3);
-        mainDlls[MAINDLL_expgfx]           = runlinkDownloadCode(0xb,10);
-        mainDlls[MAINDLL_Dummy04]          = runlinkDownloadCode(4,0xd);
-        mainDlls[MAINDLL_05]               = runlinkDownloadCode(5,0x24);
-        mainDlls[MAINDLL_05_2]             = mainDlls[10];
-        mainDlls[MAINDLL_modgfx]           = runlinkDownloadCode(0xc,10);
-        mainDlls[MAINDLL_projgfx]          = runlinkDownloadCode(0xd,0xc);
-        mainDlls[MAINDLL_0E]               = runlinkDownloadCode(0xe,8);
-        mainDlls[MAINDLL_partfx]           = runlinkDownloadCode(0xf,3);
-        mainDlls[MAINDLL_objfsa]           = runlinkDownloadCode(0x10,2);
-        mainDlls[MAINDLL_gametext]         = runlinkDownloadCode(0x13,3);
-        mainDlls[MAINDLL_subtitles]        = runlinkDownloadCode(0x14,5);
-        mainDlls[MAINDLL_Dummy15]          = runlinkDownloadCode(0x15,7);
-        mainDlls[MAINDLL_TrickyWalk]       = runlinkDownloadCode(0x17,7);
-        mainDlls[MAINDLL_RomCurve]         = runlinkDownloadCode(0x19,0x26);
-        mainDlls[MAINDLL_frontend_control] = runlinkDownloadCode(0x46,7);
-        mainDlls[MAINDLL_1A]               = runlinkDownloadCode(0x1a,9);
-        mainDlls[MAINDLL_SaveGame]         = runlinkDownloadCode(0x1c,0x24);
-        mainDlls[MAINDLL_36]               = runlinkDownloadCode(0x36,10);
-        mainDlls[MAINDLL_modelfx]          = runlinkDownloadCode(0x1d,6);
-        mainDlls[MAINDLL_baddieControl]    = runlinkDownloadCode(0x1e,6);
-        mainDlls[MAINDLL_partfx1F]         = runlinkDownloadCode(0x1f,0x16);
-        mainDlls[MAINDLL_n_POST]           = runlinkDownloadCode(0x37,2);
-        mainDlls[MAINDLL_projLib]          = runlinkDownloadCode(0x34,0xc);
-        mainDlls[MAINDLL_modelfx]->funcs->modelfx.func03_nop();
+        pDll_camcontrol       = runlinkDownloadCode(1,0xf);
+        pDll_ObjSeq           = runlinkDownloadCode(2,0x17);
+        pDll_waterfx          = runlinkDownloadCode(0x16,8);
+        pDll_11               = runlinkDownloadCode(0x11,0x16);
+        pDll_checkpoint       = runlinkDownloadCode(3,0x1e);
+        pDll_gplay            = runlinkDownloadCode(0x1b,5);
+        pDll_curve            = runlinkDownloadCode(0x18,0x10);
+        pDll_newfog           = runlinkDownloadCode(7,0xf);
+        pDll_08               = runlinkDownloadCode(8,0xc);
+        pDll_newstars         = runlinkDownloadCode(9,8);
+        pDll_0A               = runlinkDownloadCode(10,3);
+        pDll_expgfx           = runlinkDownloadCode(0xb,10);
+        pDll_Dummy04          = runlinkDownloadCode(4,0xd);
+        pDll_05               = runlinkDownloadCode(5,0x24);
+        pDll_05_2             = pDll_05;
+        pDll_modgfx           = runlinkDownloadCode(0xc,10);
+        pDll_projgfx          = runlinkDownloadCode(0xd,0xc);
+        pDll_0E               = runlinkDownloadCode(0xe,8);
+        pDll_partfx           = runlinkDownloadCode(0xf,3);
+        pDll_objfsa           = runlinkDownloadCode(0x10,2);
+        pDll_gametext         = runlinkDownloadCode(0x13,3);
+        pDll_subtitles        = runlinkDownloadCode(0x14,5);
+        pDll_Dummy15          = runlinkDownloadCode(0x15,7);
+        pDll_TrickyWalk       = runlinkDownloadCode(0x17,7);
+        pDll_RomCurve         = runlinkDownloadCode(0x19,0x26);
+        pDll_frontend_control = runlinkDownloadCode(0x46,7);
+        pDll_1A               = runlinkDownloadCode(0x1a,9);
+        pDll_SaveGame         = runlinkDownloadCode(0x1c,0x24);
+        pDll_36               = runlinkDownloadCode(0x36,10);
+        pDll_modelfx          = runlinkDownloadCode(0x1d,6);
+        pDll_baddieControl    = runlinkDownloadCode(0x1e,6);
+        pDll_partfx1F         = runlinkDownloadCode(0x1f,0x16);
+        pDll_n_POST           = runlinkDownloadCode(0x37,2);
+        pDll_projLib          = runlinkDownloadCode(0x34,0xc);
+        pDll_modelfx->funcs->modelfx.func03_nop();
     }
     initBitTable();
     alSynFlag = 1;
@@ -541,8 +576,8 @@ void gameLoop(void) { //800781d4
     perfFn_8018f5cc();
     mainRender(main_gfx[main_framebuf_idx], mtx, 0);
     listCodeRender(rspFn_8017c278());
-    mainDlls[MAINDLL_1A]->funcs->Dll1A.func04(&gfx, &mtx, &cur_vtx);
-    mainDlls[MAINDLL_Dummy15]->funcs->Dummy15.func09(&gfx);
+    pDll_1A->funcs->Dll1A.func04(&gfx, &mtx, &cur_vtx);
+    pDll_Dummy15->funcs->Dummy15.func09(&gfx);
     finishFrame();
     joyRead();
     amAudioTick();
@@ -622,8 +657,8 @@ void gameLoop(void) { //800781d4
         bEnablePartdev = 1 - bEnablePartdev;
     }
     if (bEnablePartdev) {
-        DLL_free(mainDlls[MAINDLL_objfsa]);
-        mainDlls[MAINDLL_objfsa] = runlinkDownloadCode(0x10, 2);
+        DLL_free(pDll_objfsa);
+        pDll_objfsa = runlinkDownloadCode(0x10, 2);
         diPrintf("PARTDEV\n");
     }
 }
@@ -649,7 +684,7 @@ void showExpansionPakNeededScreen(void) { //800789a0
     videoBackendRun();
     callGfxFuncPtr3(&gfx, &mtx, &cur_vtx, &cur_pol);
     nop_80077B60();
-    mainDlls[MAINDLL_gplay]->funcs->gplay.func03_nop(&gfx, &mtx, &cur_vtx);
+    pDll_gplay->funcs->gplay.func03_nop(&gfx, &mtx, &cur_vtx);
     gDPFullSync(gfx++);
     gSync(gfx++, 0);
     joyRead();
@@ -663,8 +698,8 @@ void gameUpdate(void) { //80078BBC
     ObjInstance *player;
 
     player = Object_objGetMain();
-    mainDlls[MAINDLL_camcontrol]->funcs->camcontrol.func17();
-    mainDlls[MAINDLL_Dummy15]->funcs->Dummy15.func08_nop();
+    pDll_camcontrol->funcs->camcontrol.func17();
+    pDll_Dummy15->funcs->Dummy15.func08_nop();
     if(videoBackendRun() == FALSE) {
         int bHeld = getEnabledButtonsHeld(0);
         bPressed = getEnabledButtonsPressed(0);
@@ -689,7 +724,7 @@ void gameUpdate(void) { //80078BBC
                     }
                 }
             }
-            mainDlls[MAINDLL_gplay]->funcs->gplay.updateTimes();
+            pDll_gplay->funcs->gplay.updateTimes();
         }
         else objUpdateFn_800823dc();
         if(!screenBlankFrameCount) updatePlayerPosLog();
@@ -700,7 +735,7 @@ void gameUpdate(void) { //80078BBC
         playerUpdateFn_800ae404();
         doPendingMapLoads();
         updateObjMtxs();
-        mainDlls[MAINDLL_Dummy04]->funcs->Dummy04.func0B_ret0();
+        pDll_Dummy04->funcs->Dummy04.func11_ret0();
         if(screenBlankFrameCount == 0) {
             if(ret0_8017C358() == 0) {
                 Trackdraw(&gfx,&mtx,&cur_vtx,
@@ -710,12 +745,12 @@ void gameUpdate(void) { //80078BBC
                 if (checkSomeDebugFlags_8017c4f8()) {
                     if (mapEditFlag803999d0 == 0) {
                         if (objSeqEditFlag80399a74 == 0) {
-                            mainDlls[MAINDLL_checkpoint]->funcs->Checkpoint.func12(
+                            pDll_checkpoint->funcs->Checkpoint.func12(
                                 &gfx,&cur_di_vtx,&cur_di_pol);
                         }
-                        mainDlls[MAINDLL_RomCurve]->funcs->curve.func2D(
+                        pDll_RomCurve->funcs->curve.func2D(
                             &gfx,&cur_di_vtx,&cur_di_pol);
-                        mainDlls[MAINDLL_checkpoint]->funcs->Checkpoint.func13(
+                        pDll_checkpoint->funcs->Checkpoint.func13(
                             &gfx,&cur_di_vtx,&cur_di_pol,&mtx);
                     }
                 }
@@ -724,7 +759,7 @@ void gameUpdate(void) { //80078BBC
                 bHeld &= ~(PAD_TRIGGER_Z|PAD_TRIGGER_R|PAD_TRIGGER_L);
             }
         }
-        //mainDlls[MAINDLL_gametext]->funcs->gametext[1](&gfx); //free
+        pDll_05->funcs->Dll05.free((int)&gfx);
         callGfxFuncPtr3(&gfx,&mtx, &cur_vtx, &cur_pol);
         gxResetScissor(&gfx);
         if((e3MenuFrameCount_80398909 -= framesThisStep) < 0) {
@@ -744,10 +779,10 @@ void mapChangeFn_80078e98(void) { //80078e98
     nop_800BF4AC(14, 0, 0);
     fn_800A6FFC(0);
     setDrawTrackSky(FALSE);
-    mainDlls[MAINDLL_05]->funcs->Dll05.free(3);
-    mainDlls[MAINDLL_05]->funcs->Dll05.free(0);
-    mainDlls[MAINDLL_05]->funcs->Dll05.free(1);
-    mainDlls[MAINDLL_Dummy15]->funcs->Dummy15.free_nop(); //free
+    pDll_05->funcs->Dll05.free(3);
+    pDll_05->funcs->Dll05.free(0);
+    pDll_05->funcs->Dll05.free(1);
+    pDll_Dummy15->funcs->Dummy15.free_nop();
     cutsceneExit();
     mainChangeMap(1,0,1,0xffffffff);
 }
@@ -772,8 +807,8 @@ void doQueuedLoads(void) { //80078f48
             mapParam_80396c28 = -1;
         }
         beginLoadingMap();
-        if (mainDlls[MAINDLL_waterfx]) {
-            mainDlls[MAINDLL_waterfx]->funcs->waterfx.func03(1);
+        if (pDll_waterfx) {
+            pDll_waterfx->funcs->waterfx.func03(1);
         }
         mmSetDelay(2);
         BYTE_803989d0 = true;
@@ -789,14 +824,14 @@ int param4) { //80079068
     if(playerNo < 0) playerNo = 0;
     mapDoDebugSetupPoint();
     clearPlayerPosLog();
-    mainDlls[MAINDLL_modelfx]->funcs->modelfx.func04_nop();
-    mainDlls[MAINDLL_gplay]->funcs->gplay.newgame(0);
-    mainDlls[MAINDLL_gplay]->funcs->gplay.setPlayerNo(playerNo & 0xFF);
-    playerPos = (CharPos*)mainDlls[MAINDLL_gplay]->funcs->gplay.getCurCharPos();
+    pDll_modelfx->funcs->modelfx.func04_nop();
+    pDll_gplay->funcs->gplay.newgame(0);
+    pDll_gplay->funcs->gplay.setPlayerNo(playerNo & 0xFF);
+    playerPos = (CharPos*)pDll_gplay->funcs->gplay.getCurCharPos();
     mapLoadFn_800ad69c(mapNo,setupPoint,
         &playerPos->pos.x,&playerPos->pos.y,&playerPos->pos.z,
         &playerPos->layer);
-    mainDlls[MAINDLL_gplay]->funcs->gplay.func05(
+    pDll_gplay->funcs->gplay.func05(
         playerPos, 0, 0, playerPos->layer);
     if (mapGetPlayerObjType(NULL) != ObjDefNo_Sabre) {
         playerPos->pos.x = 0.0f;
@@ -822,10 +857,10 @@ volatile uint playerNo) { //800791F8
     pos.y = y;
     pos.z = z;
     setDebugMenuState(0);
-    mainDlls[MAINDLL_gplay]->funcs->gplay.newgame(0);
-    mainDlls[MAINDLL_gplay]->funcs->gplay.setPlayerNo(playerNo & 0xFF);
-    mainDlls[MAINDLL_gplay]->funcs->gplay.setPos(&pos, 0, 0, 0);
-    mainDlls[MAINDLL_gplay]->funcs->gplay.savePoint();
+    pDll_gplay->funcs->gplay.newgame(0);
+    pDll_gplay->funcs->gplay.setPlayerNo(playerNo & 0xFF);
+    pDll_gplay->funcs->gplay.setPos(&pos, 0, 0, 0);
+    pDll_gplay->funcs->gplay.savePoint();
 }
 
 void mapReload(void) { //800792B0
@@ -902,7 +937,7 @@ void initBitTable(void) { //800794F0
     //this bug persists to final versions (maybe they were
     //2 bytes wide before?)
     numGameBits = getLoadedDataFileSize(FILE_BITTABLE_bin) >> 1;
-    pLastSavedGame = (SaveGame*)mainDlls[MAINDLL_gplay]->funcs->gplay.func1D();
+    pLastSavedGame = (SaveGame*)pDll_gplay->funcs->gplay.func1D();
 }
 
 void mainSetBits(int bitNo,uint value) { //80079544
@@ -930,7 +965,7 @@ void mainSetBits(int bitNo,uint value) { //80079544
                 case 3: bits = pLastSavedGame->gameBits3; break;
             }
             if(bitTable[bitNo].flags & GAMEBIT_FLAG_HAS_HINT_TEXT) {
-                mainDlls[MAINDLL_SaveGame]->funcs->SaveGame.func03(
+                pDll_SaveGame->funcs->SaveGame.func03(
                     bitTable[bitNo].hintTextIdx);
             }
             offsBit = bitTable[bitNo].iBit; //bit offset
@@ -1106,18 +1141,18 @@ BOOL DLL_removeTempDll(int id) { //80079B80
 }
 
 void loadDlls47_48(void) { //80079C40
-    if(!mainDlls[MAINDLL_48]) {
-        mainDlls[MAINDLL_47] = runlinkDownloadCode(0x47,10);
-        mainDlls[MAINDLL_48] = runlinkDownloadCode(0x48,3);
+    if(!pDll_48) {
+        pDll_47 = runlinkDownloadCode(0x47,10);
+        pDll_48 = runlinkDownloadCode(0x48,3);
     }
 }
 
 void freeDlls47_48(void) { //80079C88
-    if(mainDlls[MAINDLL_48]) {
-        DLL_free(mainDlls[MAINDLL_47]);
-        mainDlls[MAINDLL_47] = NULL;
-        DLL_free(mainDlls[MAINDLL_48]);
-        mainDlls[MAINDLL_48] = NULL;
+    if(pDll_48) {
+        DLL_free(pDll_47);
+        pDll_47 = NULL;
+        DLL_free(pDll_48);
+        pDll_48 = NULL;
     }
 }
 
