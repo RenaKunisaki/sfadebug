@@ -284,53 +284,53 @@ typedef struct {
         } ModGfx;
 
         struct {
-            /* 0x08 */ void(*update)(struct ObjInstance *object);
-            /* 0x0c */ void(*hitDetect)(struct ObjInstance *object);
-            /* 0x10 */ void(*render)(struct ObjInstance *object, undefined4 param2, undefined4 param3, undefined4 param4, undefined4 param5, BOOL shouldRender);
-            /* 0x14 */ void(*onFreeObjDef)(struct ObjInstance *object, undefined4);
-            /* 0x18 */ u32 (*getModelFlags)(struct ObjInstance *object); //in final, this is done inline
-            /* 0x1c */ int (*getExtraSize)(struct ObjInstance *object, void *state); //returns sizeof(this obj's State)
-            /* 0x20 */ UNKTYPE *setScale;
-            /* 0x24 */ UNKTYPE *unk24;
-            /* 0x28 */ void (*modelMtxFn_0x28)(struct ObjInstance *object, undefined4, Vec * );
-            /* 0x2c */ UNKTYPE *render2C; //called for child of player object with ID 0x2d
+            void(*update)(struct ObjInstance *object);
+            void(*hitDetect)(struct ObjInstance *object);
+            void(*render)(struct ObjInstance *object, undefined4 param2, undefined4 param3, undefined4 param4, undefined4 param5, BOOL shouldRender);
+            void(*onFreeObjDef)(struct ObjInstance *object, undefined4);
+            u32 (*getModelFlags)(struct ObjInstance *object); //in final, this is done inline
+            int (*getExtraSize)(struct ObjInstance *object, void *state); //returns sizeof(this obj's State)
+            UNKTYPE *setScale;
+            UNKTYPE *unk24;
+            void (*modelMtxFn_0x28)(struct ObjInstance *object, undefined4, Vec * );
+            UNKTYPE *render2C; //called for child of player object with ID 0x2d
         } Object;
 
         struct {
-            /*  0 */ void (*init)(void);
-            /*  1 */ void (*activate)(int idx,undefined2 param2,undefined2 len);
-            /*  2 */ void (*setFlag)(int iFlag,s8 val);
-            /*  3 */ int (*getFlag)(int iFlag);
-            /*  4 */ void (*camCtrl)(float param_1,ObjInstance *param_2,uint param_3);
-            /*  5 */ void (*func08)(void);
-            /*  6 */ void (*func09)(UNKTYPE *param1,ObjDef *objDef);
-            /*  7 */ void (*func0A)(UNKTYPE *param1);
-            /*  8 */ void (*func0B)(UNKTYPE *param1);
-            /*  9 */ void (*func0C)(float param_1);
-            /* 10 */ void (*func0D)(UNKTYPE *param_1);
-            /* 11 */ undefined4 (*func0E_ret0)(void);
-            /* 12 */ BOOL (*func0F)(void);
-            /* 13 */ undefined4 (*func10)(void);
-            /* 14 */ void (*func11)(undefined4 param1);
-            /* 15 */ undefined4 (*func12_ret0)(void);
-            /* 16 */ void (*func13_nop)(void);
-            /* 17 */ void (*startObjSequence)(int seqNo,ObjInstance *obj,uint flags);
-            /* 18 */ void (*endObjSequence)(int seqNo);
-            /* 19 */ void (*func16)(undefined4 param1,undefined4 param2,undefined4 param3,undefined4 param4);
-            /* 20 */ void (*preemptSequenceTime)(ObjInstance *obj,int time);
-            /* 21 */ void (*func18)(UNKTYPE *param1,undefined4 param2);
-            /* 22 */ s8 (*func19)(void);
-            /* 23 */ void (*func1A)(s8 param1);
-            /* 24 */ s16 (*func1B)(void);
-            /* 25 */ void (*func1C)(s16 param1);
-            /* 26 */ s16 (*func1D)(void);
-            /* 27 */ void (*func1E)(s16 param1);
-            /* 28 */ void (*func1F)(int param1,s16 param2);
-            /* 29 */ void (*func20)(ObjInstance *param_1,int param_2,short param3,short param4,short param5, short param6,short param7);
-            /* 30 */ undefined4 (*func21)(int param1,ObjInstance *override,s8 param3);
-            /* 31 */ BOOL (*func22)(float x,float y,float z);
-            /* 32 */ undefined4 (*func23)(undefined4 param_1,int param2);
-            /* 33 */ char* (*func24)(ObjInstance *obj);
+            void (*init)(void);
+            void (*render)(Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx);
+            void (*setFlag)(int iFlag,s8 val);
+            int (*getFlag)(int iFlag);
+            void (*camCtrl)(float param_1,ObjInstance *param_2,uint param_3);
+            void (*func08)(void);
+            void (*func09)(UNKTYPE *param1,ObjDef *objDef);
+            void (*func0A)(UNKTYPE *param1);
+            void (*func0B)(UNKTYPE *param1);
+            void (*func0C)(float param_1);
+            void (*func0D)(UNKTYPE *param_1);
+            undefined4 (*func0E_ret0)(void);
+            BOOL (*func0F)(void);
+            undefined4 (*func10)(void);
+            void (*func11)(undefined4 param1);
+            undefined4 (*func12_ret0)(void);
+            void (*func13_nop)(void);
+            void (*startObjSequence)(int seqNo,ObjInstance *obj,uint flags);
+            void (*endObjSequence)(int seqNo);
+            void (*func16)(undefined4 param1,undefined4 param2,undefined4 param3,undefined4 param4);
+            void (*preemptSequenceTime)(ObjInstance *obj,int time);
+            void (*func18)(UNKTYPE *param1,undefined4 param2);
+            s8 (*func19)(void);
+            void (*func1A)(s8 param1);
+            s16 (*func1B)(void);
+            void (*func1C)(s16 param1);
+            s16 (*func1D)(void);
+            void (*func1E)(s16 param1);
+            void (*func1F)(int param1,s16 param2);
+            void (*func20)(ObjInstance *param_1,int param_2,short param3,short param4,short param5, short param6,short param7);
+            undefined4 (*func21)(int param1,ObjInstance *override,s8 param3);
+            BOOL (*func22)(float x,float y,float z);
+            undefined4 (*func23)(undefined4 param_1,int param2);
+            char* (*func24)(ObjInstance *obj);
         } ObjSeq;
 
         struct {
