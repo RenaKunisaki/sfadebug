@@ -72,7 +72,7 @@ extern char _defaultBits[];
 /* 80398928 */ extern u8 no_diprintf;
 /* 8039892c */ extern u32 piLockedFlags;
 /* 80398930 */ extern bool isProgressiveScan;
-/* 80398934 */ extern LoadedDLL *mainDlls[NUM_MAIN_DLLS];
+/* 80398934 */ LoadedDLL *mainDlls[NUM_MAIN_DLLS] = {0};
 /* 803989c4 */ extern int frameTimeArrayIdx;
 /* 803989c8 */ extern u32 rspFramesLastStep;
 /* 803989cc */ extern BOOL bEnablePartdev;
