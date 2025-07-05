@@ -113,6 +113,7 @@ typedef struct {
             int (*func10)(int param1);
             void (*func11)(void);
             void (*func12)(Gfx_ **gfx,N64Vertex **vtx,Pol **pol);
+            void (*func13)(Gfx_ **gfx,N64Vertex **vtx,Pol **pol, Mtx44 **mtx);
         } Checkpoint;
 
         struct {
@@ -250,6 +251,7 @@ typedef struct {
             void (*func09)(s8 *param1,int param2);
         } gametext;
         struct {
+            void(*func02)();
             void(*func03_nop)(Gfx_**, Mtx44**, N64Vertex **vtx);
             void(*newgame)(int);
             void(*func05)();

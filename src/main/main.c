@@ -286,20 +286,18 @@ extern s8 padSetupOk; // = -1; //80398908
 extern s8 debugMenuState; //80398904
 
 int main(int argc, char **argv) { //80077ca8
-  if (argc > 1 && strcmp(argv[1], "prog") == 0u) {
-    //@bug this should probably be set to true
-    isProgressiveScan = false;
-  }
-  init();
-  while (true) {
-    diProfReset();
-    if (n64RamSize != N64_RAM_SIZE)
-      showExpansionPakNeededScreen();
-    else
-      gameLoop();
-    bootCheckStack();
-  }
-  return 0;
+	if(argc > 1 && strcmp(argv[1], "prog") == 0u) {
+		//@bug this should probably be set to true
+		isProgressiveScan = false;
+	}
+	init();
+	while(true) {
+		diProfReset();
+		if(n64RamSize != N64_RAM_SIZE) showExpansionPakNeededScreen();
+		else gameLoop();
+		bootCheckStack();
+	}
+	return 0;
 }
 
 void init(void) { //80077d14
@@ -666,7 +664,7 @@ void gameUpdate(void) { //80078BBC
 
     player = Object_objGetMain();
     mainDlls[MAINDLL_camcontrol]->funcs->camcontrol.func17();
-    mainDlls[MAINDLL_Dummy15]->funcs->Dummy15.func04_nop();
+    mainDlls[MAINDLL_Dummy15]->funcs->Dummy15.func08_nop();
     if(videoBackendRun() == FALSE) {
         int bHeld = getEnabledButtonsHeld(0);
         bPressed = getEnabledButtonsPressed(0);
@@ -712,13 +710,13 @@ void gameUpdate(void) { //80078BBC
                 if (checkSomeDebugFlags_8017c4f8()) {
                     if (mapEditFlag803999d0 == 0) {
                         if (objSeqEditFlag80399a74 == 0) {
-                            mainDlls[MAINDLL_checkpoint]->funcs->Checkpoint.func0C(
+                            mainDlls[MAINDLL_checkpoint]->funcs->Checkpoint.func12(
                                 &gfx,&cur_di_vtx,&cur_di_pol);
                         }
                         mainDlls[MAINDLL_RomCurve]->funcs->curve.func2D(
                             &gfx,&cur_di_vtx,&cur_di_pol);
-                        mainDlls[MAINDLL_checkpoint]->funcs->Checkpoint.func0C(
-                            &gfx,&cur_di_vtx,&cur_di_pol/*,&mtx*/);
+                        mainDlls[MAINDLL_checkpoint]->funcs->Checkpoint.func13(
+                            &gfx,&cur_di_vtx,&cur_di_pol,&mtx);
                     }
                 }
             }
@@ -726,7 +724,7 @@ void gameUpdate(void) { //80078BBC
                 bHeld &= ~(PAD_TRIGGER_Z|PAD_TRIGGER_R|PAD_TRIGGER_L);
             }
         }
-        //mainDlls[MAINDLL_gametext]->funcs->func[1](&gfx); //free
+        //mainDlls[MAINDLL_gametext]->funcs->gametext[1](&gfx); //free
         callGfxFuncPtr3(&gfx,&mtx, &cur_vtx, &cur_pol);
         gxResetScissor(&gfx);
         if((e3MenuFrameCount_80398909 -= framesThisStep) < 0) {
