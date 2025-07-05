@@ -343,6 +343,26 @@ typedef struct {
         } SaveGame;
 
         struct {
+            void (*walkGroupFn03)(double param_1,double param2,double param3);
+            uint (*func04)(float *param1,undefined *param2);
+            undefined4 (*func05)(int param1);
+            undefined2 (*func06)(float *param1,int groupNo);
+            undefined4 (*isPointWithinPatchGroup)(float *param1,int param2,uint param3);
+            void (*func08)(float *param_1,uint param_2,int param3);
+            void (*func09)(float *param_1,uint param_2,int param3);
+            void (*func0A)(Vec *param_1,Vec *param_2,short param3);
+            bool (*func0B)(int param1,float *param2,float *param3);
+            undefined4 (*getPatchEndPoint)(int groupNo,int param2,float *outA,float *outB);
+            bool (*func0D)(Curve *param1,float param2,float param3,undefined4 param4);
+            undefined4 (*func0E)(Curve *param1,float param2);
+            undefined4 (*func0F)(undefined *param1,undefined *param2);
+            void (*func10)(float *param1);
+            void (*func11)(ObjInstance *obj,uint param_2);
+            void (*func12)(ObjInstance *obj,uint param_2);
+            void (*func13)(ObjInstance *obj,int param_2);
+        } TrickyWalk;
+
+        struct {
             void (*func03)(int);
             void (*func04)(float param_1_00,undefined2 *param_2,uint param_3,undefined *param4,int param5);
             void (*func05)(Gfx_ **gfx,float **param2);

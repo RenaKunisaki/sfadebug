@@ -807,8 +807,8 @@ void doQueuedLoads(void) { //80078f48
             mapParam_80396c28 = -1;
         }
         beginLoadingMap();
-        if (pDll_waterfx) {
-            pDll_waterfx->funcs->waterfx.func03(1);
+        if(pDll_TrickyWalk) {
+            pDll_TrickyWalk->funcs->TrickyWalk.func05(1);
         }
         mmSetDelay(2);
         BYTE_803989d0 = true;
