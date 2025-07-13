@@ -857,10 +857,10 @@ volatile uint playerNo) { //800791F8
     pos.y = y;
     pos.z = z;
     setDebugMenuState(0);
-    pDll_gplay->funcs->gplay.newgame(0);
-    pDll_gplay->funcs->gplay.setPlayerNo(playerNo & 0xFF);
-    pDll_gplay->funcs->gplay.setPos(&pos, 0, 0, 0);
-    pDll_gplay->funcs->gplay.savePoint();
+    pDll_36->funcs->gplay.newgame(0);
+    pDll_36->funcs->gplay.setPlayerNo(playerNo & 0xFF);
+    pDll_36->funcs->gplay.setPos(&pos, 0, 0, 0);
+    pDll_36->funcs->gplay.gotoSavegame();
 }
 
 void mapReload(void) { //800792B0

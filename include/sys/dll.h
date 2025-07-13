@@ -155,6 +155,10 @@ typedef struct {
         struct {
             void (*func03)(void);
             undefined4 (*func04)(int);
+            //something screwy. this DLL only has these
+            //two functions, and pDll_36 is only ever
+            //set to this, but, the game seems to treat
+            //it as if it points to gplay.
         } Dll36;
 
         struct {
