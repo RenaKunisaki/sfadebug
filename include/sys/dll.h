@@ -153,6 +153,24 @@ typedef struct {
         } Dll1A;
 
         struct {
+            //weird, should only be two funcs here,
+            //but mainChangeMap seems to call func09
+            void (*func03)(void);
+            undefined4 (*func04)(void);
+            void (*func05)();
+            void (*func06)();
+            void (*func07)();
+            void (*func08)();
+            void (*func09)(struct CharPos*, undefined4, undefined4, int layer);
+        } Dll36;
+
+        struct {
+            undefined4 (*func03_ret0)(void);
+            void (*func04_nop)(void);
+            void (*func05)(Gfx_ **gfx,undefined4 param2,undefined4 param3);
+        } Dll48;
+
+        struct {
             int (*set_retM1)(void *param_1,undefined param_2,char *file,int line,char *code);
             void (*free_nop)(ObjInstance *param_1,undefined param_2,char *file,int line,char *code);
             undefined4 (*func05_ret0)(void);

@@ -824,15 +824,15 @@ int param4) { //80079068
     if(playerNo < 0) playerNo = 0;
     mapDoDebugSetupPoint();
     clearPlayerPosLog();
-    pDll_modelfx->funcs->modelfx.func04_nop();
+    pDll_48->funcs->Dll48.func03_ret0();
     pDll_gplay->funcs->gplay.newgame(0);
     pDll_gplay->funcs->gplay.setPlayerNo(playerNo & 0xFF);
     playerPos = (CharPos*)pDll_gplay->funcs->gplay.getCurCharPos();
     mapLoadFn_800ad69c(mapNo,setupPoint,
         &playerPos->pos.x,&playerPos->pos.y,&playerPos->pos.z,
         &playerPos->layer);
-    pDll_gplay->funcs->gplay.func05(
-        playerPos, 0, 0, playerPos->layer);
+    pDll_36->funcs->Dll36.func09(
+        (struct CharPos*)playerPos, 0, 0, playerPos->layer);
     if (mapGetPlayerObjType(NULL) != ObjDefNo_Sabre) {
         playerPos->pos.x = 0.0f;
         playerPos->pos.y = 0.0f;
