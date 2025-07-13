@@ -153,15 +153,8 @@ typedef struct {
         } Dll1A;
 
         struct {
-            //weird, should only be two funcs here,
-            //but mainChangeMap seems to call func09
             void (*func03)(void);
-            undefined4 (*func04)(void);
-            void (*func05)();
-            void (*func06)();
-            void (*func07)();
-            void (*func08)();
-            void (*func09)(struct CharPos*, undefined4, undefined4, int layer);
+            undefined4 (*func04)(int);
         } Dll36;
 
         struct {
@@ -234,8 +227,8 @@ typedef struct {
             void(*func05)();
             void(*func06_nop)();
             void(*func07)();
-            void(*setPos)(Vec*, int, int, int);
             void(*savePoint)();
+            void(*setPos)(Vec*, int, int, int);
             void(*gotoSavegame)();
             void(*restartPoint)();
             void(*gotoRestartPoint)();

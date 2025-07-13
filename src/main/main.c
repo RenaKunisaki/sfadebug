@@ -831,8 +831,8 @@ int param4) { //80079068
     mapLoadFn_800ad69c(mapNo,setupPoint,
         &playerPos->pos.x,&playerPos->pos.y,&playerPos->pos.z,
         &playerPos->layer);
-    pDll_36->funcs->Dll36.func09(
-        (struct CharPos*)playerPos, 0, 0, playerPos->layer);
+    pDll_36->funcs->gplay.setPos( //wtf?
+        &playerPos->pos, 0, 0, playerPos->layer);
     if (mapGetPlayerObjType(NULL) != ObjDefNo_Sabre) {
         playerPos->pos.x = 0.0f;
         playerPos->pos.y = 0.0f;
