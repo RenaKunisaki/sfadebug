@@ -1,5 +1,6 @@
 #ifndef _SYS_DLL_H_
 #define _SYS_DLL_H_
+#include "dolphin/mtx.h"
 #include "gfx/gametext.h"
 #include "gfx/render.h"
 #include "obj/ObjInstance.h"
@@ -25,6 +26,44 @@ typedef struct {
         int (*onUnload)(void *thisdll);
         void (*func1)(void);
         void(*Object_onLoad)(struct ObjInstance *object, void *param2, void *param3);
+
+        struct {
+            void (*init)(void);
+            void (*activate)(Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx); //or render?
+            void (*setFlag)(int iFlag,s8 val);
+            int (*getFlag)(int iFlag);
+            void (*camCtrl)(double param_1,ObjInstance *param_2,uint param_3);
+            void (*func08)(void);
+            void (*func09)(undefined *param1,ObjDef *objDef);
+            void (*func0A)(undefined *param1);
+            void (*func0B)(undefined *param1);
+            void (*func0C)(double param_1);
+            void (*func0D)(ObjInstance *obj);
+            undefined4 (*func0E_ret0)(void);
+            BOOL (*isEnabled)(void);
+            int (*func10)(void);
+            void (*func11)(int param1);
+            undefined4 (*func12_ret0)(void);
+            void (*func13_nop)(void);
+            void (*startObjSequence)(int seqNo,ObjInstance *obj,uint flags);
+            void (*endObjSequence)(int seqNo);
+            void (*func16)(undefined4 param1,int param2,int param3,int param4);
+            void (*preemptSequenceTime)(ObjInstance *obj,int time);
+            void (*func18)(undefined *param1,undefined4 param2);
+            s8 (*func19)(void);
+            void (*func1A)(s8 param1);
+            s16 (*func1B)(void);
+            void (*func1C)(int param1);
+            s16 (*func1D)(void);
+            void (*func1E)(int param1);
+            void (*func1F)(int param1,int param2);
+            void (*func20)(ObjInstance *obj,undefined *param_2,short param3,short param4,short param5,short param6,short param7);
+            undefined4 (*func21)(int param1,ObjInstance *override,s8 param3);
+            BOOL (*func22)(float x,float y,float z);
+            undefined4 (*func23)(undefined4 param_1,int param2);
+            char* (*func24)(ObjInstance *obj); //not present in final version
+        } anim; //aka ObjSeq
+
         struct {
             void (*func03)(ObjInstance *obj,float x,float y,float z);
             void (*func04)(int param_1);
@@ -159,6 +198,7 @@ typedef struct {
             //two functions, and pDll_36 is only ever
             //set to this, but, the game seems to treat
             //it as if it points to gplay.
+            //need to double check symbol addrs.
         } Dll36;
 
         struct {
@@ -310,43 +350,6 @@ typedef struct {
             void (*modelMtxFn_0x28)(struct ObjInstance *object, undefined4, Vec * );
             UNKTYPE *render2C; //called for child of player object with ID 0x2d
         } Object;
-
-        struct {
-            void (*init)(void);
-            void (*render)(Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx);
-            void (*setFlag)(int iFlag,s8 val);
-            int (*getFlag)(int iFlag);
-            void (*camCtrl)(float param_1,ObjInstance *param_2,uint param_3);
-            void (*func08)(void);
-            void (*func09)(UNKTYPE *param1,ObjDef *objDef);
-            void (*func0A)(UNKTYPE *param1);
-            void (*func0B)(UNKTYPE *param1);
-            void (*func0C)(float param_1);
-            void (*func0D)(UNKTYPE *param_1);
-            undefined4 (*func0E_ret0)(void);
-            BOOL (*func0F)(void);
-            undefined4 (*func10)(void);
-            void (*func11)(undefined4 param1);
-            undefined4 (*func12_ret0)(void);
-            void (*func13_nop)(void);
-            void (*startObjSequence)(int seqNo,ObjInstance *obj,uint flags);
-            void (*endObjSequence)(int seqNo);
-            void (*func16)(undefined4 param1,undefined4 param2,undefined4 param3,undefined4 param4);
-            void (*preemptSequenceTime)(ObjInstance *obj,int time);
-            void (*func18)(UNKTYPE *param1,undefined4 param2);
-            s8 (*func19)(void);
-            void (*func1A)(s8 param1);
-            s16 (*func1B)(void);
-            void (*func1C)(s16 param1);
-            s16 (*func1D)(void);
-            void (*func1E)(s16 param1);
-            void (*func1F)(int param1,s16 param2);
-            void (*func20)(ObjInstance *param_1,int param_2,short param3,short param4,short param5, short param6,short param7);
-            undefined4 (*func21)(int param1,ObjInstance *override,s8 param3);
-            BOOL (*func22)(float x,float y,float z);
-            undefined4 (*func23)(undefined4 param_1,int param2);
-            char* (*func24)(ObjInstance *obj);
-        } ObjSeq;
 
         struct {
             void (*func03)(s8 hintTextIdx);
