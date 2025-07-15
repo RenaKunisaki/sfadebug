@@ -352,7 +352,7 @@ typedef struct {
         } Object;
 
         struct {
-            void (*func03)(s8 hintTextIdx);
+            void (*func03)(void);
             void (*func04)(s8 param1);
             int (*func05)(void);
             undefined4 (*tasktextGetTaskName)(s8 task);

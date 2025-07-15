@@ -73,41 +73,41 @@ extern char _defaultBits[];
 /* 8039892c */ extern u32 piLockedFlags;
 /* 80398930 */ extern bool isProgressiveScan;
 /* 80398934 */ LoadedDLL *pDll_1A = NULL;
-/* 80398934 */ LoadedDLL *pDll_camcontrol = NULL;
-/* 80398938 */ LoadedDLL *pDll_anim = NULL;
-/* 8039893C */ LoadedDLL *pDll_newday = NULL;
-/* 80398940 */ LoadedDLL *pDll_newfog = NULL;
-/* 80398944 */ LoadedDLL *pDll_newclouds = NULL;
-/* 80398948 */ LoadedDLL *pDll_newstars = NULL;
-/* 8039894C */ LoadedDLL *pDll_0A = NULL;
-/* 80398950 */ LoadedDLL *pDll_GameUI = NULL;
-/* 80398954 */ LoadedDLL *pDll_checkpoint = NULL;
-/* 80398958 */ LoadedDLL *pDll_Dummy04 = NULL;
-/* 8039895C */ LoadedDLL *pDll_Dummy04_2 = NULL;
-/* 80398960 */ LoadedDLL *pDll_expgfx = NULL;
-/* 80398964 */ LoadedDLL *pDll_modgfx = NULL;
-/* 80398968 */ LoadedDLL *pDll_projgfx = NULL;
-/* 8039896C */ LoadedDLL *pDll_0E = NULL;
-/* 80398970 */ LoadedDLL *pDll_partfx = NULL;
-/* 80398974 */ LoadedDLL *pDll_objfsa = NULL;
-/* 80398978 */ LoadedDLL *pDll_screens = NULL;
-/* 8039897C */ LoadedDLL *pDll_gametext = NULL;
-/* 80398980 */ LoadedDLL *pDll_subtitles = NULL;
-/* 80398984 */ LoadedDLL *pDll_Dummy15 = NULL;
-/* 80398988 */ LoadedDLL *pDll_waterfx = NULL;
-/* 8039898C */ LoadedDLL *pDll_TrickyWalk = NULL;
-/* 80398990 */ LoadedDLL *pDll_curve = NULL;
-/* 80398994 */ LoadedDLL *pDll_picmenu = NULL;
-/* 80398998 */ LoadedDLL *pDll_47 = NULL;
-/* 8039899C */ LoadedDLL *pDll_19 = NULL;
-/* 803989A0 */ LoadedDLL *pDll_gplay = NULL;
-/* 803989A4 */ LoadedDLL *pDll_foodbag = NULL;
-/* 803989A8 */ LoadedDLL *pDll_savegame = NULL;
-/* 803989AC */ LoadedDLL *pDll_48 = NULL;
-/* 803989B0 */ LoadedDLL *pDll_modelfx = NULL;
-/* 803989B4 */ LoadedDLL *pDll_baddieControl = NULL;
-/* 803989B8 */ LoadedDLL *pDll_36 = NULL;
-/* 803989BC */ LoadedDLL *pDll_pickup = NULL;
+/* 80398938 */ LoadedDLL *pDll_camcontrol = NULL;
+/* 8039893C */ LoadedDLL *pDll_anim = NULL;
+/* 80398940 */ LoadedDLL *pDll_newday = NULL;
+/* 80398944 */ LoadedDLL *pDll_newfog = NULL;
+/* 80398948 */ LoadedDLL *pDll_newclouds = NULL;
+/* 8039894C */ LoadedDLL *pDll_newstars = NULL;
+/* 80398950 */ LoadedDLL *pDll_0A = NULL;
+/* 80398954 */ LoadedDLL *pDll_GameUI = NULL;
+/* 80398958 */ LoadedDLL *pDll_checkpoint = NULL;
+/* 8039895C */ LoadedDLL *pDll_Dummy04 = NULL;
+/* 80398960 */ LoadedDLL *pDll_Dummy04_2 = NULL;
+/* 80398964 */ LoadedDLL *pDll_expgfx = NULL;
+/* 80398968 */ LoadedDLL *pDll_modgfx = NULL;
+/* 8039896C */ LoadedDLL *pDll_projgfx = NULL;
+/* 80398970 */ LoadedDLL *pDll_0E = NULL;
+/* 80398974 */ LoadedDLL *pDll_partfx = NULL;
+/* 80398978 */ LoadedDLL *pDll_objfsa = NULL;
+/* 8039897C */ LoadedDLL *pDll_screens = NULL;
+/* 80398980 */ LoadedDLL *pDll_gametext = NULL;
+/* 80398984 */ LoadedDLL *pDll_subtitles = NULL;
+/* 80398988 */ LoadedDLL *pDll_Dummy15 = NULL;
+/* 8039898C */ LoadedDLL *pDll_waterfx = NULL;
+/* 80398990 */ LoadedDLL *pDll_TrickyWalk = NULL;
+/* 80398994 */ LoadedDLL *pDll_curve = NULL;
+/* 80398998 */ LoadedDLL *pDll_picmenu = NULL;
+/* 8039899C */ LoadedDLL *pDll_47 = NULL;
+/* 803989A0 */ LoadedDLL *pDll_19 = NULL;
+/* 803989A4 */ LoadedDLL *pDll_gplay = NULL;
+/* 803989A8 */ LoadedDLL *pDll_foodbag = NULL;
+/* 803989AC */ LoadedDLL *pDll_savegame = NULL;
+/* 803989B0 */ LoadedDLL *pDll_48 = NULL;
+/* 803989B4 */ LoadedDLL *pDll_modelfx = NULL;
+/* 803989B8 */ LoadedDLL *pDll_baddieControl = NULL;
+/* 803989BC */ LoadedDLL *pDll_36 = NULL;
+/* 803989C0 */ LoadedDLL *pDll_pickup = NULL;
 /* 803989c4 */ extern int frameTimeArrayIdx;
 /* 803989c8 */ extern u32 rspFramesLastStep;
 /* 803989cc */ extern BOOL bEnablePartdev;
@@ -409,7 +409,7 @@ void init(void) { //80077d14
         pDll_Dummy04_2 = pDll_Dummy04;
         pDll_gametext  = runlinkDownloadCode(0x14,6);
         pDll_gplay     = runlinkDownloadCode(0x1c,0x2f);
-        pDll_1A        = runlinkDownloadCode(0x1b,4);
+        pDll_1A        = runlinkDownloadCode(0x1b,4); //ID changed in final
     }
     else {
         pDll_GameUI        = runlinkDownloadCode(1,0xf);
@@ -824,14 +824,14 @@ int param4) { //80079068
     if(playerNo < 0) playerNo = 0;
     mapDoDebugSetupPoint();
     clearPlayerPosLog();
-    pDll_48->funcs->Dll48.func03_ret0();
+    pDll_savegame->funcs->SaveGame.func03();
     pDll_gplay->funcs->gplay.newgame(0);
     pDll_gplay->funcs->gplay.setPlayerNo(playerNo & 0xFF);
     playerPos = (CharPos*)pDll_gplay->funcs->gplay.getCurCharPos();
     mapLoadFn_800ad69c(mapNo,setupPoint,
         &playerPos->pos.x,&playerPos->pos.y,&playerPos->pos.z,
         &playerPos->layer);
-    pDll_36->funcs->gplay.setPos( //wtf?
+    pDll_gplay->funcs->gplay.setPos(
         &playerPos->pos, 0, 0, playerPos->layer);
     if (mapGetPlayerObjType(NULL) != ObjDefNo_Sabre) {
         playerPos->pos.x = 0.0f;
@@ -965,7 +965,7 @@ void mainSetBits(int bitNo,uint value) { //80079544
                 case 3: bits = pLastSavedGame->gameBits3; break;
             }
             if(bitTable[bitNo].flags & GAMEBIT_FLAG_HAS_HINT_TEXT) {
-                pDll_savegame->funcs->SaveGame.func03(
+                pDll_savegame->funcs->SaveGame.func04(
                     bitTable[bitNo].hintTextIdx);
             }
             offsBit = bitTable[bitNo].iBit; //bit offset
