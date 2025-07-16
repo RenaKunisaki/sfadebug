@@ -931,7 +931,7 @@ void fn_80083F50(ObjInstance *object) {
 				break;
 			default:
 				if(!object->dll) goto l953;
-				(*((LoadedDLL*)object->dll)->funcs->Object.update)(object);
+				(*((LoadedDLL*)object->dll)->funcs->Object.func04)(object);
 				break;
 		}
 		objMultPosByMtx(object,
@@ -1348,7 +1348,7 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 	if(obj->stateFlags & 2) LAB_800860ac(obj);
 	objFreeObjdef(obj->realType);
 	if((obj->curSeqSlot > -1) && (param2 == 0)) {
-		pDll_checkpoint->funcs->Checkpoint.endObjSequence(obj->curSeqSlot);
+		pDll_checkpoint->funcs->anim.endObjSequence(obj->curSeqSlot);
 		obj->curSeqSlot = -1;
 	}
 	if((obj->pos.flags & ObjInstance_Flags06_DontSave) && obj->def) {
@@ -1456,7 +1456,7 @@ void mapSetupPlayer(void) {
 	ObjDef_802eca98.pos.z = mathFn_80294204(((charPos->rotX << 8) * PI) / 32767.0f) * 60.0f + z;
 	pDll_camcontrol->funcs->camcontrol.func03(charObj,
 		ObjDef_802eca98.pos.x, ObjDef_802eca98.pos.y, ObjDef_802eca98.pos.z);
-	pDll_camcontrol->funcs->camcontrol.func09(
+	pDll_camcontrol->funcs->camcontrol.setupCamControl1(
 		0x50, 0, 0, 0x20, &ObjDef_802eca98, 0, 0xff);
 	pDll_camcontrol->funcs->camcontrol.func04(1);
 	pDll_dummy04->funcs->Dummy04.func06_nop(charObj);

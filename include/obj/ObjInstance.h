@@ -4,7 +4,6 @@
 #include "gfx/models/models.h"
 #include "gfx/textures.h"
 #include "obj/ObjDef.h"
-#include "sys/dll.h"
 #include "types.h"
 
 #define MAX_OBJECTS 350

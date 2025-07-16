@@ -71,7 +71,7 @@ typedef struct {
             int (*func06)(void);
             int (*func07)(void);
             struct CamControlAttention* (* getAttentionCam)(void);
-            void (*setupCamControl1)(int param1,s8 param2,s8 param3,uint len,ObjDef *odef,int param6,s8 param7);
+            void (*setupCamControl1)(int param1,s8 param2,s8 param3,uint len,ObjDef *odef,int param6,u8 param7);
             void (*getCamAction)(int actNo);
             void (*func0B)(int param1,uint param2);
             void (*setObjA0)(ObjInstance *param1);
@@ -340,8 +340,10 @@ typedef struct {
 
         struct {
             void(*update)(struct ObjInstance *object);
+            //void(*render)(struct ObjInstance *object, undefined4 param2, undefined4 param3, undefined4 param4, undefined4 param5, BOOL shouldRender);
+            void(*func04)(struct ObjInstance *object);
             void(*hitDetect)(struct ObjInstance *object);
-            void(*render)(struct ObjInstance *object, undefined4 param2, undefined4 param3, undefined4 param4, undefined4 param5, BOOL shouldRender);
+            void(*func06)();
             void(*onFreeObjDef)(struct ObjInstance *object, undefined4);
             u32 (*getModelFlags)(struct ObjInstance *object); //in final, this is done inline
             int (*getExtraSize)(struct ObjInstance *object, void *state); //returns sizeof(this obj's State)
