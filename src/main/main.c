@@ -82,7 +82,7 @@ extern char _defaultBits[];
 /* 80398950 */ LoadedDLL *pDll_0A = NULL;
 /* 80398954 */ LoadedDLL *pDll_GameUI = NULL;
 /* 80398958 */ LoadedDLL *pDll_checkpoint = NULL;
-/* 8039895C */ LoadedDLL *pDll_Dummy04 = NULL;
+/* 8039895C */ LoadedDLL *pDll_05 = NULL;
 /* 80398960 */ LoadedDLL *pDll_Dummy04_2 = NULL;
 /* 80398964 */ LoadedDLL *pDll_expgfx = NULL;
 /* 80398968 */ LoadedDLL *pDll_modgfx = NULL;
@@ -405,8 +405,8 @@ void init(void) { //80077d14
     diMenuInit(enterMainDebugMenu, 0);
     globalMapInit();
     if(n64RamSize != N64_RAM_SIZE) {
-        pDll_Dummy04   = runlinkDownloadCode(5,0x24);
-        pDll_Dummy04_2 = pDll_Dummy04;
+        pDll_05   = runlinkDownloadCode(5,0x24);
+        pDll_Dummy04_2 = pDll_05;
         pDll_gametext  = runlinkDownloadCode(0x14,6);
         pDll_gplay     = runlinkDownloadCode(0x1c,0x2f);
         pDll_1A        = runlinkDownloadCode(0x1b,4); //ID changed in final
@@ -425,8 +425,8 @@ void init(void) { //80077d14
         pDll_newstars      = runlinkDownloadCode(10,3);
         pDll_0A            = runlinkDownloadCode(0xb,10);
         pDll_checkpoint    = runlinkDownloadCode(4,0xd);
-        pDll_Dummy04       = runlinkDownloadCode(5,0x24);
-        pDll_Dummy04_2     = pDll_Dummy04;
+        pDll_05       = runlinkDownloadCode(5,0x24);
+        pDll_Dummy04_2     = pDll_05;
         pDll_expgfx        = runlinkDownloadCode(0xc,10);
         pDll_modgfx        = runlinkDownloadCode(0xd,0xc);
         pDll_projgfx       = runlinkDownloadCode(0xe,8);
@@ -735,7 +735,7 @@ void gameUpdate(void) { //80078BBC
         playerUpdateFn_800ae404();
         doPendingMapLoads();
         updateObjMtxs();
-        pDll_Dummy04->funcs->Dummy04.func11_ret0();
+        pDll_05->funcs->Dummy04.func11_ret0();
         if(screenBlankFrameCount == 0) {
             if(ret0_8017C358() == 0) {
                 Trackdraw(&gfx,&mtx,&cur_vtx,
@@ -759,7 +759,7 @@ void gameUpdate(void) { //80078BBC
                 bHeld &= ~(PAD_TRIGGER_Z|PAD_TRIGGER_R|PAD_TRIGGER_L);
             }
         }
-        pDll_Dummy04->funcs->Dll05.free((int)&gfx);
+        pDll_05->funcs->Dll05.free((int)&gfx);
         callGfxFuncPtr3(&gfx,&mtx, &cur_vtx, &cur_pol);
         gxResetScissor(&gfx);
         if((e3MenuFrameCount_80398909 -= framesThisStep) < 0) {
@@ -779,10 +779,10 @@ void mapChangeFn_80078e98(void) { //80078e98
     nop_800BF4AC(14, 0, 0);
     fn_800A6FFC(0);
     setDrawTrackSky(FALSE);
-    pDll_Dummy04->funcs->Dll05.free(3);
-    pDll_Dummy04->funcs->Dll05.free(0);
-    pDll_Dummy04->funcs->Dll05.free(1);
-    pDll_Dummy15->funcs->Dummy15.free_nop();
+    pDll_05->funcs->Dll05.func09(3);
+    pDll_05->funcs->Dll05.func09(0);
+    pDll_05->funcs->Dll05.func09(1);
+    pDll_subtitles->funcs->subtitles.free();
     cutsceneExit();
     mainChangeMap(1,0,1,0xffffffff);
 }
@@ -937,7 +937,7 @@ void initBitTable(void) { //800794F0
     //this bug persists to final versions (maybe they were
     //2 bytes wide before?)
     numGameBits = getLoadedDataFileSize(FILE_BITTABLE_bin) >> 1;
-    pLastSavedGame = (SaveGame*)pDll_gplay->funcs->gplay.func1D();
+    pLastSavedGame = (SaveGame*)pDll_gplay->funcs->gplay.func24();
 }
 
 void mainSetBits(int bitNo,uint value) { //80079544

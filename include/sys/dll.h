@@ -164,11 +164,11 @@ typedef struct {
         struct {
             void(*func03)();
             void(*func04)();
-            void(*free)(int);
+            void(*free)();
             void(*func06)();
             void(*func07)();
             void(*func08)();
-            void(*func09)();
+            void(*func09)(int);
             void(*func0A)();
             void(*func0B)();
             void(*func0C)();
@@ -299,7 +299,7 @@ typedef struct {
             void(*getSavedObjPositions)();
             void(*getNumSavedObjPositions)();
             void(*func23)();
-            void(*func24)();
+            struct SaveGame* (*func24)();
             void(*getCurCharState)();
             struct CharPos* (*getCurCharPos)();
             void(*func27)();
@@ -359,6 +359,19 @@ typedef struct {
             void (*func07)(void);
             int (*func08)(void);
         } SaveGame;
+
+        struct {
+            int (*func03)(int param1);
+            undefined4 (*func04)(void);
+            void (*func05)(uint param1,s8 param2);
+            void (*func06)(uint group);
+            void (*free)(void);
+            void (*func08)(void);
+            void (*func09)(Gfx_ **gfx,int delayMin);
+            int (*func0A)(int param1);
+            bool (*func0B)(int param1,int param2);
+            undefined4 (*func0C)(s8 param1);
+        } subtitles;
 
         struct {
             void (*walkGroupFn03)(double param_1,double param2,double param3);
