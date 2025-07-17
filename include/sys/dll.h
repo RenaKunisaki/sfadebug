@@ -162,26 +162,6 @@ typedef struct {
         } curve; //aka RomCurve
 
         struct {
-            void(*func03)();
-            void(*func04)();
-            void(*free)();
-            void(*func06)();
-            void(*func07)();
-            void(*func08)();
-            void(*func09)(int);
-            void(*func0A)();
-            void(*func0B)();
-            void(*func0C)();
-            void(*func0D)();
-            void(*func0E)();
-            void(*func0F)();
-            void(*func10)();
-            void(*func11)();
-            void(*func12)();
-            void(*func13_nop)(struct ObjInstance *obj);
-        } Dll05;
-
-        struct {
             void(*func03)(u8,uint);
             void(*func04)(Gfx_**, Mtx44**, N64Vertex **vtx);
             void(*func05)(uint, u8);
@@ -257,6 +237,20 @@ typedef struct {
         } Dummy15;
 
         struct {
+            void (*func03)(void);
+            void (*func04)(int *param_1,int param_2);
+            void (*func05)(s8 param_1,uint param_2);
+            void (*func06)(void);
+            void (*ownerFree)(ObjInstance *obj);
+            void (*ownerFree2)(ObjInstance *obj);
+            void (*draw)(ObjInstance *obj,Gfx_ **gfx,undefined4 param_3,undefined4 param_4,s8 param_5);
+            void (*func0A_nop)(void);
+            void (*func0B_nop)(void);
+            void (*ownerFree3)(ObjInstance *obj);
+            s8 (*func0D)(ObjInstance *obj);
+        } expgfx;
+
+        struct {
             int (*getNumLanguages)(void);
             int (*getNumTexts)(void);
             void (*gametextLoadLanguage)(s8 lang);
@@ -327,15 +321,28 @@ typedef struct {
         } modelfx;
 
         struct {
-            void(*func04)();
-            void(*func05)();
-            void(*func06)();
-            void(*func07)();
-            void(*func08)();
-            void(*func09)();
-            void(*func0A)();
-            void(*func0B)();
-            void(*func0C)(struct ObjInstance *obj);
+            void (*func03)(void);
+            int (*func04)(struct ModGfxStruct0F *param1,undefined4 param_2,int param3,int param4,int param5,int param6,int textureId,Texture *tex);
+            void (*func05)(void);
+            void (*free)(void);
+            void (*func07)(int param1);
+            void (*func08)(int param1);
+            undefined4 (*func09)(Gfx_ **gfx,Mtx44 **mtx,N64Vertex **vtx,bool param4,int param5);
+            void (*func0A)(short *param1);
+            void (*func0B)(void);
+            void (*func0C)(ObjInstance *obj,undefined param2);
+            void (*func0D)(int param1);
+            void (*func0E)(undefined *param1);
+            void (*func0F)(int param1,s8 param2,s8 param3,int param4,int param5);
+            void (*func10)(void);
+            void (*func11)(undefined4 param4,undefined2 param5,undefined4 param6,float x,float y,float z);
+            void (*func12)(void);
+            void (*func13)(s16 param1);
+            void (*func14)(u16 param1);
+            void (*func15)(u16 *param1);
+            void (*func16)(ObjInstance *obj,int param2,int param3,int param4,int param5,int param6,Texture *tex);
+            void (*setFlags54)(uint flags);
+            int (*func18)(void);
         } ModGfx;
 
         struct {
@@ -427,5 +434,42 @@ typedef struct {
 
 BOOL DLL_free(LoadedDLL *dll);
 LoadedDLL* runlinkDownloadCode(ushort id, ushort param);
+
+/* 80398934 */ extern LoadedDLL *pDll_1A;
+/* 80398938 */ extern LoadedDLL *pDll_camcontrol;
+/* 8039893C */ extern LoadedDLL *pDll_anim;
+/* 80398940 */ extern LoadedDLL *pDll_newday;
+/* 80398944 */ extern LoadedDLL *pDll_newfog;
+/* 80398948 */ extern LoadedDLL *pDll_newclouds;
+/* 8039894C */ extern LoadedDLL *pDll_newstars;
+/* 80398950 */ extern LoadedDLL *pDll_0A;
+/* 80398954 */ extern LoadedDLL *pDll_GameUI;
+/* 80398958 */ extern LoadedDLL *pDll_checkpoint;
+/* 8039895C */ extern LoadedDLL *pDll_Dummy04;
+/* 80398960 */ extern LoadedDLL *pDll_Dummy04_2;
+/* 80398964 */ extern LoadedDLL *pDll_expgfx;
+/* 80398968 */ extern LoadedDLL *pDll_modgfx;
+/* 8039896C */ extern LoadedDLL *pDll_projgfx;
+/* 80398970 */ extern LoadedDLL *pDll_0E;
+/* 80398974 */ extern LoadedDLL *pDll_partfx;
+/* 80398978 */ extern LoadedDLL *pDll_objfsa;
+/* 8039897C */ extern LoadedDLL *pDll_screens;
+/* 80398980 */ extern LoadedDLL *pDll_gametext;
+/* 80398984 */ extern LoadedDLL *pDll_subtitles;
+/* 80398988 */ extern LoadedDLL *pDll_Dummy15;
+/* 8039898C */ extern LoadedDLL *pDll_waterfx;
+/* 80398990 */ extern LoadedDLL *pDll_TrickyWalk;
+/* 80398994 */ extern LoadedDLL *pDll_curve;
+/* 80398998 */ extern LoadedDLL *pDll_picmenu;
+/* 8039899C */ extern LoadedDLL *pDll_47;
+/* 803989A0 */ extern LoadedDLL *pDll_19;
+/* 803989A4 */ extern LoadedDLL *pDll_gplay;
+/* 803989A8 */ extern LoadedDLL *pDll_foodbag;
+/* 803989AC */ extern LoadedDLL *pDll_savegame;
+/* 803989B0 */ extern LoadedDLL *pDll_48;
+/* 803989B4 */ extern LoadedDLL *pDll_modelfx;
+/* 803989B8 */ extern LoadedDLL *pDll_baddieControl;
+/* 803989BC */ extern LoadedDLL *pDll_36;
+/* 803989C0 */ extern LoadedDLL *pDll_pickup;
 
 #endif //_SYS_DLL_H_

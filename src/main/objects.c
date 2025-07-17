@@ -176,11 +176,6 @@ void modelLoadCb_800c5b80(int param_1, ModelInstance *param_2);
 extern s32 nTablesTab;
 extern s16 nVisibleObjs;
 extern s8 numEffectBoxes;
-extern LoadedDLL *pDll05;
-extern LoadedDLL *pDll_ObjSeq;
-extern LoadedDLL *pDll_SaveGame;
-extern LoadedDLL *pDll_checkpoint;
-extern LoadedDLL *pDll_modgfx;
 extern f32 playerMapOffsetX;
 extern f32 playerMapOffsetZ;
 extern s16 playerObjIds[2];
@@ -1276,8 +1271,8 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 			obj->dll = NULL;
 		}
 	}
-	pDll05->funcs->Dll05.func13_nop(obj);
-	pDll_modgfx->funcs->ModGfx.func0C(obj);
+	pDll_Dummy04->funcs->Dummy04.func14_nop(obj);
+	pDll_expgfx->funcs->expgfx.ownerFree3(obj);
 	if(obj->objdata
 	&& obj->objdata->flags & ObjFileStructFlags44_DifferentLightColor) {
 		objRemoveObjectType(obj, 0x38);
@@ -1429,7 +1424,7 @@ void mapSetupPlayer(void) {
 		heldBy->mtxIdx = Camera_addWorldMtx(&heldBy->pos);
 	}
 	playerIdx = 1;
-	charPos = (CharPos *)pDll_SaveGame->funcs->gplay.getCurCharPos();
+	charPos = (CharPos *)pDll_gplay->funcs->gplay.getCurCharPos();
 	x = charPos->pos.x;
 	y = charPos->pos.y;
 	z = charPos->pos.z;
