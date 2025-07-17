@@ -777,22 +777,24 @@ void objFreeFn_80083b54(ObjInstance *object) {
 
 //something like "add to global(?) object list"
 void fn_80083B94(ObjInstance *object) {
-	int dummy;
-	int dummy2;
-	ObjInstance *sp10;
 	ObjInstance *r30;
+	ObjInstance *r31;
+	ObjInstance *sp10;
 	volatile s16 size; //spC
 
 	if(!(object->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList)) return;
 
 	size = objList_80398a88.objSize;
-	sp10 = NULL;
-	for(r30 = objList_80398a88.obj;
-	((int)r30 && object->priority < r30->priority);
-	r30 = *(ObjInstance **)((int)r30 + size)) {
-		sp10 = r30;
+	r30 = NULL;
+	r31 = objList_80398a88.obj;
+	sp10 = r31;
+	while((int)r31 && object->priority < r31->priority) {
+		r30 = r31;
+		//sp10 = *(ObjInstance **)((int)r31 + size);
+		//use of r3 for list is suspicious, maybe inlining?
+		r31 = *(ObjInstance **)((int)r31 + size);
 	}
-	objListAdd(&objList_80398a88, sp10, object);
+	objListAdd(&objList_80398a88, r30, object);
 }
 
 void objFreeObject(ObjInstance *obj) {
