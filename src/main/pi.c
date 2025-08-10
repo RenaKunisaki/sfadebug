@@ -97,11 +97,10 @@ int loadAsset(AssetDef *load);
 //that don't do anything with it
 u8 DAT_80352f30[0x7EF];
 
-//XXX where does this go?
-int retM1_afterLoadAsset(void *param_1,undefined *param_2,int param_3) {
+//XXX where does this go? not here.
+/* int retM1_afterLoadAsset(void *param_1,undefined *param_2,int param_3) {
     return -1;
-}
-
+} */
 
 void loadAsset_file(void **dest, DataFileId32 file) { //800777F0
     AssetDef_80352f00.adef.header.unk00 = true;

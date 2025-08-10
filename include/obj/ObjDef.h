@@ -1,9 +1,6 @@
 #ifndef _OBJ_OBJDEF_H_
 #define _OBJ_OBJDEF_H_
 
-#include "../types.h"
-#include "dolphin/mtx.h"
-
 #define ObjDefNo_Sabre 0
 #define ObjDefNo_SH_newseqob 2
 #define ObjDefNo_checkpoint4 5

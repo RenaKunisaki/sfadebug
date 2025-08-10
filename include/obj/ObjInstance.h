@@ -124,7 +124,7 @@ typedef s16 ObjFileStruct_ShadowType;
 typedef u16 HitboxFlags60;
 typedef u16 HitboxFlags62;
 
-enum {
+typedef enum {
     ObjDataFlagsB4_CanFreeze = 0x01,
 } ObjDataFlagsB4;
 

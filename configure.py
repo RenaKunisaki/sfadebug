@@ -508,6 +508,7 @@ config.libs = [
                 extra_cflags=[*cflags_base, "-O0,s", "-use_lmw_stmw on"],
             ),
             Object(NonMatching, "main/objects.c"),
+            Object(NonMatching, "main/objprint.c"),
             Object(Matching, "main/pi.c"),
         ],
     },

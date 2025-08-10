@@ -7,8 +7,7 @@
 #include "sys/n64.h"
 #include "gfx/render.h"
 #include "sys/dll.h"
-#include "obj/ObjDef.h"
-#include "obj/ObjInstance.h"
+#include "obj/Objects.h"
 #include "save/GameBits.h"
 #include "save/SaveGame.h"
 #include "sys/files.h"
@@ -47,7 +46,7 @@ extern char _defaultBits[];
 /* 80396E8C */ extern u32 n64RamSize ;// = N64_RAM_SIZE;
 /* 80396E90 */ extern int unk_80396E90 ;//= 0x80000000;
 
-//.sbss (0x80398240)
+//.sbss (0x803988e0)
 /* 803988e0 */ extern N64Vertex *main_vtx[2];
 /* 803988e8 */ extern N64Vertex *cur_vtx;
 /* 803988ec */ extern Pol *main_pol[2];
@@ -755,11 +754,12 @@ void gameUpdate(void) { //80078BBC
                     }
                 }
             }
-            if (getDebugMenuState() == 1) {
+            if(getDebugMenuState() == 1) {
                 bHeld &= ~(PAD_TRIGGER_Z|PAD_TRIGGER_R|PAD_TRIGGER_L);
             }
         }
-        pDll_Dummy04->funcs->Dll05.free((int)&gfx);
+        //pDll_Dummy04->funcs->Dummy04.free_nop((int)&gfx);
+        pDll_Dummy04->funcs->Dummy04.func05_ret0(&gfx); //XXX correct function here
         callGfxFuncPtr3(&gfx,&mtx, &cur_vtx, &cur_pol);
         gxResetScissor(&gfx);
         if((e3MenuFrameCount_80398909 -= framesThisStep) < 0) {
@@ -779,9 +779,9 @@ void mapChangeFn_80078e98(void) { //80078e98
     nop_800BF4AC(14, 0, 0);
     fn_800A6FFC(0);
     setDrawTrackSky(FALSE);
-    pDll_Dummy04->funcs->Dll05.func09(3);
-    pDll_Dummy04->funcs->Dll05.func09(0);
-    pDll_Dummy04->funcs->Dll05.func09(1);
+    pDll_Dummy04->funcs->Dummy04.func09_nop(3);
+    pDll_Dummy04->funcs->Dummy04.func09_nop(0);
+    pDll_Dummy04->funcs->Dummy04.func09_nop(1);
     pDll_subtitles->funcs->subtitles.free();
     cutsceneExit();
     mainChangeMap(1,0,1,0xffffffff);
@@ -1187,7 +1187,7 @@ s8 fn_80079D80(void) { //80079D80
     return newGameFlag8039890b;
 }
 
-u32 getPiLockedFlags(void) { //80079D88
+DataFileLoadedFlags getPiLockedFlags(void) { //80079D88
     return piLockedFlags;
 }
 

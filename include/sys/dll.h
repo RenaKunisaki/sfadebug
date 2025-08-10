@@ -190,7 +190,7 @@ typedef struct {
         struct {
             int (*set_retM1)(void *param_1,undefined param_2,char *file,int line,char *code);
             void (*free_nop)(ObjInstance *param_1,undefined param_2,char *file,int line,char *code);
-            undefined4 (*func05_ret0)(void);
+            undefined4 (*func05_ret0)(Gfx_**);
             void (*func06_nop)(ObjInstance *param_1);
             void (*func07_nop)(void);
             void (*func08_nop)(int param_1,int param_2,int param_3,int param_4,int param_5);
@@ -347,8 +347,8 @@ typedef struct {
 
         struct {
             void(*update)(struct ObjInstance *object);
-            //void(*render)(struct ObjInstance *object, undefined4 param2, undefined4 param3, undefined4 param4, undefined4 param5, BOOL shouldRender);
-            void(*func04)(struct ObjInstance *object);
+            void(*render)(struct ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx, Pol **pol, BOOL shouldRender);
+            //void(*func04)(struct ObjInstance *object);
             void(*hitDetect)(struct ObjInstance *object);
             void(*func06)();
             void(*onFreeObjDef)(struct ObjInstance *object, undefined4);
@@ -357,7 +357,7 @@ typedef struct {
             UNKTYPE *setScale;
             UNKTYPE *unk24;
             void (*modelMtxFn_0x28)(struct ObjInstance *object, undefined4, Vec * );
-            UNKTYPE *render2C; //called for child of player object with ID 0x2d
+            void (*render2C)(struct ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx, Pol **pol); //called for child of player object with ID 0x2d, 0x2f
         } Object;
 
         struct {

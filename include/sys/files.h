@@ -1,5 +1,9 @@
 #ifndef _SYS_FILES_H_
 #define _SYS_FILES_H_
+
+#include "../types.h"
+
+typedef uint DataFileLoadedFlags;
 typedef enum {
     FILE_AUDIO_tab = 0,
     FILE_AUDIO_bin = 1,

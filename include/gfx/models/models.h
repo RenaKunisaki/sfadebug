@@ -7,6 +7,8 @@
 #include "gfx/models/shaders.h"
 #include "sys/SparseArray.h"
 
+typedef u32 ModelFlags_loadCharacter;
+
 typedef enum {
     ObjShadowType_None,
     ObjShadowType_BigBoxShadow,
@@ -277,7 +279,7 @@ typedef struct {
     /* 0x89 */ u8 unk89;
     /* 0x8a */ u8 unk8a;
     /* 0x8b */ u8 unk8b;
-    /* 0x8c */ FineSkinningPiece *posFineSkinningConfig;
+    /* 0x8c */ FineSkinningPiece *posFineSkinningConfig; //aka skin2Matrices
     /* 0x90 */ UNKTYPE *skinWeights;
     /* 0x94 */ DisplayList *displayLists;
     /* 0x98 */ BitStream *renderStream;

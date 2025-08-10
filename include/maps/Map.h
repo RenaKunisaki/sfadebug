@@ -1,6 +1,7 @@
 #ifndef _MAPS_MAP_H_
 #define _MAPS_MAP_H_
 
+typedef int mapId32;
 typedef enum {
     MapId_frontend = 0,
     MapId_frontend2 = 1,
