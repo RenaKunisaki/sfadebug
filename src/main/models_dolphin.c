@@ -1,4 +1,5 @@
 #include "dolphin.h"
+#include "dolphin/mtx.h"
 #include "types.h"
 #include "debug/debug.h"
 #include "sys/alloc.h"
@@ -11,124 +12,19 @@
 #include "obj/ObjInstance.h"
 #include "sys/files.h"
 
-/* 80398a20 */ int maxModelNum;
-/* 80398a24 */ s16 *globalModAnimBuffer;
-/* 80398a28 */ int *pAmapTab;
-/* 80398a2c */ u32 *animOffsetTbl;
-/* 80398a34 */ BOOL bHaveAnimTab;
-/* 80398a3c */ SparseArray *animsLoadedTable; // -> Animation*
-SparseArray *modelsLoadedTable;
-UNKTYPE *globalModAnimBufferPlus0x810;
-/* 80398c68 */ extern float playerMapOffsetX;
-/* 80398c6c */ extern float playerMapOffsetZ;
+int DAT_80398a10;
+int DWORD_80398a14;
+int DWORD_80398a18;
 
-Model *Model_load(short id);
-void Model_loadTextures(Model *model);
-ModelInstance *createModelInstance(Model *model, uint flags, BOOL bIsNew);
-void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance);
-Animation *getAnimation(short id);
-Animation *modelLoadAnimation(Model *model, int index, int id, AnimCache *dest);
-void unloadAnimation(Animation *anim);
-void *getTable(DataFileId32 file);
-Animation *loadAnimation(Model *model, short id, short id2, void *dest);
-void debugPrint(const char *fmt, ...);
-void ModelInstance_unloadShaders(ModelInstance *minst);
-int Model_lookupModelInd(int id);
-void Model_initSkinningWeights(Model *model, ModelInstance *mInst);
-void Model_initShaders(Model *model);
-void Model_freeTextures(Model *model);
-void Model_freeAnimations(Model *model);
-void modelInstSwapJmtxs(ModelInstance *modelInstance);
-
-Texture *textureLoad(int id, int);
-
-void *loadModelInstanceAsset(int id, void *buf) { // 8007c57c types may be wrong
+void *loadModelInstance(undefined4 id, undefined4 param2) { // 8007C57C
 	void *result;
-	loadAsset_modelInstance(&result, id, buf);
+
+	loadAsset_modelInstance(&result, id, param2);
 	return result;
 }
 
-int Model_setupAnimInstance(Model *model, int flags, AnimUnk *anim, int param4);
-
-void initModels(void) { // 8007dab0
-	int *mem;
-	modelsLoadedTable = SparseArray_create(0x8c, 4);
-	BADASSERTLINE(164, modelsLoadedTable);
-
-	animsLoadedTable = SparseArray_create(0xc4, 4);
-	BADASSERTLINE(169, animsLoadedTable);
-
-	mem = mmAlloc(
-	    0x830, ALLOC_TAG_ANIMS_COL, (volatile u32) "mod:globalAnimBuffer");
-	BADASSERTLINE(174, mem);
-
-	globalModAnimBuffer = (s16 *)mem;
-	pAmapTab = &mem[0x200];
-	globalModAnimBufferPlus0x810 = (UNKTYPE *)&mem[0x200 + 4];
-	countModels();
-}
-
-ModelInstance *loadModelInstance(int modelNum, uint flags) { // 8007db84
-	ModelInstance *modelInstance;
-	Model *model;
-	uint modelIdx;
-	uint dummy;
-
-	/* final:
-	loadDataFileWithLength(MODELIND.bin,globalModAnimBuffer,id << 1,8);
-	modelIdx = (uint)*globalModAnimBuffer; */
-	modelIdx = Model_lookupModelInd(modelNum);
-	BADASSERTLINE(210, modelNum >= 0 && modelNum < maxModelNum);
-	if(!SparseArray_get(modelsLoadedTable, modelIdx, &model)) {
-		model = Model_load(modelIdx);
-		BADASSERTLINE(218, model);
-		if(isModelAnimDisabled()) model->flags |= ModelDataFlags2_NoAnimations;
-		Model_setOffsets(model);
-		Model_loadTextures(model);
-		Model_initShaders(model);
-		makeModelAnimation(model,
-		    modelIdx,
-		    (HitSpherePos *)((int)model->animBank + model->size + -0x58));
-		SparseArray_set(modelsLoadedTable, (short)modelIdx, &model);
-	} else {
-		model->usage++;
-		BADASSERTLINE(237, model->usage < UCHAR_MAX);
-	}
-	modelInstance = createModelInstance(model, flags, model->usage == 1);
-	BADASSERTLINE(243, modelInstance);
-	modelSetupAnims(modelInstance, modelInstance->animInstances[0]);
-	if(modelInstance->animInstances[1]) {
-		modelSetupAnims(modelInstance, modelInstance->animInstances[1]);
-	}
-	Model_initSkinningWeights(model, modelInstance);
-	model->headerCksum = Model_checksumHeader(model);
-	DCStoreRange(model, model->size);
-	return modelInstance;
-}
-
-#pragma peephole on
-void modelInstanceFree(ModelInstance *modelInstance) {
-	char cVar1;
-	Model *model;
-
-	BADASSERTLINE(285, modelInstance);
-	ModelInstance_unloadShaders(modelInstance);
-	model = modelInstance->mod;
-	BADASSERTLINE(292, model);
-	if(modelInstance->unk48) { mmFree(modelInstance->unk48); }
-	mmFree(modelInstance);
-	if(!--model->usage) {
-		SparseArray_remove(modelsLoadedTable, model->cacheModNo);
-		Model_freeTextures(model);
-		Model_freeAnimations(model);
-		mmFree(model);
-	}
-}
-#pragma peephole off
-
-
 ModelInstance *createModelInstance(
-    Model *model, uint flags, BOOL bIsNew) { // 8007C5B4
+    Model *model, uint flags) { // 8007C5B4
 	s8 bVar1;
 	ModelInstance *minst;
 	uint size;
@@ -140,23 +36,20 @@ ModelInstance *createModelInstance(
 	ShaderDef *pSVar4;
 	int iVar5;
 	AnimInstance *buf4;
-	AnimInstance *anim3;
+	AnimInstance *pAVar6;
 	S16Vec *psVar7;
 	void *pvVar8;
-	S16Vec *pvVar9;
-	ModelInstanceField20 *pField20;
-	AnimInstanceField44 *pAnimField44;
-	AnimInstance *anim2;
+	void *pvVar9;
 	Texture **param1;
-	int local_40;
+	float local_40;
 	int local_30;
 	uint local_2c;
 
 	if(!model) {
-		printf("WARNING _ createModelInstance called with NULL pointer\n");
+		printf("WARNING :: createModelInstance called with NULL pointer\n");
 		return NULL;
 	}
-	size = Model_setupAnimInstance(model, flags, (AnimUnk *)anim, 0);
+	size = Model_setupAnimInstance(model, flags, anim, 0);
 	minst = (ModelInstance *)mmAlloc(
 	    size, ALLOC_TAG_MODEL_INSTANCE, (volatile u32) "minst");
 	if(!minst) return NULL;
@@ -167,11 +60,10 @@ ModelInstance *createModelInstance(
 	minst->jMtxs[1] = field54->jMtxs[1];
 	psVar7 = &field54->unk;
 	minst->jMtxs4C = minst->jMtxs[0];
-	if((model->bCopyVtxsToModelInst == 0)
-	    && (model->posFineSkinningConfig == NULL)) {
-		pvVar9 = (S16Vec *)((int)psVar7 + 0x1fU & 0xffffffe0);
+	if((model->bCopyVtxsToModelInst == 0) && (model->posFineSkinningConfig == NULL)) {
+		pvVar9 = (void*)((int)psVar7 + 0x1fU & 0xffffffe0);
 		minst->vertexPositions = pvVar9;
-		psVar7 = &pvVar9[model->numPositions * 3];
+		psVar7 = &((S16Vec*)pvVar9)[model->numPositions * 3];
 		minst->vertexPositions2 = psVar7;
 		psVar7 = &psVar7[model->numPositions * 3];
 		memcpy(minst->vertexPositions,
@@ -179,93 +71,92 @@ ModelInstance *createModelInstance(
 		    (uint)model->numPositions * 6);
 		DCFlushRange(minst->vertexPositions, (uint)model->numPositions * 6);
 	} else {
-		minst->vertexPositions = model->vertexPositions;
+		minst->vertexPositions  = model->vertexPositions;
 		minst->vertexPositions2 = model->vertexPositions;
 	}
 	anim = (AnimInstance *)alignTo4((uint)psVar7);
 	minst->animInstances[0] = anim;
-	anim2 = &anim[1];
+	pvVar9 = (S16Vec*)anim + 1;
 	if((flags & 0x80) != 0) {
 		minst->animInstances[1] = (AnimInstance *)pvVar9;
-		anim2 = &anim[2];
+		pvVar9 = (S16Vec*)anim + 2;
 	}
 	if((model->flags & ModelDataFlags2_UseLocalModAnimTab) != 0) {
-		buf3 = (float *)alignTo64((uint)pvVar9);
+		buf3 = (float*)alignTo64((uint)pvVar9);
 		buf4 = minst->animInstances[0];
 		buf4->animData[0] = (void *)buf3;
-		buf4->animData[1] = (void *)(buf3 + local_30);
-		pvVar8 = (void *)((int)(void *)(buf3 + local_30) + local_30);
+		buf4->animData[1] = (void *)(buf3 + (int)local_30);
+		pvVar8 = (void *)((int)(void *)(buf3 + (int)local_30) + (int)local_30);
 		buf4->animData[2] = pvVar8;
-		pvVar8 = (void *)((int)pvVar8 + local_30);
+		pvVar8 = (void *)((int)pvVar8 + (int)local_30);
 		buf4->animData[3] = pvVar8;
-		pAnimField44 = (AnimInstanceField44 *)((int)pvVar8 + local_30);
-		if(minst->animInstances[1] != (AnimInstance *)0x0) {
-			anim3 = minst->animInstances[1];
-			anim3->animData[0] = pAnimField44;
-			pvVar8 = (void *)((int)pAnimField44 + local_30);
-			anim3->animData[1] = pvVar8;
-			pvVar8 = (void *)((int)pvVar8 + local_30);
-			anim3->animData[2] = pvVar8;
-			pvVar8 = (void *)((int)pvVar8 + local_30);
-			anim3->animData[3] = pvVar8;
-			pvVar9 = (S16Vec *)((int)pvVar8 + local_30);
+		pvVar9 = (S16Vec *)((int)pvVar8 + (int)local_30);
+		if(minst->animInstances[1] != NULL) {
+			pAVar6 = minst->animInstances[1];
+			pAVar6->animData[0] = (AnimInstanceField44*)pvVar9;
+			pvVar8 = (void *)((int)pvVar9 + (int)local_30);
+			pAVar6->animData[1] = pvVar8;
+			pvVar8 = (void *)((int)pvVar8 + (int)local_30);
+			pAVar6->animData[2] = pvVar8;
+			pvVar8 = (void *)((int)pvVar8 + (int)local_30);
+			pAVar6->animData[3] = pvVar8;
+			pvVar9 = (S16Vec *)((int)pvVar8 + (int)local_30);
 		}
 	}
 	if(model->bCopyVtxsToModelInst != 0) {
-		pvVar9 = (void *)alignTo4((uint)pvVar9);
-		minst->unk20 = (ModelInstanceField20 *)pvVar9;
-		pvVar9 = pvVar9 + 8;
+		pvVar9 = (S16Vec *)alignTo4((uint)pvVar9);
+		minst->unk20 = pvVar9;
+		pvVar9 = (void*)((int)pvVar9 + 8);
 		for(iVar5 = 0; iVar5 < 3; iVar5 = iVar5 + 1) {
-			pField20 = &minst->unk20[iVar5 * 8];
-
-			pField20->unk0c = 0xff;
-			pField20->unk0d = 0xff;
-			pField20->vec.x = 0.0;
-			pField20->vec.y = 0.0;
-			pField20->vec.z = 0.0;
+			psVar7 = &minst->vertexPositions[iVar5 * 8];
+			*(undefined *)(psVar7 + 6) = 0xff;
+			*(undefined *)((int)psVar7 + 0xd) = 0xff;
+			*(float *)psVar7 = 0.0;
+			*(float *)(psVar7 + 2) = 0.0;
+			*(float *)(psVar7 + 4) = 0.0;
 		}
 	}
-	if(0 < local_40) {
+	if(0 < (int)local_40) {
 		uVar2 = alignTo4((uint)pvVar9);
-		minst->animInst38 = (AnimInstance *)uVar2;
+		minst->animInst38 = (AnimInstance*)uVar2;
 		iVar5 = uVar2 + (uint)model->numHitSpheres * 0x10;
 		minst->unk3c = iVar5;
 		pvVar9 = (S16Vec *)(iVar5 + (uint)model->numHitSpheres * 0x10);
 		minst->activeAnimInst = minst->animInst38;
 	}
-	if((((model->joints == (Bone *)0x0) || (model->numJoints == 0))
+	if((((model->joints == NULL) || (model->numJoints == 0))
 	       || (model->radi == NULL))
-	    || (model->exT == (u32 *)0x0)) {
+	    || (model->exT == NULL)) {
 		minst->skeleton = NULL;
 	} else {
 		pfVar3 = (float **)alignTo4((uint)pvVar9);
-		minst->skeleton = pfVar3;
+		minst->skeleton = (ModelSkeletonStruct*)pfVar3;
 		pfVar3 = pfVar3 + 7;
-		minst->skeleton[0] = (float *)pfVar3;
+		minst->skeleton->unk00 = (float *)pfVar3;
 		pfVar3 = pfVar3 + (uint)model->numJoints * 3;
-		minst->skeleton[1] = (float *)pfVar3;
+		minst->skeleton->unk04 = (float *)pfVar3;
 		pfVar3 = pfVar3 + model->numJoints;
-		minst->skeleton[2] = (float *)pfVar3;
+		minst->skeleton->unk08 = (float *)pfVar3;
 		pfVar3 = pfVar3 + model->numJoints;
-		minst->skeleton[3] = (float *)pfVar3;
+		minst->skeleton->jointDist = (float *)pfVar3;
 		pfVar3 = pfVar3 + model->numJoints;
-		minst->skeleton[4] = (float *)pfVar3;
+		minst->skeleton->totalDist = (float *)pfVar3;
 		bVar1 = model->numJoints;
-		minst->skeleton[6] = (float *)(pfVar3 + bVar1);
+		minst->skeleton->unk18 = (float *)(pfVar3 + bVar1);
 		pvVar9 = (S16Vec *)((int)(pfVar3 + bVar1) + (uint)model->numJoints);
 	}
 	if(model->posFineSkinningConfig != NULL) {
 		uVar2 = alignTo4((uint)pvVar9);
-		minst->skinVtxs = (UNKTYPE *)uVar2;
-		pvVar9 = (S16Vec *)(uVar2 + (uint)model->skin.numPieces);
+		minst->skinVtxs = (S16Vec**)uVar2;
+		pvVar9 = (S16Vec *)(uVar2 + (uint)model->skin.numPieces * 4);
 	}
 	pSVar4 = (ShaderDef *)alignTo4((uint)pvVar9);
 	minst->shaderDefs = pSVar4;
 	param1 = &pSVar4->texture + (uint)model->numShaders * 2;
 	if((flags & 0x8000) != 0) {
 		uVar2 = alignTo2((uint)param1);
-		minst->shadow = (TexturedShadow *)uVar2;
-		param1 = (Texture **)((TexturedShadow *)uVar2) + 1;
+		minst->shadow = (TexturedShadow*)uVar2;
+		param1 = (Texture **)(uVar2 + sizeof(TexturedShadow));
 		minst->shadow->state = 0;
 	}
 	if((int)size <= (int)param1 - (int)minst) {
@@ -278,842 +169,2342 @@ ModelInstance *createModelInstance(
 	return minst;
 }
 
-int Model_setupAnimInstance(
-    Model *model, int flags, AnimUnk *anim, int param4) {
-	int result;
+#if 0
+int Model_setupAnimInstance(Model *model,uint flags,AnimInstance *anim,int param4) { //8007C9C0
+  int iVar1;
+  s8 *result;
 
-	if(model->numAnims) {
-		// final: mtxSize = (model->nBones + model->nVtxGroups) * 0x80
-		anim->mtxSize = (model->numJoints * 64) * 2;
-	} else
-		anim->mtxSize = 0x80;
-
-	if((model->bCopyVtxsToModelInst || model->posFineSkinningConfig)) {
-		// final: +0x20 => +0x60
-		anim->unk00 = ((model->numPositions * 2) * 6) + 0x20;
-	} else
-		anim->unk00 = 0;
-
-	anim->hitSphereDataSize = (model->numHitSpheres * 16) * 2;
-	anim->nAnims = 0;
-	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-		anim->animCacheSize = (int)model->animCacheSize;
-		while((int)anim->animCacheSize & 7) anim->animCacheSize++;
-		anim->nAnims = anim->animCacheSize * 4;
-	}
-	anim->unk10 = 0x68;
-	if(flags & 0x80) {
-		anim->unk10 *= 2;
-		anim->nAnims *= 2;
-	}
-	if(flags & 1 || model->bCopyVtxsToModelInst || param4) {
-		anim->unk10 += 0x30;
-		result = 0x54;
-		result += anim->nAnims + anim->unk10;
-		result += anim->mtxSize + anim->hitSphereDataSize + 8;
-	} else {
-		result = 0x54;
-		result += anim->unk10;
-		result += anim->nAnims + anim->mtxSize + anim->hitSphereDataSize + 8;
-	}
-	result += anim->unk00;
-	if(model->joints && model->numJoints && model->radi) {
-		result += (uint)model->numJoints * 2 + model->numJoints * 7 * 4 + 0x1c;
-	}
-	if(model->posFineSkinningConfig) {
-		result += model->skin.numPieces * 4 + 4;
-	}
-	result += model->numShaders * 8;
-	if(flags & 0x8000) result += 0x1a;
-	result = ((result + 0x2f) & ~0xf) + 0x10;
-	return result;
-}
-
-int modelGetAmapSize(
-    uint id, BOOL noAmap, int nAnimations) { // 8007cbd0 regswap
-	int count;
-	int result;
-
-	result = 0;
-	if(noAmap) {
-		result += nAnimations * 2 + 8;
-		while(result & 7) result++;
-	} else {
-		result += nAnimations * 4;
-		while(result & 7) result++;
-		loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, (id & ~3) * 4, 32);
-		id &= 3;
-		count = pAmapTab[id + 1] - pAmapTab[id];
-		result += count;
-	}
-	return result;
-}
-
-int makeModelAnimation(Model *model, uint animId, HitSpherePos *hits) {
-	// regswap + string offsets
-	int r29; // r29
-	int iVar2; // r23
-	s16 *amap; // r22
-	int animBank; // r24
-	int r25; // r25
-	int uVar1; // r28
-	uint offset; // r20
-	int iVar4; // r19
-	int size; // r17
-	int iVar6; // r4
-	int uVar7; // r26
-
-	uVar7 = 0;
-	amap = (s16 *)pAmapTab;
-	loadDataFileWithLength(FILE_MODANIM_TAB, amap, animId * 2, 0x10);
-	offset = amap[0];
-	size = amap[1];
-	iVar4 = offset;
-	iVar6 = (int)(size - offset) >> 1;
-	if(iVar6 != model->numAnims) {
-		printf("makeModelAnimation() size mismatch!! (%d,%d)\n",
-		    model->numAnims,
-		    iVar6);
-		model->numAnims = (u16)iVar6;
-	}
-	if(!model->numAnims) return 0;
-
-	iVar6 = model->numAnims * 2 + 8;
-	if(0x800 < iVar6)
-		debugPrint(
-		    "Warning: Model animation buffer overflow!! size=%d\n", iVar6);
-	loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, (animId & ~3) * 4, 0x20);
-
-	uVar1 = animId & 3;
-	model->animOffset = pAmapTab[uVar1];
-	iVar2 = pAmapTab[uVar1 + 1] - pAmapTab[uVar1];
-	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-		model->animIds = (s16 *)hits;
-		while(iVar6 & 7) iVar6++;
-		uVar7 += iVar6;
-		hits = (HitSpherePos *)((u8 *)hits + iVar6);
-		loadDataFileWithLength(FILE_MODANIM_BIN, model->animIds, iVar4, iVar6);
-	} else {
-		loadDataFileWithLength(
-		    FILE_MODANIM_BIN, globalModAnimBuffer, iVar4, iVar6);
-		model->animIds = globalModAnimBuffer;
-	}
-	animBank = 0;
-	model->animBank[animBank++] = 0;
-	for(r25 = 0; r25 < model->numAnims; r25++) {
-		if(model->animIds[r25] == -1) { model->animBank[animBank++] = r25 + 1; }
-	}
-	if(animBank > 8) printf("ANIMBANK overflow\n");
-	if((model->flags & ModelDataFlags2_UseLocalModAnimTab) == 0) {
-		model->animIds = NULL;
-		model->anims = (struct Animation **)hits;
-		hits = (HitSpherePos *)(&hits->radius + model->numAnims);
-		for(uVar7 += model->numAnims * 4; uVar7 & 7; uVar7++) {
-			hits = (HitSpherePos *)((int)&hits->radius + 1);
-		}
-		model->curHitSpherePos = hits;
-		hits = (HitSpherePos *)((uint)hits + iVar2);
-		uVar7 += iVar2; // why? it's never used again
-		loadDataFileWithLength(
-		    FILE_AMAP_BIN, model->curHitSpherePos, model->animOffset, iVar2);
-		r29 = 0;
-		do {
-			if(globalModAnimBuffer[r29] != -1) {
-				model->anims[r29] = (struct Animation *)loadAnimation(
-				    model, globalModAnimBuffer[r29], r29, NULL);
-				if(!model->anims[r29]) {
-					for(uVar1 = 0; uVar1 < r29; uVar1++) {
-						unloadAnimation((Animation *)model->anims[uVar1]);
-					}
-					model->anims = NULL;
-					return 1;
-				}
-			} else
-				model->anims[r29] = NULL;
-			r29 += 1;
-		} while(r29 < model->numAnims);
-	} else
-		model->anims = NULL;
-	return 0;
-}
-
-void modelSetupAnims(ModelInstance *modelInstance, AnimInstance *animInstance) {
-	Animation *anim;
-	Model *model;
-
-	animInstance->iAnim[0] = 0;
-	animInstance->unk5e = 0;
-	animInstance->unk58 = 0;
-	animInstance->unk5a = 0;
-	animInstance->unk5c = 0;
-	animInstance->hitboxSize[1][0] = 0.0;
-	animInstance->hitboxSize[0][0] = 0.0;
-	animInstance->hitboxSize[2][0] = 0.0;
-	animInstance->unk60[0] = 0;
-	model = modelInstance->mod;
-	if(model->numAnims) {
-		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-			loadAnimation(model, *model->animIds, 0, animInstance->animData[0]);
-			loadAnimation(model, *model->animIds, 0, animInstance->animData[1]);
-			loadAnimation(model, *model->animIds, 0, animInstance->animData[2]);
-			loadAnimation(model, *model->animIds, 0, animInstance->animData[3]);
-			animInstance->iAnim[0] = 0;
-			anim = (Animation *)((
-			    (u32)animInstance->animData[animInstance->iAnim[0]] + 0x80));
-		} else {
-			anim = (Animation *)model->anims[animInstance->iAnim[0]];
-		}
-		animInstance->anim[0] = anim + 1;
-		animInstance->unk60[0] = anim->flags01 & 0xf0;
-		animInstance->hitboxSize[2][0] = animInstance->anim[0]->flags01;
-		if(animInstance->unk60[0] == 0) {
-			animInstance->hitboxSize[2][0] -= 1.0f;
-		}
-		animInstance->unk60[1] = animInstance->unk60[0];
-		animInstance->anim[1] = animInstance->anim[0];
-		animInstance->iAnim[1] = animInstance->iAnim[0];
-		animInstance->hitboxSize[0][1] = animInstance->hitboxSize[0][0];
-		animInstance->hitboxSize[2][1] = animInstance->hitboxSize[2][0];
-		animInstance->hitboxSize[1][1] = animInstance->hitboxSize[1][0];
-		animInstance->anim[2] = animInstance->anim[0];
-		animInstance->iAnim[2] = animInstance->iAnim[0];
-		animInstance->anim[3] = animInstance->anim[0];
-		animInstance->iAnim[3] = animInstance->iAnim[0];
-	}
-	return;
-}
-
-int fn_8007D174(short param_1, short param_2, uint param_3, Model *model) {
-	int result;
-	result = 0;
-	loadAsset_Animation(&result, param_1, param_2, param_3, model);
-	return result;
-}
-
-int Model_checksumHeader(Model *model) {
-	u8 *data;
-	int result;
-	u8 *pEnd;
-
-	result = 0;
-	data = (u8 *)model;
-	pEnd = (u8 *)((uint)model + model->size);
-	for(; data < pEnd; data++) { result += *data; }
-	return result;
-}
-
-Model *Model_load(short id) {
-	uint *modelsTab;
-	uint amapSize;
-	uint offset;
-	int noAmap;
-	uint animCacheSize;
-	ushort nAnimations;
-	int size;
-	Model *model;
-
-	modelsTab = (uint *)getTable(FILE_MODELS_tab);
-	offset = modelsTab[id];
-	loadModelsBin(offset, &nAnimations, &animCacheSize, &noAmap, &size);
-	animCacheSize = alignTo8(animCacheSize);
-	animCacheSize += 0xb0;
-	amapSize = modelGetAmapSize(id, noAmap, nAnimations);
-	model = (Model *)mmAlloc(
-	    size + amapSize + 500, ALLOC_TAG_MODELS_COL, (volatile u32) "mod");
-	BADASSERTLINE(491, model);
-
-	model = (Model *)alignTo16(model);
-	loadAndDecompressDataFile(
-	    FILE_MODELS_bin, (void *)model, offset, size, NULL, id, 0);
-	model->animCacheSize = animCacheSize;
-	model->cacheModNo = id;
-	model->numAnims = nAnimations;
-	model->flags &= ~ModelDataFlags2_UseLocalModAnimTab;
-	model->usage = 1;
-	if(!model->numAnims) { model->flags |= ModelDataFlags2_NoAnimations; }
-	if(noAmap) { model->flags |= ModelDataFlags2_UseLocalModAnimTab; }
-	return model;
-}
-
-void Model_loadTextures(Model *model) {
-	int i;
-	BADASSERTLINE(541, model);
-	for(i = 0; i < model->numTextures; i++) {
-		model->GCtextures[i]
-		    = textureLoad(-((uint)model->GCtextures[i] | 0x8000), 0);
-		BADASSERTLINE(546, model->GCtextures[i]);
-	}
+  if (model->animBufSize == 0) {
+    anim->mtxSize = 0x80;
+  }
+  else {
+                    /* final: mtxSize = (model->nBones + model->nVtxGroups) * 0x80 */
+    anim->mtxSize = (uint)model->numJoints << 7;
+  }
+  if ((model->bCopyVtxsToModelInst == 0) && (model->skin2Matrices == NULL)) {
+    anim->model = (Model *)0x0;
+  }
+  else {
+                    /* final: +0x20 => +0x60 */
+    anim->model = (Model *)((uint)model->numPositions * 0xc + 0x20);
+  }
+  anim->hitboxSize = (float)((uint)model->nHitSpheres << 5);
+  anim->unkc = 0;
+  if ((model->flags & UseLocalModAnimTab) != 0) {
+    anim->unk14 = (float)(int)model->animCacheSize;
+    while (((uint)anim->unk14 & 7) != 0) {
+      anim->unk14 = (float)((int)anim->unk14 + 1);
+    }
+    anim->unkc = (int)anim->unk14 << 2;
+  }
+  anim->unk10 = 0x68;
+  if ((flags & 0x80) != 0) {
+    anim->unk10 = anim->unk10 << 1;
+    anim->unkc = anim->unkc << 1;
+  }
+  if ((((flags & 1) == 0) && (model->bCopyVtxsToModelInst == 0)) && (param4 == 0)) {
+    iVar1 = anim->unkc + anim->mtxSize + (int)anim->hitboxSize + anim->unk10 + 0x5c;
+  }
+  else {
+    anim->unk10 = anim->unk10 + 0x30;
+    iVar1 = anim->mtxSize + (int)anim->hitboxSize + anim->unkc + anim->unk10 + 0x5c;
+  }
+  result = &anim->model->usage + iVar1;
+  if (((model->joints != (Bone *)0x0) && (model->numJoints != 0)) && (model->radi != (float *)0x0))
+  {
+    result = result + (uint)model->numJoints * 2 + (uint)model->numJoints * 0x1c + 0x1c;
+  }
+  if (model->skin2Matrices != NULL) {
+    result = result + (model->unk72 + 1) * 4;
+  }
+  result = result + (uint)model->nShaders * 8;
+  if ((flags & 0x8000) != 0) {
+    result = result + 0x1a;
+  }
+  return ((uint)(result + 0x2f) & 0xfffffff0) + 0x10;
 }
 
 
-void Model_freeTextures(Model *model) {
-	int ii;
-	for(ii = 0; ii < model->numTextures; ii++) {
-		texFreeTexture(model->GCtextures[ii]);
-	}
-}
+uint modelGetAmapSize(uint id,int noAmap,int nAnimations) { //8007CBD0
+  uint uVar1;
 
-void Model_freeAnimations(Model *model) {
-	int ii;
-	if(model->anims && model->numAnims) {
-		for(ii = 0; ii < model->numAnims; ii++) {
-			unloadAnimation((Animation *)model->anims[ii]);
-		}
-	}
-}
-
-int Model_lookupModelInd(int id) {
-	if(id < 0) id = -id;
-	else {
-		loadDataFileWithLength(
-		    FILE_MODELIND_bin, globalModAnimBuffer, id << 1, 8);
-		id = globalModAnimBuffer[0];
-	}
-	return id;
-}
-
-#pragma peephole on
-
-void Model_initSkinningWeights(Model *model, ModelInstance *mInst) {
-	int ii;
-
-	if(!(model->flags & ModelDataFlags2_CopyVtxsOnLoad)) return;
-	model->skin.sk2ListArray = model->posFineSkinningConfig;
-	for(ii = 0; ii < model->skin.numPieces; ii++) {
-		mInst->skinVtxs[ii] = (S16Vec *)((uint)mInst->vertexPositions
-		    + model->skin.sk2ListArray[ii].vertSrc);
-
-		if(model->posFineSkinningConfig[ii].weightsSrc < model->skinWeights) {
-			model->posFineSkinningConfig[ii].weightsSrc
-			    = (UNKTYPE *)((uint)model->skinWeights
-			        + (uint)model->posFineSkinningConfig[ii].weightsSrc);
-		}
-	}
-}
-
-void Model_initShaders(Model *model) {
-	Shader *shader;
-	int iShader;
-	int iLayer;
-	for(iShader = 0; iShader < model->numShaders; iShader++) {
-		shader = &model->shaders[iShader];
-		for(iLayer = 0; iLayer < shader->numMaterialLayers; iLayer++) {
-			if(shader->layer[iLayer].tex.id != -1) {
-				shader->layer[iLayer].tex.ptr
-				    = model->GCtextures[shader->layer[iLayer].tex.id];
-			} else
-				shader->layer[iLayer].tex.ptr = NULL;
-		}
-		if(shader->tex34.id != -1) {
-			shader->tex34.ptr = model->GCtextures[shader->tex34.id];
-		} else
-			shader->tex34.ptr = NULL;
-
-		if(shader->tex1C.id != -1) {
-			if(shader->tex1C.id == -2) shader->tex1C.ptr = NULL;
-			else
-				shader->tex1C.ptr = model->GCtextures[shader->tex1C.id];
-		} else
-			shader->tex1C.ptr = NULL;
-
-		if(shader->tex18.id != -1) {
-			shader->tex18.ptr = model->GCtextures[shader->tex18.id];
-		} else
-			shader->tex18.ptr = NULL;
-
-		if((model->shaderFlags & 0x000c) == 0) shader->unk08 = 0;
-		if((model->shaderFlags & 0x0e00) == 0) shader->unk14 = 0;
-	}
-}
-
-s16 WORD_8039872c;
-s16 WORD_8039872e;
-s16 WORD_80398730;
-void modelAnimFn_8007e974(ModelInstance *modelInstance, Model *model,
-    ObjInstance *object, float *modelMatrix) {
-	AnimInstance *animInstance_00;
-	AnimInstance *animInstance;
-	S16Vec local_38;
-	Vec VStack_30;
-
-	BADASSERTLINE(915, modelInstance);
-	BADASSERTLINE(916, model);
-	BADASSERTLINE(917, modelMatrix);
-	BADASSERTLINE(918, object);
-	tiltListFn_8007ebe8((int)object, (int)modelInstance, model);
-	modelInstSwapJmtxs(modelInstance);
-	animInstance = modelInstance->animInstances[0];
-	BADASSERTLINE(924, animInstance);
-	if((animInstance->flags63 & 4) != 0) {
-		objAnimFn_8008045c(modelInstance,
-		    0,
-		    0,
-		    object->animTimer,
-		    object->pos.scale,
-		    &VStack_30,
-		    &local_38);
-		WORD_8039872c = local_38.x;
-		WORD_8039872e = local_38.y;
-		WORD_80398730 = local_38.z;
-	}
-	if((modelInstance->mod->flags & 8)) {
-		LAB_8007d540(modelMatrix,
-		    modelInstance,
-		    modelInstance->animInstances[0],
-		    object->animTimer,
-		    0x7f);
-	} else if((modelInstance->animInstances[0]->flags63 & 8)) {
-		animInstance_00 = modelInstance->animInstances[1];
-		LAB_8007d6ec(modelMatrix,
-		    modelInstance,
-		    animInstance,
-		    object->animTimer,
-		    0x7f,
-		    0,
-		    0,
-		    2,
-		    0x14,
-		    animInstance->unk5a);
-		LAB_8007d6ec(modelMatrix,
-		    modelInstance,
-		    animInstance_00,
-		    object->frame,
-		    0x7f,
-		    0,
-		    0,
-		    2,
-		    0x18,
-		    animInstance_00->unk5a);
-		LAB_8007d6ec(modelMatrix,
-		    modelInstance,
-		    animInstance,
-		    object->animTimer,
-		    0x7f,
-		    0,
-		    0,
-		    0,
-		    7,
-		    animInstance_00->unk58);
-		LAB_8007d6ec(modelMatrix,
-		    modelInstance,
-		    animInstance,
-		    object->animTimer,
-		    0x7f,
-		    0,
-		    1,
-		    1,
-		    1,
-		    animInstance->unk58);
-	} else {
-		LAB_8007d540(modelMatrix,
-		    modelInstance,
-		    modelInstance->animInstances[0],
-		    object->animTimer,
-		    0x7f);
-		if((modelInstance->animInstances[1]) && (-1 < object->animVal_a2)) {
-			LAB_8007d540(modelMatrix,
-			    modelInstance,
-			    modelInstance->animInstances[1],
-			    object->frame,
-			    -1);
-		}
-	}
+  if (noAmap == 0) {
+    for (uVar1 = nAnimations << 2; (uVar1 & 7) != 0; uVar1 = uVar1 + 1) {
+    }
+    loadDataFileWithLength(AMAP.TAB,(void *)pAmapTab,(id & 0xfffffffc) << 2,0x20);
+    uVar1 = uVar1 + (*(int *)(pAmapTab + ((id & 3) + 1) * 4) - *(int *)(pAmapTab + (id & 3) * 4));
+  }
+  else {
+    for (uVar1 = nAnimations * 2 + 8; (uVar1 & 7) != 0; uVar1 = uVar1 + 1) {
+    }
+  }
+  return uVar1;
 }
 
 
-void ModelInstance_loadShaders(ModelInstance *minst, ObjInstance *obj) {
-	REGISTER int iShader;
-	Model *model;
+/* Library Function - Single Match
+    makeModelAnimation
 
-	// alternate match: remove REGISTER and add here: !iShader;
+   Library: KioskDefault 0 0 */
 
-	model = minst->mod;
-	if(!(minst->flags & ModelFlags18_ShadersLoaded)) {
-		minst->flags = minst->flags | ModelFlags18_ShadersLoaded;
-		for(iShader = 0; iShader < minst->mod->numShaders; iShader++) {
-			shaderInit(&model->shaders[iShader],
-			    &minst->shaderDefs[iShader],
-			    obj,
-			    model->shaderFlags);
-		}
-	}
+undefined4 Model_makeModelAnimation(Model *model,uint animId,HitSpherePos *hits) { //8007CC94
+  uint uVar1;
+  int iVar2;
+  Animation *pAVar3;
+  int iVar4;
+  uint offset;
+  int iVar5;
+  int animBank;
+  int iVar6;
+  uint uVar7;
+  HitSpherePos *pHVar8;
+  uint size;
+  dword amap;
+
+  amap = pAmapTab;
+  uVar7 = 0;
+  loadDataFileWithLength(MODANIM.TAB,(void *)pAmapTab,animId << 1,0x10);
+  offset = (uint)*(short *)amap;
+  size = (int)((int)*(short *)(amap + 2) - offset) >> 1;
+  if (size != model->animBufSize) {
+    printf("makeModelAnimation() size mismatch!! (%d,%d)",(uint)model->animBufSize,size);
+    model->animBufSize = (ushort)size;
+  }
+  if (model->animBufSize != 0) {
+    size = (uint)model->animBufSize * 2 + 8;
+    if (0x800 < size) {
+      debugPrint("Warning: Model animation buffer overflow!! size=%d",size);
+    }
+    loadDataFileWithLength(AMAP.TAB,(void *)pAmapTab,(animId & 0xfffffffc) << 2,0x20);
+    uVar1 = animId & 3;
+    model->animOffset = *(u32 *)(pAmapTab + uVar1 * 4);
+    iVar4 = *(int *)(pAmapTab + uVar1 * 4);
+    iVar2 = *(int *)(pAmapTab + (uVar1 + 1) * 4);
+    if ((model->flags & UseLocalModAnimTab) == 0) {
+      loadDataFileWithLength(MODANIM.BIN,(void *)globalModAnimBuffer,offset,size);
+      model->animIds = (HitSpherePos *)globalModAnimBuffer;
+    }
+    else {
+      model->animIds = hits;
+      for (uVar7 = size; (uVar7 & 7) != 0; uVar7 = uVar7 + 1) {
+      }
+      hits = (HitSpherePos *)((int)&hits->radius + uVar7);
+      loadDataFileWithLength(MODANIM.BIN,model->animIds,offset,uVar7);
+    }
+    *(undefined2 *)&model->unk58 = 0;
+    animBank = 1;
+    for (iVar6 = 0; iVar6 < (int)(uint)model->animBufSize; iVar6 = iVar6 + 1) {
+      iVar5 = animBank;
+      if (*(short *)((int)&model->animIds->radius + iVar6 * 2) == -1) {
+        iVar5 = animBank + 1;
+        *(short *)((int)&model->unk58 + animBank * 2) = (short)iVar6 + 1;
+      }
+      animBank = iVar5;
+    }
+    if (8 < animBank) {
+      printf("ANIMBANK overflow");
+    }
+    if ((model->flags & UseLocalModAnimTab) == 0) {
+      model->animIds = (HitSpherePos *)0x0;
+      model->unk4c = hits;
+      pHVar8 = (HitSpherePos *)(&hits->radius + model->animBufSize);
+      for (uVar7 = uVar7 + (uint)model->animBufSize * 4; (uVar7 & 7) != 0; uVar7 = uVar7 + 1) {
+        pHVar8 = (HitSpherePos *)((int)&pHVar8->radius + 1);
+      }
+      model->curHitSpherePos = pHVar8;
+      loadDataFileWithLength(AMAP.BIN,model->curHitSpherePos,model->animOffset,iVar2 - iVar4);
+      iVar2 = 0;
+      do {
+        if (*(short *)(globalModAnimBuffer + iVar2 * 2) == -1) {
+          (&model->unk4c->radius)[iVar2] = 0.0;
+        }
+        else {
+          pAVar3 = loadAnimation(model,*(short *)(globalModAnimBuffer + iVar2 * 2),(short)iVar2,
+                                 NULL);
+          (&model->unk4c->radius)[iVar2] = (float)pAVar3;
+          if ((&model->unk4c->radius)[iVar2] == 0.0) {
+            for (iVar4 = 0; iVar4 < iVar2; iVar4 = iVar4 + 1) {
+              unloadAnimation((s8 *)(&model->unk4c->radius)[iVar4]);
+            }
+            model->unk4c = (HitSpherePos *)0x0;
+            return 1;
+          }
+        }
+        iVar2 = iVar2 + 1;
+      } while (iVar2 < (int)(uint)model->animBufSize);
+    }
+    else {
+      model->unk4c = (HitSpherePos *)0x0;
+    }
+  }
+  return 0;
 }
 
-void ModelInstance_unloadShaders(ModelInstance *minst) {
-	REGISTER int ii;
-	if(minst->flags & ModelFlags18_ShadersLoaded) {
-		minst->flags = minst->flags & ~ModelFlags18_ShadersLoaded;
-		for(ii = 0; ii < minst->mod->numShaders; ii++) {
-			shaderFree(&minst->shaderDefs[ii]);
-		}
-	}
+
+void modelSetupAnims(ModelInstance *minst,AnimInstance *param2) { //8007CFA4
+  float fVar1;
+  Model *model;
+
+  param2->unk44 = 0;
+  param2->unk5e = 0;
+  param2->unk58 = 0;
+  param2->unk5a = 0;
+  param2->unk5c = 0;
+  param2->unkc = 0.0;
+  param2->hitboxSize = 0.0;
+  param2->unk14 = 0.0;
+  param2->unk60 = 0;
+  model = minst->model;
+  if (model->animBufSize != 0) {
+    if ((model->flags & UseLocalModAnimTab) == 0) {
+      fVar1 = (&model->unk4c->radius)[param2->unk44];
+    }
+    else {
+      loadAnimation(model,*(short *)&model->animIds->radius,0,param2->unk1c);
+      loadAnimation(model,*(short *)&model->animIds->radius,0,param2->unk20);
+      loadAnimation(model,*(short *)&model->animIds->radius,0,param2->unk24);
+      loadAnimation(model,*(short *)&model->animIds->radius,0,param2->unk28);
+      param2->unk44 = 0;
+      fVar1 = (float)((int)(&param2->unk1c)[param2->unk44] + 0x80);
+    }
+    param2->y = (int)fVar1 + 6;
+    param2->unk60 = *(s8 *)((int)fVar1 + 1) & 0xf0;
+    param2->unk14 =
+         (float)((double)CONCAT44(0x43300000,(uint)*(s8 *)(param2->y + 1)) - 4503599627370496.0);
+    if (param2->unk60 == 0) {
+      param2->unk14 = param2->unk14 - 1.0;
+    }
+    param2->unk61 = param2->unk60;
+    param2->z = param2->y;
+    param2->unk46 = param2->unk44;
+    param2->unk8 = param2->hitboxSize;
+    param2->mtxSize = (uint)param2->unk14;
+    param2->unk10 = param2->unkc;
+    param2->unk3c = param2->y;
+    param2->unk48 = param2->unk44;
+    param2->unk40 = param2->y;
+    param2->unk4a = param2->unk44;
+  }
+  return;
 }
 
-int Model_getShaderTexture(ModelInstance *modelInstance, int shaderNum) {
-	ASSERTLINE(
-	    1146, shaderNum >= 0 && shaderNum < modelInstance->mod->numShaders);
-	return (int)(&modelInstance->shaderDefs->texture + shaderNum * 2);
-}
 
-Mtx44 *modelInstGetjMtx(ModelInstance *modelInstance, int iMtx) {
-	int nMtxs;
+undefined4 fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 param_4) { //8007D174
+  undefined4 local_4;
 
-	ASSERTLINE(1169, modelInstance);
-	if(modelInstance->mod->numJoints) {
-		nMtxs = (uint)modelInstance->mod->numJoints;
-	} else
-		nMtxs = 1;
-	if(iMtx >= nMtxs) iMtx = 0;
-
-	return &(modelInstance->jMtxs[modelInstance->flags & 1][iMtx]);
-}
-
-void modelInstSwapJmtxs(ModelInstance *modelInstance) {
-	ASSERTLINE(1203, modelInstance);
-	modelInstance->flags = modelInstance->flags ^ ModelFlags18_UseOtherMtxs;
-}
-
-// XXX type
-void ModelInstance_setTexFuncPtr(ModelInstance *modelInstance, UNKTYPE *cb) {
-	ASSERTLINE(1224, modelInstance);
-	modelInstance->texFuncPtr = cb;
-}
-
-UNKTYPE *ModelInstance_getTexFuncPtr(ModelInstance *modelInstance) {
-	ASSERTLINE(1243, modelInstance);
-	return modelInstance->texFuncPtr;
+  local_4 = 0;
+  loadAsset_Animation(&local_4,param_1,param_2,param_3,param_4);
+  return local_4;
 }
 
 
-void ModelInstance_freeField48(ModelInstance *modelInstance) {
-	if(modelInstance->unk48) {
-		mmFree(modelInstance->unk48);
-		modelInstance->unk48 = NULL;
-	}
+void LAB_8007d540(double animTimer,float *modelMatrix,ModelInstance *modelInstance,
+                 AnimInstance *animInstance,uint param_5) { //8007D1C4
+  uint uVar1;
+  uint uVar2;
+  Model *pMVar3;
+  int iVar4;
+  int iVar5;
+  undefined auStack_9c [4];
+  float local_98 [4];
+  void *local_88;
+  float local_84;
+  void *local_80;
+  void *local_7c;
+  void *local_78;
+  void *local_74;
+  int local_68 [4];
+  ushort local_58 [10];
+  short local_44;
+  s8 local_3c [8];
+  Mtx44 *local_34 [2];
+
+  pMVar3 = modelInstance->model;
+  local_34[0] = modelInstance->mtxs[modelInstance->flags & 1];
+  animInstance->hitboxSize = (float)animTimer * animInstance->unk14;
+  uVar2 = 0;
+  if ((pMVar3->flags & 8) == 0) {
+    for (iVar4 = 0; iVar4 < 2; iVar4 = iVar4 + 1) {
+      if (iVar4 == 0) {
+        local_44 = animInstance->unk5a;
+      }
+      else {
+        local_44 = animInstance->unk5c;
+      }
+      if (local_44 != 0) {
+        if (animInstance->unk58 == 0) {
+          uVar1 = 0;
+        }
+        else {
+          uVar1 = 4 << iVar4;
+        }
+        local_3c[0] = (&animInstance->unk60)[iVar4];
+        local_88 = (void *)(&animInstance->unk14)[iVar4];
+        local_98[0] = (&animInstance->hitboxSize)[iVar4];
+        local_68[0] = (&animInstance->y)[iVar4];
+        local_3c[1] = (&animInstance->unk60)[iVar4];
+        local_84 = (&animInstance->unk14)[iVar4];
+        local_98[1] = (&animInstance->hitboxSize)[iVar4];
+        local_68[1] = (&animInstance->unk3c)[iVar4];
+        if ((pMVar3->flags & UseLocalModAnimTab) == 0) {
+          local_58[0] = (&animInstance->unk44)[iVar4];
+          local_58[1] = (&animInstance->unk48)[iVar4];
+        }
+        else {
+          local_58[0] = 0;
+          local_58[1] = 1;
+          local_80 = (&animInstance->unk1c)[(&animInstance->unk44)[iVar4]];
+          local_7c = (&animInstance->unk24)[(ushort)(&animInstance->unk48)[iVar4]];
+        }
+        LAB_8007da34((int)pMVar3,(int)auStack_9c,2);
+        LAB_80066094((dword *)local_34,modelMatrix,(int)auStack_9c,(dword)pMVar3->joints,
+                     (uint)pMVar3->numJoints,&lbl_80357698,param_5,uVar1);
+        if (uVar1 != 0) {
+          uVar2 = uVar2 | 1 << iVar4;
+        }
+      }
+    }
+    if (((animInstance->unk5a == 0) && (animInstance->unk5c == 0)) || (uVar2 != 0)) {
+      iVar4 = 1;
+      if (animInstance->unk58 != 0) {
+        iVar4 = 2;
+      }
+      local_80 = animInstance->unk1c;
+      local_7c = animInstance->unk20;
+      local_78 = animInstance->unk24;
+      local_74 = animInstance->unk28;
+      for (iVar5 = 0; iVar5 < iVar4; iVar5 = iVar5 + 1) {
+        local_58[iVar5] = (&animInstance->unk44)[iVar5];
+        local_3c[iVar5] = (&animInstance->unk60)[iVar5];
+        (&local_88)[iVar5] = (void *)(&animInstance->unk14)[iVar5];
+        local_98[iVar5] = (&animInstance->hitboxSize)[iVar5];
+        local_68[iVar5] = (&animInstance->y)[iVar5];
+      }
+      local_44 = animInstance->unk58;
+      LAB_8007da34((int)pMVar3,(int)auStack_9c,iVar4);
+      if ((animInstance->unk63 & 1) != 0) {
+        uVar2 = uVar2 | 0x10;
+      }
+      if ((animInstance->unk63 & 4) != 0) {
+        uVar2 = uVar2 | 0x20;
+      }
+      LAB_80066094((dword *)local_34,modelMatrix,(int)auStack_9c,(dword)pMVar3->joints,
+                   (uint)pMVar3->numJoints,&lbl_80357698,param_5,uVar2);
+    }
+  }
+  else {
+    local_80 = animInstance->unk1c;
+    local_7c = animInstance->unk20;
+    local_78 = animInstance->unk24;
+    local_74 = animInstance->unk28;
+    for (iVar4 = 0; iVar4 < 2; iVar4 = iVar4 + 1) {
+      iVar5 = iVar4;
+      if (animInstance->unk58 == 0) {
+        iVar5 = 0;
+      }
+      local_58[iVar4] = (&animInstance->unk44)[iVar5];
+      local_3c[iVar4] = (&animInstance->unk60)[iVar5];
+      (&local_88)[iVar4] = (void *)(&animInstance->unk14)[iVar5];
+      local_98[iVar4] = (&animInstance->hitboxSize)[iVar5];
+      local_68[iVar4] = (&animInstance->y)[iVar5];
+    }
+    local_44 = animInstance->unk58;
+    LAB_8007da34((int)pMVar3,(int)auStack_9c,2);
+    if ((animInstance->unk63 & 1) != 0) {
+      uVar2 = 0x10;
+    }
+    if ((animInstance->unk63 & 4) != 0) {
+      uVar2 = uVar2 | 0x20;
+    }
+    LAB_80066094((dword *)local_34,modelMatrix,(int)auStack_9c,(dword)pMVar3->joints,
+                 (uint)pMVar3->numJoints,&lbl_80357698,param_5,uVar2 | 0x40);
+  }
+  return;
 }
 
-u16 modelGetFieldA4(Model *model) {
-	ASSERTLINE(1627, model);
-	return model->unka4;
+
+void LAB_8007d6ec(double param_1,undefined4 param_2,int *param_3,int param_4,uint param_5,
+                 uint param_6,uint param_7,s8 param_8,uint param_9,short param_10) { //8007D678
+  int iVar1;
+  uint uVar2;
+  undefined auStack_90 [4];
+  undefined4 local_8c;
+  undefined4 local_88;
+  undefined4 local_7c;
+  undefined4 local_78;
+  undefined4 local_74;
+  undefined4 local_70;
+  undefined4 local_5c;
+  undefined4 local_58;
+  undefined2 local_4c;
+  undefined2 local_4a;
+  short local_38;
+  undefined local_30;
+  undefined local_2f;
+  dword local_28 [2];
+
+  iVar1 = *param_3;
+  local_28[0] = param_3[(*(ushort *)(param_3 + 6) & 1) + 3];
+  if ((param_9 & 0x10) != 0) {
+    *(float *)(param_4 + 4) = (float)param_1 * *(float *)(param_4 + 0x14);
+  }
+  local_30 = *(undefined *)(param_4 + (param_6 & 0xff) + 0x60);
+  local_7c = *(undefined4 *)(param_4 + (param_6 & 0xff) * 4 + 0x14);
+  local_8c = *(undefined4 *)(param_4 + (param_6 & 0xff) * 4 + 4);
+  local_5c = *(undefined4 *)(param_4 + (param_6 & 0xff) * 4 + 0x34);
+  local_2f = *(undefined *)(param_4 + (param_7 & 0xff) + 0x60);
+  local_78 = *(undefined4 *)(param_4 + (param_7 & 0xff) * 4 + 0x14);
+  local_88 = *(undefined4 *)(param_4 + (param_7 & 0xff) * 4 + 4);
+  local_58 = *(undefined4 *)(param_4 + (uint)param_8 * 4 + 0x34);
+  if ((*(ushort *)(iVar1 + 2) & 0x40) == 0) {
+    local_4c = *(undefined2 *)(param_4 + (param_6 & 0xff) * 2 + 0x44);
+    local_4a = *(undefined2 *)(param_4 + (uint)param_8 * 2 + 0x44);
+  }
+  else {
+    local_4c = 0;
+    local_4a = 1;
+    local_74 = *(undefined4 *)
+                (param_4 + (uint)*(ushort *)(param_4 + (param_6 & 0xff) * 2 + 0x44) * 4 + 0x1c);
+    if (param_8 < 2) {
+      local_70 = *(undefined4 *)
+                  (param_4 + (uint)*(ushort *)(param_4 + (uint)param_8 * 2 + 0x44) * 4 + 0x1c);
+    }
+    else {
+      local_70 = *(undefined4 *)
+                  (param_4 + (uint)*(ushort *)(param_4 + (uint)param_8 * 2 + 0x44) * 4 + 0x24);
+    }
+  }
+  if (param_10 == 0) {
+    param_10 = 1;
+  }
+  local_38 = param_10;
+  LAB_8007da34(iVar1,(int)auStack_90,2);
+  uVar2 = param_9 & 0xf;
+  if ((param_9 & 0xc) == 0) {
+    if ((*(s8 *)(param_4 + 99) & 1) != 0) {
+      uVar2 = uVar2 | 0x10;
+    }
+    if ((*(s8 *)(param_4 + 99) & 4) != 0) {
+      uVar2 = uVar2 | 0x20;
+    }
+  }
+  LAB_80066094(local_28,param_2,(int)auStack_90,*(dword *)(iVar1 + 0x3c),
+               (uint)*(s8 *)(iVar1 + 0xb7),&lbl_80357698,param_5,uVar2);
+  return;
 }
 
-Shader *modelGetShader(Model *model, int shaderNum) { // str offsets
-	ASSERTLINE(1648, model);
-	ASSERTLINE(1649, shaderNum >= 0 && shaderNum < model->numShaders);
-	return &model->shaders[shaderNum];
+
+void LAB_8007da34(int param_1,int param_2,int param_3) { //8007D8E4
+  uint uVar1;
+  float fVar2;
+  s8 bVar3;
+  int iVar4;
+  int iVar5;
+  int iVar6;
+  int iVar7;
+
+  for (iVar6 = 0; iVar6 < param_3; iVar6 = iVar6 + 1) {
+    if ((*(ushort *)(param_1 + 2) & 0x40) == 0) {
+      iVar4 = *(int *)(param_1 + 0x50) +
+              (uint)*(ushort *)(param_2 + iVar6 * 2 + 0x44) *
+              ((*(s8 *)(param_1 + 0xb7) - 1 & 0xfffffff8) + 8);
+      iVar5 = *(int *)(*(int *)(param_1 + 0x4c) + (uint)*(ushort *)(param_2 + iVar6 * 2 + 0x44) * 4)
+      ;
+    }
+    else {
+      iVar4 = *(int *)(param_2 + (uint)*(ushort *)(param_2 + iVar6 * 2 + 0x44) * 4 + 0x1c);
+      iVar5 = *(int *)(param_2 + (uint)*(ushort *)(param_2 + iVar6 * 2 + 0x44) * 4 + 0x1c) + 0x80;
+    }
+    for (iVar7 = 0; iVar7 < (int)(uint)*(s8 *)(param_1 + 0xb7); iVar7 = iVar7 + 1) {
+      *(undefined *)(*(int *)(param_1 + 0x3c) + iVar7 * 0x1c + iVar6 + 2) =
+           *(undefined *)(iVar4 + iVar7);
+    }
+    bVar3 = *(s8 *)(*(int *)(param_2 + iVar6 * 4 + 0x34) + 2);
+    uVar1 = (uint)*(float *)(param_2 + iVar6 * 4 + 4);
+    fVar2 = (float)((double)CONCAT44(0x43300000,uVar1 ^ 0x80000000) - 4503601774854144.0);
+    if (fVar2 == *(float *)(param_2 + iVar6 * 4 + 4)) {
+      *(undefined2 *)(param_2 + iVar6 * 2 + 0x4c) = 0;
+    }
+    else {
+      *(ushort *)(param_2 + iVar6 * 2 + 0x4c) = (ushort)bVar3;
+    }
+    if ((*(char *)(param_2 + iVar6 + 0x60) != '\0') &&
+       (fVar2 == *(float *)(param_2 + iVar6 * 4 + 0x14) - 1.0)) {
+      *(ushort *)(param_2 + iVar6 * 2 + 0x4c) = -(ushort)bVar3 * (short)uVar1;
+    }
+    *(uint *)(param_2 + iVar6 * 4 + 0x2c) = iVar5 + (int)*(short *)(iVar5 + 2) + bVar3 * uVar1;
+  }
+  return;
 }
 
-S16Vec *modelGetVtxPos(Model *model, int positionNum) { // str offsets
-	ASSERTLINE(1671, model);
-	ASSERTLINE(1672, positionNum >= 0 && positionNum < model->numPositions);
-	return &model->vertexPositions[positionNum];
+
+/* Library Function - Single Match
+    allocModelGlobalAnimBuffer
+
+   Library: KioskDefault 0 0 */
+
+void initModels(void) { //8007DAB0
+  void *pvVar1;
+
+  modelsLoadedTable = (dword)SparseArray_SparseArray_create(0x8c,4);
+  if ((SparseArray *)modelsLoadedTable == (SparseArray *)0x0) {
+
+    OSPanic("models_dolphin.c",0xa4,"Failed assertion modelsLoadedTable");
+  }
+  animsLoadedTable = (dword)SparseArray_SparseArray_create(0xc4,4);
+  if ((SparseArray *)animsLoadedTable == (SparseArray *)0x0) {
+
+    OSPanic("models_dolphin.c",0xa9,"Failed assertion animsLoadedTable");
+  }
+  pvVar1 = mmAlloc(0x830,ANIMS_COL,"mod:globalAnimBuffer");
+  if (pvVar1 == NULL) {
+
+    OSPanic("models_dolphin.c",0xae,"Failed assertion mem");
+  }
+  pAmapTab = (int)pvVar1 + 0x800;
+  globalModAnimBufferPlus0x810 = (int)pvVar1 + 0x810;
+  globalModAnimBuffer = (dword)pvVar1;
+  countModels();
+  return;
 }
 
-S16Vec *modelGetNormal(Model *model, int normalNum) {
-	// function was optimized out, line numbers unknown
-	ASSERTLINE(0, model);
-	ASSERTLINE(0, normalNum >= 0 && normalNum < model->numNormals);
-	return &model->vertexNormals[normalNum];
+
+/* Library Function - Single Match
+    getModelInstance
+
+   Library: KioskDefault 0 0 */
+
+ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
+  uint modelNum;
+  BOOL BVar1;
+  dword dVar2;
+  ModelInstance *minst;
+  int iVar3;
+  Model *model;
+
+  modelNum = Model_lookupModelInd(id);
+  if (((int)modelNum < 0) || ((int)maxModelNum <= (int)modelNum)) {
+
+    OSPanic("models_dolphin.c",0xd2,s_Failed_assertion_modelNum>_0____m_802eb71c);
+  }
+  BVar1 = SparseArray_SparseArray_get((SparseArray *)modelsLoadedTable,modelNum,&model);
+  if (BVar1 == FALSE) {
+    model = Model_load(modelNum);
+    if (model == (Model *)0x0) {
+
+      OSPanic("models_dolphin.c",0xda,"Failed assertion model");
+    }
+    dVar2 = isModelAnimDisabled();
+    if (dVar2 != 0) {
+      model->flags = model->flags | NoAnimations;
+    }
+    Model_initPtrs(model);
+    Model_loadTextures(model);
+    Model_loadShaderTextures(model);
+    Model_makeModelAnimation
+              (model,modelNum,(HitSpherePos *)(&model->usage + model->dataSize));
+    SpareArray_SpareArray_set((SparseArray *)modelsLoadedTable,(short)modelNum,&model);
+  }
+  else {
+    model->usage = model->usage + 1;
+    if (model->usage == 0xff) {
+
+      OSPanic("models_dolphin.c",0xed,s_Failed_assertion_model_>usage<UC_802eb76c);
+    }
+  }
+  countLeadingZeros(1 - (uint)model->usage);
+  minst = ModelInstance_createModelInstance(model,flags);
+  if (minst == (ModelInstance *)0x0) {
+
+    OSPanic("models_dolphin.c",0xf3,"Failed assertion modelInstance");
+  }
+  modelSetupAnims(minst,minst->animInstances[0]);
+  if (minst->animInstances[1] != (AnimInstance *)0x0) {
+    modelSetupAnims(minst,minst->animInstances[1]);
+  }
+  LAB_8007e7f8(model,minst);
+  iVar3 = Model_checksumHeader(model);
+  model->headerCksum = iVar3;
+  DCStoreRange(model,model->dataSize);
+  return minst;
 }
 
-u16 *modelGetColour(Model *model, int colourNum) {
-	// function was optimized out, line numbers unknown
-	ASSERTLINE(0, model);
-	ASSERTLINE(0, colourNum >= 0 && colourNum < model->numColours);
-	return &model->vertexColours[colourNum];
+
+/* Library Function - Single Match
+    modelFn_8007dd68
+
+   Library: KioskDefault 0 0 */
+
+void modelInstanceFree(ModelInstance *modelInstance) { //8007DD68
+  s8 bVar1;
+  Model *model;
+
+  if (modelInstance == (ModelInstance *)0x0) {
+
+    OSPanic("models_dolphin.c",0x11d,"Failed assertion modelInstance");
+  }
+  ModelInstance_ModelInstance_unloadShaders((Model *)modelInstance);
+                    /* XXX this should be Model* but seems to be BitStream? */
+  model = modelInstance->model;
+  if (model == (Model *)0x0) {
+
+    OSPanic("models_dolphin.c",0x124,"Failed assertion model");
+  }
+  if (modelInstance->unk48 != NULL) {
+    mmFree(modelInstance->unk48);
+  }
+  mmFree(modelInstance);
+  bVar1 = model->usage - 1;
+  model->usage = bVar1;
+  if (bVar1 == 0) {
+    sparseArrayRemove((short **)modelsLoadedTable,(uint)(ushort)model->cacheModNo);
+    texFreeFn_8007e0a8((int)model);
+    animUnloadFn_8007e0f8((int)model);
+    mmFree(model);
+  }
+  return;
 }
 
-S16Vec *modelGetTexCoord(Model *model, int coordNum) {
-	// function was optimized out, line numbers unknown
-	ASSERTLINE(0, model);
-	//@bug comparing to numColours instead of numTexCoords
-	ASSERTLINE(0, coordNum >= 0 && coordNum < model->numColours);
-	return &model->vertexTexCoords[coordNum];
+
+int Model_checksumHeader(Model *model) { //8007DE30
+  s8 *pbVar1;
+  int iVar2;
+  int *end;
+
+  iVar2 = 0;
+  end = &model->dataSize;
+  pbVar1 = &model->usage;
+  for (; model < (Model *)(pbVar1 + *end); model = (Model *)&model->field_0x1) {
+    iVar2 = iVar2 + (uint)model->usage;
+  }
+  return iVar2;
 }
 
-Texture *modelGetGCTexture(Model *model, int textureNum) { // str offsets
-	ASSERTLINE(1768, model);
-	ASSERTLINE(1769, textureNum >= 0 && textureNum < model->numTextures);
-	return model->GCtextures[textureNum];
+
+/* Library Function - Single Match
+    modelFn_8007de70
+
+   Library: KioskDefault 0 0 */
+
+Model * Model_load(uint id) { //8007DE70
+  uint *modelsTab;
+  uint amapSize;
+  uint offset;
+  int noAmap;
+  uint animCacheSize;
+  undefined4 nAnimations;
+  size_t size;
+  Model *model;
+
+  modelsTab = (uint *)getTable(MODELS.tab);
+  offset = modelsTab[id];
+  loadModelsBin(offset,&nAnimations,&animCacheSize,&noAmap,(int *)&size);
+  animCacheSize = alignTo64(animCacheSize);
+  animCacheSize = animCacheSize + 0xb0;
+  amapSize = modelGetAmapSize(id,noAmap,nAnimations);
+  model = (Model *)mmAlloc(size + amapSize + 500,MODELS_COL,"mod");
+  if (model == (Model *)0x0) {
+
+    OSPanic("models_dolphin.c",0x1eb,"Failed assertion model");
+  }
+  model = (Model *)alignTo16(model);
+  loadAndDecompressDataFile(MODELS.bin,(s8 *)model,offset,size,(uint *)0x0,id,0);
+  model->animCacheSize = (short)animCacheSize;
+  model->cacheModNo = (short)id;
+  model->animBufSize = nAnimations._2_2_;
+  model->flags = model->flags & ~UseLocalModAnimTab;
+  model->usage = 1;
+  if (model->animBufSize == 0) {
+    model->flags = model->flags | NoAnimations;
+  }
+  if (noAmap != 0) {
+    model->flags = model->flags | UseLocalModAnimTab;
+  }
+  return model;
 }
 
-Bone *modelGetJoint(Model *model, int jointNum) { // str offsets
-	ASSERTLINE(1791, model);
-	ASSERTLINE(1792, jointNum >= 0 && jointNum < model->numJoints);
-	return &model->joints[jointNum];
+
+/* Library Function - Single Match
+    modelFn_8007dff4
+
+   Library: KioskDefault 0 0 */
+
+void Model_loadTextures(Model *model) { //8007DFF4
+  Texture *tex;
+  int iTex;
+
+  if (model == (Model *)0x0) {
+
+    OSPanic("models_dolphin.c",0x21d,"Failed assertion model");
+  }
+  iTex = 0;
+  while( true ) {
+    if ((int)(uint)model->numTextures <= iTex) {
+      return;
+    }
+    tex = textureLoad(-((uint)(&model->GCtextures->next)[iTex] | 0x8000));
+    (&model->GCtextures->next)[iTex] = tex;
+    if ((&model->GCtextures->next)[iTex] == (Texture *)0x0) break;
+    iTex = iTex + 1;
+  }
+
+  OSPanic("models_dolphin.c",0x222,s_Failed_assertion_model_>GCtextur_802ebb1c);
 }
 
-DisplayList *modelGetDisplayList(Model *model, int listNum) { // str offsets
-	ASSERTLINE(1814, model);
-	ASSERTLINE(1815, listNum >= 0 && listNum < model->numDisplayLists);
-	return &model->displayLists[listNum];
+
+void texFreeFn_8007e0a8(int param1) { //8007E0A8
+  int iVar1;
+
+  for (iVar1 = 0; iVar1 < (int)(uint)*(s8 *)(param1 + 0xb6); iVar1 = iVar1 + 1) {
+    texFreeTexture(*(Texture **)(*(int *)(param1 + 0x20) + iVar1 * 4));
+  }
+  return;
 }
 
-PolygonGroup *modelGetPolyGroup(Model *model, int groupNum) { // str offsets
-	ASSERTLINE(1906, model);
-	ASSERTLINE(1907, groupNum >= 0 && groupNum < model->numGroups);
-	return &model->polygonGroups[groupNum];
+
+void animUnloadFn_8007e0f8(int param1) { //8007E0F8
+  int iVar1;
+
+  if ((*(int *)(param1 + 0x4c) != 0) && (*(short *)(param1 + 0xb0) != 0)) {
+    for (iVar1 = 0; iVar1 < (int)(uint)*(ushort *)(param1 + 0xb0); iVar1 = iVar1 + 1) {
+      unloadAnimation(*(s8 **)(*(int *)(param1 + 0x4c) + iVar1 * 4));
+    }
+  }
+  return;
 }
 
-GCPolygon *modelGetGCPoly(Model *model, int polygonNum) {
-	ASSERTLINE(1927, polygonNum >= 0 && polygonNum < model->numPolygons);
-	return &model->GCpolygons[polygonNum];
+
+/* Library Function - Single Match
+    getModelNum_8007e160
+
+   Library: KioskDefault 0 0 */
+
+int Model_lookupModelInd(int id) { //8007E160
+  int iVar1;
+
+  if (id < 0) {
+    iVar1 = -id;
+  }
+  else {
+    loadDataFileWithLength(MODELIND.bin,(void *)globalModAnimBuffer,id << 1,8);
+    iVar1 = (int)*(short *)globalModAnimBuffer;
+  }
+  return iVar1;
 }
 
-Animation *loadAnimation(Model *model, short id, short id2, void *dest) {
-	if(!dest) return getAnimation(id);
-	else
-		return modelLoadAnimation(model, id, id2, dest);
+
+/* Library Function - Single Match
+    modelInitPtrs
+
+   Library: KioskDefault 0 0 */
+
+void Model_initPtrs(Model *model) { //8007E1B8
+  int iVar1;
+  void *modelEnd;
+
+  modelEnd = &model->usage + model->dataSize;
+  if (model == (Model *)0x0) {
+
+    OSPanic("models_dolphin.c",0x28a,"Failed assertion model");
+  }
+  if ((model->sphereHits != NULL) &&
+     ((model->sphereHits = &model->usage + (int)model->sphereHits,
+      (Model *)model->sphereHits < model || (modelEnd <= model->sphereHits)))) {
+
+    OSPanic("models_dolphin.c",0x28f,s_Failed_assertion_model_>sphereHi_802ebb44);
+  }
+  if (model->joints != (Bone *)0x0) {
+    model->joints = (Bone *)(model->joints->idx + (int)&model->usage + -1);
+    if (((Model *)model->joints < model) || (modelEnd <= model->joints)) {
+
+      OSPanic("models_dolphin.c",0x2a3,s_Failed_assertion_model_>joints>__802ebb90);
+    }
+    if ((model->radi != (float *)0x0) &&
+       ((model->radi = (float *)(&model->usage + (int)model->radi), (Model *)model->radi < model ||
+        (modelEnd <= model->radi)))) {
+
+      OSPanic("models_dolphin.c",0x2a7,s_Failed_assertion_model_>radi>_mo_802ebbd4);
+    }
+    if ((model->exT != (u32 *)0x0) &&
+       ((model->exT = (u32 *)(&model->usage + (int)model->exT), (Model *)model->exT < model ||
+        (modelEnd <= model->exT)))) {
+
+      OSPanic("models_dolphin.c",0x2ac,s_Failed_assertion_model_>exT>_mod_802ebc14);
+    }
+  }
+  if ((model->GCtextures != (Texture *)0x0) &&
+     ((model->GCtextures = (Texture *)((int)&model->GCtextures->next + (int)&model->usage),
+      (Model *)model->GCtextures < model || (modelEnd <= model->GCtextures)))) {
+
+    OSPanic("models_dolphin.c",0x2b3,s_Failed_assertion_model_>GCtextur_802ebc54);
+  }
+  model->vertexPositions = (S16Vec *)((int)&model->vertexPositions->x + (int)&model->usage);
+  if (((Model *)model->vertexPositions < model) || (modelEnd <= model->vertexPositions)) {
+
+    OSPanic("models_dolphin.c",0x2b6,s_Failed_assertion_model_>vertexPo_802ebca0);
+  }
+  if ((model->vertexNormals != (S16Vec *)0x0) &&
+     ((model->vertexNormals = (S16Vec *)((int)&model->vertexNormals->x + (int)&model->usage),
+      (Model *)model->vertexNormals < model || (modelEnd <= model->vertexNormals)))) {
+
+    OSPanic("models_dolphin.c",699,s_Failed_assertion_model_>vertexNo_802ebcf8);
+  }
+  if ((model->vertexColours != (u16 *)0x0) &&
+     ((model->vertexColours = (u16 *)(&model->usage + (int)model->vertexColours),
+      (Model *)model->vertexColours < model || (modelEnd <= model->vertexColours)))) {
+
+    OSPanic("models_dolphin.c",0x2c1,s_Failed_assertion_model_>vertexCo_802ebd4c);
+  }
+  model->vertexTexCoords = (S16Vec *)((int)&model->vertexTexCoords->x + (int)&model->usage);
+  if (((Model *)model->vertexTexCoords < model) || (modelEnd <= model->vertexTexCoords)) {
+
+    OSPanic("models_dolphin.c",0x2c5,s_Failed_assertion_model_>vertexTe_802ebda0);
+  }
+  model->renderStream = (BitStream *)((int)&model->renderStream->data + (int)&model->usage);
+  if (((Model *)model->renderStream < model) || (modelEnd <= model->renderStream)) {
+
+    OSPanic("models_dolphin.c",0x2c7,s_Failed_assertion_model_>renderSt_802ebdf8);
+  }
+  model->displayLists = (DisplayList *)((int)&model->displayLists->displayList + (int)&model->usage)
+  ;
+  if (((Model *)model->displayLists < model) || (modelEnd <= model->displayLists)) {
+
+    OSPanic("models_dolphin.c",0x2c9,s_Failed_assertion_model_>displayL_802ebe48);
+  }
+  if ((model->vertexAnims != (undefined4 *)0x0) &&
+     ((model->vertexAnims = (undefined4 *)(&model->usage + (int)model->vertexAnims),
+      (Model *)model->vertexAnims < model || (modelEnd <= model->vertexAnims)))) {
+
+    OSPanic("models_dolphin.c",0x2ce,s_Failed_assertion_model_>vertexAn_802ebe98);
+  }
+  if ((model->skin2Matrices != NULL) &&
+     ((model->skin2Matrices = &model->usage + (int)model->skin2Matrices,
+      (Model *)model->skin2Matrices < model || (modelEnd <= model->skin2Matrices)))) {
+
+    OSPanic("models_dolphin.c",0x2d3,s_Failed_assertion_model_>skin2Mat_802ebee8);
+  }
+  if ((model->skinWeights != (undefined *)0x0) &&
+     ((model->skinWeights = model->skinWeights + (int)&model->usage,
+      (Model *)model->skinWeights < model || (modelEnd <= model->skinWeights)))) {
+
+    OSPanic("models_dolphin.c",0x2d8,s_Failed_assertion_model_>skinWeig_802ebf3c);
+  }
+  if ((model->shaders != (Shader *)0x0) &&
+     ((model->shaders = (Shader *)((int)model->shaders->layer + (int)&model->usage + -0x24),
+      (Model *)model->shaders < model || (modelEnd <= model->shaders)))) {
+
+    OSPanic("models_dolphin.c",0x2dd,s_Failed_assertion_model_>shaders>_802ebf8c);
+  }
+  iVar1 = 0;
+  while( true ) {
+    if ((int)(uint)model->unkb8 <= iVar1) {
+      for (iVar1 = 0; iVar1 < (int)(uint)model->bCopyVtxsToModelInst; iVar1 = iVar1 + 1) {
+        model->vertexAnims[iVar1] = &model->usage + model->vertexAnims[iVar1];
+        if (((Model *)model->vertexAnims[iVar1] < model) ||
+           (modelEnd <= (void *)model->vertexAnims[iVar1])) {
+
+          OSPanic("models_dolphin.c",0x2e9,s_Failed_assertion_model_>vertexAn_802ec088);
+        }
+      }
+      if ((model->GCpolygons != (undefined *)0x0) &&
+         ((model->GCpolygons = model->GCpolygons + (int)&model->usage,
+          (Model *)model->GCpolygons < model || (modelEnd <= model->GCpolygons)))) {
+
+        OSPanic("models_dolphin.c",0x2ef,s_Failed_assertion_model_>GCpolygo_802ec0dc);
+      }
+      if ((model->polygonGroups != (PolygonGroup *)0x0) &&
+         ((model->polygonGroups =
+                (PolygonGroup *)((int)&model->polygonGroups->firstPolygon + (int)&model->usage),
+          (Model *)model->polygonGroups < model || (modelEnd <= model->polygonGroups)))) {
+
+        OSPanic("models_dolphin.c",0x2f5,s_Failed_assertion_model_>polygonG_802ec128);
+      }
+      return;
+    }
+    model->displayLists[iVar1].displayList =
+         &model->usage + (int)model->displayLists[iVar1].displayList;
+    if ((Model *)model->displayLists[iVar1].displayList < model) break;
+    if (modelEnd <= model->displayLists[iVar1].displayList) break;
+    if (((uint)model->displayLists[iVar1].displayList & 0x1f) != 0) {
+
+      OSPanic("models_dolphin.c",0x2e4,s_Failed_assertion___int_model_>di_802ec044);
+    }
+    iVar1 = iVar1 + 1;
+  }
+
+  OSPanic("models_dolphin.c",0x2e3,s_Failed_assertion_model_>displayL_802ebfd4);
 }
 
-Animation *modelLoadAnimation(
-    Model *model, int index, int id, AnimCache *dest) { // str offsets
-	int len2;
-	int len;
-	int animSize;
-	uint offset;
-	Animation *anim;
 
-	len = animOffsetTbl[index];
-	loadAndDecompressDataFile(FILE_ANIM_BIN, NULL, len, 0, &animSize, index, 1);
-	ASSERTLINE(2150, animSize < model->animCacheSize - ANIMMAP_SIZE);
+void LAB_8007e7f8(Model *model,ModelInstance *minst) { //8007E76C
+  int iVar1;
 
-	anim = dest->animData;
-	ASSERTLINE(2155, anim);
-
-	loadAndDecompressDataFile(
-	    FILE_ANIM_BIN, anim, len, animSize, NULL, index, 0);
-	len2 = (model->numJoints - 1 & ~7) + 8;
-	offset = model->animOffset + id * len2;
-	loadDataFileWithLength(FILE_AMAP_BIN, dest, offset, len2);
-	return anim;
+  if ((model->flags & CopyVtxsOnLoad) != 0) {
+    model->unk7c = (int)model->skin2Matrices;
+    for (iVar1 = 0; iVar1 < (int)(uint)model->unk72; iVar1 = iVar1 + 1) {
+      *(int *)(minst->unk34 + iVar1 * 4) =
+           (int)&minst->vertexPositions[0]->x +
+           *(int *)((int)model->skin2Matrices + iVar1 * 0x74 + 0x60);
+      if (*(undefined **)((int)model->skin2Matrices + iVar1 * 0x74 + 100) < model->skinWeights) {
+        *(undefined **)((int)model->skin2Matrices + iVar1 * 0x74 + 100) =
+             model->skinWeights + *(int *)((int)model->skin2Matrices + iVar1 * 0x74 + 100);
+      }
+    }
+  }
+  return;
 }
 
-Animation *getAnimation(short id) {
-	int unused1;
-	Animation *anim;
-	int unused2;
-	uint offset;
-	uint size;
 
-	if(!SparseArray_get(animsLoadedTable, id, &anim)) {
-		offset = animOffsetTbl[id];
-		loadAndDecompressDataFile(
-		    FILE_ANIM_BIN, NULL, offset, 0, &size, id, 1); // get size
-		anim = (Animation *)mmAlloc(
-		    size, ALLOC_TAG_ANIMS_COL, (volatile u32) "mod:anim");
-		ASSERTLINE(2203, anim);
+void Model_loadShaderTextures(Model *model) { //8007E814
+  Shader *pSVar1;
+  int iVar2;
+  int iVar3;
+  Shader *shader;
 
-		loadAndDecompressDataFile(
-		    FILE_ANIM_BIN, anim, offset, size, NULL, id, 0);
-		anim->usage = 1;
-		SparseArray_set(animsLoadedTable, id, &anim);
-	} else {
-		anim->usage++;
-		ASSERTLINE(2216, anim->usage < UCHAR_MAX);
-	}
-	return anim;
+  for (iVar2 = 0; iVar2 < (int)(uint)model->nShaders; iVar2 = iVar2 + 1) {
+    pSVar1 = model->shaders;
+    for (iVar3 = 0; iVar3 < (int)(uint)pSVar1[iVar2].numLayers; iVar3 = iVar3 + 1) {
+      if (pSVar1[iVar2].layer[iVar3].texture == (Texture *)0xffffffff) {
+        pSVar1[iVar2].layer[iVar3].texture = (Texture *)0x0;
+      }
+      else {
+        pSVar1[iVar2].layer[iVar3].texture =
+             (&model->GCtextures->next)[(int)pSVar1[iVar2].layer[iVar3].texture];
+      }
+    }
+    if (pSVar1[iVar2].tex34 == (Texture *)0xffffffff) {
+      pSVar1[iVar2].tex34 = (Texture *)0x0;
+    }
+    else {
+      pSVar1[iVar2].tex34 = (&model->GCtextures->next)[(int)pSVar1[iVar2].tex34];
+    }
+    if (pSVar1[iVar2].tex1C == (undefined4 *********)0xffffffff) {
+      pSVar1[iVar2].tex1C = (undefined4 *********)0x0;
+    }
+    else if (pSVar1[iVar2].tex1C == (undefined4 *********)0xfffffffe) {
+      pSVar1[iVar2].tex1C = (undefined4 *********)0x0;
+    }
+    else {
+      pSVar1[iVar2].tex1C =
+           (undefined4 *********)(&model->GCtextures->next)[(int)pSVar1[iVar2].tex1C];
+    }
+    if (pSVar1[iVar2].tex18 == (undefined4 *********)0xffffffff) {
+      pSVar1[iVar2].tex18 = (undefined4 *********)0x0;
+    }
+    else {
+      pSVar1[iVar2].tex18 =
+           (undefined4 *********)(&model->GCtextures->next)[(int)pSVar1[iVar2].tex18];
+    }
+    if ((model->flagsA6 & 0xc) == 0) {
+      pSVar1[iVar2].unk8 = 0;
+    }
+    if ((model->flagsA6 & 0xe00) == 0) {
+      pSVar1[iVar2].unk14 = 0;
+    }
+  }
+  return;
 }
 
-void unloadAnimation(Animation *anim) {
-	s8 unused;
-	bool success;
-	int key;
 
-	if(!anim) STUBBED_OP(anim);
-	else {
-		ASSERTLINE(2248, anim); // why?
-		if(--anim->usage > 0) return;
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* Library Function - Single Match
+    modelAnimFn_8007e974
 
-		success = SparseArray_find(animsLoadedTable, &anim, &key);
-		ASSERTLINE(2258, success);
-		SparseArray_remove(animsLoadedTable, key);
-		mmFree(anim);
-	}
+   Library: KioskDefault 0 0 */
+
+void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,float *modelMatrix) { //8007E974
+  AnimInstance *pAVar1;
+  AnimInstance *anim;
+  S16Vec local_38;
+  vec3f vStack_30;
+
+  if (modelInstance == (ModelInstance *)0x0) {
+
+    OSPanic("models_dolphin.c",0x393,"Failed assertion modelInstance");
+  }
+  if (model == 0) {
+
+    OSPanic("models_dolphin.c",0x394,"Failed assertion model");
+  }
+  if (modelMatrix == (float *)0x0) {
+
+    OSPanic("models_dolphin.c",0x395,"Failed assertion modelMatrix");
+  }
+  if (object == 0) {
+
+    OSPanic("models_dolphin.c",0x396,"Failed assertion object");
+  }
+  tiltListFn_8007ebe8(object,(int)modelInstance,model);
+  modelInstance_toggleFlag18_1(modelInstance);
+  anim = modelInstance->animInstances[0];
+  if (anim == (AnimInstance *)0x0) {
+
+    OSPanic("models_dolphin.c",0x39c,"Failed assertion animInstance");
+  }
+  if ((anim->unk63 & 4) != 0) {
+    objAnimFn_8008045c((double)*(float *)(object + 0x98),(double)*(float *)(object + 8),
+                       modelInstance,0,0,&vStack_30,&local_38);
+    WORD_8039872c = local_38.x;
+    WORD_8039872e = local_38.y;
+    _WORD_ARRAY_80398730 = local_38.z;
+  }
+  if ((modelInstance->model->flags & 8) == 0) {
+    if ((modelInstance->animInstances[0]->unk63 & 8) == 0) {
+      LAB_8007d540((double)*(float *)(object + 0x98),modelMatrix,modelInstance,
+                   modelInstance->animInstances[0],0x7f);
+      if ((modelInstance->animInstances[1] != (AnimInstance *)0x0) &&
+         (-1 < *(short *)(object + 0xa2))) {
+        LAB_8007d540((double)*(float *)(object + 0x9c),modelMatrix,modelInstance,
+                     modelInstance->animInstances[1],0xffffffff);
+      }
+    }
+    else {
+      pAVar1 = modelInstance->animInstances[1];
+      LAB_8007d6ec((double)*(float *)(object + 0x98),modelMatrix,(int *)modelInstance,(int)anim,0x7f
+                   ,0,0,2,0x14,anim->unk5a);
+      LAB_8007d6ec((double)*(float *)(object + 0x9c),modelMatrix,(int *)modelInstance,(int)pAVar1,
+                   0x7f,0,0,2,0x18,pAVar1->unk5a);
+      LAB_8007d6ec((double)*(float *)(object + 0x98),modelMatrix,(int *)modelInstance,(int)anim,0x7f
+                   ,0,0,0,7,pAVar1->unk58);
+      LAB_8007d6ec((double)*(float *)(object + 0x98),modelMatrix,(int *)modelInstance,(int)anim,0x7f
+                   ,0,1,1,1,anim->unk58);
+    }
+  }
+  else {
+    LAB_8007d540((double)*(float *)(object + 0x98),modelMatrix,modelInstance,
+                 modelInstance->animInstances[0],0x7f);
+  }
+  return;
 }
 
-void fn_80080734(ModelInstance *modelInstance, Model *model,
-    ObjInstance *object, Mtx44 *mtx, ObjInstance *parent) {
-	Mtx44 *m; // r24
-	int nObjHits; // r25
-	int frame; // r23
-	int iSphere; // r31
-	Vec local_5c;
-	uint local_50;
-	float radius;
-	int animTimer; // r27
-	ObjHitsEntry *objHits; // r22
-	HitState *hits;
 
-	frame = 0;
-	if(parent->hits && parent->objdata->bDisableHits) {
-		nObjHits = parent->hits->objHitsSize >> 2;
-		if(nObjHits > 0) {
-			objHits = parent->hits->objHits;
-			animTimer = parent->animTimer * nObjHits;
-			if(animTimer >= nObjHits) animTimer = nObjHits - 1;
-			animTimer = objHits[animTimer].frame;
-			frame = animTimer;
-		}
-	}
-	if(object->hits) {
-		hits = object->hits;
-		hits->state2--;
-		if(object->hits->state2 < 0) { object->hits->state2 = 0; }
-		object->hits->prevFrame = object->hits->frame;
-		object->hits->frame = frame;
-	}
-	modelInstance->flags ^= ModelFlags18_UseOtherHitboxes;
-	frame = (modelInstance->flags >> 2) & 1;
-	local_50 = modelInstance->flags & 1;
-	modelInstance->activeAnimInst = modelInstance->animInstances[frame];
-	m = mtx;
-	for(iSphere = 0; iSphere < model->numHitSpheres; iSphere++) {
-		if(!mtx) {
-			m = modelInstGetjMtx(
-			    modelInstance, (int)(short)model->sphereHits[iSphere].bone);
-		}
-		if((iSphere == 0) && (parent != object)) {
-			local_5c.x = 0.0;
-			local_5c.y = 0.0;
-			local_5c.z = 0.0;
-			MTXMultVec(*m, &local_5c, &local_5c);
-			object->pos.pos.x = local_5c.x + playerMapOffsetX;
-			object->pos.pos.y = local_5c.y;
-			object->pos.pos.z = local_5c.z + playerMapOffsetZ;
-			objMultPosByMtx(object,
-			    &object->prevPos.x,
-			    &object->prevPos.y,
-			    &object->prevPos.z);
-		}
-		local_5c.x = model->sphereHits[iSphere].pos.x;
-		local_5c.y = model->sphereHits[iSphere].pos.y;
-		local_5c.z = model->sphereHits[iSphere].pos.z;
-		radius = model->sphereHits[iSphere].radius;
-		// something is wrong with the fields here
-		// there's a random +4
-		// it goes away if we move hitboxSize to offset 0
-		// but there's no way that's right.
-		modelInstance->activeAnimInst->hitboxSize[0][iSphere * 4]
-		    = radius * parent->pos.scale;
-		MTXMultVec(*m,
-		    &local_5c,
-		    (Vec *)(modelInstance->activeAnimInst->hitboxSize + iSphere * 4));
-		if(parent->heldBy) {
-			multVectorByObjMtx(
-			    (modelInstance->activeAnimInst->hitboxSize[iSphere * 2][0]),
-			    (modelInstance->activeAnimInst->hitboxSize[iSphere * 2][1]),
-			    (modelInstance->activeAnimInst->hitboxSize[iSphere * 2][2]),
-			    &(modelInstance->activeAnimInst->hitboxSize[iSphere * 2][0]),
-			    &(modelInstance->activeAnimInst->hitboxSize[iSphere * 2][1]),
-			    &(modelInstance->activeAnimInst->hitboxSize[iSphere * 2][2]),
-			    parent->heldBy);
-			modelInstance->activeAnimInst->hitboxSize[iSphere * 2][0]
-			    -= playerMapOffsetX;
-			modelInstance->activeAnimInst->hitboxSize[iSphere * 2][2]
-			    -= playerMapOffsetZ;
-		}
-	}
+/* Library Function - Single Match
+    tiltListFn_8007ebe8
+
+   Library: KioskDefault 0 0 */
+
+void tiltListFn_8007ebe8(int param1,int param2,int param3) { //8007EBE8
+  s8 bVar1;
+  int iVar2;
+  int iVar3;
+  int iVar4;
+  int iVar5;
+  short sVar6;
+  short *psVar7;
+  int iVar8;
+
+  if ((*(ushort *)(param3 + 2) & 0x40) == 0) {
+    iVar2 = *(int *)(param3 + 0x50) +
+            (uint)*(ushort *)(*(int *)(param2 + 0x24) + 0x44) *
+            ((*(s8 *)(param3 + 0xb7) - 1 & 0xfffffff8) + 8);
+  }
+  else {
+    iVar2 = *(int *)(*(int *)(param2 + 0x24) +
+                    (uint)*(ushort *)(*(int *)(param2 + 0x24) + 0x44) * 4 + 0x1c);
+  }
+  iVar5 = *(int *)(param1 + 0x50);
+  iVar3 = 0;
+  iVar8 = 0;
+  for (iVar4 = 0; iVar4 < (int)(uint)*(s8 *)(iVar5 + 0x72); iVar4 = iVar4 + 1) {
+    bVar1 = *(s8 *)(iVar3 + *(char *)(param1 + 0xad) + 1 + *(int *)(iVar5 + 0x10));
+    if (bVar1 != 0xff) {
+      psVar7 = (short *)(*(int *)(param1 + 0x6c) + iVar4 * 0x12);
+      sVar6 = (short)((int)*(char *)(iVar2 + (uint)bVar1) << 6);
+      if (*psVar7 != 0) {
+        *(short *)(&lbl_80357698 + iVar8 * 2) = sVar6;
+        *(short *)(&lbl_80357698 + (iVar8 + 1) * 2) = *psVar7;
+        iVar8 = iVar8 + 2;
+      }
+      if (psVar7[1] != 0) {
+        *(short *)(&lbl_80357698 + iVar8 * 2) = sVar6 + 2;
+        *(short *)(&lbl_80357698 + (iVar8 + 1) * 2) = psVar7[1];
+        iVar8 = iVar8 + 2;
+      }
+      if (psVar7[2] != 0) {
+        *(short *)(&lbl_80357698 + iVar8 * 2) = sVar6 + 4;
+        *(short *)(&lbl_80357698 + (iVar8 + 1) * 2) = psVar7[2];
+        iVar8 = iVar8 + 2;
+      }
+      if (psVar7[3] != 0) {
+        *(short *)(&lbl_80357698 + iVar8 * 2) = sVar6 + 0xc;
+        *(short *)(&lbl_80357698 + (iVar8 + 1) * 2) = psVar7[3];
+        iVar8 = iVar8 + 2;
+      }
+      if (psVar7[4] != 0) {
+        *(short *)(&lbl_80357698 + iVar8 * 2) = sVar6 + 0xe;
+        *(short *)(&lbl_80357698 + (iVar8 + 1) * 2) = psVar7[4];
+        iVar8 = iVar8 + 2;
+      }
+      if (psVar7[5] != 0) {
+        *(short *)(&lbl_80357698 + iVar8 * 2) = sVar6 + 0x10;
+        *(short *)(&lbl_80357698 + (iVar8 + 1) * 2) = psVar7[5];
+        iVar8 = iVar8 + 2;
+      }
+      if (psVar7[6] != 0) {
+        *(short *)(&lbl_80357698 + iVar8 * 2) = sVar6 + 0x18;
+        *(short *)(&lbl_80357698 + (iVar8 + 1) * 2) = psVar7[6];
+        iVar8 = iVar8 + 2;
+      }
+      if (psVar7[7] != 0) {
+        *(short *)(&lbl_80357698 + iVar8 * 2) = sVar6 + 0x1a;
+        *(short *)(&lbl_80357698 + (iVar8 + 1) * 2) = psVar7[7];
+        iVar8 = iVar8 + 2;
+      }
+      if (psVar7[8] != 0) {
+        *(short *)(&lbl_80357698 + iVar8 * 2) = sVar6 + 0x1c;
+        *(short *)(&lbl_80357698 + (iVar8 + 1) * 2) = psVar7[8];
+        iVar8 = iVar8 + 2;
+      }
+    }
+    iVar3 = *(char *)(iVar5 + 0x5d) + iVar3 + 1;
+  }
+  *(undefined2 *)(&lbl_80357698 + iVar8 * 2) = 0x1000;
+  if (0x2c < iVar8) {
+    printf("Warning! Tiltlist overflow!!");
+  }
+  return;
 }
 
-void vtxAnimFn_800279cc(Model **pModel, int param_3, int param_4, int param_5,
-    float param_1, s8 param_6);
 
-void fn_80080ac8(Model **pModel) {
-	if((*pModel)->vertexAnims) {
-		vtxAnimFn_800279cc(pModel, 0, -1, -1, 0.0f, 7);
-		vtxAnimFn_800279cc(pModel, 1, -1, -1, 0.0f, 7);
-		vtxAnimFn_800279cc(pModel, 2, -1, -1, 0.0f, 7);
-	}
+void ModelInstance_ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj) { //8007EE90
+  Model *model;
+  int iShader;
+
+  model = minst->model;
+  if ((minst->flags & ShadersLoaded) == 0) {
+    minst->flags = minst->flags | ShadersLoaded;
+    for (iShader = 0; iShader < (int)(uint)minst->model->nShaders; iShader = iShader + 1) {
+      shaderInit(model->shaders + iShader,(int *)(&minst->shaderDefs->texture + iShader * 2),
+                 (int)obj,model->flagsA6);
+    }
+  }
+  return;
 }
 
-void fn_80080c00(float param_1, ModelInstance *modelInstance, int idx) {
-	ModelInstanceField20 *field20;
 
-	if(idx <= 2) {
-		if(!modelInstance->mod->vertexAnims) STUBBED_OP(modelInstance);
-		else {
-			field20 = &modelInstance->unk20[idx];
-			field20->vec.x = param_1;
-			field20->flags |= 4;
-		}
-	}
+void ModelInstance_ModelInstance_unloadShaders(Model *model) { //8007EF18
+  int iVar1;
+
+  if ((*(ushort *)&model->radi & 0x40) != 0) {
+    *(ushort *)&model->radi = *(ushort *)&model->radi & 0xffbf;
+    for (iVar1 = 0; iVar1 < (int)(uint)*(s8 *)(*(int *)model + 0xba); iVar1 = iVar1 + 1) {
+      shaderFree((Shader **)((int)model->vertexNormals + iVar1 * 8));
+    }
+  }
+  return;
 }
 
-void modelFn_80080c28(float param1, ModelInstance *modelInstance) {
-	int iVar1;
-	ModelInstanceField20 *field20;
 
-	if(!modelInstance->mod->vertexAnims) return;
-	for(iVar1 = 0; iVar1 < 3; iVar1++) {
-		field20 = &modelInstance->unk20[iVar1];
-		if(!(field20->unk0c == -1 && field20->unk0d == -1)) {
-			if((field20->flags & 1) == 0) {
-				field20->vec.x = field20->vec.z * param1 + field20->vec.x;
-				if(field20->vec.x > 1.0f) {
-					field20->vec.x = 0.002f;
-					field20->vec.z = 0.001f;
-					field20->flags = field20->flags & ~4;
-				} else if(field20->vec.x < 0.0f) {
-					field20->vec.x = 0.99f;
-					field20->vec.z = 0.001f;
-					field20->flags = field20->flags & ~4;
-				}
-			}
-		}
-	}
+/* Library Function - Single Match
+    modelShaderFn_8007ef84
+
+   Library: KioskDefault 0 0 */
+
+int Model_getShaderTexture(ModelInstance *param1,int shaderNum) { //8007EF84
+  if ((-1 < shaderNum) && (shaderNum < (int)(uint)param1->model->nShaders)) {
+    return (int)(&param1->shaderDefs->texture + shaderNum * 2);
+  }
+
+  OSPanic("models_dolphin.c",0x47a,s_Failed_assertion_shaderNum>_0____802ec1f4);
 }
 
-void fn_80081084(ModelInstance *modelInstance, Mtx44 *mtx, undefined *param_3) {
-	Mtx44 *m1;
-	Mtx44 m2;
-	Model *model;
-	uint iMtx;
 
-	model = modelInstance->mod;
-	if(model->numJoints == 0) {
-		m1 = modelInstGetjMtx(modelInstance, 0);
-		MTXConcat(*mtx, *m1, *m1);
-	} else {
-		for(iMtx = 0; iMtx < model->numJoints; iMtx++) {
-			m1 = modelInstGetjMtx(modelInstance, iMtx);
-			MTXTrans(m2,
-			    -model->joints[iMtx].bindTranslation.x,
-			    -model->joints[iMtx].bindTranslation.y,
-			    -model->joints[iMtx].bindTranslation.z);
-			MTXConcat(*m1, m2, m2);
-			// XXX figure out type
-			mtxTranspose43(m2, (Mtx *)(param_3 + (iMtx * 4) * 12));
-			MTXConcat(*mtx, *m1, *m1);
-		}
-	}
+/* Library Function - Single Match
+    modelInstGetjMtx
+
+   Library: KioskDefault 0 0 */
+
+int modelInstGetjMtx(ModelInstance *modelInstance,int param2) { //8007EFF0
+  uint uVar1;
+
+  if (modelInstance == (ModelInstance *)0x0) {
+
+    OSPanic("models_dolphin.c",0x491,"Failed assertion modelInstance");
+  }
+  if (modelInstance->model->numJoints == 0) {
+    uVar1 = 1;
+  }
+  else {
+    uVar1 = (uint)modelInstance->model->numJoints;
+  }
+  if ((int)uVar1 <= param2) {
+    param2 = 0;
+  }
+  return (int)(modelInstance->mtxs[modelInstance->flags & 1] + param2);
 }
 
-BOOL countModels(void) {
-	int *modelsTab;
 
-	modelsTab = getTable(FILE_MODELS_tab);
-	if(!modelsTab) return FALSE;
+/* Library Function - Single Match
+    modelInstFn_8007f084
 
-	maxModelNum = 0;
-	while(modelsTab[maxModelNum] != -1) maxModelNum++;
-	maxModelNum--;
-	ASSERTLINE(3301, maxModelNum <= SHRT_MAX);
-	animOffsetTbl = getTable(FILE_ANIM_TAB);
-	if(!animOffsetTbl) return FALSE;
+   Library: KioskDefault 0 0 */
 
-	bHaveAnimTab = FALSE;
-	return TRUE;
+void modelInstance_toggleFlag18_1(ModelInstance *modelInstance) { //8007F084
+  if (modelInstance == (ModelInstance *)0x0) {
+
+    OSPanic("models_dolphin.c",0x4b3,"Failed assertion modelInstance");
+  }
+  modelInstance->flags = modelInstance->flags ^ UseOtherMtxs;
+  return;
 }
 
-void modelGetVtxPosFloat(Model *model, int positionNum, Vec *posVec) {
-	S16Vec *vp;
 
-	// something bizarre goes on here involving comparing 0 to 0
-	ASSERTLINE(3642, posVec);
-	ASSERTLINE(3643, positionNum >= 0 && positionNum < model->numPositions);
-	vp = modelGetVtxPos(model, positionNum);
-	posVec->x = vp->x * 1.0f / 256.0f;
-	posVec->y = vp->y * 1.0f / 256.0f;
-	posVec->z = vp->z * 1.0f / 256.0f;
+/* Library Function - Single Match
+    modelInstFn_8007f0dc
+
+   Library: KioskDefault 0 0 */
+
+void ModelInstance_ModelInstance_setField30(ModelInstance *modelInstance,undefined4 cb) { //8007F0DC
+  if (modelInstance == (ModelInstance *)0x0) {
+
+    OSPanic("models_dolphin.c",0x4c8,"Failed assertion modelInstance");
+  }
+  modelInstance->texFuncPtr = cb;
+  return;
 }
+
+
+/* Library Function - Single Match
+    modelInstFn_8007f134
+
+   Library: KioskDefault 0 0 */
+
+undefined4 modelInstanceGetCallback30(ModelInstance *modelInstance) { //8007F134
+  if (modelInstance == (ModelInstance *)0x0) {
+
+    OSPanic("models_dolphin.c",0x4db,"Failed assertion modelInstance");
+  }
+  return modelInstance->texFuncPtr;
+}
+
+
+void freezeModelFn_8007f184(undefined4 param_1,undefined4 param_2,char param3) { //8007F184
+  float fVar1;
+  short sVar2;
+  short sVar3;
+  short sVar4;
+  ModelInstance *modelInstance;
+  void *freezemodel;
+  uint jointNum;
+  char *pcVar5;
+  uint uVar6;
+  int iVar7;
+  int iVar8;
+  short sVar9;
+  uint uVar10;
+  Model *param1;
+  ushort *puVar11;
+  int iVar12;
+  int iVar13;
+  int iVar14;
+  uint uVar15;
+  int *piVar16;
+  double dVar17;
+  undefined8 uVar18;
+  short local_414 [256];
+  int local_214;
+  vec3f local_210;
+  vec3f local_204;
+  float local_1f8;
+  float local_1f4;
+  float local_1f0;
+  float local_1ec;
+  float local_1e8;
+  float local_1e4;
+  vec3f vStack_1e0;
+  vec3f local_1d4;
+  Mtx43 MStack_1c8;
+  Mtx43 MStack_188;
+  Mtx43 MStack_148;
+  Mtx43 MStack_108;
+  Mtx43 *local_c8;
+  Mtx43 *local_c4;
+  int local_c0;
+  double local_b8;
+  double local_b0;
+  double local_a8;
+  undefined4 local_a0;
+  uint uStack_9c;
+  undefined4 local_98;
+  uint uStack_94;
+  undefined4 local_90;
+  uint uStack_8c;
+  undefined4 local_88;
+  uint uStack_84;
+  undefined4 local_80;
+  uint uStack_7c;
+  undefined4 local_78;
+  uint uStack_74;
+  double local_70;
+  double local_68;
+  double local_60;
+
+  uVar18 = _savefpr_29();
+  modelInstance = (ModelInstance *)((ulonglong)uVar18 >> 0x20);
+  if ((modelInstance->unk48 == NULL) &&
+     (param1 = modelInstance->model, 1 < param1->numJoints)) {
+    iVar7 = param1->numJoints - 1;
+    freezemodel = mmAlloc(iVar7 * 0x46c + 0x10,ANIMS_COL,"mod:freezemodel");
+    modelInstance->unk48 = freezemodel;
+    if (modelInstance->unk48 != NULL) {
+      piVar16 = (int *)modelInstance->unk48;
+      *(short *)(piVar16 + 2) = (short)iVar7 * 0x58;
+      *(short *)((int)piVar16 + 10) = (short)iVar7 * 0x2a;
+      *piVar16 = (int)(piVar16 + 4);
+      piVar16[1] = *piVar16 + iVar7 * 0x370;
+      local_210.x = 0.0;
+      local_210.y = 0.0;
+      local_210.z = 0.0;
+      iVar7 = 0;
+      iVar12 = 0;
+      for (iVar14 = 0; iVar14 < (int)(uint)param1->numJoints; iVar14 = iVar14 + 1) {
+        local_414[iVar14] = -1;
+      }
+      MTXInverse((Mtx43 *)uVar18,&MStack_188);
+      jointNum = (uint)param1->numJoints;
+      while (jointNum = jointNum - 1, -1 < (int)jointNum) {
+        pcVar5 = (char *)modelGetJoint((int)param1,jointNum);
+        if (*pcVar5 != -1) {
+          local_c0 = modelGetJoint((int)param1,(int)*pcVar5);
+          local_c4 = (Mtx43 *)modelInstGetjMtx(modelInstance,jointNum);
+          local_c8 = (Mtx43 *)modelInstGetjMtx(modelInstance,(int)*pcVar5);
+          MTXConcat(&MStack_188,local_c4,&MStack_108);
+          MTXConcat(&MStack_188,local_c8,&MStack_148);
+          MTXMultVec(&MStack_108,&local_210,&local_1d4);
+          MTXMultVec(&MStack_148,&local_210,&vStack_1e0);
+          VECSubtract(&vStack_1e0.x,&local_1d4.x,&local_1ec);
+          if (((param1->radi == (float *)0x0) || (0.0 < param1->radi[jointNum])) &&
+             ((local_1ec != 0.0 || ((local_1e8 != 0.0 || (local_1e4 != 0.0)))))) {
+            VECNormalize(&local_1ec,&local_1f8);
+            local_204.x = 1.0;
+            local_204.y = 0.0;
+            local_204.z = 0.0;
+            dVar17 = VECDotProduct(&local_1f8,&local_204.x);
+            if ((0.8999999761581421 < dVar17) || (dVar17 < -0.8999999761581421)) {
+              local_204.x = 0.0;
+              local_204.y = 1.0;
+              local_204.z = 0.0;
+            }
+            VECCrossProduct(&local_1f8,&local_204.x,&local_1f8);
+            VECNormalize(&local_1f8,&local_1f8);
+            sVar9 = (short)(iVar7 / 3);
+            if (local_414[*pcVar5] == -1) {
+              local_414[*pcVar5] = sVar9;
+            }
+            else {
+              local_414[*pcVar5] = -2;
+            }
+            for (uVar15 = 0; (int)uVar15 < 8; uVar15 = uVar15 + 1) {
+              local_60 = (double)CONCAT44(0x43300000,uVar15 ^ 0x80000000);
+              MTXRotAxisRad();
+              for (uVar10 = 0; (int)uVar10 < 5; uVar10 = uVar10 + 1) {
+                local_60 = (double)CONCAT44(0x43300000,uVar10 ^ 0x80000000);
+                local_204.z = (float)(local_60 - 4503601774854144.0) * 0.25;
+                local_204.x = local_1ec * local_204.z;
+                local_204.y = local_1e8 * local_204.z;
+                local_204.z = local_1e4 * local_204.z;
+                uVar6 = randInt(10,0x3c);
+                local_68 = (double)CONCAT44(0x43300000,uVar6 ^ 0x80000000);
+                if (param1->radi == (float *)0x0) {
+                  fVar1 = 0.04;
+                }
+                else if (param1->radi[jointNum] <= param1->radi[*pcVar5]) {
+                  fVar1 = param1->radi[*pcVar5];
+                }
+                else {
+                  fVar1 = param1->radi[jointNum];
+                }
+                fVar1 = ((float)(local_68 - 4503601774854144.0) * 0.01 + 1.0) * fVar1;
+                local_204.x = local_1f8 * fVar1 + local_204.x;
+                local_204.y = local_1f4 * fVar1 + local_204.y;
+                local_204.z = local_1f0 * fVar1 + local_204.z;
+                MTXMultVec(&MStack_1c8,&local_204,&local_204);
+                local_204.x = local_204.x + local_1d4.x;
+                local_204.y = local_204.y + local_1d4.y;
+                local_204.z = local_204.z + local_1d4.z;
+                iVar14 = (int)(local_204.x * 256.0);
+                local_68 = (double)(longlong)iVar14;
+                *(short *)(piVar16[1] + iVar7 * 2) = (short)iVar14;
+                iVar14 = (int)(local_204.y * 256.0);
+                local_60 = (double)(longlong)iVar14;
+                *(short *)(piVar16[1] + (iVar7 + 1) * 2) = (short)iVar14;
+                iVar14 = (int)(local_204.z * 256.0);
+                local_70 = (double)(longlong)iVar14;
+                *(short *)(piVar16[1] + (iVar7 + 2) * 2) = (short)iVar14;
+                iVar7 = iVar7 + 3;
+              }
+            }
+            local_214 = iVar7 / 3;
+            local_1d4.x = local_1d4.x - local_1ec;
+            local_1d4.y = local_1d4.y - local_1e8;
+            local_1d4.z = local_1d4.z - local_1e4;
+            if (local_414[jointNum] == -1) {
+              iVar14 = (int)(local_1d4.x * 256.0);
+              local_70 = (double)(longlong)iVar14;
+              *(short *)(piVar16[1] + iVar7 * 2) = (short)iVar14;
+              iVar14 = (int)(local_1d4.y * 256.0);
+              local_68 = (double)(longlong)iVar14;
+              *(short *)(piVar16[1] + (iVar7 + 1) * 2) = (short)iVar14;
+              iVar14 = (int)(local_1d4.z * 256.0);
+              local_60 = (double)(longlong)iVar14;
+              *(short *)(piVar16[1] + (iVar7 + 2) * 2) = (short)iVar14;
+              iVar7 = iVar7 + 3;
+            }
+            for (iVar14 = 0; iVar14 < 8; iVar14 = iVar14 + 1) {
+              iVar8 = iVar14 + 1;
+              if (iVar8 == 8) {
+                iVar8 = 0;
+              }
+              sVar2 = (short)iVar14;
+              sVar3 = (short)iVar8;
+              if (-1 < local_414[jointNum]) {
+                *(short *)(*piVar16 + iVar12 * 10) = local_414[jointNum] + sVar2 * 5 + 4;
+                *(short *)(*piVar16 + iVar12 * 10 + 2) = sVar9 + sVar2 * 5;
+                *(short *)(*piVar16 + iVar12 * 10 + 4) = sVar9 + sVar3 * 5;
+                iVar8 = iVar12 + 1;
+                *(short *)(*piVar16 + iVar8 * 10) = local_414[jointNum] + sVar2 * 5 + 4;
+                *(short *)(*piVar16 + iVar8 * 10 + 2) = sVar9 + sVar3 * 5;
+                *(short *)(*piVar16 + iVar8 * 10 + 4) = local_414[jointNum] + sVar3 * 5 + 4;
+                iVar12 = iVar12 + 2;
+              }
+              for (iVar8 = 0; iVar8 < 4; iVar8 = iVar8 + 1) {
+                sVar4 = (short)iVar8;
+                *(short *)(*piVar16 + iVar12 * 10) = sVar9 + sVar2 * 5 + sVar4;
+                *(short *)(*piVar16 + iVar12 * 10 + 2) = sVar9 + sVar2 * 5 + sVar4 + 1;
+                *(short *)(*piVar16 + iVar12 * 10 + 4) = sVar9 + sVar3 * 5 + sVar4 + 1;
+                iVar13 = iVar12 + 1;
+                *(short *)(*piVar16 + iVar13 * 10) = sVar9 + sVar2 * 5 + sVar4;
+                *(short *)(*piVar16 + iVar13 * 10 + 2) = sVar9 + sVar3 * 5 + sVar4 + 1;
+                *(short *)(*piVar16 + iVar13 * 10 + 4) = sVar9 + sVar3 * 5 + sVar4;
+                iVar12 = iVar12 + 2;
+              }
+              if (local_414[jointNum] < 0) {
+                *(short *)(*piVar16 + iVar12 * 10) = sVar9 + sVar2 * 5;
+                *(short *)(*piVar16 + iVar12 * 10 + 2) = sVar9 + sVar3 * 5;
+                *(short *)(*piVar16 + iVar12 * 10 + 4) = (short)local_214;
+                iVar12 = iVar12 + 1;
+              }
+            }
+          }
+        }
+      }
+      *(short *)(piVar16 + 2) = (short)iVar12;
+      for (iVar7 = 0; iVar7 < (int)(uint)*(ushort *)(piVar16 + 2); iVar7 = iVar7 + 1) {
+        puVar11 = (ushort *)(*piVar16 + iVar7 * 10);
+        local_70 = (double)CONCAT44(0x43300000,(uint)*(ushort *)(piVar16[1] + (uint)puVar11[1] * 6))
+        ;
+        local_68 = (double)CONCAT44(0x43300000,(uint)*(ushort *)(piVar16[1] + (uint)*puVar11 * 6));
+        local_1ec = (float)(local_70 - 4503599627370496.0) - (float)(local_68 - 4503599627370496.0);
+        local_60 = (double)CONCAT44(0x43300000,
+                                    (uint)*(ushort *)(piVar16[1] + ((uint)puVar11[1] * 3 + 1) * 2));
+        uStack_74 = (uint)*(ushort *)(piVar16[1] + ((uint)*puVar11 * 3 + 1) * 2);
+        local_78 = 0x43300000;
+        local_1e8 = (float)(local_60 - 4503599627370496.0) -
+                    (float)((double)CONCAT44(0x43300000,uStack_74) - 4503599627370496.0);
+        uStack_7c = (uint)*(ushort *)(piVar16[1] + ((uint)puVar11[1] * 3 + 2) * 2);
+        local_80 = 0x43300000;
+        uStack_84 = (uint)*(ushort *)(piVar16[1] + ((uint)*puVar11 * 3 + 2) * 2);
+        local_88 = 0x43300000;
+        local_1e4 = (float)((double)CONCAT44(0x43300000,uStack_7c) - 4503599627370496.0) -
+                    (float)((double)CONCAT44(0x43300000,uStack_84) - 4503599627370496.0);
+        uStack_8c = (uint)*(ushort *)(piVar16[1] + (uint)puVar11[2] * 6);
+        local_90 = 0x43300000;
+        uStack_94 = (uint)*(ushort *)(piVar16[1] + (uint)*puVar11 * 6);
+        local_98 = 0x43300000;
+        local_1f8 = (float)((double)CONCAT44(0x43300000,uStack_8c) - 4503599627370496.0) -
+                    (float)((double)CONCAT44(0x43300000,uStack_94) - 4503599627370496.0);
+        uStack_9c = (uint)*(ushort *)(piVar16[1] + ((uint)puVar11[2] * 3 + 1) * 2);
+        local_a0 = 0x43300000;
+        local_a8 = (double)CONCAT44(0x43300000,
+                                    (uint)*(ushort *)(piVar16[1] + ((uint)*puVar11 * 3 + 1) * 2));
+        local_1f4 = (float)((double)CONCAT44(0x43300000,uStack_9c) - 4503599627370496.0) -
+                    (float)(local_a8 - 4503599627370496.0);
+        local_b0 = (double)CONCAT44(0x43300000,
+                                    (uint)*(ushort *)(piVar16[1] + ((uint)puVar11[2] * 3 + 2) * 2));
+        local_b8 = (double)CONCAT44(0x43300000,
+                                    (uint)*(ushort *)(piVar16[1] + ((uint)*puVar11 * 3 + 2) * 2));
+        local_1f0 = (float)(local_b0 - 4503599627370496.0) - (float)(local_b8 - 4503599627370496.0);
+        VECCrossProduct(&local_1ec,&local_1f8,&local_204.x);
+        dVar17 = (double)vecFn_80010194(&local_204.x);
+        if (dVar17 == 0.0) {
+          local_204.x = 0.0;
+          local_204.y = 1.0;
+          local_204.z = 0.0;
+        }
+        else {
+          VECNormalize(&local_204.x,&local_204.x);
+        }
+        local_b8 = (double)(longlong)(int)(local_204.x * 127.0);
+        *(char *)(puVar11 + 3) = (char)(int)(local_204.x * 127.0);
+        local_b0 = (double)(longlong)(int)(local_204.y * 127.0);
+        *(char *)((int)puVar11 + 7) = (char)(int)(local_204.y * 127.0);
+        local_a8 = (double)(longlong)(int)(local_204.z * 127.0);
+        *(char *)(puVar11 + 4) = (char)(int)(local_204.z * 127.0);
+      }
+      if (param3 == '\0') {
+        *(undefined2 *)(piVar16 + 3) = 0;
+      }
+      else {
+        *(undefined2 *)(piVar16 + 3) = 0xffff;
+      }
+    }
+  }
+  __restfpr_29();
+  return;
+}
+
+
+void LAB_8007fd28(int param_1) { //8007FCF8
+  if (*(int *)(param_1 + 0x48) != 0) {
+    mmFree(*(void **)(param_1 + 0x48));
+    *(undefined4 *)(param_1 + 0x48) = 0;
+  }
+  return;
+}
+
+
+/* Library Function - Single Match
+    modelFn_8007fd3c
+
+   Library: KioskDefault 0 0 */
+
+undefined2 modelGetFieldA4(Model *model) { //8007FD3C
+  if (model == (Model *)0x0) {
+
+    OSPanic("models_dolphin.c",0x65b,"Failed assertion model");
+  }
+  return model->unka4;
+}
+
+
+/* Library Function - Single Match
+    modelGetShader
+
+   Library: KioskDefault 0 0 */
+
+Shader * modelGetShader(Model *model,int shaderNum) { //8007FD8C
+  if (model == (Model *)0x0) {
+
+    OSPanic("models_dolphin.c",0x670,"Failed assertion model");
+  }
+  if ((-1 < shaderNum) && (shaderNum < (int)(uint)model->nShaders)) {
+    return model->shaders + shaderNum;
+  }
+
+  OSPanic("models_dolphin.c",0x671,s_Failed_assertion_shaderNum>_0____802ec2a0);
+}
+
+
+/* Library Function - Single Match
+    modelGetVtxPos
+
+   Library: KioskDefault 0 0 */
+
+S16Vec * modelGetVtxPos(Model *model,int positionNum) { //8007FE10
+  if (model == (Model *)0x0) {
+
+    OSPanic("models_dolphin.c",0x687,"Failed assertion model");
+  }
+  if ((-1 < positionNum) && (positionNum < (int)(uint)model->numPositions)) {
+    return model->vertexPositions + positionNum;
+  }
+
+  OSPanic("models_dolphin.c",0x688,s_Failed_assertion_positionNum>_0___802ec2e0);
+}
+
+
+/* Library Function - Single Match
+    modelGetGCTexture
+
+   Library: KioskDefault 0 0 */
+
+undefined4 modelGetGCTexture(int param1,int textureNum) { //8007FE94
+  if (param1 == 0) {
+
+    OSPanic("models_dolphin.c",0x6e8,"Failed assertion model");
+  }
+  if ((-1 < textureNum) && (textureNum < (int)(uint)*(s8 *)(param1 + 0xb6))) {
+    return *(undefined4 *)(*(int *)(param1 + 0x20) + textureNum * 4);
+  }
+
+  OSPanic("models_dolphin.c",0x6e9,s_Failed_assertion_textureNum>_0___802ec3e0);
+}
+
+
+/* Library Function - Single Match
+    modelGetJoint
+
+   Library: KioskDefault 0 0 */
+
+int modelGetJoint(int param1,int jointNum) { //8007FF18
+  if (param1 == 0) {
+
+    OSPanic("models_dolphin.c",0x6ff,"Failed assertion model");
+  }
+  if ((-1 < jointNum) && (jointNum < (int)(uint)*(s8 *)(param1 + 0xb7))) {
+    return *(int *)(param1 + 0x3c) + jointNum * 0x1c;
+  }
+
+  OSPanic("models_dolphin.c",0x700,s_Failed_assertion_jointNum>_0____j_802ec420);
+}
+
+
+/* Library Function - Single Match
+    modelGetDisplayList
+
+   Library: KioskDefault 0 0 */
+
+DisplayList * modelGetDisplayList(Model *model,int listNum) { //8007FF9C
+  if (model == (Model *)0x0) {
+
+    OSPanic("models_dolphin.c",0x716,"Failed assertion model");
+  }
+  if ((-1 < listNum) && (listNum < (int)(uint)model->unkb8)) {
+    return model->displayLists + listNum;
+  }
+
+  OSPanic("models_dolphin.c",0x717,s_Failed_assertion_listNum>_0____l_802ec45c);
+}
+
+
+/* Library Function - Single Match
+    modelGetPolyGroup
+
+   Library: KioskDefault 0 0 */
+
+PolygonGroup * modelGetPolyGroup(Model *model,int groupNum) { //80080020
+  if (model == (Model *)0x0) {
+
+    OSPanic("models_dolphin.c",0x772,"Failed assertion model");
+  }
+  if ((-1 < groupNum) && (groupNum < (int)(uint)(ushort)model->numPolyGroups)) {
+    return model->polygonGroups + groupNum;
+  }
+
+  OSPanic("models_dolphin.c",0x773,s_Failed_assertion_groupNum>_0____g_802ec58c);
+}
+
+
+/* Library Function - Single Match
+    modelGetGCPoly
+
+   Library: KioskDefault 0 0 */
+
+int modelGetGCPoly(Model *model,int polygonNum) { //800800A4
+  if ((-1 < polygonNum) && (polygonNum < (int)(uint)(ushort)model->numGcPolygons)) {
+    return (int)(model->GCpolygons + polygonNum * 8);
+  }
+
+  OSPanic("models_dolphin.c",0x787,s_Failed_assertion_polygonNum>_0___802ec5c8);
+}
+
+
+Animation * loadAnimation(Model *model,short id,short id2,void *dest) { //8008010C
+  Animation *pAVar1;
+
+  if (dest == NULL) {
+    pAVar1 = getAnimation(id);
+  }
+  else {
+    pAVar1 = modelLoadAnimation(model,(int)id,(int)id2,dest);
+  }
+  return pAVar1;
+}
+
+
+/* Library Function - Single Match
+    modelFn_80080168
+
+   Library: KioskDefault 0 0 */
+
+Animation * modelLoadAnimation(Model *model,int index,int id,void *dest) { //80080168
+  uint offset;
+  u32 len;
+  Animation *result;
+  size_t size;
+
+  offset = *(uint *)(animOffsetTbl + index * 4);
+  loadAndDecompressDataFile(ANIM.BIN,(s8 *)0x0,offset,0,&size,index,1);
+  if (model->animCacheSize + -0x80 <= (int)size) {
+
+    OSPanic("models_dolphin.c",0x866,s_Failed_assertion_animSize<model__802ec6e4);
+  }
+  result = (Animation *)((int)dest + 0x80);
+  if (result == (Animation *)0x0) {
+
+    OSPanic("models_dolphin.c",0x86b,"Failed assertion anim");
+  }
+  loadAndDecompressDataFile(ANIM.BIN,(s8 *)result,offset,size,(uint *)0x0,index,0);
+  len = (model->numJoints - 1 & 0xfffffff8) + 8;
+  loadDataFileWithLength(AMAP.BIN,dest,model->animOffset + id * len,len);
+  return result;
+}
+
+
+/* Library Function - Single Match
+    modAnimFn_80080270
+
+   Library: KioskDefault 0 0 */
+
+Animation * getAnimation(short id) { //80080270
+  BOOL found;
+  uint offset;
+  uint size;
+  Animation *result;
+
+  found = SparseArray_SparseArray_get((SparseArray *)animsLoadedTable,(int)id,&result);
+  if (found == FALSE) {
+    offset = *(uint *)(animOffsetTbl + id * 4);
+    loadAndDecompressDataFile(ANIM.BIN,(s8 *)0x0,offset,0,&size,(int)id,1);
+    result = (Animation *)mmAlloc(size,ANIMS_COL,"mod:anim");
+    if (result == (Animation *)0x0) {
+
+      OSPanic("models_dolphin.c",0x89b,"Failed assertion anim");
+    }
+    loadAndDecompressDataFile(ANIM.BIN,(s8 *)result,offset,size,(uint *)0x0,(int)id,0);
+    result->usage = 1;
+    SpareArray_SpareArray_set((SparseArray *)animsLoadedTable,id,&result);
+  }
+  else {
+    result->usage = result->usage + 1;
+    if (0xfe < (uint)(int)(char)result->usage) {
+
+      OSPanic("models_dolphin.c",0x8a8,s_Failed_assertion_anim_>usage<UCH_802ec744);
+    }
+  }
+  return result;
+}
+
+
+/* Library Function - Single Match
+    modelFn_8008039c
+
+   Library: KioskDefault 0 0 */
+
+void unloadAnimation(s8 *anim) { //8008039C
+  s8 sVar1;
+  BOOL BVar2;
+  s8 *val;
+  SparseArrayItem local_14;
+
+  if (anim != (s8 *)0x0) {
+    val = anim;
+    if (anim == (s8 *)0x0) {
+
+      OSPanic("models_dolphin.c",0x8c8,"Failed assertion anim");
+    }
+    sVar1 = *anim;
+    *anim = sVar1 + -1;
+    if ((char)(sVar1 + -1) < 1) {
+      BVar2 = sparseArrayFindElem((SparseArray *)animsLoadedTable,&val,(int *)&local_14);
+      if ((BVar2 & 0xff) == 0) {
+
+        OSPanic("models_dolphin.c",0x8d2,"Failed assertion success");
+      }
+      sparseArrayRemove((short **)animsLoadedTable,_local_14);
+      mmFree(val);
+    }
+  }
+  return;
+}
+
+
+void objAnimFn_8008045c(double param_1,double scale,ModelInstance *mInst,int whichBuf,int animIdx,
+                       vec3f *outPos,S16Vec *outRot) { //8008045C
+  uint uVar1;
+  float fVar2;
+  s8 bVar3;
+  int *piVar4;
+  undefined4 uVar5;
+  int iVar6;
+  int anim;
+  double extraout_f1;
+  undefined8 uVar7;
+  short local_5c;
+  short local_5a;
+  short local_58;
+  undefined4 local_50;
+  uint uStack_4c;
+  undefined4 local_48;
+  uint uStack_44;
+  double local_40;
+
+  uVar7 = _savefpr_30();
+  piVar4 = (int *)((ulonglong)uVar7 >> 0x20);
+  if (*(short *)(*piVar4 + 0xb0) == 0) {
+    outPos->x = 0.0;
+    outPos->y = 0.0;
+    outPos->z = 0.0;
+    outRot->x = 0;
+    outRot->y = 0;
+    outRot->z = 0;
+  }
+  if ((int)uVar7 == 0) {
+    anim = piVar4[9];
+  }
+  else {
+    anim = piVar4[10];
+  }
+  uVar5 = *(undefined4 *)(anim + 0x34);
+  *(undefined4 *)(anim + 0x34) = *(undefined4 *)(anim + animIdx * 4 + 0x34);
+  if ((*(ushort *)(*piVar4 + 2) & 0x40) == 0) {
+    iVar6 = *(int *)(*(int *)(*piVar4 + 0x4c) + (uint)*(ushort *)(anim + animIdx * 2 + 0x44) * 4);
+  }
+  else if (animIdx < 2) {
+    iVar6 = *(int *)(anim + (uint)*(ushort *)(anim + animIdx * 2 + 0x44) * 4 + 0x1c) + 0x80;
+  }
+  else {
+    iVar6 = *(int *)(anim + (uint)*(ushort *)(anim + animIdx * 2 + 0x44) * 4 + 0x24) + 0x80;
+  }
+  *(float *)(anim + 4) = (float)extraout_f1 * *(float *)(anim + 0x14);
+  bVar3 = *(s8 *)(*(int *)(anim + 0x34) + 2);
+  uVar1 = (uint)*(float *)(anim + 4);
+  local_40 = (double)(longlong)(int)uVar1;
+  uStack_44 = uVar1 ^ 0x80000000;
+  local_48 = 0x43300000;
+  fVar2 = (float)((double)CONCAT44(0x43300000,uStack_44) - 4503601774854144.0);
+  if (fVar2 == *(float *)(anim + 4)) {
+    *(undefined2 *)(anim + 0x4c) = 0;
+  }
+  else {
+    *(ushort *)(anim + 0x4c) = (ushort)bVar3;
+  }
+  if ((*(char *)(anim + 0x60) != '\0') && (fVar2 == *(float *)(anim + 0x14) - 1.0)) {
+    *(ushort *)(anim + 0x4c) = -(ushort)bVar3 * (short)uVar1;
+  }
+  *(uint *)(anim + 0x2c) = iVar6 + (int)*(short *)(iVar6 + 2) + bVar3 * uVar1;
+  LAB_800658d0(anim,&local_5c,&outRot->x);
+  *(undefined4 *)(anim + 0x34) = uVar5;
+  uStack_44 = (int)local_5c ^ 0x80000000;
+  local_48 = 0x43300000;
+  outPos->x = (float)((double)CONCAT44(0x43300000,uStack_44) - 4503601774854144.0) * 0.001953125;
+  local_40 = (double)CONCAT44(0x43300000,(int)local_5a ^ 0x80000000);
+  outPos->y = (float)(local_40 - 4503601774854144.0) * 0.001953125;
+  uStack_4c = (int)local_58 ^ 0x80000000;
+  local_50 = 0x43300000;
+  outPos->z = (float)((double)CONCAT44(0x43300000,uStack_4c) - 4503601774854144.0) * 0.001953125;
+  outPos->x = outPos->x + *(float *)(*(int *)(*piVar4 + 0x3c) + 4);
+  outPos->y = outPos->y + *(float *)(*(int *)(*piVar4 + 0x3c) + 8);
+  outPos->z = outPos->z + *(float *)(*(int *)(*piVar4 + 0x3c) + 0xc);
+  outPos->x = (float)((double)outPos->x * scale);
+  outPos->y = (float)((double)outPos->y * scale);
+  outPos->z = (float)((double)outPos->z * scale);
+  _restfpr_30();
+  return;
+}
+
+
+void LAB_8008086c(ModelInstance *param_1,int param_2,ObjInstance *param_3,Mtx43 *param_4,
+                 ObjInstance *param_5) { //80080734
+  int iVar1;
+  Mtx43 *m;
+  float fVar2;
+  uint uVar3;
+  int iVar4;
+  vec3f local_5c;
+  uint local_50;
+  longlong local_48;
+  undefined4 local_40;
+  uint uStack_3c;
+
+  fVar2 = 0.0;
+  if (((param_5->hitstate != (HitState *)0x0) && (param_5->data->bDisableHits != false)) &&
+     (uVar3 = (int)param_5->hitstate->objHitsSize >> 2, 0 < (int)uVar3)) {
+    uStack_3c = uVar3 ^ 0x80000000;
+    local_40 = 0x43300000;
+    iVar4 = (int)(param_5->animTimer *
+                 (float)((double)CONCAT44(0x43300000,uStack_3c) - 4503601774854144.0));
+    local_48 = (longlong)iVar4;
+    if ((int)uVar3 <= iVar4) {
+      iVar4 = uVar3 - 1;
+    }
+    fVar2 = *(float *)(&param_5->hitstate->objHits->animId + iVar4 * 2);
+  }
+  if (param_3->hitstate != (HitState *)0x0) {
+    param_3->hitstate->unk9f = param_3->hitstate->unk9f - 1;
+    if ((char)param_3->hitstate->unk9f < '\0') {
+      param_3->hitstate->unk9f = 0;
+    }
+    (param_3->hitstate->unk3c).z = (param_3->hitstate->unk3c).y;
+    (param_3->hitstate->unk3c).y = fVar2;
+  }
+  param_1->flags = param_1->flags ^ UseOtherHitboxes;
+  local_50 = param_1->flags & 1;
+  param_1->unk40 = param_1->animInstances[(param_1->flags >> 2 & 1) + 5];
+  m = param_4;
+  for (iVar4 = 0; iVar4 < (int)(uint)*(s8 *)(param_2 + 0xb9); iVar4 = iVar4 + 1) {
+    if (param_4 == (Mtx43 *)0x0) {
+      m = (Mtx43 *)modelInstGetjMtx(param_1,(int)*(short *)(*(int *)(param_2 + 0x40) + iVar4 * 0x18)
+                                   );
+    }
+    if ((iVar4 == 0) && (param_5 != param_3)) {
+      local_5c.x = 0.0;
+      local_5c.y = 0.0;
+      local_5c.z = 0.0;
+      MTXMultVec(m,&local_5c,&local_5c);
+      (param_3->pos).pos.x = local_5c.x + playerMapOffsetX;
+      (param_3->pos).pos.y = local_5c.y;
+      (param_3->pos).pos.z = local_5c.z + playerMapOffsetZ;
+      objMultPosByMtx(param_3,&(param_3->prevPos).x,&(param_3->prevPos).y,&(param_3->prevPos).z);
+    }
+    local_5c.x = *(float *)(*(int *)(param_2 + 0x40) + iVar4 * 0x18 + 8);
+    local_5c.y = *(float *)(*(int *)(param_2 + 0x40) + iVar4 * 0x18 + 0xc);
+    local_5c.z = *(float *)(*(int *)(param_2 + 0x40) + iVar4 * 0x18 + 0x10);
+    *(float *)(param_1->unk40 + iVar4 * 0x10) =
+         *(float *)(*(int *)(param_2 + 0x40) + iVar4 * 0x18 + 4) * (param_5->pos).scale;
+    MTXMultVec(m,&local_5c,(vec3f *)(param_1->unk40 + iVar4 * 0x10 + 4));
+    if (param_5->pMatrix != (ObjInstance *)0x0) {
+      multVectorByObjMtx((double)*(float *)(param_1->unk40 + iVar4 * 0x10 + 4),
+                         (double)*(float *)(param_1->unk40 + iVar4 * 0x10 + 8),
+                         (double)*(float *)(param_1->unk40 + iVar4 * 0x10 + 0xc),
+                         (float *)(param_1->unk40 + iVar4 * 0x10 + 4),
+                         (float *)(param_1->unk40 + iVar4 * 0x10 + 8),
+                         (float *)(param_1->unk40 + iVar4 * 0x10 + 0xc),param_5->pMatrix);
+      iVar1 = iVar4 * 0x10 + 4;
+      *(float *)(param_1->unk40 + iVar1) =
+           *(float *)(param_1->unk40 + iVar1) - playerMapOffsetX;
+      iVar1 = iVar4 * 0x10 + 0xc;
+      *(float *)(param_1->unk40 + iVar1) =
+           *(float *)(param_1->unk40 + iVar1) - playerMapOffsetZ;
+    }
+  }
+  return;
+}
+
+
+void LAB_80080ac8(int *param_1) { //80080A50
+  if (*(int *)(*param_1 + 0xa0) != 0) {
+    vtxAnimFn_800279cc(0.0,param_1,0,-1,-1,7);
+    vtxAnimFn_800279cc(0.0,param_1,1,-1,-1,7);
+    vtxAnimFn_800279cc(0.0,param_1,2,-1,-1,7);
+  }
+  return;
+}
+
+
+void vtxAnimFn_800279cc(double param_1,int *param_2,int param_3,int param_4,int param_5,s8 param_6
+                       ) { //80080ADC
+  float *pfVar1;
+
+  if (((((param_3 < 3) && (*(int *)(*param_2 + 0xa0) != 0)) && (-2 < param_4)) &&
+      ((-2 < param_5 && (param_4 < (int)(uint)*(s8 *)(*param_2 + 0xbb))))) &&
+     (param_5 < (int)(uint)*(s8 *)(*param_2 + 0xbb))) {
+    pfVar1 = (float *)(param_2[8] + param_3 * 0x10);
+    if ((param_4 == -1) && (param_5 == -1)) {
+      if ((*(char *)(pfVar1 + 3) == -1) && (*(char *)((int)pfVar1 + 0xd) == -1)) {
+        return;
+      }
+      param_6 = param_6 | 6;
+    }
+    if ((*(char *)(pfVar1 + 3) != param_4) || (*(char *)((int)pfVar1 + 0xd) != param_5)) {
+      *(char *)(pfVar1 + 3) = (char)param_4;
+      *(char *)((int)pfVar1 + 0xd) = (char)param_5;
+      if ((param_6 & 0x10) == 0) {
+        *pfVar1 = 0.0;
+      }
+      pfVar1[1] = -1.0;
+      pfVar1[2] = (float)param_1;
+      *(s8 *)((int)pfVar1 + 0xe) = param_6 | 4;
+    }
+  }
+  return;
+}
+
+
+void LAB_80080c00(double param_1,int *param_2,int param_3) { //80080BDC
+  float *pfVar1;
+
+  if ((param_3 < 3) && (*(int *)(*param_2 + 0xa0) != 0)) {
+    pfVar1 = (float *)(param_2[8] + param_3 * 0x10);
+    *pfVar1 = (float)param_1;
+    *(s8 *)((int)pfVar1 + 0xe) = *(s8 *)((int)pfVar1 + 0xe) | 4;
+  }
+  return;
+}
+
+
+void modelFn_80080c28(double param1,Model *model) { //80080C28
+  int iVar1;
+  Texture **ppTVar2;
+
+  if (*(int *)(*(int *)model + 0xa0) != 0) {
+    for (iVar1 = 0; iVar1 < 3; iVar1 = iVar1 + 1) {
+      ppTVar2 = &model->GCtextures->next + iVar1 * 4;
+      if (*(char *)(ppTVar2 + 3) == -1) {
+        if (*(char *)((int)ppTVar2 + 0xd) != -1) goto LAB_80080c74;
+      }
+      else {
+LAB_80080c74:
+        if ((*(s8 *)((int)ppTVar2 + 0xe) & 1) == 0) {
+          *ppTVar2 = (Texture *)
+                     (float)((double)(float)ppTVar2[2] * param1 + (double)(float)*ppTVar2);
+          if ((float)*ppTVar2 <= 1.0) {
+            if ((float)*ppTVar2 < 0.0) {
+              *ppTVar2 = (Texture *)0.002;
+              ppTVar2[2] = (Texture *)0.001;
+              *(s8 *)((int)ppTVar2 + 0xe) = *(s8 *)((int)ppTVar2 + 0xe) & 0xfb;
+            }
+          }
+          else {
+            *ppTVar2 = (Texture *)0.99;
+            ppTVar2[2] = (Texture *)0.001;
+            *(s8 *)((int)ppTVar2 + 0xe) = *(s8 *)((int)ppTVar2 + 0xe) & 0xfb;
+          }
+        }
+      }
+    }
+  }
+  return;
+}
+
+
+void LAB_80081008(int *param_1) { //80080D04
+  undefined4 in_r9;
+  int in_r10;
+  short *psVar1;
+  short *psVar2;
+  void *pvVar3;
+  int iVar4;
+  int iVar5;
+  float *pfVar6;
+  dword local_44 [4];
+  dword local_34;
+  dword local_30;
+  short local_2c [2];
+  longlong local_28;
+
+  local_44[3] = 0;
+  local_34 = 0;
+  local_30 = 0;
+  local_44[0] = 0;
+  local_44[1] = 0;
+  local_44[2] = 0;
+  iVar4 = *param_1;
+  if (*(int *)(iVar4 + 0xa0) != 0) {
+    local_2c[0] = *(short *)(iVar4 + 0xa8) + 1;
+    for (iVar5 = 0; iVar5 < 3; iVar5 = iVar5 + 1) {
+      pfVar6 = (float *)(param_1[8] + iVar5 * 0x10);
+      if (*pfVar6 != pfVar6[1]) {
+        *(s8 *)((int)pfVar6 + 0xe) = *(s8 *)((int)pfVar6 + 0xe) & 0xf3;
+        *(s8 *)((int)pfVar6 + 0xe) = *(s8 *)((int)pfVar6 + 0xe) | 4;
+      }
+      local_44[iVar5] = *(s8 *)((int)pfVar6 + 0xe) & 0xc;
+      if (*(char *)(pfVar6 + 3) == -1) {
+        if ((*(char *)((int)pfVar6 + 0xd) != -1) || ((*(s8 *)((int)pfVar6 + 0xe) & 0xc) != 0))
+        goto LAB_80080df0;
+      }
+      else {
+LAB_80080df0:
+        local_44[iVar5 + 3] = 1;
+      }
+      if ((local_44[iVar5] & 4) == 0) {
+        if ((local_44[iVar5] & 8) != 0) {
+          *(s8 *)((int)pfVar6 + 0xe) = *(s8 *)((int)pfVar6 + 0xe) & 0xf7;
+        }
+      }
+      else {
+        *(s8 *)((int)pfVar6 + 0xe) = *(s8 *)((int)pfVar6 + 0xe) & 0xfb;
+        *(s8 *)((int)pfVar6 + 0xe) = *(s8 *)((int)pfVar6 + 0xe) | 8;
+      }
+    }
+    if (((local_44[3] != 0) || (local_34 != 0)) || (local_30 != 0)) {
+      if (local_34 != 0) {
+        local_44[3] = 0;
+      }
+      if (local_44[2] != 0) {
+        local_44[0] = 1;
+        local_44[1] = 1;
+      }
+      iVar5 = 0;
+      while( true ) {
+        if (2 < iVar5) break;
+        pfVar6 = (float *)(param_1[8] + iVar5 * 0x10);
+        if ((*(s8 *)((int)pfVar6 + 0xe) & 2) != 0) {
+          *(s8 *)((int)pfVar6 + 0xe) = *(s8 *)((int)pfVar6 + 0xe) & 0xfd;
+          *pfVar6 = 0.0;
+        }
+        if ((local_44[iVar5 + 3] != 0) && (local_44[iVar5] != 0)) {
+          if (*(char *)(pfVar6 + 3) < '\0') {
+            psVar2 = local_2c;
+          }
+          else {
+            psVar2 = *(short **)(*(int *)(iVar4 + 0xa0) + *(char *)(pfVar6 + 3) * 4);
+          }
+          if (*(char *)((int)pfVar6 + 0xd) < '\0') {
+            psVar1 = local_2c;
+          }
+          else {
+            psVar1 = *(short **)(*(int *)(iVar4 + 0xa0) + *(char *)((int)pfVar6 + 0xd) * 4);
+          }
+          if (iVar5 == 2) {
+            if ((local_44[3] == 0) && (local_34 == 0)) {
+              pvVar3 = *(void **)(iVar4 + 0x28);
+            }
+            else {
+              pvVar3 = (void *)param_1[7];
+            }
+          }
+          else {
+            pvVar3 = *(void **)(iVar4 + 0x28);
+          }
+          if (*pfVar6 <= 1.0) {
+            if (*pfVar6 < 0.0) {
+              *pfVar6 = 0.0;
+            }
+          }
+          else {
+            *pfVar6 = 1.0;
+          }
+          local_28 = (longlong)(int)(*pfVar6 * 65536.0);
+          modelApplyBoneTransforms
+                    (pvVar3,param_1[7],(uint)*(ushort *)(iVar4 + 0xa8),psVar2,psVar1,
+                     (int)(*pfVar6 * 65536.0),in_r9,in_r10);
+        }
+        pfVar6[1] = *pfVar6;
+        iVar5 = iVar5 + 1;
+      }
+      *(undefined *)(param_1 + 0x14) = 1;
+    }
+  }
+  return;
+}
+
+
+void LAB_80081084(ModelInstance *param_1,Mtx43 *param_2,int param_3) { //8008102C
+  Mtx43 *pMVar1;
+  Model *pMVar2;
+  uint param2;
+  Mtx43 MStack_4c;
+
+  pMVar2 = param_1->model;
+  if (pMVar2->numJoints == 0) {
+    pMVar1 = (Mtx43 *)modelInstGetjMtx(param_1,0);
+    MTXConcat(param_2,pMVar1,pMVar1);
+  }
+  else {
+    for (param2 = 0; param2 < pMVar2->numJoints; param2 = param2 + 1) {
+      pMVar1 = (Mtx43 *)modelInstGetjMtx(param_1,param2);
+      MTXTrans(-(double)pMVar2->joints[param2].bindTranslation.x,
+               -(double)pMVar2->joints[param2].bindTranslation.y,
+               -(double)pMVar2->joints[param2].bindTranslation.z,&MStack_4c.m11);
+      MTXConcat(pMVar1,&MStack_4c,&MStack_4c);
+      mtxTranspose43(&MStack_4c.m11,(float *)(param_3 + param2 * 0x30));
+      MTXConcat(param_2,pMVar1,pMVar1);
+    }
+  }
+  return;
+}
+
+
+void modelApplyBoneTransforms
+               (void *param_1,int param_2,uint param_3,short *param_4,short *param_5,int param_6,
+               undefined4 param_7,int param_8) { //80081134
+  uint unaff_r23;
+  u32 len;
+  uint unaff_r25;
+  uint numBlocks;
+  uint uVar1;
+  uint uVar2;
+  uint uVar3;
+  short *local_34;
+  short *local_30;
+  int local_2c;
+
+  uVar1 = 0;
+  uVar2 = param_3;
+  if ((uint)WORD_80396cfc < (param_3 & 0xffff)) {
+    uVar2 = (uint)WORD_80396cfc;
+  }
+  numBlocks = (uVar2 & 0xffff) * 6 + 0x1f >> 5 & 0x7ff;
+  local_34 = param_4;
+  local_30 = param_5;
+  local_2c = param_6;
+  LCLoadBlocks(&DAT_e0000000,param_1,numBlocks);
+  uVar3 = 0;
+  len = 0;
+  while ((param_3 & 0xffff) != 0) {
+    param_3 = param_3 - uVar2;
+    if ((param_3 & 0xffff) != 0) {
+      unaff_r25 = param_3;
+      if ((uint)WORD_80396cfc < (param_3 & 0xffff)) {
+        unaff_r25 = (uint)WORD_80396cfc;
+      }
+      unaff_r23 = (unaff_r25 & 0xffff) * 6 + 0x1f >> 5 & 0x7ff;
+      LCLoadBlocks((void *)((uVar3 ^ 1) * 0x2000 + -0x20000000),
+                   (void *)((int)param_1 + ((uVar1 & 0xffff) + (uint)WORD_80396cfc) * 6),unaff_r23);
+      len = 1;
+    }
+    LCQueueWait(len);
+    modelApplyBoneTransform
+              ((undefined4 *)(uVar3 * 0x2000 + -0x20000000),
+               (undefined4 *)(uVar3 * 0x2000 + -0x1ffff000),uVar2,&local_34,&local_30,local_2c,
+               param_7,param_8);
+    LCStoreBlocks((void *)(param_2 + (uVar1 & 0xffff) * 6),(void *)(uVar3 * 0x2000 + -0x1ffff000),
+                  numBlocks & 0xffff);
+    uVar1 = uVar1 + uVar2;
+    len = 1;
+    uVar3 = uVar3 ^ 1;
+    numBlocks = unaff_r23;
+    uVar2 = unaff_r25;
+  }
+  LCQueueWait(0);
+  return;
+}
+
+
+/* Library Function - Single Match
+    setMaxModelNum
+
+   Library: KioskDefault 0 0 */
+
+BOOL countModels(void) { //800812A0
+  void *pvVar1;
+  BOOL uVar2;
+
+  pvVar1 = getTable(MODELS.tab);
+  if (pvVar1 == NULL) {
+    uVar2 = FALSE;
+  }
+  else {
+    for (maxModelNum = 0; *(int *)((int)pvVar1 + maxModelNum * 4) != -1;
+        maxModelNum = maxModelNum + 1) {
+    }
+    maxModelNum = maxModelNum - 1;
+    if (0x7fff < (int)maxModelNum) {
+
+      OSPanic("models_dolphin.c",0xce5,s_Failed_assertion_maxModelNum<_SH_802ec81c);
+    }
+    animOffsetTbl = (dword)getTable(ANIM.TAB);
+    if ((void *)animOffsetTbl == NULL) {
+      uVar2 = FALSE;
+    }
+    else {
+      bHaveAnimTab = 0;
+      uVar2 = TRUE;
+    }
+  }
+  return uVar2;
+}
+
+
+void modelApplyBoneTransform
+               (undefined4 *param_1,undefined4 *param_2,int param_3,short **param_4,short **param_5,
+               int param_6,undefined4 param_7,int param_8) { //8008136C
+  short sVar1;
+  short sVar2;
+  short *psVar3;
+  undefined2 *puVar4;
+  uint uVar5;
+  int iVar6;
+  int in_r12;
+  int iVar7;
+  int unaff_r15;
+  int iVar8;
+  uint uVar9;
+  undefined4 uVar10;
+  short *psVar11;
+  short *psVar12;
+  undefined8 uVar13;
+
+  psVar11 = *param_4;
+  psVar12 = *param_5;
+  uVar5 = 0;
+  iVar8 = 0x10000 - param_6;
+LAB_80081390:
+  do {
+    sVar1 = *psVar11;
+    uVar9 = (int)*psVar12 & 0x1fff;
+    for (; (int)uVar5 < (int)((int)sVar1 & 0x1fffU); uVar5 = uVar5 + 1) {
+      if ((int)uVar9 <= (int)uVar5) {
+        uVar13 = LAB_80081578();
+        psVar3 = (short *)((ulonglong)uVar13 >> 0x20);
+        puVar4 = (undefined2 *)uVar13;
+        param_8 = ((uint)(param_8 * param_6) >> 0x10) + (int)*psVar3;
+        in_r12 = ((uint)(in_r12 * param_6) >> 0x10) + (int)psVar3[1];
+        unaff_r15 = ((uint)(unaff_r15 * param_6) >> 0x10) + (int)psVar3[2];
+        *puVar4 = (short)param_8;
+        param_1 = (undefined4 *)(psVar3 + 3);
+        puVar4[1] = (short)in_r12;
+        uVar5 = uVar5 + 1;
+        puVar4[2] = (short)unaff_r15;
+        param_2 = (undefined4 *)(puVar4 + 3);
+        goto LAB_80081390;
+      }
+      if (param_3 <= (int)uVar5) {
+        *param_4 = psVar11;
+        *param_5 = psVar12;
+        return;
+      }
+      uVar10 = *param_1;
+      sVar2 = *(short *)(param_1 + 1);
+      param_1 = (undefined4 *)((int)param_1 + 6);
+      *param_2 = uVar10;
+      *(short *)(param_2 + 1) = sVar2;
+      param_2 = (undefined4 *)((int)param_2 + 6);
+    }
+    if (uVar5 == uVar9) {
+      LAB_80081578();
+      iVar6 = param_8;
+      iVar7 = in_r12;
+      uVar13 = LAB_80081578();
+      psVar3 = (short *)((ulonglong)uVar13 >> 0x20);
+      puVar4 = (undefined2 *)uVar13;
+      param_8 = ((uint)(param_8 * iVar8 + iVar6 * param_6) >> 0x10) + (int)*psVar3;
+      in_r12 = ((uint)(iVar7 * iVar8 + in_r12 * param_6) >> 0x10) + (int)psVar3[1];
+      unaff_r15 = ((uint)(unaff_r15 * iVar8 + unaff_r15 * param_6) >> 0x10) + (int)psVar3[2];
+      *puVar4 = (short)param_8;
+      puVar4[1] = (short)in_r12;
+      puVar4[2] = (short)unaff_r15;
+      param_1 = (undefined4 *)(psVar3 + 3);
+      param_2 = (undefined4 *)(puVar4 + 3);
+      uVar5 = uVar5 + 1;
+    }
+    else {
+      uVar13 = LAB_80081578();
+      psVar3 = (short *)((ulonglong)uVar13 >> 0x20);
+      puVar4 = (undefined2 *)uVar13;
+      param_8 = ((uint)(param_8 * iVar8) >> 0x10) + (int)*psVar3;
+      in_r12 = ((uint)(in_r12 * iVar8) >> 0x10) + (int)psVar3[1];
+      unaff_r15 = ((uint)(unaff_r15 * iVar8) >> 0x10) + (int)psVar3[2];
+      *puVar4 = (short)param_8;
+      puVar4[1] = (short)in_r12;
+      puVar4[2] = (short)unaff_r15;
+      param_1 = (undefined4 *)(psVar3 + 3);
+      param_2 = (undefined4 *)(puVar4 + 3);
+      uVar5 = uVar5 + 1;
+    }
+  } while( true );
+}
+
+
+void LAB_80081578(void) { //80081534
+  return;
+}
+
+
+/* Library Function - Single Match
+    modelGetVtxPosFloat
+
+   Library: KioskDefault 0 0 */
+
+void modelGetVtxPosFloat(Model *model,int positionNum,vec3f *posVec) { //8008157C
+  S16Vec *vp;
+
+  if (posVec == (vec3f *)0x0) {
+
+    OSPanic("models_dolphin.c",0xe3a,"Failed assertion posVec");
+  }
+  if ((-1 < positionNum) && (positionNum < (int)(uint)model->numPositions)) {
+    vp = modelGetVtxPos(model,positionNum);
+    posVec->x = (float)((double)CONCAT44(0x43300000,(int)vp->x ^ 0x80000000) - 4503601774854144.0) *
+                0.00390625;
+    posVec->y = (float)((double)CONCAT44(0x43300000,(int)vp->y ^ 0x80000000) - 4503601774854144.0) *
+                0.00390625;
+    posVec->z = (float)((double)CONCAT44(0x43300000,(int)vp->z ^ 0x80000000) - 4503601774854144.0) *
+                0.00390625;
+    return;
+  }
+
+  OSPanic("models_dolphin.c",0xe3b,s_Failed_assertion_positionNum>_0___802ec2e0);
+}
+#endif

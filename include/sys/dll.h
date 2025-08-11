@@ -347,17 +347,17 @@ typedef struct {
 
         struct {
             void(*update)(struct ObjInstance *object);
-            void(*render)(struct ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx, Pol **pol, BOOL shouldRender);
+            void(*render)(struct ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, bool shouldRender);
             //void(*func04)(struct ObjInstance *object);
             void(*hitDetect)(struct ObjInstance *object);
-            void(*func06)();
+            void(*func06)(struct ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, bool shouldRender);
             void(*onFreeObjDef)(struct ObjInstance *object, undefined4);
             u32 (*getModelFlags)(struct ObjInstance *object); //in final, this is done inline
             int (*getExtraSize)(struct ObjInstance *object, void *state); //returns sizeof(this obj's State)
             UNKTYPE *setScale;
             UNKTYPE *unk24;
             void (*modelMtxFn_0x28)(struct ObjInstance *object, undefined4, Vec * );
-            void (*render2C)(struct ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx, Pol **pol); //called for child of player object with ID 0x2d, 0x2f
+            void (*render2C)(struct ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx); //called for child of player object with ID 0x2d, 0x2f
         } Object;
 
         struct {

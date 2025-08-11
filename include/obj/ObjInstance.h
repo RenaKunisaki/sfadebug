@@ -41,7 +41,7 @@ typedef enum {
 #define ObjInstance_FlagsB0_IsRendered 2048
 #define ObjInstance_FlagsB0_SeqActive 4096
 #define ObjInstance_FlagsB0_DontMove 8192
-#define ObjInstance_FlagsB0_DontUseRenderCallback 16384
+#define ObjInstance_FlagsB0_DontRender 16384 //aka ObjInstance_FlagsB0_DontUseRenderCallback
 #define ObjInstance_FlagsB0_DontUpdate 32768
 
 #define ObjFileStructFlags44_HaveModels	1
@@ -170,7 +170,7 @@ typedef struct {
     /* 0x5f */ char name[15];
     /* 0x6e */ s8 unk6e;
     /* 0x6f */ u8 class_;
-    /* 0x70 */ s8 noplacements; //related to hitbox (height?)
+    /* 0x70 */ u8 noplacements; //related to hitbox (height?)
     /* 0x71 */ u8 nTextures;
     /* 0x72 */ u8 nJoints;
     /* 0x73 */ s8 stateVar73; //1=translucent; 3=invincible - not flags
