@@ -7,6 +7,7 @@
 
 s8 debugRenderMode;
 s8 BYTE_80398afc;
+int DAT_80398aec;
 
 void playerRender(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, bool shouldRender);
 void objRenderCurrentModel(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx );
@@ -91,3 +92,9 @@ ObjInstance *obj, s8 shouldRender) {
             0x80, 0x80, 0x80);
     }
 }
+
+void fn_80094B08(undefined4 param_1) {
+  DAT_80398aec = param_1;
+  return;
+}
+
