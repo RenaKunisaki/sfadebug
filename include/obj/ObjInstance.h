@@ -221,10 +221,8 @@ typedef struct {
     /* 0xa9 */ s8 unka9;
     /* 0xaa */ s8 unkaa;
     /* 0xab */ s8 unkab;
-    /* 0xac */ s8 unkac;
-    /* 0xad */ s8 unkad;
-    /* 0xae */ s8 unkae;
-    /* 0xaf */ s8 unkaf;
+    /* 0xac */ u16 unkac; //shadow? related to drawing circles (black)
+    /* 0xae */ u16 unkae; //related to drawing circles (gray)
     /* 0xb0 */ s8 unkb0;
     /* 0xb1 */ s8 unkb1;
     /* 0xb2 */ s8 unkb2;

@@ -13,7 +13,7 @@ void objRenderCurrentModel(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **p
 void objRenderCurrentModel2(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, float);
 void drawCircle(Gfx_ **gfx,Mtx44 **mtx,float x,float y,float z,float radius,float param_7,u8 r,u8 g, u8 b);
 
-void objRender(Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx, Pol **pol,
+void objRender(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx,
 ObjInstance *obj, s8 shouldRender) {
 	ObjInstance *child;
 	ObjDef *odef;
@@ -77,17 +77,17 @@ ObjInstance *obj, s8 shouldRender) {
         }
     }
     if(((debugRenderMode == 1 || debugRenderMode == 2)) && shouldRender) {
-        LAB_80095968(gfx, mtx, vtx, pol, (int)obj);
+        LAB_80095968(gfx, mtx, pol, vtx, obj);
     }
     if(((BYTE_80398afc == 1) && shouldRender)
-    && (*(short *)((int)&obj->objdata[1].pModelList + 2) != 0)) {
+    && obj->objdata->unkac) {
         drawCircle(gfx, mtx,
             obj->pos.pos.x, obj->pos.pos.y, obj->pos.pos.z,
-            (* (ushort *)((int)&obj->objdata[1].pModelList + 2)) * 0.1,
-            32.0, 0, 0, 0);
+            obj->objdata->unkac * 0.1f, 32.0f,
+            0, 0, 0);
         drawCircle(gfx, mtx,
             obj->pos.pos.x, obj->pos.pos.y, obj->pos.pos.z,
-            (* (ushort *)&obj->objdata[1].textures) * 0.1,
-            32.0, 0x80, 0x80, 0x80);
+            obj->objdata->unkae * 0.1f, 32.0f,
+            0x80, 0x80, 0x80);
     }
 }
