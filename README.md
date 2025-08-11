@@ -53,6 +53,10 @@ This build doesn't boot on console or emulator because:
 
 NOTE: splits are currently very approximate guesses
 
+# This code will most likely NOT compile yet
+
+I'm just going through functions in objdiff matching them one by one. Fixing all the different references and making the whole thing build comes later.
+
 Dependencies
 ============
 
