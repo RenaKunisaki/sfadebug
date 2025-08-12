@@ -353,7 +353,7 @@ typedef struct {
     /* 0x00 */ float unk00; //copied from ObjectFileStruct field 0
     /* 0x04 */ Texture *texture;
     /* 0x08 */ Texture *texture2;
-    /* 0x0c */ int unk0c;
+    /* 0x0c */ uint unk0c;
     /* 0x10 */ UNKTYPE *unk10;
     /* 0x14 */ Vec unk14; //size?
     /* 0x20 */ Vec pos;
