@@ -13,7 +13,7 @@ int DAT_80398aec;
 u8 framesThisStep;
 
 void playerRender(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, bool shouldRender);
-void objRenderCurrentModel(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx );
+void objRenderCurrentModel(ObjInstance *obj);
 void objRenderCurrentModel2(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, float);
 void drawCircle(Gfx_ **gfx,Mtx44 **mtx,float x,float y,float z,float radius,float param_7,u8 r,u8 g, u8 b);
 
@@ -138,5 +138,19 @@ Pol **pol, N64Vertex **vtx, float param_6) {
         *mtx = mtx2;
         *pol = pol2;
         if(vtx) *vtx = vtx2;
+    }
+}
+
+
+void objRenderCurrentModel(ObjInstance *obj) {
+    ModelInstance *frame;
+    Model *mod;
+    int dummy[4];
+
+    frame = obj->frames[obj->modelno];
+    if(!frame) return;
+    mod = frame->mod;
+    if(mod->flags & ModelDataFlags2_CopyVtxsOnLoad) {
+        modelExecRenderStream_(obj,mod);
     }
 }

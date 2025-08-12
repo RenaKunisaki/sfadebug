@@ -403,6 +403,9 @@ typedef struct {
     /* 0x04 */ S16Vec *vertexPositions2;
     /* 0x08 */ s32 unk08;
     /* 0x0c */ Mtx44 *jMtxs[2]; //joint matrices
+        //obj->frames->jMtxs[(char)obj->modelno + -3]
+        //is actually:
+        //obj->frames[obj->modelno]
     /* 0x14 */ ModelSkeletonStruct *skeleton;
     /* 0x18 */ u16 flags; //ModelFlags18
     /* 0x1a */ s8 unk1a;
