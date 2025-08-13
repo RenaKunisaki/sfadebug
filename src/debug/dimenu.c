@@ -376,20 +376,6 @@ void diMenuItemDoControls(DiMenuItem *item) { // 8017b10c
 	}
 }
 
-#define RSP_CMD(gfx, op, prm)                                                  \
-	do {                                                                       \
-		Gfx_ *temp_r19 = (*(gfx))++;                                           \
-		temp_r19->pkt.cmd = op;                                                \
-		temp_r19->pkt.param = prm;                                             \
-	} while(0)
-
-#define RSP_CMD_NOINC(gfx, op, prm)                                            \
-	do {                                                                       \
-		Gfx_ *temp_r19 = *gfx;                                                 \
-		temp_r19->pkt.cmd = op;                                                \
-		temp_r19->pkt.param = prm;                                             \
-	} while(0)
-
 void diMenuDrawCur(void) { // 8017b384
 	u32 xPos, yPos;
 	u8 colR, colG, colB, colA;

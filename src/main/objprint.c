@@ -141,7 +141,6 @@ Pol **pol, N64Vertex **vtx, float param_6) {
     }
 }
 
-
 void objRenderCurrentModel(ObjInstance *obj) {
     ModelInstance *frame;
     Model *mod;
@@ -152,5 +151,22 @@ void objRenderCurrentModel(ObjInstance *obj) {
     mod = frame->mod;
     if(mod->flags & ModelDataFlags2_CopyVtxsOnLoad) {
         modelExecRenderStream_(obj,mod);
+    }
+}
+
+void fn_80095cc0(Gfx_ **gfx,Mtx44 **mtx,Pol **pol,N64Vertex **vtx,
+ModelInstance *mInst,UNKTYPE *param_6) {
+    int unk[0x9c]; //0x270 bytes
+
+    unk[0x99] = (int)*pol; //offset 0x284
+    unk[0x98] = (int)*vtx; //offset 0x280
+    if(mInst->skeleton && (*(u8 *)((int)param_6 + 0xb7))) {
+        fn_800BFBBC(*mtx);
+        RSP_CMD(gfx, GX_LOADMTXS | 0x380002, ++*mtx);
+        ((Vec*)&unk[0x91])->x = //offset 0x26c
+        ((Vec*)&unk[0x91])->y = //offset 0x268
+        ((Vec*)&unk[0x91])->z = 65536.0f; //offset 0x264
+
+        objPrintFn_80095cd4(gfx,mtx,pol,vtx,param_6,mInst);
     }
 }
