@@ -1,4 +1,5 @@
 #include "dolphin.h"
+#include "dolphin/gx/GXStruct.h"
 #include "gfx/models/models.h"
 #include "macros.h"
 #include "types.h"
@@ -16,6 +17,7 @@ void playerRender(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Ve
 void objRenderCurrentModel(ObjInstance *obj);
 void objRenderCurrentModel2(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, float);
 void drawCircle(Gfx_ **gfx,Mtx44 **mtx,float x,float y,float z,float radius,float param_7,u8 r,u8 g, u8 b);
+void LAB_8006a790(Gfx_ **gfx,Mtx44 **mtx,ObjPos *pos,float x,float y,Mtx44 *mtx2);
 
 s8 areModelsEnabled(); //maybe areModelsDisabled - not bool
 s8 isMainCharacterEnabled(); //maybe isMainCharacterDisabled
@@ -154,8 +156,34 @@ void objRenderCurrentModel(ObjInstance *obj) {
     }
 }
 
+u8 Color4b_ARRAY_802ee504[];
+u8 BYTE_802ee2b8;
+u8 BYTE_802ee158;
+
+void fn_80095AEC(Gfx_ **gfx, Mtx44 **mtx, u8 iColor,
+float x, float y, float z, float scale) {
+	ObjPos pos;
+    u8 *color;
+
+	pos.rotation.x = 0;
+	pos.rotation.y = 0;
+	pos.rotation.z = 0;
+	pos.scale = scale;
+	pos.pos.x = x;
+	pos.pos.y = y;
+	pos.pos.z = z;
+	LAB_8006a790(gfx, mtx, &pos, 1.0f, 0.0f, NULL);
+
+    color = &Color4b_ARRAY_802ee504[iColor*3];
+	RSP_setTevColor2(gfx, color[0], color[1], color[2], 0xff);
+
+    LAB_800a5074(gfx, NULL, NULL, 6, 0, 0, 1);
+    RSP_CMD(gfx, 0x0100c018, &BYTE_802ee2b8);
+	LAB_800a6d9c(gfx, &BYTE_802ee158, 0x14);
+}
+
 void fn_80095cc0(Gfx_ **gfx,Mtx44 **mtx,Pol **pol,N64Vertex **vtx,
-ModelInstance *mInst,UNKTYPE *param_6) {
+ModelInstance *mInst, UNKTYPE *param_6) {
     int unk[0x9c]; //0x270 bytes
 
     unk[0x99] = (int)*pol; //offset 0x284
