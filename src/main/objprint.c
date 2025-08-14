@@ -13,6 +13,10 @@ s8 BYTE_80398afc;
 int DAT_80398aec;
 u8 framesThisStep;
 
+u8 *Color4b_ARRAY_802ee504;
+u8 BYTE_802ee2b8;
+u8 BYTE_802ee158;
+
 void playerRender(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, bool shouldRender);
 void objRenderCurrentModel(ObjInstance *obj);
 void objRenderCurrentModel2(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, float);
@@ -156,15 +160,12 @@ void objRenderCurrentModel(ObjInstance *obj) {
     }
 }
 
-u8 Color4b_ARRAY_802ee504[];
-u8 BYTE_802ee2b8;
-u8 BYTE_802ee158;
-
 void fn_80095AEC(Gfx_ **gfx, Mtx44 **mtx, u8 iColor,
 float x, float y, float z, float scale) {
 	ObjPos pos;
     u8 *color;
 
+    color = Color4b_ARRAY_802ee504;
 	pos.rotation.x = 0;
 	pos.rotation.y = 0;
 	pos.rotation.z = 0;
@@ -174,8 +175,11 @@ float x, float y, float z, float scale) {
 	pos.pos.z = z;
 	LAB_8006a790(gfx, mtx, &pos, 1.0f, 0.0f, NULL);
 
-    color = &Color4b_ARRAY_802ee504[iColor*3];
-	RSP_setTevColor2(gfx, color[0], color[1], color[2], 0xff);
+    RSP_setTevColor2(gfx,
+        color[iColor*3+0],
+        color[iColor*3+1],
+        color[iColor*3+2],
+        0xff);
 
     LAB_800a5074(gfx, NULL, NULL, 6, 0, 0, 1);
     RSP_CMD(gfx, 0x0100c018, &BYTE_802ee2b8);
