@@ -134,7 +134,7 @@ ModelInstance *createModelInstance(
 		pfVar3 = pfVar3 + 7;
 		minst->skeleton->unk00 = (float *)pfVar3;
 		pfVar3 = pfVar3 + (uint)model->numJoints * 3;
-		minst->skeleton->unk04 = (float *)pfVar3;
+		minst->skeleton->scale = (float *)pfVar3;
 		pfVar3 = pfVar3 + model->numJoints;
 		minst->skeleton->unk08 = (float *)pfVar3;
 		pfVar3 = pfVar3 + model->numJoints;

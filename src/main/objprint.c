@@ -22,6 +22,8 @@ void objRenderCurrentModel(ObjInstance *obj);
 void objRenderCurrentModel2(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, float);
 void drawCircle(Gfx_ **gfx,Mtx44 **mtx,float x,float y,float z,float radius,float param_7,u8 r,u8 g, u8 b);
 void LAB_8006a790(Gfx_ **gfx,Mtx44 **mtx,ObjPos *pos,float x,float y,Mtx44 *mtx2);
+void objPrintFn_80095cd4(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, Model *mod, ModelInstance *mInst);
+Mtx44 * modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
 
 s8 areModelsEnabled(); //maybe areModelsDisabled - not bool
 s8 isMainCharacterEnabled(); //maybe isMainCharacterDisabled
@@ -183,7 +185,7 @@ float x, float y, float z, float scale) {
 
     LAB_800a5074(gfx, NULL, NULL, 6, 0, 0, 1);
     RSP_CMD(gfx, 0x0100c018, &BYTE_802ee2b8);
-	LAB_800a6d9c(gfx, &BYTE_802ee158, 0x14);
+	n64DrawTriangles(gfx, &BYTE_802ee158, 0x14);
 }
 
 void fn_80095cc0(Gfx_ **gfx,Mtx44 **mtx,Pol **pol,N64Vertex **vtx,
@@ -201,4 +203,95 @@ ModelInstance *mInst, UNKTYPE *param_6) {
 
         objPrintFn_80095cd4(gfx,mtx,pol,vtx,param_6,mInst);
     }
+}
+
+typedef struct {
+    int ang[120]; //strange since MAX_JOINTS is 150
+} JointAngleStruct;
+JointAngleStruct DWORD_802cf020;
+JointAngleStruct DWORD_802cf200;
+
+typedef struct {
+    int unk[30];
+} JointStruct2;
+JointStruct2 DWORD_802edf10;
+
+N64VertexIdxs N64VertexIdxs_ARRAY_802edf50[10];
+N64VertexIdxs N64VertexIdxs_ARRAY_802edff0[8];
+
+void objPrintFn_80095cd4(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx,
+Model *mod, ModelInstance *mInst) {
+    Vec pos;
+	ObjPos xf;
+    Mtx44 mtxTmp;
+    JointAngleStruct jointXZ;
+    JointAngleStruct jointY;
+    JointStruct2 joint2;
+	ModelSkeletonStruct *skel;
+    bool bVar1;
+    Mtx44 *jMtx;
+    int ii;
+	int jj;
+	int iParent;
+	float dxz;
+
+	skel = mInst->skeleton;
+	jointXZ = DWORD_802cf020;
+	jointY = DWORD_802cf200;
+    joint2 = DWORD_802edf10;
+
+	for(ii = 1; ii < (int)(uint)mod->numJoints; ii++) {
+		dxz = sqrt(
+            (mod->joints[ii].translation.x * mod->joints[ii].translation.x)
+		    +  (mod->joints[ii].translation.z * mod->joints[ii].translation.z));
+		jointY .ang[ii] = getAngle(dxz, mod->joints[ii].translation.y) & 0xffff;
+		jointXZ.ang[ii] = getAngle(mod->joints[ii].translation.z, mod->joints[ii].translation.x) & 0xffff;
+	}
+
+	for(ii = 1; ii < mod->numJoints; ii++) {
+		LAB_800a5074(gfx, NULL, NULL, 0x80000002, 0, 0, 1);
+		for(jj = 0; jj < 2; jj++) {
+			if(jj) iParent = ii;
+            else iParent = mod->joints[ii].parent;
+			jMtx = modelInstGetjMtx(mInst, ii);
+            ASSERTLINE(1990, jMtx);
+			xf.pos.x = *jMtx[0][3];
+			xf.pos.y = *jMtx[1][3];
+			xf.pos.z = *jMtx[2][3];
+			xf.rotation.z = 0;
+			xf.rotation.y = jointY .ang[iParent];
+			xf.rotation.x = jointXZ.ang[iParent];
+			xf.scale = skel->scale[iParent] / 16.0f;
+			if(mod->exT[iParent] <= 1.0f) {
+				jMtx = modelInstGetjMtx(mInst,
+                    mod->joints[ii].parent);
+                ASSERTLINE(2014, jMtx);
+				pos.x = *jMtx[0][3];
+				pos.y = *jMtx[1][3];
+				pos.z = *jMtx[2][3];
+				xf.pos.x = (xf.pos.x - pos.x) * (mod->exT[ii] - 1.0f) + xf.pos.x;
+				xf.pos.y = (xf.pos.y - pos.y) * (mod->exT[ii] - 1.0f) + xf.pos.y;
+				xf.pos.z = (xf.pos.z - pos.z) * (mod->exT[ii] - 1.0f) + xf.pos.z;
+				bVar1 = true;
+			} else {
+				bVar1 = false;
+			}
+			mtxSetFromObjPos(&mtxTmp, &xf);
+			MTX44_Copy(&mtxTmp, *mtx);
+            RSP_CMD(gfx, 0xda380002, *(mtx++));
+			if(skel->unk18[iParent] == 0) {
+				RSP_setTevColor2(gfx, 0xff, 0xff, 0xff, 0xff);
+			} else {
+				RSP_setTevColor2(gfx, 0x00, 0x00, 0x00, 0xff);
+			}
+			if(jj == 0) {
+                RSP_CMD(gfx, 0x01004008, &DWORD_802edf10);
+			} else {
+                RSP_CMD(gfx, 0x01004010, &DWORD_802edf10);
+				if(bVar1) n64DrawTriangles(gfx, N64VertexIdxs_ARRAY_802edf50, 10);
+				else      n64DrawTriangles(gfx, N64VertexIdxs_ARRAY_802edff0,  8);
+			}
+            RSP_CMD(gfx, 0xd8380002, 0x40);
+		} //for jj
+	} //for ii
 }

@@ -61,6 +61,23 @@ typedef struct {
 } N64Vertex;
 
 typedef struct {
+    /* 0x0 */ undefined unk00;
+    /* 0x1 */ u8 idxs[3]; //triangle idxs
+    /* 0x4 */ undefined unk04;
+    /* 0x5 */ undefined unk05;
+    /* 0x6 */ undefined unk06;
+    /* 0x7 */ undefined unk07;
+    /* 0x8 */ undefined unk08;
+    /* 0x9 */ undefined unk09;
+    /* 0xa */ undefined unk0a;
+    /* 0xb */ undefined unk0b;
+    /* 0xc */ undefined unk0c;
+    /* 0xd */ undefined unk0d;
+    /* 0xe */ undefined unk0e;
+    /* 0xf */ undefined unk0f;
+} N64VertexIdxs;
+
+typedef struct {
     /* 0x0 */ s8 _00;
     /* 0x1 */ s8 _01;
     /* 0x2 */ s8 _02;

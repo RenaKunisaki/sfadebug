@@ -547,17 +547,17 @@ void modelInitSkeleton(float scale, ModelInstance *modelInstance) {
 	if(!modelInstance->skeleton) return;
 
 	skel = modelInstance->skeleton;
-	skel->unk04[0] = radi[0] * scale;
-	if(!skel->unk04[0]) skel->unk04[0] = radi[1] * scale;
+	skel->scale[0] = radi[0] * scale;
+	if(!skel->scale[0]) skel->scale[0] = radi[1] * scale;
 
-	skel->unk08[0] = skel->unk04[0] * skel->unk04[0];
+	skel->unk08[0] = skel->scale[0] * skel->scale[0];
 	skel->jointDist[0] = 0.01;
-	skel->totalDist[0] = skel->unk04[0];
+	skel->totalDist[0] = skel->scale[0];
 	distances[0] = 0.0;
 
 	for(iJoint = 1; iJoint < modelInstance->mod->numJoints; iJoint++) {
-		skel->unk04[iJoint] = scale * radi[iJoint];
-		skel->unk08[iJoint] = skel->unk04[iJoint] * skel->unk04[iJoint];
+		skel->scale[iJoint] = scale * radi[iJoint];
+		skel->unk08[iJoint] = skel->scale[iJoint] * skel->scale[iJoint];
 
 		iParent = model->joints[iJoint].parent;
 		distV.x = model->joints[iJoint].translation.x;
@@ -570,7 +570,7 @@ void modelInitSkeleton(float scale, ModelInstance *modelInstance) {
 		if(model->exT[iJoint] >= 1.0f) skel->jointDist[iJoint] *= model->exT[iJoint];
 		distances[iJoint] = distances[iParent] + skel->jointDist[iJoint];
 		if(!radi[iJoint]) skel->totalDist[iJoint] = -100.0;
-		else skel->totalDist[iJoint] = distances[iJoint] + skel->unk04[iJoint];
+		else skel->totalDist[iJoint] = distances[iJoint] + skel->scale[iJoint];
 	}
 }
 
