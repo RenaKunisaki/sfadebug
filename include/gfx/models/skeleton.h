@@ -21,7 +21,7 @@ typedef struct {
     /* 0x15 */ u8 unk15;
     /* 0x16 */ u8 unk16;
     /* 0x17 */ u8 unk17;
-    /* 0x18 */ float *unk18;
+    /* 0x18 */ u8 *unk18; //something renders as white if *this is 0, else black
     /* 0x1c */ s8 *unk1C;
 } ModelSkeletonStruct;
 

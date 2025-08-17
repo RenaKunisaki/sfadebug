@@ -1,5 +1,6 @@
 #include "dolphin.h"
 #include "dolphin/gx/GXStruct.h"
+#include "dolphin/mtx.h"
 #include "gfx/models/models.h"
 #include "macros.h"
 #include "types.h"
@@ -23,7 +24,7 @@ void objRenderCurrentModel2(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **
 void drawCircle(Gfx_ **gfx,Mtx44 **mtx,float x,float y,float z,float radius,float param_7,u8 r,u8 g, u8 b);
 void LAB_8006a790(Gfx_ **gfx,Mtx44 **mtx,ObjPos *pos,float x,float y,Mtx44 *mtx2);
 void objPrintFn_80095cd4(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, Model *mod, ModelInstance *mInst);
-Mtx44 * modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
+Mtx44Ptr modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
 
 s8 areModelsEnabled(); //maybe areModelsDisabled - not bool
 s8 isMainCharacterEnabled(); //maybe isMainCharacterDisabled
@@ -221,15 +222,15 @@ N64VertexIdxs N64VertexIdxs_ARRAY_802edff0[8];
 
 void objPrintFn_80095cd4(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx,
 Model *mod, ModelInstance *mInst) {
-    Vec pos;
-	ObjPos xf;
-    Mtx44 mtxTmp;
-    JointAngleStruct jointXZ;
-    JointAngleStruct jointY;
-    JointStruct2 joint2;
+    Mtx44 mtxTmp; //470
+    Vec pos; //464..470
+    ObjPos xf; //458..464
+    JointAngleStruct jointXZ; //270
+    JointAngleStruct jointY; //90
+    JointStruct2 joint2; //18
 	ModelSkeletonStruct *skel;
-    bool bVar1;
-    Mtx44 *jMtx;
+    BOOL bVar1;
+    Mtx44Ptr jMtx;
     int ii;
 	int jj;
 	int iParent;
@@ -240,12 +241,15 @@ Model *mod, ModelInstance *mInst) {
 	jointY = DWORD_802cf200;
     joint2 = DWORD_802edf10;
 
-	for(ii = 1; ii < (int)(uint)mod->numJoints; ii++) {
+	for(ii = 1; ii < mod->numJoints; ii++) {
 		dxz = sqrt(
             (mod->joints[ii].translation.x * mod->joints[ii].translation.x)
 		    +  (mod->joints[ii].translation.z * mod->joints[ii].translation.z));
-		jointY .ang[ii] = getAngle(dxz, mod->joints[ii].translation.y) & 0xffff;
-		jointXZ.ang[ii] = getAngle(mod->joints[ii].translation.z, mod->joints[ii].translation.x) & 0xffff;
+        jj = getAngle(dxz, mod->joints[ii].translation.y) & 0xffff;
+		jointXZ.ang[ii] = jj;
+        jj = getAngle(mod->joints[ii].translation.z,
+            mod->joints[ii].translation.x) & 0xffff;
+		jointY.ang[ii] = jj;
 	}
 
 	for(ii = 1; ii < mod->numJoints; ii++) {
@@ -253,32 +257,38 @@ Model *mod, ModelInstance *mInst) {
 		for(jj = 0; jj < 2; jj++) {
 			if(jj) iParent = ii;
             else iParent = mod->joints[ii].parent;
-			jMtx = modelInstGetjMtx(mInst, ii);
+			jMtx = (Mtx44Ptr)modelInstGetjMtx(mInst, ii);
             ASSERTLINE(1990, jMtx);
-			xf.pos.x = *jMtx[0][3];
-			xf.pos.y = *jMtx[1][3];
-			xf.pos.z = *jMtx[2][3];
+			mtxTmp[3][1] = jMtx[0][3];
+			mtxTmp[3][2] = jMtx[1][3];
+			mtxTmp[3][3] = jMtx[2][3];
 			xf.rotation.z = 0;
-			xf.rotation.y = jointY .ang[iParent];
-			xf.rotation.x = jointXZ.ang[iParent];
+			xf.rotation.y = jointXZ.ang[iParent];
+			xf.rotation.x = jointY .ang[iParent];
 			xf.scale = skel->scale[iParent] / 16.0f;
 			if(mod->exT[iParent] <= 1.0f) {
-				jMtx = modelInstGetjMtx(mInst,
+                xf.pos.x = mtxTmp[3][1];
+				xf.pos.y = mtxTmp[3][2];
+				xf.pos.z = mtxTmp[3][3];
+                bVar1 = false;
+            } else {
+                xf.pos.x = mtxTmp[3][1];
+				xf.pos.y = mtxTmp[3][2];
+				xf.pos.z = mtxTmp[3][3];
+				jMtx = (Mtx44Ptr)modelInstGetjMtx(mInst,
                     mod->joints[ii].parent);
                 ASSERTLINE(2014, jMtx);
-				pos.x = *jMtx[0][3];
-				pos.y = *jMtx[1][3];
-				pos.z = *jMtx[2][3];
-				xf.pos.x = (xf.pos.x - pos.x) * (mod->exT[ii] - 1.0f) + xf.pos.x;
-				xf.pos.y = (xf.pos.y - pos.y) * (mod->exT[ii] - 1.0f) + xf.pos.y;
-				xf.pos.z = (xf.pos.z - pos.z) * (mod->exT[ii] - 1.0f) + xf.pos.z;
+				mtxTmp[3][1] = jMtx[0][3];
+				mtxTmp[3][2] = jMtx[1][3];
+				mtxTmp[3][3] = jMtx[2][3];
+				xf.pos.x = (xf.pos.x - mtxTmp[3][1]) * (mod->exT[ii] - 1.0f) + xf.pos.x;
+				xf.pos.y = (xf.pos.y - mtxTmp[3][2]) * (mod->exT[ii] - 1.0f) + xf.pos.y;
+				xf.pos.z = (xf.pos.z - mtxTmp[3][3]) * (mod->exT[ii] - 1.0f) + xf.pos.z;
 				bVar1 = true;
-			} else {
-				bVar1 = false;
 			}
-			mtxSetFromObjPos(&mtxTmp, &xf);
-			MTX44_Copy(&mtxTmp, *mtx);
-            RSP_CMD(gfx, 0xda380002, *(mtx++));
+			mtxSetFromObjPos(&pos, &xf); //what?
+			MTX44_Copy(&pos, *mtx);
+            RSP_CMD(gfx, 0xda380002, (*mtx)++);
 			if(skel->unk18[iParent] == 0) {
 				RSP_setTevColor2(gfx, 0xff, 0xff, 0xff, 0xff);
 			} else {
