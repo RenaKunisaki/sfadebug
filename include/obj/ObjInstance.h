@@ -1,6 +1,7 @@
 #ifndef _OBJ_OBJINSTANCE_H_
 #define _OBJ_OBJINSTANCE_H_
 #include "dolphin/gx/GXStruct.h"
+#include "dolphin/mtx.h"
 #include "gfx/models/models.h"
 #include "gfx/textures.h"
 #include "obj/ObjDef.h"
@@ -106,7 +107,14 @@ typedef struct {
 } ObjWeaponData;
 
 typedef struct {
-    int TODO;
+    /* 0x00 */ Vec pos; //offset from bone
+    /* 0x0c */ S16Vec rot; //offset from bone
+    /* 0x12 */ s8 bone; //bone idx to use
+    /* 0x13 */ s8 unk13; //always same as bone?
+    /* 0x14 */ s8 unk14; //always same as bone?
+    /* 0x15 */ u8 unk15; //always 0xCD?
+    /* 0x16 */ u8 unk16; //always 0xCD?
+    /* 0x17 */ u8 unk17; //always 0xCD?
 } AttachPoint;
 
 typedef struct {
@@ -246,7 +254,6 @@ typedef struct {
     /* 0x04 */ short objHitsSize; //this >> 2 = #ptrs at field 8
     /* 0x06 */ short maxHitsSize;
     /* 0x08 */ ObjHitsEntry *objHits; //from OBJHITS.bin
-    //s32 objHits;
     /* 0x0c */ float sizeXY_0C;
     /* 0x10 */ Vec pos;
     /* 0x1c */ Vec prevPos;

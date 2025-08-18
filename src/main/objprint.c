@@ -3,6 +3,7 @@
 #include "dolphin/mtx.h"
 #include "gfx/models/models.h"
 #include "macros.h"
+#include "sys/dll.h"
 #include "types.h"
 #include "sys/n64.h"
 #include "gfx/render.h"
@@ -161,6 +162,80 @@ void objRenderCurrentModel(ObjInstance *obj) {
     if(mod->flags & ModelDataFlags2_CopyVtxsOnLoad) {
         modelExecRenderStream_(obj,mod);
     }
+}
+
+Mtx44Ptr pMtx_80398ad8;
+
+ModelInstance *playerBoneFn_80094cbc(Gfx_ **gfx, Mtx44 **mtx, Pol **pol,
+N64Vertex **vtx, ObjInstance *obj, ModelInstance *mInst, Mtx44Ptr mtx2,
+undefined4 param_8, ObjInstance *player, int iAttachPoint) {
+	Mtx44Ptr jMtx;
+	Model *model;
+	int ii;
+	ModelInstance *frame;
+	ObjPos pos;
+	int iBone;
+
+	pMtx_80398ad8 = NULL;
+	frame = player->frames[player->modelno];
+	if(frame && ((mInst->flags & ModelFlags18_MtxsLoaded) == 0)) {
+		model = frame->mod;
+		if(obj->objdata->noplacements) {
+			if(obj->modelno >= 6) printf("2: objprint.c: modelno overflow\n");
+			iBone = (&obj->objdata->pAttachPoints[iAttachPoint].bone)[obj->modelno];
+			pos.pos.x = obj->objdata->pAttachPoints[iAttachPoint].pos.x;
+			pos.pos.y = obj->objdata->pAttachPoints[iAttachPoint].pos.y;
+			pos.pos.z = obj->objdata->pAttachPoints[iAttachPoint].pos.z;
+			pos.scale = 1.0f;
+			pos.rotation.x = obj->objdata->pAttachPoints[iAttachPoint].rot.x;
+			pos.rotation.y = obj->objdata->pAttachPoints[iAttachPoint].rot.y;
+			pos.rotation.z = obj->objdata->pAttachPoints[iAttachPoint].rot.z;
+			mtxSetFromObjPos(mtx2, &pos);
+			Mtx44Mult(mtx2, mInst->jMtxs[mInst->flags & ModelFlags18_UseOtherMtxs] + iBone, mtx2);
+		}
+		if(model->numAnims) {
+			pMtx_80398ad8 = mtx2;
+			modelAnimFn_8007e974(frame, model, player, mtx2);
+			playerBoneFn_80095044(player, obj, frame);
+		} else {
+            frame->flags ^= ModelFlags18_UseOtherMtxs;
+			jMtx = *frame->jMtxs[frame->flags & ModelFlags18_UseOtherMtxs];
+			for(ii = 0; ii < 0x10; ii += 1) {
+                ((float*)jMtx)[ii] = ((float*)mtx2)[ii];
+            }
+			playerBoneFn_80095044(player, obj, frame);
+			pMtx_80398ad8 = jMtx;
+		}
+		frame->flags ^= ModelFlags18_UseOtherMtxs;
+		if(((player->objdata->flags & ObjFileStructFlags44_DifferentLightColor)
+        || model->bCopyVtxsToModelInst) && model->bCopyVtxsToModelInst) {
+			copyVtxsToModelInstance(frame);
+		}
+		(player->pos).pos.x = pMtx_80398ad8[3][0];
+		(player->pos).pos.y = pMtx_80398ad8[3][1];
+		(player->pos).pos.z = pMtx_80398ad8[3][2];
+		if(player->heldBy) {
+			multVectorByObjMtx((double)(player->pos).pos.x,
+			    (double)(player->pos).pos.y,
+			    (double)(player->pos).pos.z,
+			    &(player->prevPos).x,
+			    &(player->prevPos).y,
+			    &(player->prevPos).z,
+			    player->heldBy);
+		} else {
+            (player->pos).pos.x = (player->pos).pos.x + playerMapOffsetX;
+			(player->pos).pos.z = (player->pos).pos.z + playerMapOffsetZ;
+			(player->prevPos).x = (player->pos).pos.x;
+			(player->prevPos).y = (player->pos).pos.y;
+			(player->prevPos).z = (player->pos).pos.z;
+		}
+		if((player->objdata->noplacements >= 2) && (player->objId == 0x2f)) {
+			if(player->heldBy) loadCamMtxFn_8006B318(gfx);
+			((LoadedDLL*)player->dll)->funcs->Object.render2C(player, gfx, mtx, pol, vtx);
+			if(player->heldBy) playerHeldByFn_8006b200(gfx, mtx, player->heldBy);
+		}
+	}
+	return frame;
 }
 
 void fn_80095AEC(Gfx_ **gfx, Mtx44 **mtx, u8 iColor,

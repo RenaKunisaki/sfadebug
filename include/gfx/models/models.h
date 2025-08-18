@@ -30,7 +30,7 @@ typedef enum {
 } ModelDataFlags2;
 
 typedef enum {
-    ModelFlags18_UseOtherMtxs     =  1, //which index into jMtxs to use
+    ModelFlags18_UseOtherMtxs     =  1, //which index into jMtxs to use for double buffering
     ModelFlags18_UseOtherVtxs     =  2,
     ModelFlags18_UseOtherHitboxes =  4,
     ModelFlags18_MtxsLoaded       =  8,
