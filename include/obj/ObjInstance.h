@@ -248,6 +248,18 @@ typedef struct {
     u32 frame;
 } ObjHitsEntry;
 
+typedef enum { //u16
+    HitStateFlags58_AltColor    = 0x0002,
+    HitStateFlags58_NoRotationY = 0x0800,
+    HitStateFlags58_NoRotationZ = 0x1000,
+} HitStateFlags58;
+
+typedef enum { //u8
+    HitStateFlags5A_RenderFlag1  = 0x01,
+    HitStateFlags5A_RenderFlag2  = 0x02,
+    HitStateFlags5A_HaveSkeleton = 0x20,
+} HitStateFlags5A;
+
 #define MAX_HITS 3
 typedef struct {
     /* 0x00 */ struct ObjInstance *curTouchedObject;
@@ -271,11 +283,11 @@ typedef struct {
     /* 0x48 */ undefined4 unk48;
     /* 0x4c */ s32 unk4c;
     /* 0x50 */ s16 unk50;
-    /* 0x52 */ ushort unk52;
+    /* 0x52 */ short scale;
     /* 0x54 */ short unk54;
     /* 0x56 */ short unk56;
-    /* 0x58 */ u16 flags; //800:no Y rotation; 1000:no Z rotation
-    /* 0x5a */ u8 flags5A; //(final at 0x62) 20:have skeleton
+    /* 0x58 */ s16 flags; //800:no Y rotation; 1000:no Z rotation
+    /* 0x5a */ u8 flags5A; //final at 0x62; HitStateFlags5A
     /* 0x5b */ s8 unk5b;
     /* 0x5c */ s8 sizeX1;
     /* 0x5d */ s8 unk5d;

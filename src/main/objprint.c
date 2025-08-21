@@ -26,6 +26,8 @@ void drawCircle(Gfx_ **gfx,Mtx44 **mtx,float x,float y,float z,float radius,floa
 void LAB_8006a790(Gfx_ **gfx,Mtx44 **mtx,ObjPos *pos,float x,float y,Mtx44 *mtx2);
 void objPrintFn_80095cd4(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, Model *mod, ModelInstance *mInst);
 Mtx44Ptr modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
+void debugRenderFn80095844(Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx,
+Pol **pol, ObjInstance *obj);
 
 s8 areModelsEnabled(); //maybe areModelsDisabled - not bool
 s8 isMainCharacterEnabled(); //maybe isMainCharacterDisabled
@@ -94,7 +96,7 @@ ObjInstance *obj, s8 shouldRender) {
         }
     }
     if(((debugRenderMode == 1 || debugRenderMode == 2)) && shouldRender) {
-        LAB_80095968(gfx, mtx, pol, vtx, obj);
+        debugRenderFn80095844(gfx, mtx, vtx, pol, obj);
     }
     if(((BYTE_80398afc == 1) && shouldRender)
     && obj->objdata->unkac) {
@@ -236,6 +238,57 @@ undefined4 param_8, ObjInstance *player, int iAttachPoint) {
 		}
 	}
 	return frame;
+}
+
+N64VertexIdxs N64VertexIdxs_ARRAY_802ee158[];
+
+void debugRenderFn80095844(Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx,
+Pol **pol, ObjInstance *obj) {
+	float fVar1;
+	float fVar2;
+	ModelInstance *mInst;
+	int r, g, b;
+	HitState *hits;
+	ObjPos pos;
+
+    if(obj->objId < 0) return;
+    if(obj->hits) {
+        hits = obj->hits;
+        if(hits->flags5A & HitStateFlags5A_HaveSkeleton) {
+            mInst = obj->frames[obj->modelno];
+            objLoadSkelMtxFn_80095cc0(gfx, mtx, vtx, pol, mInst, mInst->mod);
+        }
+        if(hits->flags5A & HitStateFlags5A_RenderFlag2) {
+            fVar1 = hits->unk54;
+            fVar2 = (hits->unk56 - fVar1) / 2.0f;
+            fVar1 = obj->prevPos.y + fVar2;
+            r = 0xff; g = 0; b = 0;
+            if(hits->flags & HitStateFlags58_AltColor) { r = 0; b = 0xff; }
+            drawCircle(gfx, mtx,
+                obj->prevPos.x,
+                fVar1,
+                obj->prevPos.z,
+                hits->scale, fVar2,
+                r, g, b);
+        } else if(hits->flags5A & HitStateFlags5A_RenderFlag1) {
+            pos.rotation.x = 0;
+            pos.rotation.y = 0;
+            pos.rotation.z = 0;
+            pos.scale = hits->scale / 79.0;
+            pos.pos.x = (obj->pos).pos.x;
+            pos.pos.y = (obj->pos).pos.y;
+            pos.pos.z = (obj->pos).pos.z;
+            mtxLoadFn8006a790(gfx, mtx, &pos, NULL);
+            if((hits->flags & HitStateFlags58_AltColor) == 0) {
+                RSP_setTevColor2(gfx, 0xff, 0, 0, 0xff);
+            } else {
+                RSP_setTevColor2(gfx, 0, 0, 0xff, 0xff);
+            }
+            rspCullFn800a5074(gfx, NULL, NULL, 6, 0, 0, 1);
+            RSP_CMD(gfx, 0x0100c018, &BYTE_802ee2b8);
+            n64DrawTriangles(gfx, N64VertexIdxs_ARRAY_802ee158, 0x14);
+        }
+    }
 }
 
 void fn_80095AEC(Gfx_ **gfx, Mtx44 **mtx, u8 iColor,
