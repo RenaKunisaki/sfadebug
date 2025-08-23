@@ -241,6 +241,99 @@ undefined4 param_8, ObjInstance *player, int iAttachPoint) {
 	return frame;
 }
 
+u8 Color_ARRAY_802ee4d8[16*3];
+s8 Color4b_ARRAY_802edea0[];
+N64VertexIdxs N64VertexIdxs_ARRAY_802edde0[12];
+u32 flags_80398af8; //always 0
+s8 BYTE_8039993c; //always 0
+
+void fn_800953E8(Gfx_ **gfx, N64Vertex **diVtx, Pol **diPol) {
+	int iVar1;
+	float y;
+	float z;
+	BOOL bVar4;
+	ObjInstance **objs;
+	Pol *pPol;
+	ObjInstance *obj;
+	int jj;
+	int iObj;
+	ObjDef_Id9 *odef;
+	N64Vertex *vtxs;
+    Gfx_ *pGfx;
+	float cx;
+	float sx;
+	float cy;
+	float sy;
+	float xz;
+	float sr;
+	float sg;
+	float sb;
+	s32 iFirstObj;
+	s32 nObjs;
+
+	objs = Object_getObjects(&iFirstObj, &nObjs);
+	if(!(flags_80398af8 & 2)) { //always true because value is always 0
+		pGfx = *gfx;
+		vtxs = *diVtx;
+		pPol = *diPol;
+		bVar4 = false;
+		rspCullFn800a5074(&pGfx, NULL, NULL, 0x8000000a, 0, 0, 1);
+		for(iObj = iFirstObj; iObj < nObjs; iObj += 1) {
+			if(objs[iObj]->objId == 9) {
+				if(BYTE_8039993c || ((objs[iObj]->pos).flags & 0x100)) {
+					obj = objs[iObj];
+					odef = (ObjDef_Id9*)obj->def;
+					if(!bVar4) {
+						rspCullFn800a5074(&pGfx, NULL, NULL, 6, 0, 0, 1);
+						bVar4 = true;
+					}
+					if(obj->objId == 9) {
+                        jj = odef->iColor * 3;
+						RSP_setTevColor2(&pGfx,
+						    Color_ARRAY_802ee4d8[jj+0],
+						    Color_ARRAY_802ee4d8[jj+1],
+						    Color_ARRAY_802ee4d8[jj+2], 0xff);
+					} else {
+						RSP_setTevColor2(&pGfx, 0xff, 0, 0, 0xff);
+					}
+                    RSP_CMD(gfx, 0x01008010, vtxs);
+
+                    cx = cosf(((odef->x << 8) * 3.141593f) / 32767.0f);
+                    sx = sinf(((odef->x << 8) * 3.141593f) / 32767.0f);
+                    cy = cosf(((odef->y << 8) * 3.141593f) / 32767.0f);
+                    sy = sinf(((odef->y << 8) * 3.141593f) / 32767.0f);
+
+                    for(jj = 0; jj < 0x20; jj += 4) {
+						sr = (float)Color4b_ARRAY_802edea0[jj+0] * (float)odef->r;
+						sg = (float)Color4b_ARRAY_802edea0[jj+1] * (float)odef->g * 2.0f;
+						sb = (float)Color4b_ARRAY_802edea0[jj+2] * (float)odef->b;
+
+						xz = (-sg * sy + (sb * cy));
+						y = odef->odef.pos.y;
+						z = odef->odef.pos.z - playerMapOffsetZ;
+						vtxs->x = (( sr * cx) + (xz * sx)) + (odef->odef.pos.x - playerMapOffsetX);
+						vtxs->y = (( sg * cy) + (sb * sy)) + y;
+						vtxs->z = ((-sr * sx) + (xz * cx)) + z;
+						vtxs->col.r = Color4b_ARRAY_802edea0[jj+3];
+						vtxs->col.g = Color4b_ARRAY_802edea0[jj+3];
+						vtxs->col.b = Color4b_ARRAY_802edea0[jj+3];
+						vtxs->s = 0;
+						vtxs->t = 0;
+						vtxs->unk06 = 0;
+						vtxs->col.a = 0x80;
+						vtxs = vtxs + 1;
+					}
+					n64DrawTriangles(&pGfx, N64VertexIdxs_ARRAY_802edde0, 12);
+				}
+			}
+		}
+		*gfx = pGfx;
+		*diVtx = vtxs;
+		*diPol = pPol;
+	}
+}
+
+
 N64VertexIdxs N64VertexIdxs_ARRAY_802ee158[];
 
 void debugRenderFn80095844(Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx,

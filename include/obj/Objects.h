@@ -63,7 +63,7 @@ void *loadDataFileWithLength(
     DataFileId32 file, void *dest, uint offset, u32 len); /* extern */
 ModelInstance *loadModelInstance(int id, uint flags); /* extern */
 ObjDefEnum mapGetPlayerObjType(int *outWhichObjs); /* extern */
-f32 mathFn_80294204(f32); /* extern */
+f32 cosf(f32); /* extern */
 void memclr(void *param1, size_t param2); /* extern */
 void memcpy_src_dst_len(void *param1, void *param2, size_t param3); /* extern */
 u16 modelGetFieldA4(Model *model); /* extern */
@@ -113,6 +113,7 @@ void objSetup(ObjInstance *object, uint bAddToLoadedObjs); /* static */
 void objModelMtxFn_800859e8(ObjInstance *object,Mtx *modelMatrix);
 void ModelInstance_freeField48(ModelInstance *modelInstance);
 void fn_80085dc8(ObjInstance *object);
+ObjInstance **Object_getObjects(s32 *outFirstObj, s32 *outNumObjs);
 
 extern u8 BYTE_802eca98;
 extern u8 BYTE_80398a91;

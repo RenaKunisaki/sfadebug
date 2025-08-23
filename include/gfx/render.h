@@ -1,6 +1,7 @@
 #ifndef _GFX_RENDER_H_
 #define _GFX_RENDER_H_
 #include "../dolphin/mtx.h"
+#include "dolphin/gx/GXStruct.h"
 #include "gfx/gbi.h"
 
 #define SCREEN_WIDTH 320
@@ -50,14 +51,10 @@ typedef struct {
     /* 0x0 */ s16 x;
     /* 0x2 */ s16 y;
     /* 0x4 */ s16 z;
-    /* 0x6 */ s8 _06;
-    /* 0x7 */ s8 _07;
+    /* 0x6 */ s16 unk06;
     /* 0x8 */ s16 s;
     /* 0xa */ s16 t;
-    /* 0xb */ u8 r;
-    /* 0xc */ u8 g;
-    /* 0xd */ u8 b;
-    /* 0xe */ u8 a;
+    /* 0xc */ GXColor col;
 } N64Vertex;
 
 typedef struct {

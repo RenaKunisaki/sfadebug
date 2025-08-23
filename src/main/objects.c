@@ -1208,7 +1208,8 @@ ObjDef ObjDef_802eca98;
 LoadedDLL *pDll_camcontrol;
 LoadedDLL *pDll_dummy04;
 ObjInstance *playerHeldBy; //80398a94
-float distanceFn_80293e80(float);
+float sinf(float);
+float cosf(float);
 
 void mapSetupPlayer(void) {
 	ObjInstance *heldBy; //r31
@@ -1282,9 +1283,9 @@ void mapSetupPlayer(void) {
 			ObjSpawnFlags_KeepLoaded, -1, -1,
 			heldBy);
 	}
-	ObjDef_802eca98.pos.x = distanceFn_80293e80(((charPos->rotX << 8) * PI) / 32767.0f) * 60.0f + x;
+	ObjDef_802eca98.pos.x = sinf(((charPos->rotX << 8) * PI) / 32767.0f) * 60.0f + x;
 	ObjDef_802eca98.pos.y = y + 40.0f;
-	ObjDef_802eca98.pos.z = mathFn_80294204(((charPos->rotX << 8) * PI) / 32767.0f) * 60.0f + z;
+	ObjDef_802eca98.pos.z = cosf(((charPos->rotX << 8) * PI) / 32767.0f) * 60.0f + z;
 	pDll_camcontrol->funcs->camcontrol.func03(charObj,
 		ObjDef_802eca98.pos.x, ObjDef_802eca98.pos.y, ObjDef_802eca98.pos.z);
 	pDll_camcontrol->funcs->camcontrol.setupCamControl1(
