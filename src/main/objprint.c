@@ -266,19 +266,18 @@ s8 BYTE_8039993c; //always 0
 
 //draws a sphere or something around an object if its ID is 9
 void fn_800953E8(Gfx_ **gfx, N64Vertex **diVtx, Pol **diPol) {
-	int iVar1;
 	float posX;
 	float posY;
 	float posZ;
 	BOOL bVar4;
 	ObjInstance **objs;
-	Pol *pPol;
 	ObjInstance *obj;
 	int jj;
 	int iObj;
 	ObjDef_Id9 *odef;
-	N64Vertex *vtxs;
     Gfx_ *pGfx;
+	N64Vertex *pVtx;
+	Pol *pPol;
 	float cosX;
 	float sinX;
 	float cosY;
@@ -287,72 +286,71 @@ void fn_800953E8(Gfx_ **gfx, N64Vertex **diVtx, Pol **diPol) {
 	float sclX;
 	float sclY;
 	float sclZ;
-	s32 iFirstObj;
 	s32 nObjs;
+	s32 iFirstObj;
 
 	objs = Object_getObjects(&iFirstObj, &nObjs);
 	if(!(flags_80398af8 & 2)) { //always true because value is always 0
 		pGfx = *gfx;
-		vtxs = *diVtx;
+		pVtx = *diVtx;
 		pPol = *diPol;
 		bVar4 = false;
 		rspCullFn800a5074(&pGfx, NULL, NULL, 0x8000000a, 0, 0, 1);
-		for(iObj = iFirstObj; iObj < nObjs; iObj += 1) {
-			if(objs[iObj]->objId == 9) {
-				if(BYTE_8039993c || ((objs[iObj]->pos).flags & 0x100)) {
-					obj = objs[iObj];
-					odef = (ObjDef_Id9*)obj->def;
-					if(!bVar4) {
-						rspCullFn800a5074(&pGfx, NULL, NULL, 6, 0, 0, 1);
-						bVar4 = true;
-					}
-					if(obj->objId == 9) { //@BUG: redundant check
-                        jj = odef->iColor * 3;
-						RSP_setTevColor2(&pGfx,
-						    Color_ARRAY_802ee4d8[jj+0],
-						    Color_ARRAY_802ee4d8[jj+1],
-						    Color_ARRAY_802ee4d8[jj+2], 0xff);
-					} else {
-						RSP_setTevColor2(&pGfx, 0xff, 0, 0, 0xff);
-					}
-                    RSP_CMD(gfx, 0x01008010, vtxs);
+		for(iObj = iFirstObj; iObj < nObjs; iObj++) {
+			if(objs[iObj]->objId != 9) continue;
+            if(!(BYTE_8039993c || (objs[iObj]->pos.flags & 0x100))) continue;
 
-                    cosX = cosf(((odef->size[0] << 8) * 3.141593f) / 32767.0f);
-                    sinX = sinf(((odef->size[0] << 8) * 3.141593f) / 32767.0f);
-                    cosY = cosf(((odef->size[1] << 8) * 3.141593f) / 32767.0f);
-                    sinY = sinf(((odef->size[1] << 8) * 3.141593f) / 32767.0f);
+            obj = objs[iObj];
+            odef = (ObjDef_Id9*)obj->def;
+            if(!bVar4) {
+                rspCullFn800a5074(&pGfx, NULL, NULL, 6, 0, 0, 1);
+                bVar4 = true;
+            }
+            if(obj->objId == 9) { //@BUG: redundant check
+                jj = odef->iColor * 3;
+                RSP_setTevColor2(&pGfx,
+                    Color_ARRAY_802ee4d8[jj+0],
+                    Color_ARRAY_802ee4d8[jj+1],
+                    Color_ARRAY_802ee4d8[jj+2], 0xff);
+            } else {
+                RSP_setTevColor2(&pGfx, 0xff, 0, 0, 0xff);
+            }
+            RSP_CMD(&pGfx, 0x01008010, pVtx);
 
-                    //draw a sphere(?) around the object's position
-                    for(jj = 0; jj < 32; jj += 4) {
-						sclX = (float)sphereData[jj+0] * (float)odef->scale[0];
-						sclY = (float)sphereData[jj+1] * (float)odef->scale[1] * 2.0f;
-						sclZ = (float)sphereData[jj+2] * (float)odef->scale[2];
-						sclW = (sclY * sinY) + (sclZ * cosY);
+            cosX = cosf(((odef->size[0] << 8) * 3.141593f) / 32767.0f);
+            sinX = sinf(((odef->size[0] << 8) * 3.141593f) / 32767.0f);
+            cosY = cosf(((odef->size[1] << 8) * 3.141593f) / 32767.0f);
+            sinY = sinf(((odef->size[1] << 8) * 3.141593f) / 32767.0f);
 
-                        posX = ((-sclX * cosX) + (sclW * sinX));
-						posY = (( sclY * cosY) + (sclZ * sinY));
-						posZ = ((-sclX * sinX) + (sclW * cosX));
-                        posX = posX - playerMapOffsetX + odef->odef.pos.x;
-                        posY = posY + odef->odef.pos.y;
-                        posZ = posZ - playerMapOffsetZ + odef->odef.pos.z;
-						vtxs->x = posX;
-						vtxs->y = posY;
-						vtxs->z = posZ;
-						vtxs->col.r = sphereData[jj+3];
-						vtxs->col.g = sphereData[jj+3];
-						vtxs->col.b = sphereData[jj+3];
-						vtxs->s = 0;
-						vtxs->t = 0;
-						vtxs->unk06 = 0;
-						vtxs->col.a = 0x80;
-						vtxs = vtxs + 1;
-					}
-					n64DrawTriangles(&pGfx, sphereIdxs, 12);
-				}
-			}
+            //draw a sphere(?) around the object's position
+            for(jj = 0; jj < 32; jj += 4) {
+                sclX = (float)sphereData[jj+0] * (float)odef->scale[0];
+                sclY = (float)sphereData[jj+1] * (float)odef->scale[1] * 2.0f;
+                sclZ = (float)sphereData[jj+2] * (float)odef->scale[2];
+                sclW = (sclY * sinY) + (sclZ * cosY);
+
+                posX = ((-sclX * cosX) + (sclW * sinX));
+                posY = (( sclY * cosY) + (sclZ * sinY));
+                posZ = ((-sclX * sinX) + (sclW * cosX));
+                posX = posX - playerMapOffsetX + odef->odef.pos.x;
+                posY = posY + odef->odef.pos.y;
+                posZ = posZ - playerMapOffsetZ + odef->odef.pos.z;
+                pVtx->x = posX;
+                pVtx->y = posY;
+                pVtx->z = posZ;
+                pVtx->col.r = sphereData[jj+3];
+                pVtx->col.g = sphereData[jj+3];
+                pVtx->col.b = sphereData[jj+3];
+                pVtx->s = 0;
+                pVtx->t = 0;
+                pVtx->unk06 = 0;
+                pVtx->col.a = 0x80;
+                pVtx = pVtx + 1;
+            }
+            n64DrawTriangles(&pGfx, sphereIdxs, 12);
 		}
 		*gfx = pGfx;
-		*diVtx = vtxs;
+		*diVtx = pVtx;
 		*diPol = pPol;
 	}
 }
