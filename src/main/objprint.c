@@ -242,15 +242,34 @@ undefined4 param_8, ObjInstance *player, int iAttachPoint) {
 }
 
 u8 Color_ARRAY_802ee4d8[16*3];
-s8 Color4b_ARRAY_802edea0[];
-N64VertexIdxs N64VertexIdxs_ARRAY_802edde0[12];
+s8 sphereData[] = {
+    //x, y, z, color (r, g, b all same value)
+    -1,  1, -1, 0xFF,
+     1,  1, -1, 0xF0,
+    -1,  1,  1, 0xE6,
+     1,  1,  1, 0xDC,
+    -1,  0, -1, 0x96,
+     1,  0, -1, 0xA0,
+    -1,  0,  1, 0xAA,
+     1,  0,  1, 0xB4,
+    -1,  1, -1, 0xFF,
+     1,  1, -1, 0xF0,
+    -1,  1,  1, 0xE6,
+     1,  1,  1, 0xDC,
+    -1, -1, -1, 0x96,
+     1, -1, -1, 0xA0,
+    -1, -1,  1, 0xAA,
+     1, -1,  1, 0xB4 };
+N64VertexIdxs sphereIdxs[12];
 u32 flags_80398af8; //always 0
 s8 BYTE_8039993c; //always 0
 
+//draws a sphere or something around an object if its ID is 9
 void fn_800953E8(Gfx_ **gfx, N64Vertex **diVtx, Pol **diPol) {
 	int iVar1;
-	float y;
-	float z;
+	float posX;
+	float posY;
+	float posZ;
 	BOOL bVar4;
 	ObjInstance **objs;
 	Pol *pPol;
@@ -260,14 +279,14 @@ void fn_800953E8(Gfx_ **gfx, N64Vertex **diVtx, Pol **diPol) {
 	ObjDef_Id9 *odef;
 	N64Vertex *vtxs;
     Gfx_ *pGfx;
-	float cx;
-	float sx;
-	float cy;
-	float sy;
-	float xz;
-	float sr;
-	float sg;
-	float sb;
+	float cosX;
+	float sinX;
+	float cosY;
+	float sinY;
+	float sclW;
+	float sclX;
+	float sclY;
+	float sclZ;
 	s32 iFirstObj;
 	s32 nObjs;
 
@@ -287,7 +306,7 @@ void fn_800953E8(Gfx_ **gfx, N64Vertex **diVtx, Pol **diPol) {
 						rspCullFn800a5074(&pGfx, NULL, NULL, 6, 0, 0, 1);
 						bVar4 = true;
 					}
-					if(obj->objId == 9) {
+					if(obj->objId == 9) { //@BUG: redundant check
                         jj = odef->iColor * 3;
 						RSP_setTevColor2(&pGfx,
 						    Color_ARRAY_802ee4d8[jj+0],
@@ -298,32 +317,37 @@ void fn_800953E8(Gfx_ **gfx, N64Vertex **diVtx, Pol **diPol) {
 					}
                     RSP_CMD(gfx, 0x01008010, vtxs);
 
-                    cx = cosf(((odef->x << 8) * 3.141593f) / 32767.0f);
-                    sx = sinf(((odef->x << 8) * 3.141593f) / 32767.0f);
-                    cy = cosf(((odef->y << 8) * 3.141593f) / 32767.0f);
-                    sy = sinf(((odef->y << 8) * 3.141593f) / 32767.0f);
+                    cosX = cosf(((odef->size[0] << 8) * 3.141593f) / 32767.0f);
+                    sinX = sinf(((odef->size[0] << 8) * 3.141593f) / 32767.0f);
+                    cosY = cosf(((odef->size[1] << 8) * 3.141593f) / 32767.0f);
+                    sinY = sinf(((odef->size[1] << 8) * 3.141593f) / 32767.0f);
 
-                    for(jj = 0; jj < 0x20; jj += 4) {
-						sr = (float)Color4b_ARRAY_802edea0[jj+0] * (float)odef->r;
-						sg = (float)Color4b_ARRAY_802edea0[jj+1] * (float)odef->g * 2.0f;
-						sb = (float)Color4b_ARRAY_802edea0[jj+2] * (float)odef->b;
+                    //draw a sphere(?) around the object's position
+                    for(jj = 0; jj < 32; jj += 4) {
+						sclX = (float)sphereData[jj+0] * (float)odef->scale[0];
+						sclY = (float)sphereData[jj+1] * (float)odef->scale[1] * 2.0f;
+						sclZ = (float)sphereData[jj+2] * (float)odef->scale[2];
+						sclW = (sclY * sinY) + (sclZ * cosY);
 
-						xz = (-sg * sy + (sb * cy));
-						y = odef->odef.pos.y;
-						z = odef->odef.pos.z - playerMapOffsetZ;
-						vtxs->x = (( sr * cx) + (xz * sx)) + (odef->odef.pos.x - playerMapOffsetX);
-						vtxs->y = (( sg * cy) + (sb * sy)) + y;
-						vtxs->z = ((-sr * sx) + (xz * cx)) + z;
-						vtxs->col.r = Color4b_ARRAY_802edea0[jj+3];
-						vtxs->col.g = Color4b_ARRAY_802edea0[jj+3];
-						vtxs->col.b = Color4b_ARRAY_802edea0[jj+3];
+                        posX = ((-sclX * cosX) + (sclW * sinX));
+						posY = (( sclY * cosY) + (sclZ * sinY));
+						posZ = ((-sclX * sinX) + (sclW * cosX));
+                        posX = posX - playerMapOffsetX + odef->odef.pos.x;
+                        posY = posY + odef->odef.pos.y;
+                        posZ = posZ - playerMapOffsetZ + odef->odef.pos.z;
+						vtxs->x = posX;
+						vtxs->y = posY;
+						vtxs->z = posZ;
+						vtxs->col.r = sphereData[jj+3];
+						vtxs->col.g = sphereData[jj+3];
+						vtxs->col.b = sphereData[jj+3];
 						vtxs->s = 0;
 						vtxs->t = 0;
 						vtxs->unk06 = 0;
 						vtxs->col.a = 0x80;
 						vtxs = vtxs + 1;
 					}
-					n64DrawTriangles(&pGfx, N64VertexIdxs_ARRAY_802edde0, 12);
+					n64DrawTriangles(&pGfx, sphereIdxs, 12);
 				}
 			}
 		}

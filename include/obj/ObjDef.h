@@ -1580,11 +1580,8 @@ typedef s16 ObjDefNo_t;
 //XXX move
 typedef struct { //object with ID 9
     /* 0x00 */ ObjDef odef;
-    /* 0x18 */ u8 x;
-    /* 0x19 */ u8 y;
-    /* 0x1A */ u8 r;
-    /* 0x1B */ u8 g;
-    /* 0x1C */ u8 b;
+    /* 0x18 */ u8 size[2]; //x, y
+    /* 0x1A */ u8 scale[3]; //x, y, z
     /* 0x1D */ u8 iColor;
     //probably more...
 } ObjDef_Id9;
