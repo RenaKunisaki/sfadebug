@@ -356,7 +356,7 @@ typedef struct {
             int (*getExtraSize)(struct ObjInstance *object, void *state); //returns sizeof(this obj's State)
             UNKTYPE *setScale;
             UNKTYPE *unk24;
-            void (*modelMtxFn_0x28)(struct ObjInstance *object, undefined4, Vec * );
+            void (*modelMtxFn_0x28)(struct ObjInstance *object, struct ObjInstance *obj2, Vec * );
             void (*render2C)(struct ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx); //called for child of player object with ID 0x2d, 0x2f
         } Object;
 

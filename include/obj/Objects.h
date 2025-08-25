@@ -176,4 +176,13 @@ extern s32 *tables_tab;
 extern f32 timeDelta;
 extern s32 var_80396D08;
 
+typedef struct {
+    Vec pos;
+    float unk0c;
+    float unk10;
+    float unk14;
+    float unk18;
+    float unk1c;
+} foot_vol_t;
+
 #endif //_OBJ_OBJECTS_H_

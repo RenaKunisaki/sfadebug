@@ -9,6 +9,7 @@
 #include "gfx/render.h"
 #include "obj/Objects.h"
 #include "obj/ObjInstance.h"
+#include "obj/Player.h"
 
 s8 debugRenderMode;
 s8 BYTE_80398afc;
@@ -25,6 +26,7 @@ void objRenderCurrentModel2(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **
 void drawCircle(Gfx_ **gfx,Mtx44 **mtx,float x,float y,float z,float radius,float param_7,u8 r,u8 g, u8 b);
 void LAB_8006a790(Gfx_ **gfx,Mtx44 **mtx,ObjPos *pos,float x,float y,Mtx44 *mtx2);
 void objPrintFn_80095cd4(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, Model *mod, ModelInstance *mInst);
+void playerBoneFn_80095044(ObjInstance *player, ObjInstance *obj2, ModelInstance *mInst);
 Mtx44Ptr modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
 void debugRenderFn80095844(Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx,
 Pol **pol, ObjInstance *obj);
@@ -239,6 +241,81 @@ undefined4 param_8, ObjInstance *player, int iAttachPoint) {
 		}
 	}
 	return frame;
+}
+
+void playerBoneFn_80095044(ObjInstance *player, ObjInstance *obj2,
+ModelInstance *mInst) {
+	Mtx44Ptr jointmtx;
+	int ii;
+	int iAP2;
+	ObjState_Player *state;
+	double dVar1;
+	Vec v38;
+	Vec v2c;
+	int iAP1;
+    AttachPoint *attach;
+
+	if((player->objdata->noplacements >= 2) && (player->objId == 0x2f)) {
+		state = (ObjState_Player *)player->state;
+		for(ii = 0; ii < state->boneCountRelated86; ii++) {
+			iAP1 = ii * 2;
+			iAP2 = iAP1 + 1;
+			if(iAP2 < player->objdata->noplacements) {
+				if(player->modelno >= 6) {
+					printf("3: objprint.c: modelno overflow\n");
+				}
+				jointmtx = modelInstGetjMtx(mInst,
+                (&player->objdata->pAttachPoints[iAP1+2].bone)
+                    [player->modelno]);
+                ASSERTLINE(1233, jointmtx);
+				v2c.x = player->objdata->pAttachPoints[iAP1+2].pos.x;
+				v2c.y = player->objdata->pAttachPoints[iAP1+2].pos.y;
+				v2c.z = player->objdata->pAttachPoints[iAP1+2].pos.z;
+				MTXMultVec(jointmtx, &v2c, &v2c);
+				v2c.x += playerMapOffsetX;
+				v2c.z += playerMapOffsetZ;
+				state->unk18[3][ii] = v2c.x;
+				state->unk18[4][ii] = v2c.y;
+				state->unk18[5][ii] = v2c.z;
+			}
+			if(iAP2 < player->objdata->noplacements) {
+				if(player->modelno >= 6) {
+					printf("4: objprint.c: modelno overflow\n");
+				}
+                attach = &player->objdata->pAttachPoints[iAP2];
+                jointmtx = *(mInst->jMtxs[mInst->flags & 1] +
+                    attach[player->modelno].bone);
+				v38.x = player->objdata->pAttachPoints[iAP2].pos.x;
+				v38.y = player->objdata->pAttachPoints[iAP2].pos.y;
+				v38.z = player->objdata->pAttachPoints[iAP2].pos.z;
+				MTXMultVec(jointmtx,
+                    &v38, &v38);
+				v38.x += playerMapOffsetX;
+				v38.z += playerMapOffsetZ;
+				state->unk18[0][ii] = v38.x;
+				state->unk18[1][ii] = v38.y;
+				state->unk18[2][ii] = v38.z;
+			}
+		}
+		if(state->boneCountRelated86) {
+			v2c.x = state->unk18[3][state->unk88];
+			v2c.y = state->unk18[4][state->unk88];
+			v2c.z = state->unk18[5][state->unk88];
+			if(debugRenderMode == 0) {
+				(*((LoadedDLL*)player->dll)->funcs->Object.modelMtxFn_0x28)(
+                    player, obj2, &v38);
+			}
+			v2c.x = v2c.x - v38.x;
+			v2c.y = v2c.y - v38.y;
+			v2c.z = v2c.z - v38.z;
+			ii = getAngle(v2c.x, v2c.z);
+			(player->pos).rotation.x = (short)ii;
+			dVar1 = sqrt((double)(v2c.x * v2c.x + v2c.z * v2c.z));
+			ii = getAngle(v2c.y, (float)dVar1);
+			(player->pos).rotation.y = 0x4000 - (short)ii;
+			(player->pos).rotation.z = 0;
+		}
+	}
 }
 
 u8 Color_ARRAY_802ee4d8[16*3];
