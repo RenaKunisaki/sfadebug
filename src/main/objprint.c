@@ -31,6 +31,7 @@ Mtx44Ptr modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
 void debugRenderFn80095844(Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx,
 Pol **pol, ObjInstance *obj);
 void mtxLoadFn8006a754(Gfx_ **gfx,Mtx44 **mtx,ObjPos *pos,float param_4,float param_5,Mtx44 *mtx2);
+u16 getAngle(float x,float y);
 
 s8 areModelsEnabled(); //maybe areModelsDisabled - not bool
 s8 isMainCharacterEnabled(); //maybe isMainCharacterDisabled
@@ -283,13 +284,12 @@ ModelInstance *mInst) {
 					printf("4: objprint.c: modelno overflow\n");
 				}
                 attach = &player->objdata->pAttachPoints[iAP2];
-                jointmtx = *(mInst->jMtxs[mInst->flags & 1] +
-                    attach[player->modelno].bone);
+                iAP1 = attach[player->modelno].bone;
+                jointmtx = *(mInst->jMtxs[mInst->flags & 1] + iAP1);
 				v38.x = player->objdata->pAttachPoints[iAP2].pos.x;
 				v38.y = player->objdata->pAttachPoints[iAP2].pos.y;
 				v38.z = player->objdata->pAttachPoints[iAP2].pos.z;
-				MTXMultVec(jointmtx,
-                    &v38, &v38);
+				MTXMultVec(jointmtx, &v38, &v38);
 				v38.x += playerMapOffsetX;
 				v38.z += playerMapOffsetZ;
 				state->unk18[0][ii] = v38.x;
@@ -305,14 +305,12 @@ ModelInstance *mInst) {
 				(*((LoadedDLL*)player->dll)->funcs->Object.modelMtxFn_0x28)(
                     player, obj2, &v38);
 			}
-			v2c.x = v2c.x - v38.x;
-			v2c.y = v2c.y - v38.y;
-			v2c.z = v2c.z - v38.z;
-			ii = getAngle(v2c.x, v2c.z);
-			(player->pos).rotation.x = (short)ii;
-			dVar1 = sqrt((double)(v2c.x * v2c.x + v2c.z * v2c.z));
-			ii = getAngle(v2c.y, (float)dVar1);
-			(player->pos).rotation.y = 0x4000 - (short)ii;
+			v2c.x -= v38.x;
+			v2c.y -= v38.y;
+			v2c.z -= v38.z;
+			(player->pos).rotation.x = getAngle(v2c.x, v2c.z);
+			(player->pos).rotation.y = 0x4000 + -getAngle(v2c.y,
+                sqrt((v2c.x * v2c.x + v2c.z * v2c.z)));
 			(player->pos).rotation.z = 0;
 		}
 	}
