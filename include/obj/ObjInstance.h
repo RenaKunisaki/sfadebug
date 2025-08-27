@@ -9,6 +9,7 @@
 
 #define MAX_OBJECTS 350
 #define MAX_EFFECT_BOXES 20
+#define MAX_MODELS_PER_OBJ 6
 
 #define ObjInstance_Flags06_DontTrackOldPositions 8
 #define ObjInstance_Flags06_DontSave 8192
@@ -109,12 +110,7 @@ typedef struct {
 typedef struct {
     /* 0x00 */ Vec pos; //offset from bone
     /* 0x0c */ S16Vec rot; //offset from bone
-    /* 0x12 */ s8 bone; //bone idx to use
-    /* 0x13 */ s8 unk13; //always same as bone?
-    /* 0x14 */ s8 unk14; //always same as bone?
-    /* 0x15 */ u8 unk15; //always 0xCD?
-    /* 0x16 */ u8 unk16; //always 0xCD?
-    /* 0x17 */ u8 unk17; //always 0xCD?
+    /* 0x12 */ s8 bone[MAX_MODELS_PER_OBJ]; //bone idx to use, indexed by modelno
 } AttachPoint;
 
 typedef struct {

@@ -188,7 +188,7 @@ undefined4 param_8, ObjInstance *player, int iAttachPoint) {
 		model = frame->mod;
 		if(obj->objdata->noplacements) {
 			if(obj->modelno >= 6) printf("2: objprint.c: modelno overflow\n");
-			iBone = (&obj->objdata->pAttachPoints[iAttachPoint].bone)[obj->modelno];
+			iBone = (obj->objdata->pAttachPoints[iAttachPoint].bone)[obj->modelno];
 			pos.pos.x = obj->objdata->pAttachPoints[iAttachPoint].pos.x;
 			pos.pos.y = obj->objdata->pAttachPoints[iAttachPoint].pos.y;
 			pos.pos.z = obj->objdata->pAttachPoints[iAttachPoint].pos.z;
@@ -248,12 +248,12 @@ void playerBoneFn_80095044(ObjInstance *player, ObjInstance *obj2,
 ModelInstance *mInst) {
 	Mtx44Ptr jointmtx;
 	int ii;
+	int iAP1;
 	int iAP2;
 	ObjState_Player *state;
 	double dVar1;
 	Vec v38;
 	Vec v2c;
-	int iAP1;
     AttachPoint *attach;
 
 	if((player->objdata->noplacements >= 2) && (player->objId == 0x2f)) {
@@ -261,17 +261,17 @@ ModelInstance *mInst) {
 		for(ii = 0; ii < state->boneCountRelated86; ii++) {
 			iAP1 = ii * 2;
 			iAP2 = iAP1 + 1;
-			if(iAP2 < player->objdata->noplacements) {
-				if(player->modelno >= 6) {
+			if(iAP1 < player->objdata->noplacements) {
+				if(player->modelno >= MAX_MODELS_PER_OBJ) {
 					printf("3: objprint.c: modelno overflow\n");
 				}
 				jointmtx = modelInstGetjMtx(mInst,
-                (&player->objdata->pAttachPoints[iAP1+2].bone)
+                (player->objdata->pAttachPoints[iAP1+1].bone)
                     [player->modelno]);
                 ASSERTLINE(1233, jointmtx);
-				v2c.x = player->objdata->pAttachPoints[iAP1+2].pos.x;
-				v2c.y = player->objdata->pAttachPoints[iAP1+2].pos.y;
-				v2c.z = player->objdata->pAttachPoints[iAP1+2].pos.z;
+				v2c.x = player->objdata->pAttachPoints[iAP1+1].pos.x;
+				v2c.y = player->objdata->pAttachPoints[iAP1+1].pos.y;
+				v2c.z = player->objdata->pAttachPoints[iAP1+1].pos.z;
 				MTXMultVec(jointmtx, &v2c, &v2c);
 				v2c.x += playerMapOffsetX;
 				v2c.z += playerMapOffsetZ;
@@ -280,12 +280,11 @@ ModelInstance *mInst) {
 				state->unk18[5][ii] = v2c.z;
 			}
 			if(iAP2 < player->objdata->noplacements) {
-				if(player->modelno >= 6) {
+				if(player->modelno >= MAX_MODELS_PER_OBJ) {
 					printf("4: objprint.c: modelno overflow\n");
-				}
-                attach = &player->objdata->pAttachPoints[iAP2];
-                iAP1 = attach[player->modelno].bone;
-                jointmtx = *(mInst->jMtxs[mInst->flags & 1] + iAP1);
+				};
+                iAP1 = player->objdata->pAttachPoints[iAP2].bone[player->modelno];
+                jointmtx = mInst->jMtxs[mInst->flags & 1][iAP1];
 				v38.x = player->objdata->pAttachPoints[iAP2].pos.x;
 				v38.y = player->objdata->pAttachPoints[iAP2].pos.y;
 				v38.z = player->objdata->pAttachPoints[iAP2].pos.z;
