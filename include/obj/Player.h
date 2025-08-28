@@ -100,7 +100,7 @@ typedef struct {
     /* 0x0084 */ u8 unk84;
     /* 0x0085 */ u8 unk85;
     /* 0x0086 */ s16 boneCountRelated86;
-    /* 0x0088 */ short unk88;
+    /* 0x0088 */ short boneIdxRelated88;
     /* 0x008a */ u8 unk8a;
     /* 0x008b */ u8 unk8b;
     /* 0x008c */ u8 unk8c;

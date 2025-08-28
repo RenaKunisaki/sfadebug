@@ -246,32 +246,31 @@ undefined4 param_8, ObjInstance *player, int iAttachPoint) {
 
 void playerBoneFn_80095044(ObjInstance *player, ObjInstance *obj2,
 ModelInstance *mInst) {
-	Mtx44Ptr jointmtx;
-	int ii;
-	int iAP1;
-	int iAP2;
-	ObjState_Player *state;
-	double dVar1;
-	Vec v38;
 	Vec v2c;
-    AttachPoint *attach;
+	Vec v38;
+    int dummy3;
+    int dummy1;
+    int dummy2;
+	int ii;
+	ObjState_Player *state;
+	int iAP;
+    Mtx44Ptr jointmtx;
+	int iBone;
 
 	if((player->objdata->noplacements >= 2) && (player->objId == 0x2f)) {
 		state = (ObjState_Player *)player->state;
 		for(ii = 0; ii < state->boneCountRelated86; ii++) {
-			iAP1 = ii * 2;
-			iAP2 = iAP1 + 1;
-			if(iAP1 < player->objdata->noplacements) {
+			iAP = (ii * 2) + 1;
+			if(iAP < player->objdata->noplacements) {
 				if(player->modelno >= MAX_MODELS_PER_OBJ) {
 					printf("3: objprint.c: modelno overflow\n");
 				}
-				jointmtx = modelInstGetjMtx(mInst,
-                (player->objdata->pAttachPoints[iAP1+1].bone)
-                    [player->modelno]);
+                jointmtx = modelInstGetjMtx(mInst,
+                player->objdata->pAttachPoints[iAP+1].bone[player->modelno]);
                 ASSERTLINE(1233, jointmtx);
-				v2c.x = player->objdata->pAttachPoints[iAP1+1].pos.x;
-				v2c.y = player->objdata->pAttachPoints[iAP1+1].pos.y;
-				v2c.z = player->objdata->pAttachPoints[iAP1+1].pos.z;
+				v2c.x = player->objdata->pAttachPoints[iAP+1].pos.x;
+				v2c.y = player->objdata->pAttachPoints[iAP+1].pos.y;
+				v2c.z = player->objdata->pAttachPoints[iAP+1].pos.z;
 				MTXMultVec(jointmtx, &v2c, &v2c);
 				v2c.x += playerMapOffsetX;
 				v2c.z += playerMapOffsetZ;
@@ -279,15 +278,15 @@ ModelInstance *mInst) {
 				state->unk18[4][ii] = v2c.y;
 				state->unk18[5][ii] = v2c.z;
 			}
-			if(iAP2 < player->objdata->noplacements) {
+			if(iAP < player->objdata->noplacements) {
 				if(player->modelno >= MAX_MODELS_PER_OBJ) {
 					printf("4: objprint.c: modelno overflow\n");
-				};
-                iAP1 = player->objdata->pAttachPoints[iAP2].bone[player->modelno];
-                jointmtx = mInst->jMtxs[mInst->flags & 1][iAP1];
-				v38.x = player->objdata->pAttachPoints[iAP2].pos.x;
-				v38.y = player->objdata->pAttachPoints[iAP2].pos.y;
-				v38.z = player->objdata->pAttachPoints[iAP2].pos.z;
+				}
+                iBone = player->objdata->pAttachPoints[iAP].bone[player->modelno];
+                jointmtx = mInst->jMtxs[mInst->flags & 1][iBone];
+				v38.x = player->objdata->pAttachPoints[iBone].pos.x;
+				v38.y = player->objdata->pAttachPoints[iBone].pos.y;
+				v38.z = player->objdata->pAttachPoints[iBone].pos.z;
 				MTXMultVec(jointmtx, &v38, &v38);
 				v38.x += playerMapOffsetX;
 				v38.z += playerMapOffsetZ;
@@ -297,9 +296,9 @@ ModelInstance *mInst) {
 			}
 		}
 		if(state->boneCountRelated86) {
-			v2c.x = state->unk18[3][state->unk88];
-			v2c.y = state->unk18[4][state->unk88];
-			v2c.z = state->unk18[5][state->unk88];
+			v2c.x = state->unk18[3][state->boneIdxRelated88];
+			v2c.y = state->unk18[4][state->boneIdxRelated88];
+			v2c.z = state->unk18[5][state->boneIdxRelated88];
 			if(debugRenderMode == 0) {
 				(*((LoadedDLL*)player->dll)->funcs->Object.modelMtxFn_0x28)(
                     player, obj2, &v38);
@@ -307,10 +306,10 @@ ModelInstance *mInst) {
 			v2c.x -= v38.x;
 			v2c.y -= v38.y;
 			v2c.z -= v38.z;
-			(player->pos).rotation.x = getAngle(v2c.x, v2c.z);
-			(player->pos).rotation.y = 0x4000 + -getAngle(v2c.y,
+			player->pos.rotation.x = getAngle(v2c.x, v2c.z);
+			player->pos.rotation.y = 0x4000 + -getAngle(v2c.y,
                 sqrt((v2c.x * v2c.x + v2c.z * v2c.z)));
-			(player->pos).rotation.z = 0;
+			player->pos.rotation.z = 0;
 		}
 	}
 }
