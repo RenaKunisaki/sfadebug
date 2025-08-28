@@ -142,7 +142,7 @@ ModelInstance *createModelInstance(
 		pfVar3 = pfVar3 + model->numJoints;
 		minst->skeleton->totalDist = (float *)pfVar3;
 		bVar1 = model->numJoints;
-		minst->skeleton->unk18 = (float *)(pfVar3 + bVar1);
+		minst->skeleton->unk18 = (u8*)(pfVar3 + bVar1);
 		pvVar9 = (S16Vec *)((int)(pfVar3 + bVar1) + (uint)model->numJoints);
 	}
 	if(model->posFineSkinningConfig != NULL) {
