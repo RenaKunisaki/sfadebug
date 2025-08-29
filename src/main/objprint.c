@@ -120,12 +120,13 @@ void fn_80094B08(undefined4 param_1) {
 
 void objRenderCurrentModel2(ObjInstance *obj, Gfx_ **gfx, Mtx44 **mtx,
 Pol **pol, N64Vertex **vtx, float param_6) {
-	Gfx_ *gfx2;
-	Pol *pol2;
-	Mtx44 *mtx2;
-    N64Vertex *vtx2;
-    Model *mod;
 	ModelInstance *frame;
+    Model *mod;
+	Gfx_ *gfx2;
+	Mtx44 *mtx2;
+	Pol *pol2;
+    N64Vertex *vtx2;
+    int dummy4;
     char pad[120];
     int dummy = 0;
     int dummy2, dummy3;
