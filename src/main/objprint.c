@@ -26,10 +26,9 @@ void objRenderCurrentModel2(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **
 void drawCircle(Gfx_ **gfx,Mtx44 **mtx,float x,float y,float z,float radius,float param_7,u8 r,u8 g, u8 b);
 void LAB_8006a790(Gfx_ **gfx,Mtx44 **mtx,ObjPos *pos,float x,float y,Mtx44 *mtx2);
 void objPrintFn_80095cd4(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, Model *mod, ModelInstance *mInst);
-void playerBoneFn_80095044(ObjInstance *player, ObjInstance *obj2, ModelInstance *mInst);
+void playerBoneFn_80095044(ObjInstance *player, ObjInstance *obj2, ModelInstance *mInst, Gfx_ **gfx, Mtx44 **mtx, Pol **pol);
 Mtx44Ptr modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
-void debugRenderFn80095844(Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx,
-Pol **pol, ObjInstance *obj);
+void debugRenderFn80095844(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, ObjInstance *obj);
 void mtxLoadFn8006a754(Gfx_ **gfx,Mtx44 **mtx,ObjPos *pos,float param_4,float param_5,Mtx44 *mtx2);
 u16 getAngle(float x,float y);
 
@@ -100,7 +99,7 @@ ObjInstance *obj, s8 shouldRender) {
         }
     }
     if(((debugRenderMode == 1 || debugRenderMode == 2)) && shouldRender) {
-        debugRenderFn80095844(gfx, mtx, vtx, pol, obj);
+        debugRenderFn80095844(gfx, mtx, pol, vtx, obj);
     }
     if(((BYTE_80398afc == 1) && shouldRender)
     && obj->objdata->unkac) {
@@ -202,14 +201,14 @@ undefined4 param_8, ObjInstance *player, int iAttachPoint) {
 		if(model->numAnims) {
 			pMtx_80398ad8 = mtx2;
 			modelAnimFn_8007e974(frame, model, player, mtx2);
-			playerBoneFn_80095044(player, obj, frame);
+			playerBoneFn_80095044(player, obj, frame, gfx, mtx, pol);
 		} else {
             frame->flags ^= ModelFlags18_UseOtherMtxs;
 			jMtx = *frame->jMtxs[frame->flags & ModelFlags18_UseOtherMtxs];
 			for(ii = 0; ii < 0x10; ii += 1) {
                 ((float*)jMtx)[ii] = ((float*)mtx2)[ii];
             }
-			playerBoneFn_80095044(player, obj, frame);
+			playerBoneFn_80095044(player, obj, frame, gfx, mtx, pol);
 			pMtx_80398ad8 = jMtx;
 		}
 		frame->flags ^= ModelFlags18_UseOtherMtxs;
@@ -245,7 +244,7 @@ undefined4 param_8, ObjInstance *player, int iAttachPoint) {
 }
 
 void playerBoneFn_80095044(ObjInstance *player, ObjInstance *obj2,
-ModelInstance *mInst) {
+ModelInstance *mInst, Gfx_ **gfx, Mtx44 **mtx, Pol **pol) {
 	Vec v2c;
 	Vec v38;
     int dummy3;
@@ -431,8 +430,8 @@ void fn_800953E8(Gfx_ **gfx, N64Vertex **diVtx, Pol **diPol) {
 
 N64VertexIdxs N64VertexIdxs_ARRAY_802ee158[];
 
-void debugRenderFn80095844(Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx,
-Pol **pol, ObjInstance *obj) {
+void debugRenderFn80095844(Gfx_ **gfx, Mtx44 **mtx, Pol **pol,
+N64Vertex **vtx, ObjInstance *obj) {
 	float fVar4, y, fVar2, fVar1;
 	int r, g, b;
 	HitState *hits;
