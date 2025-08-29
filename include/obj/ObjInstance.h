@@ -7,14 +7,12 @@
 #include "obj/ObjDef.h"
 #include "types.h"
 
-#define MAX_OBJECTS 350
+#define MAX_OBJECTS 350 //most objects that can be loaded at once
 #define MAX_EFFECT_BOXES 20
-#define MAX_MODELS_PER_OBJ 6
+#define MAX_MODELS_PER_OBJ 6 //most models one ObjDef can have
 
-#define ObjInstance_Flags06_DontTrackOldPositions 8
-#define ObjInstance_Flags06_DontSave 8192
-#define ObjInstance_Flags06_Invisible 16384
-
+#define OBJ_PRIORITY_WORLD 90
+#define OBJ_PRIORITY_DEFAULT 80
 typedef struct {
     /* 0x0 */ S16Vec rotation;
     /* 0x6 */ s16 flags; //ObjInstance_Flags06
@@ -24,44 +22,72 @@ typedef struct {
 
 struct ObjInstance;
 
-typedef enum {
+typedef enum { //u8
     OBJ_STATE_ISFROZEN = 0x01, //official name
     //0x02: related to freezing
     //0x04: related to freezing
 } ObjStateFlags;
 
-#define OBJ_PRIORITY_WORLD 90
-#define OBJ_PRIORITY_DEFAULT 80
+enum { //u16
+	ObjInstance_Flags06_DontTrackOldPositions = 0x0008,
+	ObjInstance_Flags06_DontSave              = 0x2000,
+	ObjInstance_Flags06_Invisible             = 0x4000,
+};
 
-#define ObjInstance_FlagsB0_WhichParentHitbox 7
-#define ObjInstance_FlagsB0_ScalingFlag08 8
-#define ObjInstance_FlagsB0_IsInGlobalObjList 16
-#define ObjInstance_FlagsB0_FallThruFloor 32
-#define ObjInstance_FlagsB0_IsFreed 64
-#define ObjInstance_FlagsB0_LockAnimsAndControls 128
-#define ObjInstance_FlagsB0_Invisible 1024
-#define ObjInstance_FlagsB0_IsRendered 2048
-#define ObjInstance_FlagsB0_SeqActive 4096
-#define ObjInstance_FlagsB0_DontMove 8192
-#define ObjInstance_FlagsB0_DontRender 16384 //aka ObjInstance_FlagsB0_DontUseRenderCallback
-#define ObjInstance_FlagsB0_DontUpdate 32768
+enum { //u16
+    ObjInstance_FlagsB0_WhichParentHitbox    = 0x0007, //bitmask
+	ObjInstance_FlagsB0_ScalingFlag08        = 0x0008,
+	ObjInstance_FlagsB0_IsInGlobalObjList    = 0x0010,
+	ObjInstance_FlagsB0_FallThruFloor        = 0x0020, //disable hit detect?
+	ObjInstance_FlagsB0_IsFreed              = 0x0040,
+	ObjInstance_FlagsB0_LockAnimsAndControls = 0x0080,
+    //missing                                  0x0100
+    //missing                                  0x0200
+	ObjInstance_FlagsB0_Invisible            = 0x0400,
+	ObjInstance_FlagsB0_IsRendered           = 0x0800,
+	ObjInstance_FlagsB0_SeqActive            = 0x1000,
+	ObjInstance_FlagsB0_DontMove             = 0x2000,
+	ObjInstance_FlagsB0_DontRender           = 0x4000, //aka ObjInstance_FlagsB0_DontUseRenderCallback
+	ObjInstance_FlagsB0_DontUpdate           = 0x8000,
+};
 
-#define ObjFileStructFlags44_HaveModels	1
-#define ObjFileStructFlags44_DifferentLightColor	16
-#define ObjFileStructFlags44_ModelRelated	32
-#define ObjFileStructFlags44_IsWorldObj	64
-#define ObjFileStructFlags44_EnableCulling	1024
-#define ObjFileStructFlags44_UseDifferentModelLoading	2048
-#define ObjFileStructFlags44_LockAnimsAndControls	262144
-#define ObjFileStructFlags44_FixedDepth	524288	//o->data->depth is the Z depth for sorting
-#define ObjFileStructFlags44_OpacityDrawGroupFlag_0x100000	1048576	//affects whether opacity is used to calc draw group
-#define ObjFileStructFlags44_KeepHitboxWhenInvisible	2097152
-#define ObjFileStructFlags44_HasEvent	4194304
-#define ObjFileStructFlags44_DidLoadModels	8388608
+typedef s16 ObjFileStruct_ShadowType;
 
-#define ObjData_Flag_FixedDepth 0x80000
+typedef uint ObjFileStructFlags44;
+enum { //u32
+    ObjFileStructFlags44_HaveModels                    = 0x00000001,
+    //missing                                            0x00000002
+    //missing                                            0x00000004
+    //missing                                            0x00000008
+	ObjFileStructFlags44_DifferentLightColor           = 0x00000010,
+	ObjFileStructFlags44_ModelRelated                  = 0x00000020,
+	ObjFileStructFlags44_IsWorldObj                    = 0x00000040,
+    //missing                                            0x00000080
+    //missing                                            0x00000100
+    //missing                                            0x00000200
+	ObjFileStructFlags44_EnableCulling                 = 0x00000400,
+	ObjFileStructFlags44_UseDifferentModelLoading      = 0x00000800,
+    //missing                                            0x00001000
+    //missing                                            0x00002000
+    //missing                                            0x00004000
+    //missing                                            0x00008000
+    //missing                                            0x00010000
+    //missing                                            0x00020000
+	ObjFileStructFlags44_LockAnimsAndControls          = 0x00040000,
+	ObjFileStructFlags44_FixedDepth                    = 0x00080000,	//o->data->depth is the Z depth for sorting
+	ObjFileStructFlags44_OpacityDrawGroupFlag_0x100000 = 0x00100000,	//affects whether opacity is used to calc draw group
+	ObjFileStructFlags44_KeepHitboxWhenInvisible       = 0x00200000,
+	ObjFileStructFlags44_HasEvent                      = 0x00400000,
+	ObjFileStructFlags44_DidLoadModels                 = 0x00800000,
+};
 
-#define RomLockData_Flag_Rotate 0x10
+enum { //u32
+	ObjData_Flag_FixedDepth = 0x00080000,
+};
+
+enum { //u8
+	RomLockData_Flag_Rotate = 0x10,
+};
 
 typedef int (*ObjSeqFunc)(struct ObjInstance *this,
     struct ObjInstance *that, void *state);
@@ -107,10 +133,13 @@ typedef struct {
     s16 size;
 } ObjWeaponData;
 
+/** A position where something can attach, such
+ *  as a weapon or held object. */
 typedef struct {
     /* 0x00 */ Vec pos; //offset from bone
     /* 0x0c */ S16Vec rot; //offset from bone
     /* 0x12 */ s8 bone[MAX_MODELS_PER_OBJ]; //bone idx to use, indexed by modelno
+    // unused 'bone' entries are set to 0xCD
 } AttachPoint;
 
 typedef struct {
@@ -123,8 +152,6 @@ typedef struct {
     /* 0x10 */ s16 unk10;
 } Joint;
 
-typedef uint ObjFileStructFlags44;
-typedef s16 ObjFileStruct_ShadowType;
 typedef u16 HitboxFlags60;
 typedef u16 HitboxFlags62;
 
