@@ -137,18 +137,18 @@ extern short di_pol_count;
 extern RSPState *RSP_pState;
 extern int diFlag_803997d0; */
 
-#define RSP_CMD(gfx, op, prm)                                                  \
-	do {                                                                       \
-		Gfx_ *temp_r19 = (*(gfx))++;                                           \
-		temp_r19->pkt.cmd = op;                                                \
-		temp_r19->pkt.param = (u32)(prm);                                      \
+#define RSP_CMD(gfx, op, prm)         \
+	do {                              \
+		Gfx_ *gfx_ = (*(gfx))++;      \
+		gfx_->pkt.cmd = (op);         \
+		gfx_->pkt.param = (u32)(prm); \
 	} while(0)
 
-#define RSP_CMD_NOINC(gfx, op, prm)                                            \
-	do {                                                                       \
-		Gfx_ *temp_r19 = *gfx;                                                 \
-		temp_r19->pkt.cmd = op;                                                \
-		temp_r19->pkt.param = (u32)(prm);                                      \
+#define RSP_CMD_NOINC(gfx, op, prm)   \
+	do {                              \
+		Gfx_ *gfx_ = (*gfx);          \
+		gfx_->pkt.cmd = (op);         \
+		gfx_->pkt.param = (u32)(prm); \
 	} while(0)
 
 #endif //_GFX_RENDER_H_
