@@ -16,7 +16,7 @@ s8 BYTE_80398afc;
 int DAT_80398aec;
 u8 framesThisStep;
 
-u8 Color_ARRAY_802ee504[][3];
+u8 Color_ARRAY_802ee504[8][3];
 u8 BYTE_802ee2b8[];
 u8 BYTE_802ee158;
 
@@ -484,8 +484,8 @@ N64Vertex **vtx, ObjInstance *obj) {
     }
 }
 
-void fn_80095AEC(Gfx_ **gfx, Mtx44 **mtx, u8 iColor,
-float x, float y, float z, float scale) {
+void fn_80095AEC(Gfx_ **gfx, Mtx44 **mtx,
+float x, float y, float z, float scale, u8 iColor) {
 	ObjPos pos;
     u8 *color;
 
