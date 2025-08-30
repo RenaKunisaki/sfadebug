@@ -16,7 +16,7 @@ s8 BYTE_80398afc;
 int DAT_80398aec;
 u8 framesThisStep;
 
-u8 *Color4b_ARRAY_802ee504;
+u8 Color_ARRAY_802ee504[][3];
 u8 BYTE_802ee2b8[];
 u8 BYTE_802ee158;
 
@@ -31,6 +31,8 @@ Mtx44Ptr modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
 void debugRenderFn80095844(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, ObjInstance *obj);
 void mtxLoadFn8006a754(Gfx_ **gfx,Mtx44 **mtx,ObjPos *pos,float param_4,float param_5,Mtx44 *mtx2);
 u16 getAngle(float x,float y);
+void mtxSetFromObjPos(Mtx44Ptr mtx,ObjPos *pos);
+void Mtx44Mult(Mtx44Ptr ma,Mtx44Ptr mb,Mtx44Ptr out);
 
 s8 areModelsEnabled(); //maybe areModelsDisabled - not bool
 s8 isMainCharacterEnabled(); //maybe isMainCharacterDisabled
@@ -127,7 +129,7 @@ Pol **pol, N64Vertex **vtx, float param_6) {
 	Pol *pol2;
     N64Vertex *vtx2;
     int dummy4;
-    char pad[120];
+    char pad[120]; //at least 113, at most 120
     int dummy = 0;
     int dummy2, dummy3;
 
@@ -172,23 +174,23 @@ void objRenderCurrentModel(ObjInstance *obj) {
 
 Mtx44Ptr pMtx_80398ad8;
 
-ModelInstance *playerBoneFn_80094cbc(Gfx_ **gfx, Mtx44 **mtx, Pol **pol,
+ModelInstance* playerBoneFn_80094cbc(Gfx_ **gfx, Mtx44 **mtx, Pol **pol,
 N64Vertex **vtx, ObjInstance *obj, ModelInstance *mInst, Mtx44Ptr mtx2,
-undefined4 param_8, ObjInstance *player, int iAttachPoint) {
-	Mtx44Ptr jMtx;
+undefined4 alwaysZero, ObjInstance *player, int iAttachPoint) {
+    int dummy;
 	Model *model;
+	Mtx44Ptr jMtx;
 	int ii;
 	ModelInstance *frame;
 	ObjPos pos;
-	int iBone;
 
 	pMtx_80398ad8 = NULL;
 	frame = player->frames[player->modelno];
-	if(frame && ((mInst->flags & ModelFlags18_MtxsLoaded) == 0)) {
+	if(frame && !(mInst->flags & ModelFlags18_MtxsLoaded)) {
 		model = frame->mod;
 		if(obj->objdata->noplacements) {
 			if(obj->modelno >= 6) printf("2: objprint.c: modelno overflow\n");
-			iBone = (obj->objdata->pAttachPoints[iAttachPoint].bone)[obj->modelno];
+			ii = (obj->objdata->pAttachPoints[iAttachPoint].bone)[obj->modelno];
 			pos.pos.x = obj->objdata->pAttachPoints[iAttachPoint].pos.x;
 			pos.pos.y = obj->objdata->pAttachPoints[iAttachPoint].pos.y;
 			pos.pos.z = obj->objdata->pAttachPoints[iAttachPoint].pos.z;
@@ -197,10 +199,14 @@ undefined4 param_8, ObjInstance *player, int iAttachPoint) {
 			pos.rotation.y = obj->objdata->pAttachPoints[iAttachPoint].rot.y;
 			pos.rotation.z = obj->objdata->pAttachPoints[iAttachPoint].rot.z;
 			mtxSetFromObjPos(mtx2, &pos);
-			Mtx44Mult(mtx2, mInst->jMtxs[mInst->flags & ModelFlags18_UseOtherMtxs] + iBone, mtx2);
+			Mtx44Mult(mtx2, (Mtx44Ptr)mInst->jMtxs[
+                    mInst->flags & ModelFlags18_UseOtherMtxs] + ii,
+                    (Mtx44Ptr)mtx2);
+            mtx2 = jMtx;
 		}
+        else mtx2 = jMtx;
 		if(model->numAnims) {
-			pMtx_80398ad8 = mtx2;
+            pMtx_80398ad8 = mtx2;
 			modelAnimFn_8007e974(frame, model, player, mtx2);
 			playerBoneFn_80095044(player, obj, frame, gfx, mtx, pol);
 		} else {
@@ -235,7 +241,7 @@ undefined4 param_8, ObjInstance *player, int iAttachPoint) {
 			(player->prevPos).y = (player->pos).pos.y;
 			(player->prevPos).z = (player->pos).pos.z;
 		}
-		if((player->objdata->noplacements >= 2) && (player->objId == 0x2f)) {
+		if(player->objdata->noplacements >= 2 && player->objId == 0x2f) {
 			if(player->heldBy) loadCamMtxFn_8006B318(gfx);
 			((LoadedDLL*)player->dll)->funcs->Object.render2C(player, gfx, mtx, pol, vtx);
 			if(player->heldBy) playerHeldByFn_8006b200(gfx, mtx, player->heldBy);
@@ -483,7 +489,7 @@ float x, float y, float z, float scale) {
 	ObjPos pos;
     u8 *color;
 
-    color = Color4b_ARRAY_802ee504;
+    color = (u8*)Color_ARRAY_802ee504;
 	pos.rotation.x = 0;
 	pos.rotation.y = 0;
 	pos.rotation.z = 0;
@@ -600,7 +606,7 @@ Model *mod, ModelInstance *mInst) {
 				xf.pos.z = (xf.pos.z - mtxTmp[3][3]) * (mod->exT[ii] - 1.0f) + xf.pos.z;
 				bVar1 = true;
 			}
-			mtxSetFromObjPos(&pos, &xf); //what?
+			mtxSetFromObjPos((Mtx44Ptr)&pos, &xf); //what?
 			MTX44_Copy(&pos, *mtx);
             RSP_CMD(gfx, 0xda380002, (*mtx)++);
 			if(skel->unk18[iParent] == 0) {
