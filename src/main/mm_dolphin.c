@@ -334,13 +334,9 @@ void mmFree(void *__ptr) { // 8007BDA4
 	u32 irq;
 
 	irq = n64DisableInterrupts();
-	if(mmDelay == 0) {
-		_mmHeapFree(__ptr);
-	} else {
-		_mmAddToFreeList(__ptr);
-	}
+	if(mmDelay == 0) _mmHeapFree(__ptr);
+	else _mmAddToFreeList(__ptr);
 	n64EnableInterrupts(irq);
-	return;
 }
 
 inline void countHeap(int idx, int *out) {
