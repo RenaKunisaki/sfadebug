@@ -91,8 +91,8 @@ void initHeaps(void) { // 8007B3A4
 	return;
 }
 
-void *heapInit(HeapEntry *addr, int size, int nSlots) { // 8007B580
-	int iVar2;
+void* heapInit(HeapEntry *addr, int size, int nSlots) { // 8007B580
+	int ii;
 	HeapEntry *entry;
 	uint iHeap;
 	uint size2;
@@ -110,8 +110,9 @@ void *heapInit(HeapEntry *addr, int size, int nSlots) { // 8007B580
 	heaps[iHeap].used2 = 0;
 	entry = heaps[iHeap].data;
 
-	for(iVar2 = 0; iVar2 < (int)heaps[iHeap].avail; iVar2++) {
-		(entry++)->stack = iVar2;
+	for(ii = 0; ii < heaps[iHeap].avail; ii++) {
+		entry->stack = ii;
+		entry++;
 	}
 	entry = heaps[iHeap].data;
 	addr = (HeapEntry *)((int)addr + size2);
