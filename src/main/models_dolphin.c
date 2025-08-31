@@ -23,8 +23,7 @@ void *loadModelInstance(undefined4 id, undefined4 param2) { // 8007C57C
 	return result;
 }
 
-ModelInstance *createModelInstance(
-    Model *model, uint flags) { // 8007C5B4
+ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 	s8 bVar1;
 	ModelInstance *minst;
 	uint size;
@@ -39,7 +38,7 @@ ModelInstance *createModelInstance(
 	AnimInstance *pAVar6;
 	S16Vec *psVar7;
 	void *pvVar8;
-	void *pvVar9;
+	void *next;
 	Texture **param1;
 	float local_40;
 	int local_30;
@@ -55,34 +54,37 @@ ModelInstance *createModelInstance(
 	if(!minst) return NULL;
 
 	memclr(minst, size);
-	field54 = (ModelInstanceField54 *)alignTo16(&minst->field54);
+	field54 = (ModelInstanceField54 *)&minst->field54;
+    field54 = (ModelInstanceField54 *)alignTo16(field54);
 	minst->jMtxs[0] = field54->jMtxs[0];
 	minst->jMtxs[1] = field54->jMtxs[1];
 	psVar7 = &field54->unk;
 	minst->jMtxs4C = minst->jMtxs[0];
-	if((model->bCopyVtxsToModelInst == 0) && (model->posFineSkinningConfig == NULL)) {
-		pvVar9 = (void*)((int)psVar7 + 0x1fU & 0xffffffe0);
-		minst->vertexPositions = pvVar9;
-		psVar7 = &((S16Vec*)pvVar9)[model->numPositions * 3];
+	if(model->bCopyVtxsToModelInst
+    || model->posFineSkinningConfig) {
+		next = (void *)((int)psVar7 + 0x1fU & 0xffffffe0);
+		minst->vertexPositions = next;
+		psVar7 = &((S16Vec *)next)[model->numPositions];
 		minst->vertexPositions2 = psVar7;
-		psVar7 = &psVar7[model->numPositions * 3];
+		psVar7 = &psVar7[model->numPositions];
 		memcpy(minst->vertexPositions,
 		    model->vertexPositions,
-		    (uint)model->numPositions * 6);
-		DCFlushRange(minst->vertexPositions, (uint)model->numPositions * 6);
+		    (uint)model->numPositions * sizeof(S16Vec));
+		DCFlushRange(minst->vertexPositions,
+            (uint)model->numPositions * sizeof(S16Vec));
 	} else {
-		minst->vertexPositions  = model->vertexPositions;
+		minst->vertexPositions = model->vertexPositions;
 		minst->vertexPositions2 = model->vertexPositions;
 	}
 	anim = (AnimInstance *)alignTo4((uint)psVar7);
 	minst->animInstances[0] = anim;
-	pvVar9 = (S16Vec*)anim + 1;
-	if((flags & 0x80) != 0) {
-		minst->animInstances[1] = (AnimInstance *)pvVar9;
-		pvVar9 = (S16Vec*)anim + 2;
+	next = (S16Vec *)anim + 1;
+	if(flags & 0x80) {
+		minst->animInstances[1] = (AnimInstance *)next;
+		next = (S16Vec *)anim + 2;
 	}
-	if((model->flags & ModelDataFlags2_UseLocalModAnimTab) != 0) {
-		buf3 = (float*)alignTo64((uint)pvVar9);
+	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+		buf3 = (float *)alignTo64((uint)next);
 		buf4 = minst->animInstances[0];
 		buf4->animData[0] = (void *)buf3;
 		buf4->animData[1] = (void *)(buf3 + (int)local_30);
@@ -90,23 +92,23 @@ ModelInstance *createModelInstance(
 		buf4->animData[2] = pvVar8;
 		pvVar8 = (void *)((int)pvVar8 + (int)local_30);
 		buf4->animData[3] = pvVar8;
-		pvVar9 = (S16Vec *)((int)pvVar8 + (int)local_30);
+		next = (S16Vec *)((int)pvVar8 + (int)local_30);
 		if(minst->animInstances[1] != NULL) {
 			pAVar6 = minst->animInstances[1];
-			pAVar6->animData[0] = (AnimInstanceField44*)pvVar9;
-			pvVar8 = (void *)((int)pvVar9 + (int)local_30);
+			pAVar6->animData[0] = (AnimInstanceField44 *)next;
+			pvVar8 = (void *)((int)next + (int)local_30);
 			pAVar6->animData[1] = pvVar8;
 			pvVar8 = (void *)((int)pvVar8 + (int)local_30);
 			pAVar6->animData[2] = pvVar8;
 			pvVar8 = (void *)((int)pvVar8 + (int)local_30);
 			pAVar6->animData[3] = pvVar8;
-			pvVar9 = (S16Vec *)((int)pvVar8 + (int)local_30);
+			next = (S16Vec *)((int)pvVar8 + (int)local_30);
 		}
 	}
-	if(model->bCopyVtxsToModelInst != 0) {
-		pvVar9 = (S16Vec *)alignTo4((uint)pvVar9);
-		minst->unk20 = pvVar9;
-		pvVar9 = (void*)((int)pvVar9 + 8);
+	if(model->bCopyVtxsToModelInst) {
+		next = (S16Vec *)alignTo4((uint)next);
+		minst->unk20 = next;
+		next = (void *)((int)next + 8);
 		for(iVar5 = 0; iVar5 < 3; iVar5 = iVar5 + 1) {
 			psVar7 = &minst->vertexPositions[iVar5 * 8];
 			*(undefined *)(psVar7 + 6) = 0xff;
@@ -117,11 +119,11 @@ ModelInstance *createModelInstance(
 		}
 	}
 	if(0 < (int)local_40) {
-		uVar2 = alignTo4((uint)pvVar9);
-		minst->animInst38 = (AnimInstance*)uVar2;
+		uVar2 = alignTo4((uint)next);
+		minst->animInst38 = (AnimInstance *)uVar2;
 		iVar5 = uVar2 + (uint)model->numHitSpheres * 0x10;
 		minst->unk3c = iVar5;
-		pvVar9 = (S16Vec *)(iVar5 + (uint)model->numHitSpheres * 0x10);
+		next = (S16Vec *)(iVar5 + (uint)model->numHitSpheres * 0x10);
 		minst->activeAnimInst = minst->animInst38;
 	}
 	if((((model->joints == NULL) || (model->numJoints == 0))
@@ -129,8 +131,8 @@ ModelInstance *createModelInstance(
 	    || (model->exT == NULL)) {
 		minst->skeleton = NULL;
 	} else {
-		pfVar3 = (float **)alignTo4((uint)pvVar9);
-		minst->skeleton = (ModelSkeletonStruct*)pfVar3;
+		pfVar3 = (float **)alignTo4((uint)next);
+		minst->skeleton = (ModelSkeletonStruct *)pfVar3;
 		pfVar3 = pfVar3 + 7;
 		minst->skeleton->unk00 = (float *)pfVar3;
 		pfVar3 = pfVar3 + (uint)model->numJoints * 3;
@@ -142,20 +144,20 @@ ModelInstance *createModelInstance(
 		pfVar3 = pfVar3 + model->numJoints;
 		minst->skeleton->totalDist = (float *)pfVar3;
 		bVar1 = model->numJoints;
-		minst->skeleton->unk18 = (u8*)(pfVar3 + bVar1);
-		pvVar9 = (S16Vec *)((int)(pfVar3 + bVar1) + (uint)model->numJoints);
+		minst->skeleton->unk18 = (u8 *)(pfVar3 + bVar1);
+		next = (S16Vec *)((int)(pfVar3 + bVar1) + (uint)model->numJoints);
 	}
-	if(model->posFineSkinningConfig != NULL) {
-		uVar2 = alignTo4((uint)pvVar9);
-		minst->skinVtxs = (S16Vec**)uVar2;
-		pvVar9 = (S16Vec *)(uVar2 + (uint)model->skin.numPieces * 4);
+	if(model->posFineSkinningConfig) {
+		uVar2 = alignTo4((uint)next);
+		minst->skinVtxs = (S16Vec **)uVar2;
+		next = (S16Vec *)(uVar2 + (uint)model->skin.numPieces * 4);
 	}
-	pSVar4 = (ShaderDef *)alignTo4((uint)pvVar9);
+	pSVar4 = (ShaderDef *)alignTo4((uint)next);
 	minst->shaderDefs = pSVar4;
 	param1 = &pSVar4->texture + (uint)model->numShaders * 2;
-	if((flags & 0x8000) != 0) {
+	if(flags & 0x8000) {
 		uVar2 = alignTo2((uint)param1);
-		minst->shadow = (TexturedShadow*)uVar2;
+		minst->shadow = (TexturedShadow *)uVar2;
 		param1 = (Texture **)(uVar2 + sizeof(TexturedShadow));
 		minst->shadow->state = 0;
 	}
