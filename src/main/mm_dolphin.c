@@ -374,7 +374,7 @@ inline void handleFreeLists() {
 }
 
 void checkHeaps(void) { // 8007BDFC
-	int dVar2;
+	int pct;
 	int iVar3;
 
 	handleFreeLists();
@@ -385,9 +385,9 @@ void checkHeaps(void) { // 8007BDFC
     countHeap(1, &heapUsed1);
     countHeap(2, &heapUsed2);
 
-	dVar2 = memUsedPct++;
+	pct = memUsedPct++;
     iVar3 = 500;
-	if(!(dVar2 - ((dVar2 / iVar3) * iVar3))) {
+	if(!(pct - ((pct / iVar3) * iVar3))) {
         getTotalHeapUsed(0);
     }
 }
@@ -540,6 +540,7 @@ int alignTo2(int param1) { //8007C524
 	return param1;
 }
 
+#pragma peephole off
 int getTotalHeapUsed(int unused) { //8007C54C
 	register Heap *dummy = heaps;
 	return heapUsed0 + heapUsed1 + heapUsed2;

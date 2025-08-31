@@ -500,7 +500,8 @@ config.libs = [
             Object(
                 NonMatching,
                 "main/mm_dolphin.c",
-                extra_cflags=["-O0,s", "-use_lmw_stmw on"],
+                extra_cflags=["-O0,s", "-use_lmw_stmw on",
+                    "-opt peephole"],
             ),
             Object(
                 NonMatching,
