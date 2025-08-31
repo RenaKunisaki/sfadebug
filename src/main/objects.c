@@ -983,29 +983,35 @@ void objFreeObjdef(int defNo) {
     }
 }
 
-ModLine* loadModLine(int lineNo, s16 *outCount) { //regswap
+ModLine* loadModLine(int lineNo, s16 *outCount) {
+	s16 size16;
     ModLine *dest;
-    uint offset;
     uint *tempIdx;
     uint size;
     int fileSize;
+    uint offset;
 
     dest = NULL;
     fileSize = (getLoadedDataFileSize(FILE_MODLINES_tab) - 4) >> 2;
     if(lineNo > fileSize) return NULL;
 
-    tempIdx = mmAlloc(0x10,ALLOC_TAG_TEST_COL,(volatile u32)"obj:tempindex");
+    tempIdx = mmAlloc(0x10,ALLOC_TAG_TEST_COL,
+		(volatile u32)"obj:tempindex");
     lineNo *= 4;
-    loadDataFileWithLength(FILE_MODLINES_tab, tempIdx, lineNo, 8);
+    loadDataFileWithLength(FILE_MODLINES_tab,
+		tempIdx, lineNo, 8);
 
     offset = tempIdx[0];
     size = tempIdx[1] - tempIdx[0];
     if((int)size > 0) {
-        dest = mmAlloc(size, ALLOC_TAG_TRACK_COL, (volatile u32)"obj:templine");
-        loadDataFileWithLength(FILE_MODLINES_bin, dest, offset, size);
+        dest = mmAlloc(size, ALLOC_TAG_TRACK_COL,
+			(volatile u32)"obj:templine");
+        loadDataFileWithLength(FILE_MODLINES_bin,
+			dest, offset, size);
     }
     mmFree(tempIdx);
-    *outCount = size / 0x14;
+	size16 = size / 0x14;
+    *outCount = size16;
     return dest;
 }
 
