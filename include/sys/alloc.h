@@ -129,7 +129,7 @@ void *heapAlloc(volatile int heap, volatile int size, u32 tag, const char *name)
 void mmSetDelay(int delay);
 void mmFree(void *__ptr);
 void checkHeaps(void);
-int heapSetEntry(int iHeap, int iEntry, u32 size, int type, int type2, u32 tag,
+int heapSetEntry(int iHeap, int iEntry, int size, int type, int type2, u32 tag,
     const char *name);
 int getTotalHeapUsed(int unused);
 

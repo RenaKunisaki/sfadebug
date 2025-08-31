@@ -1,4 +1,5 @@
 #include "dolphin.h"
+#include "macros.h"
 #include "types.h"
 #include "debug/debug.h"
 #include "sys/alloc.h"
@@ -269,8 +270,8 @@ u32 tag, const char *name) { // 8007BB74 regalloc
 	u32 irq;
 	void *result;
 	HeapEntry *data;
-	int largest;
-	int smallest;
+	volatile int largest;
+	volatile int smallest;
 	int iVar3;
 	int iEntry;
     int size2;
@@ -279,7 +280,7 @@ u32 tag, const char *name) { // 8007BB74 regalloc
     irq = n64DisableInterrupts();
 
 	heaps[iHeap].used2 += size;
-    if(size == 0) dummy_0x8007bd00(&smallest);
+    do { size; } while(0);
 	if(heaps[iHeap].used + 1 == heaps[iHeap].avail) {
         n64EnableInterrupts(irq);
 		return NULL;
@@ -332,7 +333,6 @@ void mmSetDelay(int delay) { // 8007BD28
 
 void mmFree(void *__ptr) { // 8007BDA4
 	u32 irq;
-
 	irq = n64DisableInterrupts();
 	if(mmDelay == 0) _mmHeapFree(__ptr);
 	else _mmAddToFreeList(__ptr);
@@ -481,40 +481,37 @@ void *getHeapData(int iHeap) { // 8007C310
 	return (void *)heaps[iHeap].data;
 }
 
-int heapSetEntry(int iHeap, int iEntry, u32 size, int type,
-int type2, u32 tag, const char *name) { // 8007C328 regswap
-	int sVar2;
-	u32 oldSize;
+int heapSetEntry(int iHeap, int iEntry, int size, int type,
+int type2, u32 tag, const char *name) { // 8007C328
+	int oldSize;
 	int idx;
 	HeapEntry *entry;
-    int dummy;
 
 	entry = heaps[iHeap].data;
 	entry[iEntry].type = type;
 	oldSize = entry[iEntry].entry.size;
 	entry[iEntry].entry.size = size;
 	entry[iEntry].tag = tag;
-	idx = iEntry;
-	if((int)oldSize > (int)size) {
-		idx = (int)entry[iEntry].next;
-		if(((idx == -1) || (entry[idx].type != 0)) || (type2 == 0)) {
-			entry[idx].entry.loc
-			    = (void *)((int)entry[iEntry].entry.loc + size);
-			entry[idx].entry.size += (oldSize - size);
+	if(oldSize > size) {
+		idx = entry[iEntry].next;
+		if(((idx != -1) && (entry[idx].type == 0)) && (type2 == 0)) {
+			//merge with next block
+			//this assignment is swapped (add r9, r5, r0; should be add r9, r0, r5)
+			//and I can't find why. just changing the operand order doesn't help.
+			entry[idx].entry.loc = (void*)((uint)entry[iEntry].entry.loc + size);
+			entry[idx].entry.size += oldSize - size;
             return idx;
 		} else {
-            idx = entry[++heaps[iHeap].used].stack;
-			entry[idx].entry.loc
-			    = (void *)((int)entry[iEntry].entry.loc + size);
+            idx = entry[heaps[iHeap].used++].stack;
+			//same here.
+			entry[idx].entry.loc = (void *)((uint)entry[iEntry].entry.loc + size);
 			entry[idx].entry.size = oldSize - size;
 			entry[idx].type = type2;
-			sVar2 = entry[iEntry].next;
-			entry[idx].next = sVar2;
+			oldSize = entry[iEntry].next;
+			entry[idx].next = oldSize;
 			entry[idx].prev = iEntry;
 			entry[iEntry].next = idx;
-			if(sVar2 != -1) {
-                entry[sVar2].prev = idx;
-            }
+			if(oldSize != -1) entry[oldSize].prev = idx;
             return idx;
 		}
 	}
