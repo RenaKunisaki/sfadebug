@@ -762,7 +762,7 @@ void fn_80083F50(ObjInstance *object) {
 				break;
 			default:
 				if(!object->dll) goto l953;
-				(*((LoadedDLL*)object->dll)->funcs->Object.hitDetect)(object);
+				(*((LoadedDLL*)object->dll)->funcs->Player.func08)(object);
 				break;
 		}
 		objMultPosByMtx(object,

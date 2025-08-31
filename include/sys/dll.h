@@ -361,6 +361,11 @@ typedef struct {
         } Object;
 
         struct {
+            UNKTYPE *unk04;
+            void(*func08)(struct ObjInstance *object);
+        } Player;
+
+        struct {
             void (*func03)(void);
             void (*func04)(s8 param1);
             int (*func05)(void);
