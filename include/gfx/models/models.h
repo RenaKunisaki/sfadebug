@@ -38,7 +38,15 @@ typedef enum {
 } ModelFlags18;
 
 typedef struct {
+    s16 x;
+    s16 y;
+    s16 z;
+    s16 unk;
+} VertexPosition;
+
+typedef struct {
     u8 unknown[8];
+    //might just be VertexPosition
 } GCPolygon;
 
 typedef struct {
@@ -249,7 +257,7 @@ typedef struct {
     /* 0x25 */ u8 unk25;
     /* 0x26 */ u8 unk26;
     /* 0x27 */ u8 unk27;
-    /* 0x28 */ S16Vec *vertexPositions;
+    /* 0x28 */ VertexPosition *vertexPositions;
     /* 0x2c */ S16Vec *vertexNormals;
     /* 0x30 */ u16 *vertexColours;
     /* 0x34 */ S16Vec *vertexTexCoords;
@@ -321,10 +329,7 @@ typedef struct { //XXX populate
 typedef struct {
     /* 0x00 */ undefined4 unk00;
     /* 0x04 */ uint hitSphereDataSize;
-    /* 0x08 */ u8 unk08;
-    /* 0x09 */ u8 unk09;
-    /* 0x0a */ u8 unk0A;
-    /* 0x0b */ u8 unk0B;
+    /* 0x08 */ int unk08;
     /* 0x0c */ int nAnims;
     /* 0x10 */ int unk10;
     /* 0x14 */ uint animCacheSize;
@@ -379,15 +384,17 @@ typedef struct {
 } AnimCache;
 
 typedef struct {
-    /* 0x00 */ Vec vec;
-    /* 0x0c */ s8 unk0c;
-    /* 0x0d */ s8 unk0d;
+    /* 0x00 */ float pos;
+    /* 0x04 */ float prevPos;
+    /* 0x08 */ float speed; //guessed
+    /* 0x0c */ s8 animsIdx1;
+    /* 0x0d */ s8 animsIdx2;
     /* 0x0e */ u8 flags;
 } ModelInstanceField20; //size: 0x10
 
 typedef struct {
     Mtx44 *jMtxs[2];
-    S16Vec unk;
+    VertexPosition unk;
 } ModelInstanceField54;
 
 typedef void(*TexFuncPtr)(struct ObjInstance *obj, struct ModelInstance *mInst, int shaderNum);
@@ -400,7 +407,7 @@ typedef struct {
 
 typedef struct {
     /* 0x00 */ Model *mod;
-    /* 0x04 */ S16Vec *vertexPositions2;
+    /* 0x04 */ VertexPosition *vertexPositions2;
     /* 0x08 */ s32 unk08;
     /* 0x0c */ Mtx44 *jMtxs[2]; //joint matrices
         //obj->frames->jMtxs[(char)obj->modelno + -3]
@@ -410,12 +417,12 @@ typedef struct {
     /* 0x18 */ u16 flags; //ModelFlags18
     /* 0x1a */ s8 unk1a;
     /* 0x1b */ s8 unk1b;
-    /* 0x1c */ S16Vec *vertexPositions;
+    /* 0x1c */ VertexPosition *vertexPositions;
     /* 0x20 */ ModelInstanceField20 *unk20;
     /* 0x24 */ AnimInstance *animInstances[2]; //only one in final?
     /* 0x2c */ ShaderDef *shaderDefs;
     /* 0x30 */ TexFuncPtr texFuncPtr;
-    /* 0x34 */ S16Vec **skinVtxs;
+    /* 0x34 */ VertexPosition **skinVtxs;
     /* 0x38 */ AnimInstance *animInst38;
     /* 0x3c */ int unk3c;
     /* 0x40 */ AnimInstance *activeAnimInst;

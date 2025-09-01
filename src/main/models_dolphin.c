@@ -1,5 +1,6 @@
 #include "dolphin.h"
 #include "dolphin/mtx.h"
+#include "gfx/models/shaders.h"
 #include "types.h"
 #include "debug/debug.h"
 #include "sys/alloc.h"
@@ -23,32 +24,25 @@ void *loadModelInstance(undefined4 id, undefined4 param2) { // 8007C57C
 	return result;
 }
 
-ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
-	s8 bVar1;
+ModelInstance *createModelInstance(Model *model, int flags) { // 8007C5B4
 	ModelInstance *minst;
 	uint size;
+    uint resultSize;
 	ModelInstanceField54 *field54;
 	AnimInstance *anim;
-	float *buf3;
-	uint uVar2;
-	float **pfVar3;
-	ShaderDef *pSVar4;
-	int iVar5;
+	int ii;
 	AnimInstance *buf4;
 	AnimInstance *pAVar6;
-	S16Vec *psVar7;
-	void *pvVar8;
+	VertexPosition *vtxs;
+    ModelInstanceField20 *unk20;
 	void *next;
-	Texture **param1;
-	float local_40;
-	int local_30;
-	uint local_2c;
+    AnimUnk animUnk;
 
 	if(!model) {
 		printf("WARNING :: createModelInstance called with NULL pointer\n");
 		return NULL;
 	}
-	size = Model_setupAnimInstance(model, flags, anim, 0);
+	size = Model_setupAnimInstance(model, flags, &animUnk, 0);
 	minst = (ModelInstance *)mmAlloc(
 	    size, ALLOC_TAG_MODEL_INSTANCE, (volatile u32) "minst");
 	if(!minst) return NULL;
@@ -58,15 +52,16 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
     field54 = (ModelInstanceField54 *)alignTo16(field54);
 	minst->jMtxs[0] = field54->jMtxs[0];
 	minst->jMtxs[1] = field54->jMtxs[1];
-	psVar7 = &field54->unk;
+	vtxs = &field54->unk;
 	minst->jMtxs4C = minst->jMtxs[0];
+
 	if(model->bCopyVtxsToModelInst
     || model->posFineSkinningConfig) {
-		next = (void *)((int)psVar7 + 0x1fU & 0xffffffe0);
+		next = (void *)((int)vtxs + 0x1fU & 0xffffffe0);
 		minst->vertexPositions = next;
-		psVar7 = &((S16Vec *)next)[model->numPositions];
-		minst->vertexPositions2 = psVar7;
-		psVar7 = &psVar7[model->numPositions];
+		vtxs = &((VertexPosition *)next)[model->numPositions];
+		minst->vertexPositions2 = vtxs;
+		vtxs = &vtxs[model->numPositions];
 		memcpy(minst->vertexPositions,
 		    model->vertexPositions,
 		    (uint)model->numPositions * sizeof(S16Vec));
@@ -76,95 +71,104 @@ ModelInstance *createModelInstance(Model *model, uint flags) { // 8007C5B4
 		minst->vertexPositions = model->vertexPositions;
 		minst->vertexPositions2 = model->vertexPositions;
 	}
-	anim = (AnimInstance *)alignTo4((uint)psVar7);
+
+	anim = (AnimInstance *)alignTo4((uint)vtxs);
 	minst->animInstances[0] = anim;
-	next = (S16Vec *)anim + 1;
+	next = (void*)(anim + 1);
+
 	if(flags & 0x80) {
 		minst->animInstances[1] = (AnimInstance *)next;
-		next = (S16Vec *)anim + 2;
+		next = (void*)(anim + 2);
 	}
+
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-		buf3 = (float *)alignTo64((uint)next);
+		next = (void *)alignTo64((uint)next);
 		buf4 = minst->animInstances[0];
-		buf4->animData[0] = (void *)buf3;
-		buf4->animData[1] = (void *)(buf3 + (int)local_30);
-		pvVar8 = (void *)((int)(void *)(buf3 + (int)local_30) + (int)local_30);
-		buf4->animData[2] = pvVar8;
-		pvVar8 = (void *)((int)pvVar8 + (int)local_30);
-		buf4->animData[3] = pvVar8;
-		next = (S16Vec *)((int)pvVar8 + (int)local_30);
-		if(minst->animInstances[1] != NULL) {
+		buf4->animData[0] = (void *)next;
+		buf4->animData[1] = (void *)((uint)next + animUnk.mtxSize);
+		next = (void *)(void *)((uint)next + animUnk.mtxSize);
+		buf4->animData[2] = next;
+		next = (void *)((int)next + animUnk.mtxSize);
+		buf4->animData[3] = next;
+		next = (void *)((int)next + animUnk.mtxSize);
+		if(minst->animInstances[1]) {
 			pAVar6 = minst->animInstances[1];
 			pAVar6->animData[0] = (AnimInstanceField44 *)next;
-			pvVar8 = (void *)((int)next + (int)local_30);
-			pAVar6->animData[1] = pvVar8;
-			pvVar8 = (void *)((int)pvVar8 + (int)local_30);
-			pAVar6->animData[2] = pvVar8;
-			pvVar8 = (void *)((int)pvVar8 + (int)local_30);
-			pAVar6->animData[3] = pvVar8;
-			next = (S16Vec *)((int)pvVar8 + (int)local_30);
+			next = (void *)((int)next + animUnk.mtxSize);
+			pAVar6->animData[1] = next;
+			next = (void *)((int)next + animUnk.mtxSize);
+			pAVar6->animData[2] = next;
+			next = (void *)((int)next + animUnk.mtxSize);
+			pAVar6->animData[3] = next;
+			next = (void *)((int)next + animUnk.mtxSize);
 		}
 	}
+
 	if(model->bCopyVtxsToModelInst) {
-		next = (S16Vec *)alignTo4((uint)next);
+		next = (void*)alignTo4((uint)next);
 		minst->unk20 = next;
-		next = (void *)((int)next + 8);
-		for(iVar5 = 0; iVar5 < 3; iVar5 = iVar5 + 1) {
-			psVar7 = &minst->vertexPositions[iVar5 * 8];
-			*(undefined *)(psVar7 + 6) = 0xff;
-			*(undefined *)((int)psVar7 + 0xd) = 0xff;
-			*(float *)psVar7 = 0.0;
-			*(float *)(psVar7 + 2) = 0.0;
-			*(float *)(psVar7 + 4) = 0.0;
+		next = (void *)((int)next + (sizeof(ModelInstanceField20) * 3));
+		for(ii = 0; ii < 3; ii = ii + 1) {
+			unk20 = &minst->unk20[ii];
+			unk20->animsIdx1 = -1;
+            unk20->animsIdx2 = -1;
+            unk20->pos = 0.0f;
+            unk20->prevPos = 0.0f;
+            unk20->speed = 0.0f;
 		}
 	}
-	if(0 < (int)local_40) {
-		uVar2 = alignTo4((uint)next);
-		minst->animInst38 = (AnimInstance *)uVar2;
-		iVar5 = uVar2 + (uint)model->numHitSpheres * 0x10;
-		minst->unk3c = iVar5;
-		next = (S16Vec *)(iVar5 + (uint)model->numHitSpheres * 0x10);
+
+	if(animUnk.unk08 > 0) {
+		next = (void*)alignTo4((uint)next);
+		minst->animInst38 = (AnimInstance *)next;
+		ii = (uint)next + (uint)model->numHitSpheres * 0x10;
+		minst->unk3c = ii;
+		next = (S16Vec *)(ii + (uint)model->numHitSpheres * 0x10);
 		minst->activeAnimInst = minst->animInst38;
 	}
-	if((((model->joints == NULL) || (model->numJoints == 0))
-	       || (model->radi == NULL))
-	    || (model->exT == NULL)) {
-		minst->skeleton = NULL;
+
+	if(model->joints && model->numJoints && model->radi && model->exT) {
+		next = (void*)alignTo4((uint)next);
+		minst->skeleton = (ModelSkeletonStruct *)next;
+		next = (void*)((uint)next + sizeof(ModelSkeletonStruct));
+		minst->skeleton->joints = (Vec *)next;
+		next = (void*)((uint)next + (uint)model->numJoints * sizeof(Vec));
+		minst->skeleton->scale = (float *)next;
+		next = (void*)((uint)next + model->numJoints * sizeof(float));
+		minst->skeleton->unk08 = (float *)next;
+		next = (void*)((uint)next + model->numJoints * sizeof(float));
+		minst->skeleton->jointDist = (float *)next;
+		next = (void*)((uint)next + model->numJoints * sizeof(float));
+		minst->skeleton->totalDist = (float *)next;
+        next = (void*)((uint)next + model->numJoints * sizeof(float));
+		minst->skeleton->unk18 = (u8 *)next;
+		next = (void*)((uint)next + model->numJoints * sizeof(u8));
 	} else {
-		pfVar3 = (float **)alignTo4((uint)next);
-		minst->skeleton = (ModelSkeletonStruct *)pfVar3;
-		pfVar3 = pfVar3 + 7;
-		minst->skeleton->unk00 = (float *)pfVar3;
-		pfVar3 = pfVar3 + (uint)model->numJoints * 3;
-		minst->skeleton->scale = (float *)pfVar3;
-		pfVar3 = pfVar3 + model->numJoints;
-		minst->skeleton->unk08 = (float *)pfVar3;
-		pfVar3 = pfVar3 + model->numJoints;
-		minst->skeleton->jointDist = (float *)pfVar3;
-		pfVar3 = pfVar3 + model->numJoints;
-		minst->skeleton->totalDist = (float *)pfVar3;
-		bVar1 = model->numJoints;
-		minst->skeleton->unk18 = (u8 *)(pfVar3 + bVar1);
-		next = (S16Vec *)((int)(pfVar3 + bVar1) + (uint)model->numJoints);
+        minst->skeleton = NULL;
 	}
+
 	if(model->posFineSkinningConfig) {
-		uVar2 = alignTo4((uint)next);
-		minst->skinVtxs = (S16Vec **)uVar2;
-		next = (S16Vec *)(uVar2 + (uint)model->skin.numPieces * 4);
+		next = (void*)alignTo4((uint)next);
+		minst->skinVtxs = (VertexPosition **)next;
+		next = (void*)((uint)next + (uint)model->skin.numPieces * 4);
 	}
-	pSVar4 = (ShaderDef *)alignTo4((uint)next);
-	minst->shaderDefs = pSVar4;
-	param1 = &pSVar4->texture + (uint)model->numShaders * 2;
+
+	next = (void *)alignTo4((uint)next);
+	minst->shaderDefs = (ShaderDef*)next;
+	next = (void*)((uint)next + (uint)model->numShaders * sizeof(ShaderDef));
+
 	if(flags & 0x8000) {
-		uVar2 = alignTo2((uint)param1);
-		minst->shadow = (TexturedShadow *)uVar2;
-		param1 = (Texture **)(uVar2 + sizeof(TexturedShadow));
+		next = (void*)alignTo2((uint)next);
+		minst->shadow = (TexturedShadow *)next;
+		next = (void*)((uint)next + sizeof(TexturedShadow));
 		minst->shadow->state = 0;
 	}
-	if((int)size <= (int)param1 - (int)minst) {
-		printf(
-		    "DANGER: createModelInstance: Actual size exceeded totalsize!!!\n");
+
+    resultSize = (int)next - (int)minst;
+	if((int)resultSize >= (int)size) {
+		printf("DANGER: createModelInstance: Actual size exceeded totalsize!!!\n");
 	}
+
 	minst->unk48 = NULL;
 	minst->mod = model;
 	minst->bUseVertexPositions1C = 0;
