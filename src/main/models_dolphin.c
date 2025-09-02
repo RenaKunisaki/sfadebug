@@ -17,7 +17,7 @@ int DAT_80398a10;
 int DWORD_80398a14;
 int DWORD_80398a18;
 
-void *loadModelInstance(undefined4 id, undefined4 param2) { // 8007C57C
+void *loadModelInstanceAsset(undefined4 id, undefined4 param2) { // 8007C57C
 	void *result;
 
 	loadAsset_modelInstance(&result, id, param2);
@@ -39,7 +39,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 		printf("WARNING :: createModelInstance called with NULL pointer\n");
 		return NULL;
 	}
-	size = Model_setupAnimInstance(model, flags, &animUnk, 0);
+	size = setupAnimInstance(model, flags, &animUnk, 0);
 	minst = (ModelInstance *)mmAlloc(
 	    size, ALLOC_TAG_MODEL_INSTANCE, (volatile u32) "minst");
 	if(!minst) return NULL;
