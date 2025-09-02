@@ -149,21 +149,26 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 //int Model_setupAnimInstance(Model *model,uint flags,AnimInstance *anim,int param4) { //8007C9C0
 
 
-/* uint modelGetAmapSize(uint id,int noAmap,int nAnimations) { //8007CBD0
-  uint uVar1;
+int *pAmapTab; //int[8]
+int modelGetAmapSize(uint id, BOOL noAmap, int nAnimations) {
+	int result;
+    int idx;
+    int ent;
 
-  if (noAmap == 0) {
-    for (uVar1 = nAnimations << 2; (uVar1 & 7) != 0; uVar1 = uVar1 + 1) {
-    }
-    loadDataFileWithLength(FILE_AMAP_TAB,(void *)pAmapTab,(id & 0xfffffffc) << 2,0x20);
-    uVar1 = uVar1 + (*(int *)(pAmapTab + ((id & 3) + 1) * 4) - *(int *)(pAmapTab + (id & 3) * 4));
-  }
-  else {
-    for (uVar1 = nAnimations * 2 + 8; (uVar1 & 7) != 0; uVar1 = uVar1 + 1) {
-    }
-  }
-  return uVar1;
-} */
+    result = 0;
+	if(noAmap) {
+        result += nAnimations * 2 + 8;
+        while(result & 7) result++;
+	} else {
+		result += nAnimations * 4;
+        while(result & 7) result++;
+        loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, (id & ~3) * 4, 0x20);
+        idx = id & 3;
+        ent = pAmapTab[idx+1] - pAmapTab[idx];
+        result += ent;
+	}
+	return result;
+}
 
 //undefined4 Model_makeModelAnimation(Model *model,uint animId,HitSpherePos *hits) { //8007CC94
 
