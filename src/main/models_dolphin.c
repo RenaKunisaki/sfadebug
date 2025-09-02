@@ -150,19 +150,20 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 
 
 int *pAmapTab; //int[8]
-int modelGetAmapSize(uint id, BOOL noAmap, int nAnimations) {
+int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 	int result;
     int idx;
     int ent;
 
     result = 0;
-	if(noAmap) {
+	if(bypassAmapTab) {
         result += nAnimations * 2 + 8;
         while(result & 7) result++;
 	} else {
 		result += nAnimations * 4;
         while(result & 7) result++;
-        loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, (id & ~3) * 4, 0x20);
+        loadDataFileWithLength(FILE_AMAP_TAB,
+            pAmapTab, (id & ~3) * 4, sizeof(int)*8);
         idx = id & 3;
         ent = pAmapTab[idx+1] - pAmapTab[idx];
         result += ent;
