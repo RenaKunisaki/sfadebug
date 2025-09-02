@@ -1,6 +1,7 @@
 #include "dolphin.h"
 #include "dolphin/mtx.h"
 #include "gfx/models/shaders.h"
+#include "macros.h"
 #include "types.h"
 #include "debug/debug.h"
 #include "sys/alloc.h"
@@ -16,6 +17,14 @@
 int DAT_80398a10;
 int DWORD_80398a14;
 int DWORD_80398a18;
+
+UNKTYPE *globalModAnimBuffer; //80398a24
+int *pAmapTab; //int[8] @ 80398a28
+u32 *animOffsetTbl; //80398a2c
+UNKTYPE *globalModAnimBufferPlus0x810; //80398a30
+BOOL bHaveAnimTab; //80398a34
+SparseArray *modelsLoadedTable; //80398a38
+SparseArray *animsLoadedTable; //80398a3c
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
 	void *result;
@@ -149,7 +158,6 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 //int Model_setupAnimInstance(Model *model,uint flags,AnimInstance *anim,int param4) { //8007C9C0
 
 
-int *pAmapTab; //int[8]
 int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 	int result;
     int idx;
@@ -191,7 +199,25 @@ void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 para
 
 //void LAB_8007da34(int param_1,int param_2,int param_3) { //8007D8E4
 
-//void initModels(void) { //8007DAB0
+void initModels(void) { //8007DAB0
+	void *mem;
+
+	modelsLoadedTable = SparseArray_create(140, 4);
+    BADASSERTLINE(164, modelsLoadedTable);
+
+    animsLoadedTable = SparseArray_create(196, 4);
+    BADASSERTLINE(169, animsLoadedTable);
+
+    mem = mmAlloc(0x830, ALLOC_TAG_ANIMS_COL,
+        (volatile u32)"mod:globalAnimBuffer");
+    BADASSERTLINE(174, mem);
+
+	globalModAnimBuffer = mem;
+	pAmapTab = (int *)((uint)mem + 0x800);
+	globalModAnimBufferPlus0x810 = (void*)((uint)mem + 0x810);
+	countModels();
+	return;
+}
 
 //ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
 
