@@ -24,17 +24,13 @@ void *loadModelInstance(undefined4 id, undefined4 param2) { // 8007C57C
 	return result;
 }
 
-ModelInstance *createModelInstance(Model *model, int flags) { // 8007C5B4
+ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 8007C5B4
 	ModelInstance *minst;
 	uint size;
     uint resultSize;
-	ModelInstanceField54 *field54;
-	AnimInstance *anim;
 	int ii;
-	AnimInstance *buf4;
-	AnimInstance *pAVar6;
-	VertexPosition *vtxs;
-    ModelInstanceField20 *unk20;
+	AnimInstance *anim;
+	ModelInstanceField20 *unk20;
 	void *next;
     AnimUnk animUnk;
 
@@ -48,119 +44,94 @@ ModelInstance *createModelInstance(Model *model, int flags) { // 8007C5B4
 	if(!minst) return NULL;
 
 	memclr(minst, size);
-	field54 = (ModelInstanceField54 *)&minst->field54;
-    field54 = (ModelInstanceField54 *)alignTo16(field54);
-	minst->jMtxs[0] = field54->jMtxs[0];
-	minst->jMtxs[1] = field54->jMtxs[1];
-	vtxs = &field54->unk;
+	next = (void*)&minst->field54;
+    next = (void*)alignTo16(next);
+	minst->jMtxs[0] = next; ADVANCE_PTR(next,animUnk.mtxSize >> 1);
+	minst->jMtxs[1] = next; ADVANCE_PTR(next,animUnk.mtxSize >> 1);
 	minst->jMtxs4C = minst->jMtxs[0];
 
 	if(model->bCopyVtxsToModelInst
     || model->posFineSkinningConfig) {
-		next = (void *)((int)vtxs + 0x1fU & 0xffffffe0);
-		minst->vertexPositions = next;
-		vtxs = &((VertexPosition *)next)[model->numPositions];
-		minst->vertexPositions2 = vtxs;
-		vtxs = &vtxs[model->numPositions];
+		next = (void *)((int)next + 0x1f & ~0x1f);
+		minst->vertexPositions  = next; ADVANCE_PTR_BY(next,model->numPositions,S16Vec);
+		minst->vertexPositions2 = next; ADVANCE_PTR_BY(next,model->numPositions,S16Vec);
 		memcpy(minst->vertexPositions,
 		    model->vertexPositions,
 		    (uint)model->numPositions * sizeof(S16Vec));
 		DCFlushRange(minst->vertexPositions,
             (uint)model->numPositions * sizeof(S16Vec));
 	} else {
-		minst->vertexPositions = model->vertexPositions;
+		minst->vertexPositions  = model->vertexPositions;
 		minst->vertexPositions2 = model->vertexPositions;
 	}
 
-	anim = (AnimInstance *)alignTo4((uint)vtxs);
-	minst->animInstances[0] = anim;
-	next = (void*)(anim + 1);
+	next = (void*)alignTo4((uint)next);
+	minst->animInstances[0] = next; ADVANCE_PTR_BY(next,1,AnimInstance);
 
 	if(flags & 0x80) {
-		minst->animInstances[1] = (AnimInstance *)next;
-		next = (void*)(anim + 2);
+		minst->animInstances[1] = next; ADVANCE_PTR_BY(next,1,AnimInstance);
 	}
 
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		next = (void *)alignTo64((uint)next);
-		buf4 = minst->animInstances[0];
-		buf4->animData[0] = (void *)next;
-		buf4->animData[1] = (void *)((uint)next + animUnk.mtxSize);
-		next = (void *)(void *)((uint)next + animUnk.mtxSize);
-		buf4->animData[2] = next;
-		next = (void *)((int)next + animUnk.mtxSize);
-		buf4->animData[3] = next;
-		next = (void *)((int)next + animUnk.mtxSize);
+		anim = minst->animInstances[0];
+		anim->animData[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+        anim->animData[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+		anim->animData[2] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+		anim->animData[3] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
 		if(minst->animInstances[1]) {
-			pAVar6 = minst->animInstances[1];
-			pAVar6->animData[0] = (AnimInstanceField44 *)next;
-			next = (void *)((int)next + animUnk.mtxSize);
-			pAVar6->animData[1] = next;
-			next = (void *)((int)next + animUnk.mtxSize);
-			pAVar6->animData[2] = next;
-			next = (void *)((int)next + animUnk.mtxSize);
-			pAVar6->animData[3] = next;
-			next = (void *)((int)next + animUnk.mtxSize);
+			anim = minst->animInstances[1];
+			anim->animData[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->animData[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->animData[2] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->animData[3] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
 		}
 	}
 
 	if(model->bCopyVtxsToModelInst) {
 		next = (void*)alignTo4((uint)next);
-		minst->unk20 = next;
-		next = (void *)((int)next + (sizeof(ModelInstanceField20) * 3));
+		minst->unk20 = next; ADVANCE_PTR_BY(next,3,ModelInstanceField20);
 		for(ii = 0; ii < 3; ii = ii + 1) {
 			unk20 = &minst->unk20[ii];
 			unk20->animsIdx1 = -1;
             unk20->animsIdx2 = -1;
-            unk20->pos = 0.0f;
-            unk20->prevPos = 0.0f;
-            unk20->speed = 0.0f;
+            unk20->pos       = 0.0f;
+            unk20->prevPos   = 0.0f;
+            unk20->speed     = 0.0f;
 		}
 	}
 
-	if(animUnk.unk08 > 0) {
+	if(animUnk.hitSphereDataSize > 0) {
 		next = (void*)alignTo4((uint)next);
-		minst->animInst38 = (AnimInstance *)next;
-		ii = (uint)next + (uint)model->numHitSpheres * 0x10;
-		minst->unk3c = ii;
-		next = (S16Vec *)(ii + (uint)model->numHitSpheres * 0x10);
-		minst->activeAnimInst = minst->animInst38;
+		minst->hitSpheres[0] = next; ADVANCE_PTR_BY(next,model->numHitSpheres,HitSphere);
+		minst->hitSpheres[1] = next; ADVANCE_PTR_BY(next,model->numHitSpheres,HitSphere);
+		minst->activeHitSphere = minst->hitSpheres[0];
 	}
 
 	if(model->joints && model->numJoints && model->radi && model->exT) {
 		next = (void*)alignTo4((uint)next);
-		minst->skeleton = (ModelSkeletonStruct *)next;
-		next = (void*)((uint)next + sizeof(ModelSkeletonStruct));
-		minst->skeleton->joints = (Vec *)next;
-		next = (void*)((uint)next + (uint)model->numJoints * sizeof(Vec));
-		minst->skeleton->scale = (float *)next;
-		next = (void*)((uint)next + model->numJoints * sizeof(float));
-		minst->skeleton->unk08 = (float *)next;
-		next = (void*)((uint)next + model->numJoints * sizeof(float));
-		minst->skeleton->jointDist = (float *)next;
-		next = (void*)((uint)next + model->numJoints * sizeof(float));
-		minst->skeleton->totalDist = (float *)next;
-        next = (void*)((uint)next + model->numJoints * sizeof(float));
-		minst->skeleton->unk18 = (u8 *)next;
-		next = (void*)((uint)next + model->numJoints * sizeof(u8));
+		minst->skeleton            = next; ADVANCE_PTR_BY(next,1,ModelSkeletonStruct);
+		minst->skeleton->joints    = next; ADVANCE_PTR_BY(next,model->numJoints,Vec);
+		minst->skeleton->scale     = next; ADVANCE_PTR_BY(next,model->numJoints,float);
+		minst->skeleton->unk08     = next; ADVANCE_PTR_BY(next,model->numJoints,float);
+		minst->skeleton->jointDist = next; ADVANCE_PTR_BY(next,model->numJoints,float);
+		minst->skeleton->totalDist = next; ADVANCE_PTR_BY(next,model->numJoints,float);
+		minst->skeleton->unk18     = next; ADVANCE_PTR_BY(next,model->numJoints,u8);
 	} else {
         minst->skeleton = NULL;
 	}
 
 	if(model->posFineSkinningConfig) {
 		next = (void*)alignTo4((uint)next);
-		minst->skinVtxs = (VertexPosition **)next;
-		next = (void*)((uint)next + (uint)model->skin.numPieces * 4);
+		minst->skinVtxs = next; ADVANCE_PTR_BY(next,model->skin.numPieces,VertexPosition*);
 	}
 
 	next = (void *)alignTo4((uint)next);
-	minst->shaderDefs = (ShaderDef*)next;
-	next = (void*)((uint)next + (uint)model->numShaders * sizeof(ShaderDef));
+	minst->shaderDefs = next; ADVANCE_PTR_BY(next,model->numShaders,ShaderDef);
 
 	if(flags & 0x8000) {
 		next = (void*)alignTo2((uint)next);
-		minst->shadow = (TexturedShadow *)next;
-		next = (void*)((uint)next + sizeof(TexturedShadow));
+		minst->shadow = next; ADVANCE_PTR_BY(next,1,TexturedShadow);
 		minst->shadow->state = 0;
 	}
 

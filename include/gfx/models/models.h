@@ -1,5 +1,6 @@
 #ifndef _GFX_MODELS_MODELS_H_
 #define _GFX_MODELS_MODELS_H_
+#include "dolphin/mtx.h"
 #include "gfx/textures.h"
 #include "gfx/models/skeleton.h"
 #include "gfx/models/bitstream.h"
@@ -58,7 +59,11 @@ typedef struct {
     /* 0x15 */ u8 unk15; //always 0?
     /* 0x16 */ u8 unk16; //increments
     /* 0x17 */ u8 unk17; //same as 0x16?
-} HitSphere; //hitbox in model file
+} HitSphere_FinalVer; //hitbox in model file
+
+typedef struct {
+    u8 unk[0x10];
+} HitSphere;
 
 typedef struct {
     /* 0x00 */ void *displayList; //to raw GX commands
@@ -257,7 +262,7 @@ typedef struct {
     /* 0x25 */ u8 unk25;
     /* 0x26 */ u8 unk26;
     /* 0x27 */ u8 unk27;
-    /* 0x28 */ VertexPosition *vertexPositions;
+    /* 0x28 */ S16Vec *vertexPositions;
     /* 0x2c */ S16Vec *vertexNormals;
     /* 0x30 */ u16 *vertexColours;
     /* 0x34 */ S16Vec *vertexTexCoords;
@@ -328,12 +333,12 @@ typedef struct { //XXX populate
 
 typedef struct {
     /* 0x00 */ undefined4 unk00;
-    /* 0x04 */ uint hitSphereDataSize;
+    /* 0x04 */ int hitSphereDataSize;
     /* 0x08 */ int unk08;
     /* 0x0c */ int nAnims;
     /* 0x10 */ int unk10;
-    /* 0x14 */ uint animCacheSize;
-    /* 0x18 */ uint mtxSize;
+    /* 0x14 */ int animCacheSize;
+    /* 0x18 */ int mtxSize;
 } AnimUnk;
 
 typedef struct {
@@ -407,7 +412,7 @@ typedef struct {
 
 typedef struct {
     /* 0x00 */ Model *mod;
-    /* 0x04 */ VertexPosition *vertexPositions2;
+    /* 0x04 */ S16Vec *vertexPositions2;
     /* 0x08 */ s32 unk08;
     /* 0x0c */ Mtx44 *jMtxs[2]; //joint matrices
         //obj->frames->jMtxs[(char)obj->modelno + -3]
@@ -417,15 +422,14 @@ typedef struct {
     /* 0x18 */ u16 flags; //ModelFlags18
     /* 0x1a */ s8 unk1a;
     /* 0x1b */ s8 unk1b;
-    /* 0x1c */ VertexPosition *vertexPositions;
+    /* 0x1c */ S16Vec *vertexPositions;
     /* 0x20 */ ModelInstanceField20 *unk20;
     /* 0x24 */ AnimInstance *animInstances[2]; //only one in final?
     /* 0x2c */ ShaderDef *shaderDefs;
     /* 0x30 */ TexFuncPtr texFuncPtr;
     /* 0x34 */ VertexPosition **skinVtxs;
-    /* 0x38 */ AnimInstance *animInst38;
-    /* 0x3c */ int unk3c;
-    /* 0x40 */ AnimInstance *activeAnimInst;
+    /* 0x38 */ HitSphere *hitSpheres[2];
+    /* 0x40 */ HitSphere *activeHitSphere;
     /* 0x44 */ TexturedShadow *shadow;
     /* 0x48 */ void *unk48;
     /* 0x4c */ Mtx44 *jMtxs4C;

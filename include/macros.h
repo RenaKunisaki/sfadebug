@@ -65,4 +65,10 @@ and have just arbitrarily chosen x to be the statement.
 #define OFFSET_TO_PTR(type, obj, field) \
     (obj)->field = (type*)((uint)(obj) + (uint)(obj)->field)
 
+#define ADVANCE_PTR(ptr, size) \
+    (ptr) = (void*)((uint)(ptr) + (size))
+
+#define ADVANCE_PTR_BY(ptr, count, typ) \
+    (ptr) = (void*)((uint)(ptr) + ((count) * sizeof(typ)))
+
 #endif // _H_MACROS_
