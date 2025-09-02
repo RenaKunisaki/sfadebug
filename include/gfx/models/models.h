@@ -38,6 +38,11 @@ typedef enum {
     ModelFlags18_ShadersLoaded    = 64,
 } ModelFlags18;
 
+typedef enum {
+    CreateModelInstanceFlags_DoubleBufferAnims = 0x0080,
+    CreateModelInstanceFlags_TexturedShadow    = 0x8000,
+} CreateModelInstanceFlags;
+
 typedef struct {
     s16 x;
     s16 y;

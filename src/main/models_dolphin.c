@@ -24,6 +24,7 @@ void *loadModelInstance(undefined4 id, undefined4 param2) { // 8007C57C
 	return result;
 }
 
+//flags: CreateModelInstanceFlags
 ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 8007C5B4
 	ModelInstance *minst;
 	uint size;
@@ -68,7 +69,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 	next = (void*)alignTo4((uint)next);
 	minst->animInstances[0] = next; ADVANCE_PTR_BY(next,1,AnimInstance);
 
-	if(flags & 0x80) {
+	if(flags & CreateModelInstanceFlags_DoubleBufferAnims) {
 		minst->animInstances[1] = next; ADVANCE_PTR_BY(next,1,AnimInstance);
 	}
 
@@ -129,7 +130,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 	next = (void *)alignTo4((uint)next);
 	minst->shaderDefs = next; ADVANCE_PTR_BY(next,model->numShaders,ShaderDef);
 
-	if(flags & 0x8000) {
+	if(flags & CreateModelInstanceFlags_TexturedShadow) {
 		next = (void*)alignTo2((uint)next);
 		minst->shadow = next; ADVANCE_PTR_BY(next,1,TexturedShadow);
 		minst->shadow->state = 0;
