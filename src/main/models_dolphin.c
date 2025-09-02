@@ -17,10 +17,9 @@ int DAT_80398a10;
 int DWORD_80398a14;
 int DWORD_80398a18;
 
-void *loadModelInstanceAsset(undefined4 id, undefined4 param2) { // 8007C57C
+void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
 	void *result;
-
-	loadAsset_modelInstance(&result, id, param2);
+	loadAsset_modelInstance(&result, id, buf);
 	return result;
 }
 

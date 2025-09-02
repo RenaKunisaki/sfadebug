@@ -160,7 +160,7 @@ void loadAsset_DLL(DLL_func **dll,u32 /*DLL_ID*/ dllId,int *param3) { //80077A10
     loadAsset(&AssetDef_80352f00.adef);
 }
 
-void loadAsset_modelInstance(void *dest,DataFileId32 id,int *param3) { //80077A78
+void loadAsset_modelInstance(void *dest,DataFileId32 id,void *param3) { //80077A78
     AssetDef_80352f00.adef.header.unk00 = true;
     AssetDef_80352f00.adef.header.type = ASSET_TYPE_MODEL_INSTANCE;
     AssetDef_80352f00.adef.header.id = id;
