@@ -333,7 +333,7 @@ uint Model_checksumHeader(Model *model) { //8007DE30
 void Model_loadTextures(Model *model) { // 8007DFF4
 	int iTex;
     BADASSERTLINE(541, model);
-	for(iTex = 0; iTex < (int)(uint)model->numTextures; iTex += 1) {
+	for(iTex = 0; iTex < model->numTextures; iTex++) {
 		model->GCtextures[iTex] = textureLoad(
             -((uint)model->GCtextures[iTex] | 0x8000), 0);
 		BADASSERTLINE(546, model->GCtextures[iTex]);
