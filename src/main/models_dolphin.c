@@ -56,7 +56,7 @@ void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,floa
 void tiltListFn_8007ebe8(int param1,int param2,int param3);
 void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj);
 void ModelInstance_unloadShaders(ModelInstance *model);
-TexturePtr* Model_getShaderTexture(ModelInstance *param1,int shaderNum);
+TexturePtr* ModelInstance_getShaderTexture(ModelInstance *param1,int shaderNum);
 int modelInstGetjMtx(ModelInstance *modelInstance,int param2);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
@@ -402,7 +402,7 @@ void ModelInstance_unloadShaders(ModelInstance *modelInstance) { // 8007EF18
     }
 }
 
-TexturePtr* Model_getShaderTexture(ModelInstance *modelInstance, int shaderNum) { // 8007EF84
+TexturePtr* ModelInstance_getShaderTexture(ModelInstance *modelInstance, int shaderNum) { // 8007EF84
     BADASSERTLINE(1146, shaderNum>=0 && shaderNum<modelInstance->mod->numShaders);
 	return &modelInstance->shaderDefs[shaderNum].texture; //sus
 }
