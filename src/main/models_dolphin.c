@@ -366,7 +366,6 @@ int Model_lookupModelInd(int id) { // 8007E160
 	return id;
 }
 
-
 //void Model_initPtrs(Model *model) { //8007E1B8
 
 //void LAB_8007e7f8(Model *model,ModelInstance *minst) { //8007E76C
@@ -377,7 +376,19 @@ int Model_lookupModelInd(int id) { // 8007E160
 
 //void tiltListFn_8007ebe8(int param1,int param2,int param3) { //8007EBE8
 
-//void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj) { //8007EE90
+void ModelInstance_loadShaders(ModelInstance *minst, ObjInstance *obj) { // 8007EE90
+    int iShader;
+    Model *model;
+
+	model = minst->mod;
+	if(minst->flags & ModelFlags18_ShadersLoaded) return;
+    minst->flags |= ModelFlags18_ShadersLoaded;
+    for(iShader = 0; iShader < minst->mod->numShaders; iShader++) {
+        shaderInit(model->shaders + iShader,
+            (Texture **)(&minst->shaderDefs->texture + iShader * 2),
+            obj, model->shaderFlags);
+    }
+}
 
 //void ModelInstance_unloadShaders(Model *model) { //8007EF18
 
