@@ -18,6 +18,7 @@ int DAT_80398a10;
 int DWORD_80398a14;
 int DWORD_80398a18;
 
+int maxModelNum; //80398a20
 UNKTYPE *globalModAnimBuffer; //80398a24
 int *pAmapTab; //int[8] @ 80398a28
 u32 *animOffsetTbl; //80398a2c
@@ -25,6 +26,8 @@ UNKTYPE *globalModAnimBufferPlus0x810; //80398a30
 BOOL bHaveAnimTab; //80398a34
 SparseArray *modelsLoadedTable; //80398a38
 SparseArray *animsLoadedTable; //80398a3c
+
+Model* Model_load(uint id);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
 	void *result;
@@ -44,7 +47,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
     AnimUnk animUnk;
 
 	if(!model) {
-		printf("WARNING :: createModelInstance called with NULL pointer\n");
+		printf("WARNING _ createModelInstance called with NULL pointer\n");
 		return NULL;
 	}
 	size = setupAnimInstance(model, flags, &animUnk, 0);
@@ -219,7 +222,54 @@ void initModels(void) { //8007DAB0
 	return;
 }
 
-//ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
+#ifdef __MWERKS__
+#pragma peephole on
+#endif
+ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
+	int modelNum;
+	ModelInstance *modelInstance;
+	Model *model;
+
+	/* final:
+	   loadDataFileWithLength(MODELIND.bin,globalModAnimBuffer,id << 1,8);
+	   modelNum = (uint)*globalModAnimBuffer; */
+	modelNum = Model_lookupModelInd(id);
+    BADASSERTLINE(210, modelNum>=0 && modelNum<maxModelNum);
+
+    if(!SparseArray_get(modelsLoadedTable,
+    modelNum, &model)) {
+		model = Model_load(modelNum);
+        BADASSERTLINE(218, model);
+		if(isModelAnimDisabled()) {
+            model->flags |= ModelDataFlags2_NoAnimations;
+        }
+		Model_setOffsets(model);
+		Model_loadTextures(model);
+		Model_initShaders(model);
+		makeModelAnimation(model, modelNum,
+		    (HitSpherePos *)((int)model->animBank + model->size - 0x58));
+		SparseArray_set(modelsLoadedTable,
+            (short)modelNum, &model);
+	} else {
+		model->usage++;
+        BADASSERTLINE(237, model->usage<UCHAR_MAX);
+	}
+	modelInstance = createModelInstance(model, flags,
+        (int)model->usage == 1);
+    BADASSERTLINE(243, modelInstance);
+
+	modelSetupAnims(modelInstance, modelInstance->animInstances[0]);
+	if(modelInstance->animInstances[1]) {
+		modelSetupAnims(modelInstance, modelInstance->animInstances[1]);
+	}
+	Model_initSkinningWeights(model, modelInstance);
+	model->headerCksum = Model_checksumHeader(model);
+	DCStoreRange(model, model->size);
+	return modelInstance;
+}
+#ifdef __MWERKS__
+#pragma peephole off
+#endif
 
 //void modelInstanceFree(ModelInstance *modelInstance) { //8007DD68
 

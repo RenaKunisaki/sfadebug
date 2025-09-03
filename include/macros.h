@@ -4,6 +4,10 @@
 #ifdef DEBUG
 
 //shame on whomever wrote this.
+//use this if ASSERTLINE generates an extra "li r0, 0x0".
+//don't use it otherwise because it's a single expression
+//that expands to multiple expressions, which can lead to
+//unexpected interactions.
 #define BADASSERTLINE(line, cond) \
     if(!(cond)) OSPanic(__FILE__, line, "Failed assertion " #cond)
 
