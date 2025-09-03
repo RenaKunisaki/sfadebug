@@ -46,7 +46,7 @@ uint Model_checksumHeader(Model *model);
 Model* Model_load(uint id);
 void Model_loadTextures(Model *model);
 void Model_freeTextures(Model *model);
-void animUnloadFn_8007e0f8(int param1);
+void Model_freeAnimations(Model *model);
 int Model_lookupModelInd(int id);
 void Model_initPtrs(Model *model);
 void LAB_8007e7f8(Model *model,ModelInstance *minst);
@@ -347,7 +347,14 @@ void Model_freeTextures(Model *model) { //8007E0A8
 	}
 }
 
-//void animUnloadFn_8007e0f8(int param1) { //8007E0F8
+void Model_freeAnimations(Model *model) { //8007E0F8
+	int ii;
+	if(model->anims && model->numAnims) {
+		for(ii = 0; ii < model->numAnims; ii++) {
+			unloadAnimation(model->anims[ii]);
+		}
+	}
+}
 
 //int Model_lookupModelInd(int id) { //8007E160
 
