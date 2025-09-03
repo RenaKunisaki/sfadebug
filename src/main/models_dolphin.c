@@ -28,6 +28,7 @@ SparseArray *modelsLoadedTable; //80398a38
 SparseArray *animsLoadedTable; //80398a3c
 
 Model* Model_load(uint id);
+uint Model_checksumHeader(Model *model);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
 	void *result;
@@ -286,11 +287,20 @@ void modelInstanceFree(ModelInstance *modelInstance) { // 8007DD68
 		mmFree(model);
 	}
 }
-#ifdef __MWERKS__
-#pragma peephole off
-#endif
 
-//int Model_checksumHeader(Model *model) { //8007DE30
+uint Model_checksumHeader(Model *model) { //8007DE30
+	uint result;
+	u8 *end;
+    u8 *data;
+
+	result = 0;
+	data = (u8*)model;
+	end = (u8*)model + model->size;
+	for(; data < end; data++) {
+		result += *data;
+	}
+	return result;
+}
 
 //Model * Model_load(uint id) { //8007DE70
 
@@ -414,3 +424,7 @@ void LAB_80081578(void) { //80081534
 }
 
 //void modelGetVtxPosFloat(Model *model,int positionNum,vec3f *posVec) { //8008157C
+
+#ifdef __MWERKS__
+#pragma peephole off
+#endif
