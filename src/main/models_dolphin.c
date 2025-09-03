@@ -19,7 +19,7 @@ int DWORD_80398a14;
 int DWORD_80398a18;
 
 int maxModelNum; //80398a20
-UNKTYPE *globalModAnimBuffer; //80398a24
+s16 *globalModAnimBuffer; //80398a24
 int *pAmapTab; //int[8] @ 80398a28
 u32 *animOffsetTbl; //80398a2c
 UNKTYPE *globalModAnimBufferPlus0x810; //80398a30
@@ -356,7 +356,16 @@ void Model_freeAnimations(Model *model) { //8007E0F8
 	}
 }
 
-//int Model_lookupModelInd(int id) { //8007E160
+int Model_lookupModelInd(int id) { // 8007E160
+	if(id < 0) id = -id;
+	else {
+		loadDataFileWithLength(FILE_MODELIND_bin,
+            globalModAnimBuffer, id * sizeof(s16), 8);
+		id = globalModAnimBuffer[0];
+	}
+	return id;
+}
+
 
 //void Model_initPtrs(Model *model) { //8007E1B8
 
