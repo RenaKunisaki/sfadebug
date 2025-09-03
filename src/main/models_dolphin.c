@@ -27,8 +27,10 @@ BOOL bHaveAnimTab; //80398a34
 SparseArray *modelsLoadedTable; //80398a38
 SparseArray *animsLoadedTable; //80398a3c
 
-Model* Model_load(uint id);
+Texture * textureLoad(int id,int param_2);
 uint Model_checksumHeader(Model *model);
+Model* Model_load(uint id);
+void Model_loadTextures(Model *model);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
 	void *result;
@@ -304,7 +306,16 @@ uint Model_checksumHeader(Model *model) { //8007DE30
 
 //Model * Model_load(uint id) { //8007DE70
 
-//void Model_loadTextures(Model *model) { //8007DFF4
+void Model_loadTextures(Model *model) { // 8007DFF4
+	int iTex;
+    BADASSERTLINE(541, model);
+	for(iTex = 0; iTex < (int)(uint)model->numTextures; iTex += 1) {
+		model->GCtextures[iTex] = textureLoad(
+            -((uint)model->GCtextures[iTex] | 0x8000), 0);
+		BADASSERTLINE(546, model->GCtextures[iTex]);
+	}
+}
+
 
 //void texFreeFn_8007e0a8(int param1) { //8007E0A8
 
