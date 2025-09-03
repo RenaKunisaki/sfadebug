@@ -1,6 +1,7 @@
 #include "dolphin.h"
 #include "dolphin/mtx.h"
 #include "gfx/models/shaders.h"
+#include "gfx/textures.h"
 #include "macros.h"
 #include "types.h"
 #include "debug/debug.h"
@@ -55,7 +56,7 @@ void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,floa
 void tiltListFn_8007ebe8(int param1,int param2,int param3);
 void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj);
 void ModelInstance_unloadShaders(ModelInstance *model);
-int Model_getShaderTexture(ModelInstance *param1,int shaderNum);
+TexturePtr* Model_getShaderTexture(ModelInstance *param1,int shaderNum);
 int modelInstGetjMtx(ModelInstance *modelInstance,int param2);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
@@ -390,9 +391,21 @@ void ModelInstance_loadShaders(ModelInstance *minst, ObjInstance *obj) { // 8007
     }
 }
 
-//void ModelInstance_unloadShaders(Model *model) { //8007EF18
+void ModelInstance_unloadShaders(ModelInstance *modelInstance) { // 8007EF18
+	int iShader;
 
-//int Model_getShaderTexture(ModelInstance *param1,int shaderNum) { //8007EF84
+	if(!(modelInstance->flags & ModelFlags18_ShadersLoaded)) return;
+    modelInstance->flags &= ~ModelFlags18_ShadersLoaded;
+    for(iShader = 0; iShader < modelInstance->mod->numShaders; iShader++) {
+        shaderFree(
+            (Shader *)(&modelInstance->shaderDefs->texture + iShader * 2));
+    }
+}
+
+TexturePtr* Model_getShaderTexture(ModelInstance *modelInstance, int shaderNum) { // 8007EF84
+    BADASSERTLINE(1146, shaderNum>=0 && shaderNum<modelInstance->mod->numShaders);
+	return &modelInstance->shaderDefs[shaderNum].texture; //sus
+}
 
 //int modelInstGetjMtx(ModelInstance *modelInstance,int param2) { //8007EFF0
 

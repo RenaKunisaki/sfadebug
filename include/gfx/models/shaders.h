@@ -20,7 +20,7 @@ typedef enum {
 } ShaderInputFormat;
 
 typedef struct {
-    /* 0x0 */ Texture *texture; //actual texture
+    /* 0x0 */ TexturePtr texture; //actual texture
     /* 0x4 */ UNKTYPE *lighting; //material/lighting - setting texture AND lighting to null causes glitches
 } ShaderDef;
 
