@@ -45,7 +45,7 @@ void modelInstanceFree(ModelInstance *modelInstance);
 uint Model_checksumHeader(Model *model);
 Model* Model_load(uint id);
 void Model_loadTextures(Model *model);
-void texFreeFn_8007e0a8(int param1);
+void Model_freeTextures(Model *model);
 void animUnloadFn_8007e0f8(int param1);
 int Model_lookupModelInd(int id);
 void Model_initPtrs(Model *model);
@@ -308,7 +308,7 @@ void modelInstanceFree(ModelInstance *modelInstance) { // 8007DD68
 	mmFree(modelInstance);
 	if(!(--model->usage)) {
 		SparseArray_remove(modelsLoadedTable, model->cacheModNo);
-		Model_freeTextures((int)model);
+		Model_freeTextures(model);
 		Model_freeAnimations(model);
 		mmFree(model);
 	}
@@ -340,8 +340,12 @@ void Model_loadTextures(Model *model) { // 8007DFF4
 	}
 }
 
-
-//void texFreeFn_8007e0a8(int param1) { //8007E0A8
+void Model_freeTextures(Model *model) { //8007E0A8
+	int ii;
+	for(ii = 0; ii < model->numTextures; ii++) {
+		texFreeTexture(model->GCtextures[ii]);
+	}
+}
 
 //void animUnloadFn_8007e0f8(int param1) { //8007E0F8
 
