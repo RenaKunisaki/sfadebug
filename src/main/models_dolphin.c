@@ -56,8 +56,8 @@ void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,floa
 void tiltListFn_8007ebe8(int param1,int param2,int param3);
 void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj);
 void ModelInstance_unloadShaders(ModelInstance *model);
-TexturePtr* ModelInstance_getShaderTexture(ModelInstance *param1,int shaderNum);
-int modelInstGetjMtx(ModelInstance *modelInstance,int param2);
+TexturePtr* ModelInstance_getShaderTexture(ModelInstance *modelInstance,int shaderNum);
+Mtx44* modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
 	void *result;
@@ -407,7 +407,19 @@ TexturePtr* ModelInstance_getShaderTexture(ModelInstance *modelInstance, int sha
 	return &modelInstance->shaderDefs[shaderNum].texture; //sus
 }
 
-//int modelInstGetjMtx(ModelInstance *modelInstance,int param2) { //8007EFF0
+Mtx44* modelInstGetjMtx(ModelInstance *modelInstance, int iMtx) { // 8007EFF0
+	int nJoints;
+
+    BADASSERTLINE(1169, modelInstance);
+	if(modelInstance->mod->numJoints) {
+		nJoints = modelInstance->mod->numJoints;
+	} else {
+		nJoints = 1;
+	}
+	if(iMtx >= nJoints) { iMtx = 0; }
+	return modelInstance->jMtxs[modelInstance->flags & 1] + iMtx;
+}
+
 
 void modelInstance_toggleFlag18_1(ModelInstance *modelInstance) { //8007F084
   if (modelInstance == (ModelInstance *)0x0) {
