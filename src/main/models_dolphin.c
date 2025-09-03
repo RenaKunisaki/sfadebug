@@ -267,11 +267,28 @@ ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
 	DCStoreRange(model, model->size);
 	return modelInstance;
 }
+
+void modelInstanceFree(ModelInstance *modelInstance) { // 8007DD68
+	Model *model;
+
+    BADASSERTLINE(285, modelInstance);
+	ModelInstance_unloadShaders(modelInstance);
+	model = modelInstance->mod;
+    BADASSERTLINE(292, model);
+	if(modelInstance->unk48) {
+		mmFree(modelInstance->unk48);
+	}
+	mmFree(modelInstance);
+	if(!(--model->usage)) {
+		SparseArray_remove(modelsLoadedTable, model->cacheModNo);
+		Model_freeTextures((int)model);
+		Model_freeAnimations(model);
+		mmFree(model);
+	}
+}
 #ifdef __MWERKS__
 #pragma peephole off
 #endif
-
-//void modelInstanceFree(ModelInstance *modelInstance) { //8007DD68
 
 //int Model_checksumHeader(Model *model) { //8007DE30
 
