@@ -28,9 +28,35 @@ SparseArray *modelsLoadedTable; //80398a38
 SparseArray *animsLoadedTable; //80398a3c
 
 Texture * textureLoad(int id,int param_2);
+
+void *loadModelInstanceAsset(int id, void *buf);
+ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
+int Model_setupAnimInstance(Model *model,uint flags,AnimInstance *anim,int param4);
+int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations);
+undefined4 Model_makeModelAnimation(Model *model,uint animId,HitSpherePos *hits);
+void modelSetupAnims(ModelInstance *minst,AnimInstance *param2);
+void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 param_4);
+void LAB_8007d540(double animTimer,float *modelMatrix,ModelInstance *modelInstance,AnimInstance *animInstance,uint param_5);
+void LAB_8007d6ec(double param_1,undefined4 param_2,int *param_3,int param_4,uint param_5,uint param_6,uint param_7,s8 param_8,uint param_9,short param_10);
+void LAB_8007da34(int param_1,int param_2,int param_3);
+void initModels(void);
+ModelInstance * loadModelInstance(int id,uint flags);
+void modelInstanceFree(ModelInstance *modelInstance);
 uint Model_checksumHeader(Model *model);
 Model* Model_load(uint id);
 void Model_loadTextures(Model *model);
+void texFreeFn_8007e0a8(int param1);
+void animUnloadFn_8007e0f8(int param1);
+int Model_lookupModelInd(int id);
+void Model_initPtrs(Model *model);
+void LAB_8007e7f8(Model *model,ModelInstance *minst);
+void Model_loadShaderTextures(Model *model);
+void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,float *modelMatrix);
+void tiltListFn_8007ebe8(int param1,int param2,int param3);
+void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj);
+void ModelInstance_unloadShaders(ModelInstance *model);
+int Model_getShaderTexture(ModelInstance *param1,int shaderNum);
+int modelInstGetjMtx(ModelInstance *modelInstance,int param2);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
 	void *result;
@@ -163,7 +189,6 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 
 //int Model_setupAnimInstance(Model *model,uint flags,AnimInstance *anim,int param4) { //8007C9C0
 
-
 int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 	int result;
     int idx;
@@ -222,7 +247,6 @@ void initModels(void) { //8007DAB0
 	pAmapTab = (int *)((uint)mem + 0x800);
 	globalModAnimBufferPlus0x810 = (void*)((uint)mem + 0x810);
 	countModels();
-	return;
 }
 
 #ifdef __MWERKS__
@@ -333,9 +357,9 @@ void Model_loadTextures(Model *model) { // 8007DFF4
 
 //void tiltListFn_8007ebe8(int param1,int param2,int param3) { //8007EBE8
 
-//void ModelInstance_ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj) { //8007EE90
+//void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj) { //8007EE90
 
-//void ModelInstance_ModelInstance_unloadShaders(Model *model) { //8007EF18
+//void ModelInstance_unloadShaders(Model *model) { //8007EF18
 
 //int Model_getShaderTexture(ModelInstance *param1,int shaderNum) { //8007EF84
 
@@ -350,7 +374,7 @@ void modelInstance_toggleFlag18_1(ModelInstance *modelInstance) { //8007F084
   return;
 }
 
-void ModelInstance_ModelInstance_setField30(ModelInstance *modelInstance,TexFuncPtr cb) { //8007F0DC
+void ModelInstance_setField30(ModelInstance *modelInstance,TexFuncPtr cb) { //8007F0DC
   if (modelInstance == (ModelInstance *)0x0) {
 
     OSPanic("models_dolphin.c",0x4c8,"Failed assertion modelInstance");
