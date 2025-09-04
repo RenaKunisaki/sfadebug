@@ -509,7 +509,12 @@ DisplayList *modelGetDisplayList(Model *model, int listNum) { // 8007FF9C
 	return &model->displayLists[listNum];
 }
 
-//PolygonGroup * modelGetPolyGroup(Model *model,int groupNum) { //80080020
+PolygonGroup *modelGetPolyGroup(Model *model, int groupNum) { // 80080020
+    BADASSERTLINE(1906, model);
+    BADASSERTLINE(1907, groupNum>=0 && groupNum<model->numGroups);
+	return &model->polygonGroups[groupNum];
+}
+
 
 //int modelGetGCPoly(Model *model,int polygonNum) { //800800A4
 
