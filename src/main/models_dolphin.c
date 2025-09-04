@@ -485,7 +485,12 @@ Shader* modelGetShader(Model *model, int shaderNum) { // 8007FD8C
 	return &model->shaders[shaderNum];
 }
 
-//S16Vec * modelGetVtxPos(Model *model,int positionNum) { //8007FE10
+S16Vec *modelGetVtxPos(Model *model, int positionNum) { // 8007FE10
+    BADASSERTLINE(1671, model);
+    BADASSERTLINE(1672, positionNum>=0 && positionNum<model->numPositions);
+	return &model->vertexPositions[positionNum];
+}
+
 
 //undefined4 modelGetGCTexture(int param1,int textureNum) { //8007FE94
 
