@@ -59,8 +59,8 @@ void ModelInstance_unloadShaders(ModelInstance *model);
 TexturePtr* ModelInstance_getShaderTexture(ModelInstance *modelInstance,int shaderNum);
 Mtx44* modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
 void modelInstSwapJmtxs(ModelInstance *modelInstance);
-void ModelInstance_setField30(ModelInstance *modelInstance,TexFuncPtr cb);
-TexFuncPtr modelInstanceGetCallback30(ModelInstance *modelInstance);
+void ModelInstance_setTexFuncPtr(ModelInstance *modelInstance,TexFuncPtr cb);
+TexFuncPtr ModelInstance_getTexFuncPtr(ModelInstance *modelInstance);
 void freezeModelFn_8007f184(undefined4 param_1,undefined4 param_2,char param3);
 void LAB_8007fd28(int param_1);
 undefined2 modelGetFieldA4(Model *model);
@@ -455,21 +455,14 @@ void modelInstSwapJmtxs(ModelInstance *modelInstance) { // 8007F084
 	modelInstance->flags ^= ModelFlags18_UseOtherMtxs;
 }
 
-void ModelInstance_setField30(ModelInstance *modelInstance,TexFuncPtr cb) { //8007F0DC
-  if (modelInstance == (ModelInstance *)0x0) {
-
-    OSPanic("models_dolphin.c",0x4c8,"Failed assertion modelInstance");
-  }
-  modelInstance->texFuncPtr = cb;
-  return;
+void ModelInstance_setTexFuncPtr(ModelInstance *modelInstance,TexFuncPtr cb) { //8007F0DC
+    BADASSERTLINE(1224, modelInstance);
+    modelInstance->texFuncPtr = cb;
 }
 
-TexFuncPtr modelInstanceGetCallback30(ModelInstance *modelInstance) { //8007F134
-  if (modelInstance == (ModelInstance *)0x0) {
-
-    OSPanic("models_dolphin.c",0x4db,"Failed assertion modelInstance");
-  }
-  return modelInstance->texFuncPtr;
+TexFuncPtr ModelInstance_getTexFuncPtr(ModelInstance *modelInstance) { //8007F134
+    BADASSERTLINE(1243, modelInstance);
+    return modelInstance->texFuncPtr;
 }
 
 //void freezeModelFn_8007f184(undefined4 param_1,undefined4 param_2,char param3) { //8007F184
