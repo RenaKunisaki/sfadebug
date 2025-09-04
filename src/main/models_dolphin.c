@@ -503,7 +503,11 @@ Bone *modelGetJoint(Model *model, int jointNum) { // 8007FF18
 	return &model->joints[jointNum];
 }
 
-//DisplayList * modelGetDisplayList(Model *model,int listNum) { //8007FF9C
+DisplayList *modelGetDisplayList(Model *model, int listNum) { // 8007FF9C
+    BADASSERTLINE(1814, model);
+    BADASSERTLINE(1815, listNum>=0 && listNum<model->numDisplayLists);
+	return &model->displayLists[listNum];
+}
 
 //PolygonGroup * modelGetPolyGroup(Model *model,int groupNum) { //80080020
 
