@@ -62,7 +62,7 @@ void modelInstSwapJmtxs(ModelInstance *modelInstance);
 void ModelInstance_setTexFuncPtr(ModelInstance *modelInstance,TexFuncPtr cb);
 TexFuncPtr ModelInstance_getTexFuncPtr(ModelInstance *modelInstance);
 void freezeModelFn_8007f184(undefined4 param_1,undefined4 param_2,char param3);
-void LAB_8007fd28(int param_1);
+void ModelInstance_freeField48(ModelInstance *modelInstance);
 undefined2 modelGetFieldA4(Model *model);
 Shader * modelGetShader(Model *model,int shaderNum);
 S16Vec * modelGetVtxPos(Model *model,int positionNum);
@@ -467,7 +467,13 @@ TexFuncPtr ModelInstance_getTexFuncPtr(ModelInstance *modelInstance) { //8007F13
 
 //void freezeModelFn_8007f184(undefined4 param_1,undefined4 param_2,char param3) { //8007F184
 
-//void LAB_8007fd28(int param_1) { //8007FCF8
+void ModelInstance_freeField48(ModelInstance *modelInstance) { //8007FCF8
+	if(modelInstance->unk48) {
+		mmFree(modelInstance->unk48);
+		modelInstance->unk48 = NULL;
+	}
+}
+
 
 //undefined2 modelGetFieldA4(Model *model) { //8007FD3C
 
