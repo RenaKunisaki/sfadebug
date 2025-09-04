@@ -77,8 +77,8 @@ Animation * getAnimation(short id);
 void unloadAnimation(Animation *anim);
 void objAnimFn_8008045c(double param_1,double scale,ModelInstance *mInst,int whichBuf,int animIdx,Vec *outPos,S16Vec *outRot);
 void LAB_8008086c(ModelInstance *param_1,int param_2,ObjInstance *param_3,Mtx *param_4,ObjInstance *param_5);
-void LAB_80080ac8(int *param_1);
-void vtxAnimFn_800279cc(double param_1,int *param_2,int param_3,int param_4,int param_5,s8 param_6);
+void vtxAnimFn80080A50(ModelInstance *modelInstance);
+void vtxAnimFn_800279cc(ModelInstance *modelInstance,int param_3,int param_4,int param_5,float param_1,s8 param_6);
 void LAB_80080c00(double param_1,int *param_2,int param_3);
 void modelFn_80080c28(double param1,Model *model);
 void LAB_80081008(int *param_1);
@@ -602,16 +602,14 @@ void unloadAnimation(Animation *anim) { // 8008039C
 //void LAB_8008086c(ModelInstance *param_1,int param_2,ObjInstance *param_3,Mtx43 *param_4,
 //                 ObjInstance *param_5) { //80080734
 
-void LAB_80080ac8(int *param_1) { //80080A50
-  if (*(int *)(*param_1 + 0xa0) != 0) {
-    vtxAnimFn_800279cc(0.0,param_1,0,-1,-1,7);
-    vtxAnimFn_800279cc(0.0,param_1,1,-1,-1,7);
-    vtxAnimFn_800279cc(0.0,param_1,2,-1,-1,7);
-  }
-  return;
+void vtxAnimFn80080A50(ModelInstance *modelInstance) {
+	if(!modelInstance->mod->vertexAnims) return;
+    vtxAnimFn_800279cc(modelInstance, 0, -1, -1, 0.0f, 7);
+    vtxAnimFn_800279cc(modelInstance, 1, -1, -1, 0.0f, 7);
+    vtxAnimFn_800279cc(modelInstance, 2, -1, -1, 0.0f, 7);
 }
 
-//void vtxAnimFn_800279cc(double param_1,int *param_2,int param_3,int param_4,int param_5,s8 param_6) { //80080ADC
+//void vtxAnimFn_800279cc(ModelInstance *modelInstance,int param_3,int param_4,int param_5,float param_1,s8 param_6) { //80080ADC
 
 //void LAB_80080c00(double param_1,int *param_2,int param_3) { //80080BDC
 
