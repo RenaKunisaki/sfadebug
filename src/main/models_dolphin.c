@@ -552,7 +552,31 @@ Model *model, int index, int id, void *dest) { // 80080168
 	return anim;
 }
 
-//Animation * getAnimation(short id) { //80080270
+Animation *getAnimation(short id) { // 80080270
+    int dummy;
+	Animation *anim;
+    int dummy2;
+	uint offset;
+	uint size;
+
+	if(!SparseArray_get(animsLoadedTable, id, &anim)) {
+        //anim isn't loaded; load it now
+		offset = animOffsetTbl[id];
+		loadAndDecompressDataFile(FILE_ANIM_BIN, NULL, offset, 0, &size, id, 1);
+		anim = (Animation *)mmAlloc(size,
+            ALLOC_TAG_ANIMS_COL, (volatile u32)"mod:anim");
+        BADASSERTLINE(2203, anim);
+		loadAndDecompressDataFile(FILE_ANIM_BIN, &anim->usage, offset,
+            size, NULL, id, 0);
+		anim->usage = 1;
+		SparseArray_set(animsLoadedTable, id, &anim);
+	} else {
+		anim->usage++;
+        BADASSERTLINE(2216, anim->usage<UCHAR_MAX);
+	}
+	return anim;
+}
+
 
 //void unloadAnimation(s8 *anim) { //8008039C
 
