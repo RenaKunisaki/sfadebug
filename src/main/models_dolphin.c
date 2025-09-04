@@ -64,8 +64,8 @@ TexFuncPtr ModelInstance_getTexFuncPtr(ModelInstance *modelInstance);
 void freezeModelFn_8007f184(undefined4 param_1,undefined4 param_2,char param3);
 void ModelInstance_freeField48(ModelInstance *modelInstance);
 u16 modelGetFieldA4(Model *model);
-Shader * modelGetShader(Model *model,int shaderNum);
-S16Vec * modelGetVtxPos(Model *model,int positionNum);
+Shader* modelGetShader(Model *model,int shaderNum);
+S16Vec* modelGetVtxPos(Model *model,int positionNum);
 undefined4 modelGetGCTexture(int param1,int textureNum);
 int modelGetJoint(int param1,int jointNum);
 DisplayList * modelGetDisplayList(Model *model,int listNum);
@@ -479,7 +479,11 @@ u16 modelGetFieldA4(Model *model) { //8007FD3C
     return model->unka4;
 }
 
-//Shader * modelGetShader(Model *model,int shaderNum) { //8007FD8C
+Shader* modelGetShader(Model *model, int shaderNum) { // 8007FD8C
+    BADASSERTLINE(1648, model);
+    BADASSERTLINE(1649, shaderNum>=0 && shaderNum<model->numShaders);
+	return &model->shaders[shaderNum];
+}
 
 //S16Vec * modelGetVtxPos(Model *model,int positionNum) { //8007FE10
 
