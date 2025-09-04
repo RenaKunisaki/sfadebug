@@ -450,13 +450,9 @@ Mtx44* modelInstGetjMtx(ModelInstance *modelInstance, int iMtx) { // 8007EFF0
 	return modelInstance->jMtxs[modelInstance->flags & 1] + iMtx;
 }
 
-void modelInstSwapJmtxs(ModelInstance *modelInstance) { //8007F084
-  if (modelInstance == (ModelInstance *)0x0) {
-
-    OSPanic("models_dolphin.c",0x4b3,"Failed assertion modelInstance");
-  }
-  modelInstance->flags = modelInstance->flags ^ ModelFlags18_UseOtherMtxs;
-  return;
+void modelInstSwapJmtxs(ModelInstance *modelInstance) { // 8007F084
+    BADASSERTLINE(1203, modelInstance);
+	modelInstance->flags ^= ModelFlags18_UseOtherMtxs;
 }
 
 void ModelInstance_setField30(ModelInstance *modelInstance,TexFuncPtr cb) { //8007F0DC
