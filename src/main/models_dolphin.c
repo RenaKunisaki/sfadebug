@@ -58,6 +58,36 @@ void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj);
 void ModelInstance_unloadShaders(ModelInstance *model);
 TexturePtr* ModelInstance_getShaderTexture(ModelInstance *modelInstance,int shaderNum);
 Mtx44* modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
+void modelInstSwapJmtxs(ModelInstance *modelInstance);
+void ModelInstance_setField30(ModelInstance *modelInstance,TexFuncPtr cb);
+TexFuncPtr modelInstanceGetCallback30(ModelInstance *modelInstance);
+void freezeModelFn_8007f184(undefined4 param_1,undefined4 param_2,char param3);
+void LAB_8007fd28(int param_1);
+undefined2 modelGetFieldA4(Model *model);
+Shader * modelGetShader(Model *model,int shaderNum);
+S16Vec * modelGetVtxPos(Model *model,int positionNum);
+undefined4 modelGetGCTexture(int param1,int textureNum);
+int modelGetJoint(int param1,int jointNum);
+DisplayList * modelGetDisplayList(Model *model,int listNum);
+PolygonGroup * modelGetPolyGroup(Model *model,int groupNum);
+int modelGetGCPoly(Model *model,int polygonNum);
+Animation * loadAnimation(Model *model,short id,short id2,void *dest);
+Animation * modelLoadAnimation(Model *model,int index,int id,void *dest);
+Animation * getAnimation(short id);
+void unloadAnimation(Animation *anim);
+void objAnimFn_8008045c(double param_1,double scale,ModelInstance *mInst,int whichBuf,int animIdx,Vec *outPos,S16Vec *outRot);
+void LAB_8008086c(ModelInstance *param_1,int param_2,ObjInstance *param_3,Mtx *param_4,ObjInstance *param_5);
+void LAB_80080ac8(int *param_1);
+void vtxAnimFn_800279cc(double param_1,int *param_2,int param_3,int param_4,int param_5,s8 param_6);
+void LAB_80080c00(double param_1,int *param_2,int param_3);
+void modelFn_80080c28(double param1,Model *model);
+void LAB_80081008(int *param_1);
+void LAB_80081084(ModelInstance *param_1,Mtx *param_2,int param_3);
+void modelApplyBoneTransforms(void *param_1,int param_2,uint param_3,short *param_4,short *param_5,int param_6,undefined4 param_7,int param_8);
+BOOL countModels(void);
+void modelApplyBoneTransform(undefined4 *param_1,undefined4 *param_2,int param_3,short **param_4,short **param_5,int param_6,undefined4 param_7,int param_8);
+void LAB_80081578(void);
+void modelGetVtxPosFloat(Model *model,int positionNum,Vec *posVec);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
 	void *result;
@@ -352,7 +382,7 @@ void Model_freeAnimations(Model *model) { //8007E0F8
 	int ii;
 	if(model->anims && model->numAnims) {
 		for(ii = 0; ii < model->numAnims; ii++) {
-			unloadAnimation(model->anims[ii]);
+			unloadAnimation((Animation*)model->anims[ii]);
 		}
 	}
 }
@@ -420,8 +450,7 @@ Mtx44* modelInstGetjMtx(ModelInstance *modelInstance, int iMtx) { // 8007EFF0
 	return modelInstance->jMtxs[modelInstance->flags & 1] + iMtx;
 }
 
-
-void modelInstance_toggleFlag18_1(ModelInstance *modelInstance) { //8007F084
+void modelInstSwapJmtxs(ModelInstance *modelInstance) { //8007F084
   if (modelInstance == (ModelInstance *)0x0) {
 
     OSPanic("models_dolphin.c",0x4b3,"Failed assertion modelInstance");
@@ -476,7 +505,7 @@ TexFuncPtr modelInstanceGetCallback30(ModelInstance *modelInstance) { //8007F134
 //void unloadAnimation(s8 *anim) { //8008039C
 
 //void objAnimFn_8008045c(double param_1,double scale,ModelInstance *mInst,int whichBuf,int animIdx,
-//                       vec3f *outPos,S16Vec *outRot) { //8008045C
+//                       Vec *outPos,S16Vec *outRot) { //8008045C
 
 //void LAB_8008086c(ModelInstance *param_1,int param_2,ObjInstance *param_3,Mtx43 *param_4,
 //                 ObjInstance *param_5) { //80080734
@@ -514,7 +543,7 @@ void LAB_80081578(void) { //80081534
   return;
 }
 
-//void modelGetVtxPosFloat(Model *model,int positionNum,vec3f *posVec) { //8008157C
+//void modelGetVtxPosFloat(Model *model,int positionNum,Vec *posVec) { //8008157C
 
 #ifdef __MWERKS__
 #pragma peephole off
