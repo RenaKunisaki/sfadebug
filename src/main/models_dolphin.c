@@ -70,7 +70,7 @@ Texture* modelGetGCTexture(Model *model,int textureNum);
 Bone * modelGetJoint(Model *model,int jointNum);
 DisplayList * modelGetDisplayList(Model *model,int listNum);
 PolygonGroup * modelGetPolyGroup(Model *model,int groupNum);
-int modelGetGCPoly(Model *model,int polygonNum);
+GCPolygon* modelGetGCPoly(Model *model,int polygonNum);
 Animation * loadAnimation(Model *model,short id,short id2,void *dest);
 Animation * modelLoadAnimation(Model *model,int index,int id,void *dest);
 Animation * getAnimation(short id);
@@ -515,8 +515,11 @@ PolygonGroup *modelGetPolyGroup(Model *model, int groupNum) { // 80080020
 	return &model->polygonGroups[groupNum];
 }
 
-
-//int modelGetGCPoly(Model *model,int polygonNum) { //800800A4
+GCPolygon* modelGetGCPoly(Model *model, int polygonNum) { // 800800A4
+    //missing: BADASSERTLINE(1926, model);
+    BADASSERTLINE(1927, polygonNum>=0 && polygonNum<model->numPolygons);
+	return &model->GCpolygons[polygonNum];
+}
 
 //Animation * loadAnimation(Model *model,short id,short id2,void *dest) { //8008010C
 
