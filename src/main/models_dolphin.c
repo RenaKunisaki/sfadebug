@@ -530,7 +530,6 @@ Animation *loadAnimation(
 	}
 }
 
-
 Animation *modelLoadAnimation(
 Model *model, int index, int id, void *dest) { // 80080168
 	uint offset;
@@ -578,7 +577,24 @@ Animation *getAnimation(short id) { // 80080270
 }
 
 
-//void unloadAnimation(s8 *anim) { //8008039C
+void unloadAnimation(Animation *anim) { // 8008039C
+	bool success;
+    int dummy;
+	int key;
+
+    if(!anim) {
+        STUBBED_OP(anim);
+        return;
+    }
+    BADASSERTLINE(2248, anim);
+    if((--anim->usage) <= 0) {
+        success = SparseArray_find(animsLoadedTable,
+            &anim, &key);
+        BADASSERTLINE(2258, success);
+        SparseArray_remove(animsLoadedTable, key);
+        mmFree(anim);
+    }
+}
 
 //void objAnimFn_8008045c(double param_1,double scale,ModelInstance *mInst,int whichBuf,int animIdx,
 //                       Vec *outPos,S16Vec *outRot) { //8008045C
