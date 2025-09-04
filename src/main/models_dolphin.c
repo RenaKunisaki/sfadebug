@@ -521,7 +521,15 @@ GCPolygon* modelGetGCPoly(Model *model, int polygonNum) { // 800800A4
 	return &model->GCpolygons[polygonNum];
 }
 
-//Animation * loadAnimation(Model *model,short id,short id2,void *dest) { //8008010C
+Animation *loadAnimation(
+    Model *model, short id, short id2, void *dest) { // 8008010C
+	if(!dest) {
+		return getAnimation(id);
+	} else {
+		return modelLoadAnimation(model, id, id2, dest);
+	}
+}
+
 
 //Animation * modelLoadAnimation(Model *model,int index,int id,void *dest) { //80080168
 
