@@ -401,6 +401,7 @@ typedef struct {
     /* 0x0d */ s8 animsIdx2;
     /* 0x0e */ u8 flags;
 } ModelInstanceField20; //size: 0x10
+#define ModelInstanceField20_MAX_NUM 3 //most instances of this a ModelInstance can have
 
 typedef struct {
     Mtx44 *jMtxs[2];
@@ -428,7 +429,7 @@ typedef struct {
     /* 0x1a */ s8 unk1a;
     /* 0x1b */ s8 unk1b;
     /* 0x1c */ S16Vec *vertexPositions;
-    /* 0x20 */ ModelInstanceField20 *unk20;
+    /* 0x20 */ ModelInstanceField20 *unk20; //-> ModelInstanceField20[ModelInstanceField20_MAX_NUM]
     /* 0x24 */ AnimInstance *animInstances[2]; //only one in final?
     /* 0x2c */ ShaderDef *shaderDefs;
     /* 0x30 */ TexFuncPtr texFuncPtr;

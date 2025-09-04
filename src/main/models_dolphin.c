@@ -611,7 +611,15 @@ void vtxAnimFn80080A50(ModelInstance *modelInstance) {
 
 //void vtxAnimFn_800279cc(ModelInstance *modelInstance,int param_3,int param_4,int param_5,float param_1,s8 param_6) { //80080ADC
 
-//void LAB_80080c00(double param_1,int *param_2,int param_3) { //80080BDC
+void fn_80080bdc(float pos, ModelInstance *modelInstance, int idx) { // 80080BDC
+	ModelInstanceField20 *field20;
+
+    if(idx > (ModelInstanceField20_MAX_NUM-1)
+    || !modelInstance->mod->vertexAnims) return;
+    field20 = &modelInstance->unk20[idx];
+    field20->pos = pos;
+    field20->flags = field20->flags | 4;
+}
 
 //void modelFn_80080c28(double param1,Model *model) { //80080C28
 
