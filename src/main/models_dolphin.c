@@ -531,7 +531,26 @@ Animation *loadAnimation(
 }
 
 
-//Animation * modelLoadAnimation(Model *model,int index,int id,void *dest) { //80080168
+Animation *modelLoadAnimation(
+Model *model, int index, int id, void *dest) { // 80080168
+	uint offset;
+	u32 len;
+	Animation *anim;
+	int animSize;
+
+	offset = animOffsetTbl[index];
+	loadAndDecompressDataFile(FILE_ANIM_BIN, NULL, offset,
+        0, &animSize, index, 1);
+    BADASSERTLINE(2150, animSize<model->animCacheSize-ANIMMAP_SIZE);
+	anim = (Animation *)((uint)dest + ANIMMAP_SIZE);
+    BADASSERTLINE(2155, anim);
+	loadAndDecompressDataFile(
+	    FILE_ANIM_BIN, anim, offset, animSize, NULL, index, 0);
+	len = ((model->numJoints - 1) & ~7) + 8;
+	loadDataFileWithLength(FILE_AMAP_BIN, dest,
+        model->animOffset + id * len, len);
+	return anim;
+}
 
 //Animation * getAnimation(short id) { //80080270
 
