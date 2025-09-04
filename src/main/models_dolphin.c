@@ -66,7 +66,7 @@ void ModelInstance_freeField48(ModelInstance *modelInstance);
 u16 modelGetFieldA4(Model *model);
 Shader* modelGetShader(Model *model,int shaderNum);
 S16Vec* modelGetVtxPos(Model *model,int positionNum);
-undefined4 modelGetGCTexture(int param1,int textureNum);
+Texture* modelGetGCTexture(Model *model,int textureNum);
 int modelGetJoint(int param1,int jointNum);
 DisplayList * modelGetDisplayList(Model *model,int listNum);
 PolygonGroup * modelGetPolyGroup(Model *model,int groupNum);
@@ -491,8 +491,11 @@ S16Vec *modelGetVtxPos(Model *model, int positionNum) { // 8007FE10
 	return &model->vertexPositions[positionNum];
 }
 
-
-//undefined4 modelGetGCTexture(int param1,int textureNum) { //8007FE94
+Texture *modelGetGCTexture(Model *model, int textureNum) { // 8007FE94
+    BADASSERTLINE(1768, model);
+    BADASSERTLINE(1769, textureNum>=0 && textureNum<model->numTextures);
+	return model->GCtextures[textureNum];
+}
 
 //int modelGetJoint(int param1,int jointNum) { //8007FF18
 
