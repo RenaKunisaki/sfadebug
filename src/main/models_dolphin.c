@@ -67,7 +67,7 @@ u16 modelGetFieldA4(Model *model);
 Shader* modelGetShader(Model *model,int shaderNum);
 S16Vec* modelGetVtxPos(Model *model,int positionNum);
 Texture* modelGetGCTexture(Model *model,int textureNum);
-int modelGetJoint(int param1,int jointNum);
+Bone * modelGetJoint(Model *model,int jointNum);
 DisplayList * modelGetDisplayList(Model *model,int listNum);
 PolygonGroup * modelGetPolyGroup(Model *model,int groupNum);
 int modelGetGCPoly(Model *model,int polygonNum);
@@ -497,7 +497,11 @@ Texture *modelGetGCTexture(Model *model, int textureNum) { // 8007FE94
 	return model->GCtextures[textureNum];
 }
 
-//int modelGetJoint(int param1,int jointNum) { //8007FF18
+Bone *modelGetJoint(Model *model, int jointNum) { // 8007FF18
+    BADASSERTLINE(1791, model);
+    BADASSERTLINE(1792, jointNum>=0 && jointNum<model->numJoints);
+	return &model->joints[jointNum];
+}
 
 //DisplayList * modelGetDisplayList(Model *model,int listNum) { //8007FF9C
 
