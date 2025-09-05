@@ -29,6 +29,7 @@ SparseArray *modelsLoadedTable; //80398a38
 SparseArray *animsLoadedTable; //80398a3c
 
 Texture * textureLoad(int id,int param_2);
+void * getTable(DataFileId32 file);
 
 void *loadModelInstanceAsset(int id, void *buf);
 ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
@@ -631,7 +632,24 @@ void fn_80080bdc(float pos, ModelInstance *modelInstance, int idx) { // 80080BDC
 //               (void *param_1,int param_2,uint param_3,short *param_4,short *param_5,int param_6,
 //               undefined4 param_7,int param_8) { //80081134
 
-//BOOL countModels(void) { //800812A0
+BOOL countModels(void) { // 800812A0
+	int *modelsTab;
+
+    STUBBED_OP("models_dolphin.c");
+	modelsTab = getTable(FILE_MODELS_tab);
+	if(!modelsTab) return FALSE;
+
+    maxModelNum = 0;
+    while(modelsTab[maxModelNum] != -1) maxModelNum++;
+    maxModelNum--;
+
+    //looks like a bug, but maxModelNum is int, not short.
+    BADASSERTLINE(3301, maxModelNum<=SHRT_MAX);
+    animOffsetTbl = (u32 *)getTable(FILE_ANIM_TAB);
+    if(!animOffsetTbl) return FALSE;
+    bHaveAnimTab = FALSE; //XXX wrong name?
+    return TRUE;
+}
 
 //void modelApplyBoneTransform
 //               (undefined4 *param_1,undefined4 *param_2,int param_3,short **param_4,short **param_5,
