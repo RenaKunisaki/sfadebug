@@ -329,7 +329,7 @@ typedef struct {
 typedef struct { //XXX populate
     /* 0x00 */ s8 usage; //reference count
     /* 0x01 */ u8 flags01;
-    /* 0x02 */ u8 unk02;
+    /* 0x02 */ u8 sizeVar02;
     /* 0x03 */ u8 unk03;
     /* 0x04 */ u8 unk04;
     /* 0x05 */ u8 unk05;
@@ -348,28 +348,19 @@ typedef struct {
 
 typedef struct {
     u8 unk[0x48];
-} AnimInstanceField44;
+} AmapBinEntry;
 
-#define MAX_ANIMS 4
+#define AnimInstance_MAX_ANIMS 4
+#define AnimInstance_MAX_JOINTS 4
 typedef struct {
     /* 0x00 */ Model *model;
     /* 0x04 */ float hitboxSize[3][2];
-    /* 0x1c */ AnimInstanceField44 *animData[MAX_ANIMS];
-    /* 0x2c */ undefined unk2c;
-    /* 0x2d */ undefined unk2d;
-    /* 0x2e */ undefined unk2e;
-    /* 0x2f */ undefined unk2f;
+    /* 0x1c */ AmapBinEntry *animData[AnimInstance_MAX_ANIMS];
+    /* 0x2c */ undefined4 unk2c;
     /* 0x30 */ int unk30;
-    /* 0x34 */ Animation *anim[MAX_ANIMS];
-    /* 0x44 */ ushort iAnim[MAX_ANIMS];
-    /* 0x4c */ undefined unk4c;
-    /* 0x4d */ undefined unk4d;
-    /* 0x4e */ undefined unk4e;
-    /* 0x4f */ undefined unk4f;
-    /* 0x50 */ undefined unk50;
-    /* 0x51 */ undefined unk51;
-    /* 0x52 */ undefined unk52;
-    /* 0x53 */ undefined unk53;
+    /* 0x34 */ Bone *joints[AnimInstance_MAX_JOINTS];
+    /* 0x44 */ ushort iJoint[AnimInstance_MAX_JOINTS];
+    /* 0x4c */ ushort sizeVar4c[AnimInstance_MAX_JOINTS];
     /* 0x54 */ undefined unk54;
     /* 0x55 */ undefined unk55;
     /* 0x56 */ undefined unk56;
@@ -403,6 +394,8 @@ typedef struct {
 } ModelInstanceField20; //size: 0x10
 #define ModelInstanceField20_MAX_NUM 3 //most instances of this a ModelInstance can have
 
+//this struct is actually just what was being
+//stored after the ModelInstance.
 typedef struct {
     Mtx44 *jMtxs[2];
     VertexPosition unk;
@@ -443,7 +436,6 @@ typedef struct {
     /* 0x51 */ s8 unk51;
     /* 0x52 */ s8 unk52;
     /* 0x53 */ s8 unk53;
-    /* 0x54 */ ModelInstanceField54 *field54;
 } ModelInstance;
 
 #endif //_GFX_MODELS_MODELS_H_
