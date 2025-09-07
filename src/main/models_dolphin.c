@@ -691,8 +691,18 @@ BOOL countModels(void) { // 800812A0
 //               (undefined4 *param_1,undefined4 *param_2,int param_3,short **param_4,short **param_5,
 //               int param_6,undefined4 param_7,int param_8) { //8008136C
 
-//void modelGetVtxPosFloat(Model *model,int positionNum,Vec *posVec) { //8008157C
-
 #ifdef __MWERKS__
 #pragma peephole off
 #endif
+
+void modelGetVtxPosFloat(Model *model, int positionNum, Vec *posVec) { // 8008157C
+	S16Vec *vp;
+	int dummy;
+
+	ASSERTLINE(3642, posVec);
+	ASSERTLINE(3643, positionNum>=0 && positionNum<model->numPositions);
+	vp = modelGetVtxPos(model, positionNum);
+	posVec->x = vp->x / 256.0f;
+	posVec->y = vp->y / 256.0f;
+	posVec->z = vp->z / 256.0f;
+}
