@@ -261,42 +261,40 @@ void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 para
 //                 uint param_6,uint param_7,s8 param_8,uint param_9,short param_10) { //8007D678
 
 void fn_8007D8E4(Model *model, AnimInstance *animInst, int count) { // 8007D8E4
-	float fVar1;
+	float hitboxSize;
 	Bone *bone;
+    AmapBinEntry *animData;
 	Animation *anim;
 	int ii;
 	int iJoint;
-	float uVar1;
-	s8 joint;
+	int joint;
 
-	for(ii = 0; ii < count; ii += 1) {
-		if((model->flags & ModelDataFlags2_UseLocalModAnimTab) == 0) {
-			bone = (Bone *)((int)&model->curHitSpherePos->radius
+	for(ii = 0; ii < count; ii++) {
+		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+            animData = animInst->animData[animInst->iJoint[ii]];
+			anim = (Animation *)&animInst->animData[animInst->iJoint[ii]][1];
+		} else {
+			animData = (AmapBinEntry *)((int)&model->curHitSpherePos->radius
 			    + (uint)animInst->iJoint[ii]
-			        * ((model->numJoints - 1 & 0xfffffff8) + 8));
+			        * ((model->numJoints - 1 & ~7) + 8));
 			anim = (Animation*)model->anims[animInst->iJoint[ii]];
+		}
+		for(iJoint = 0; iJoint < model->numJoints; iJoint++) {
+			model->joints[iJoint].idx2[ii] = animData->unk[iJoint];
+		}
+		joint = animInst->joints[ii]->idx2[0];
+		hitboxSize = (int)animInst->hitboxSize[0][ii];
+		if(hitboxSize != animInst->hitboxSize[0][ii]) {
+            animInst->sizeVar4c[ii] = (s16)joint;
 		} else {
-			bone = (Bone*)&animInst->animData[animInst->iJoint[ii]]; //->field0_0x0;
-			anim = (Animation *)&animInst->animData[animInst->iJoint[ii]][1]; //.field_0x38;
-		}
-		for(iJoint = 0; iJoint < (int)(uint)model->numJoints; iJoint += 1) {
-			model->joints[iJoint].idx[ii + 1] = bone->idx[iJoint + -1];
-		}
-		joint = animInst->joints[ii]->idx[1];
-		uVar1 = (float)(int)animInst->hitboxSize[0][ii];
-		fVar1 = (float)((double)CONCAT44(0x43300000, (uint)uVar1 ^ 0x80000000)
-		    - 4503601774854144.0);
-		if(fVar1 == animInst->hitboxSize[0][ii]) {
 			animInst->sizeVar4c[ii] = 0;
-		} else {
-			animInst->sizeVar4c[ii] = (ushort)joint;
 		}
-		if((animInst->unk60[ii] != 0)
-		    && (fVar1 == animInst->hitboxSize[2][ii] - 1.0)) {
-			animInst->sizeVar4c[ii] = -(ushort)joint * SUB42(uVar1, 0);
+		if(animInst->unk60[ii]
+        && (hitboxSize == animInst->hitboxSize[2][ii] - 1.0f)) {
+			animInst->sizeVar4c[ii] = -joint * (int)hitboxSize;
 		}
-		animInst->joints[ii + -2] = (Bone *)(&anim->usage
-		    + (int)*(short *)&anim->sizeVar02 + (uint)joint * (int)uVar1);
+		animInst->joints[ii] = (Bone *)(&anim->usage
+		    + (int)anim->sizeVar02[joint] * (int)hitboxSize);
 	}
 }
 

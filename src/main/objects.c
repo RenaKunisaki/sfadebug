@@ -266,7 +266,7 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	result->romdefno = oType;
 	result->romDefNo = romDefNo;
 	result->mapId = mapId;
-	result->animVal_a2 = -1;
+	result->curAnimId = -1;
 	result->curSeqSlot = -1;
 	result->newOpacity = 0xFF;
 	result->msgQueue = NULL;

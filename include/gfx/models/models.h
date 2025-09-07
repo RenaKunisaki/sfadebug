@@ -329,10 +329,7 @@ typedef struct {
 typedef struct { //XXX populate
     /* 0x00 */ s8 usage; //reference count
     /* 0x01 */ u8 flags01;
-    /* 0x02 */ u8 sizeVar02;
-    /* 0x03 */ u8 unk03;
-    /* 0x04 */ u8 unk04;
-    /* 0x05 */ u8 unk05;
+    /* 0x02 */ u8 sizeVar02[4]; //unsure of length
     //...more...
 } Animation;
 
@@ -346,8 +343,14 @@ typedef struct {
     /* 0x18 */ int mtxSize;
 } AnimUnk;
 
+//The kiosk AMAP.BIN file looks like
+//it's just u8 unk[0x28]
+//but this seems to be something else,
+//maybe not AMAP.BIN at all.
+//see setupAnimInstance which allocates
+//either 0x80 or (numJoints << 7) bytes.
 typedef struct {
-    u8 unk[0x48];
+    u8 unk[0x80]; //maybe 0x48 or something else
 } AmapBinEntry;
 
 #define AnimInstance_MAX_ANIMS 4

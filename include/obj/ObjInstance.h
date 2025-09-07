@@ -456,7 +456,7 @@ typedef struct ObjInstance {
     /* 0x98 */ float animTimer; //controls idle animation
     /* 0x9c */ float frame;
     /* 0xa0 */ s16 animId; //which animation is playing
-    /* 0xa2 */ s16 animVal_a2;
+    /* 0xa2 */ s16 curAnimId; //maybe next?
     /* 0xa4 */ float depth; //for render sorting
     /* 0xa8 */ float cullDistance; //affects brightness and opacity; multiplied by scale; fuzz?
     /* 0xac */ s8 mapId; //MapId8 crashes if < 0x80; passed to loadCharacter but not used?
