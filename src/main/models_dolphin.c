@@ -660,38 +660,28 @@ void fn_80080bdc(float pos, ModelInstance *modelInstance, int idx) { // 80080BDC
 
 //void modelFn_80080c28(double param1,Model *model) { //80080C28
 
-int DWORD_ARRAY_802cf000[] = {0, 0, 0};
-int DWORD_ARRAY_802cf00c[] = {0, 0, 0};
+//int DWORD_ARRAY_802cf000[] = {0, 0, 0};
+//int DWORD_ARRAY_802cf00c[] = {0, 0, 0};
+
+typedef struct { int val[3]; } int3_80080D04;
+int3_80080D04 DWORD_ARRAY_802cf000;
+int3_80080D04 DWORD_ARRAY_802cf00c;
+
 void copyVtxsToModelInstance(ModelInstance *modelInstance) { // 80080D04
-	int pos;
 	short *anims2;
 	short *anims1;
 	S16Vec *vtxs;
 	Model *model;
 	int ii;
 	ModelInstanceField20 *field20;
-	int flags[6];
+	int3_80080D04 flags0;
+	int3_80080D04 flags1;
 	int local_34;
 	int local_30;
 	short local_2c[2];
-	int *ptr;
 
-	ptr = DWORD_ARRAY_802cf000;
-	local_34 = ptr[0];
-	local_30 = ptr[1];
-	flags[3] = local_34;
-	flags[4] = local_30;
-	local_34 = ptr[2];
-	flags[5] = local_34;
-
-	ptr = DWORD_ARRAY_802cf00c;
-	local_34 = ptr[0];
-	local_30 = ptr[1];
-	flags[0] = local_34;
-	flags[1] = local_30;
-	local_34 = ptr[2];
-	flags[2] = local_34;
-
+	flags0 = DWORD_ARRAY_802cf000;
+	flags1 = DWORD_ARRAY_802cf00c;
 	model = modelInstance->mod;
 	if(model->vertexAnims) {
 		local_2c[0] = model->numPositions + 1;
@@ -701,28 +691,28 @@ void copyVtxsToModelInstance(ModelInstance *modelInstance) { // 80080D04
 				field20->flags &= ~0xC;
 				field20->flags |= 4;
 			}
-			flags[ii] = field20->flags & 0xc;
+			flags0.val[ii] = field20->flags & 0xc;
 			if(field20->animsIdx1 == -1) {
 				if((field20->animsIdx2 != -1) || ((field20->flags & 0xc) != 0))
 					goto LAB_80080df0;
 			} else {
 LAB_80080df0:
-				flags[ii] = 1;
+				flags0.val[ii] = 1;
 			}
-			if(flags[ii] & 4) {
+			if(flags0.val[ii] & 4) {
 				field20->flags &= ~4;
 				field20->flags |= 8;
 			} else {
-				if((flags[ii] & 8) != 0) {
+				if((flags0.val[ii] & 8) != 0) {
 					field20->flags &= ~8;
 				}
 			}
 		}
-		if(((flags[3] != 0) || (local_34 != 0)) || (local_30 != 0)) {
-			if(local_34 != 0) { flags[3] = 0; }
-			if(flags[2] != 0) {
-				flags[0] = 1;
-				flags[1] = 1;
+		if(((flags1.val[0] != 0) || (local_34 != 0)) || (local_30 != 0)) {
+			if(local_34 != 0) { flags1.val[0] = 0; }
+			if(flags0.val[2] != 0) {
+				flags0.val[0] = 1;
+				flags0.val[1] = 1;
 			}
 			for(ii=0; ii < 2; ii++) {
 				field20 = modelInstance->unk20 + ii;
@@ -730,21 +720,19 @@ LAB_80080df0:
 					field20->flags &= ~2;
 					field20->pos = 0.0;
 				}
-				if((flags[ii] != 0) && (flags[ii] != 0)) {
+				if((flags0.val[ii] != 0) && (flags1.val[ii] != 0)) {
 					if(field20->animsIdx1 > -1) {
-						anims1
-						    = (short *)model->vertexAnims[field20->animsIdx1];
+						anims1 = (short *)model->vertexAnims[field20->animsIdx1];
 					} else {
 						anims1 = local_2c;
 					}
 					if(field20->animsIdx2 > -1) {
-						anims2
-						    = (short *)model->vertexAnims[field20->animsIdx2];
+						anims2 = (short *)model->vertexAnims[field20->animsIdx2];
 					} else {
 						anims2 = local_2c;
 					}
 					if(ii == 2) {
-						if((flags[3] == 0) && (local_34 == 0)) {
+						if((flags1.val[0] == 0) && (local_34 == 0)) {
 							vtxs = model->vertexPositions;
 						} else {
 							vtxs = modelInstance->vertexPositions;
