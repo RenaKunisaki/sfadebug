@@ -735,7 +735,7 @@ LAB_80080df0:
 				flags1.val[0] = 1;
 				flags1.val[1] = 1;
 			}
-			for(ii=0; ii < 2; ii++) {
+			for(ii=0; ii < 3; ii++) {
 				field20 = modelInstance->unk20 + ii;
 				if(field20->flags & 2) {
 					field20->flags &= ~2;
