@@ -668,78 +668,69 @@ int3_80080D04 DWORD_ARRAY_802cf000;
 int3_80080D04 DWORD_ARRAY_802cf00c;
 
 void copyVtxsToModelInstance(ModelInstance *modelInstance) { // 80080D04
-	short *anims2;
+	short endPos;
+	int3_80080D04 flags0;
+	int3_80080D04 flags1;
 	short *anims1;
+	short *anims2;
 	S16Vec *vtxs;
 	Model *model;
 	int ii;
 	ModelInstanceField20 *field20;
-	int3_80080D04 flags0;
-	int3_80080D04 flags1;
-	int local_34;
-	int local_30;
-	short local_2c[2];
 
 	flags0 = DWORD_ARRAY_802cf000;
 	flags1 = DWORD_ARRAY_802cf00c;
 	model = modelInstance->mod;
 	if(model->vertexAnims) {
-		local_2c[0] = model->numPositions + 1;
-		for(ii = 0; ii < 3; ii += 1) {
+		endPos = model->numPositions + 1;
+		for(ii = 0; ii < 3; ii++) {
 			field20 = modelInstance->unk20 + ii;
 			if(field20->pos != field20->prevPos) {
-				field20->flags &= ~0xC;
+				field20->flags &= ~0xc;
 				field20->flags |= 4;
 			}
-			flags0.val[ii] = field20->flags & 0xc;
+			flags1.val[ii] = field20->flags & 0xc;
 			if(field20->animsIdx1 == -1) {
-				if((field20->animsIdx2 != -1) || ((field20->flags & 0xc) != 0))
+				if((field20->animsIdx2 != -1) || field20->flags & 0xc)
 					goto LAB_80080df0;
 			} else {
 LAB_80080df0:
 				flags0.val[ii] = 1;
 			}
-			if(flags0.val[ii] & 4) {
+			if(flags1.val[ii] & 4) {
 				field20->flags &= ~4;
 				field20->flags |= 8;
-			} else {
-				if((flags0.val[ii] & 8) != 0) {
-					field20->flags &= ~8;
-				}
+			} else if(flags1.val[ii] & 8) {
+				field20->flags &= ~8;
 			}
 		}
-		if(((flags1.val[0] != 0) || (local_34 != 0)) || (local_30 != 0)) {
-			if(local_34 != 0) { flags1.val[0] = 0; }
-			if(flags0.val[2] != 0) {
-				flags0.val[0] = 1;
-				flags0.val[1] = 1;
+		if(flags0.val[0] || flags0.val[1] || flags0.val[2]) {
+			if(flags0.val[1]) flags0.val[0] = 0;
+			if(flags1.val[2]) {
+				flags1.val[0] = 1;
+				flags1.val[1] = 1;
 			}
 			for(ii=0; ii < 2; ii++) {
 				field20 = modelInstance->unk20 + ii;
-				if((field20->flags & 2) != 0) {
+				if(field20->flags & 2) {
 					field20->flags &= ~2;
-					field20->pos = 0.0;
+					field20->pos = 0.0f;
 				}
-				if((flags0.val[ii] != 0) && (flags1.val[ii] != 0)) {
+				if(flags0.val[ii] && flags1.val[ii]) {
 					if(field20->animsIdx1 > -1) {
 						anims1 = (short *)model->vertexAnims[field20->animsIdx1];
-					} else {
-						anims1 = local_2c;
-					}
+					} else anims1 = &endPos;
+
 					if(field20->animsIdx2 > -1) {
 						anims2 = (short *)model->vertexAnims[field20->animsIdx2];
-					} else {
-						anims2 = local_2c;
-					}
+					} else anims2 = &endPos;
+
 					if(ii == 2) {
-						if((flags1.val[0] == 0) && (local_34 == 0)) {
+						if(!flags0.val[0] && !flags0.val[1]) {
 							vtxs = model->vertexPositions;
-						} else {
-							vtxs = modelInstance->vertexPositions;
-						}
-					} else {
-						vtxs = model->vertexPositions;
-					}
+						} else vtxs = modelInstance->vertexPositions;
+					} else vtxs = model->vertexPositions;
+
 					if(field20->pos > 1.0f) field20->pos = 1.0f;
 					else if(field20->pos < 0.0f) field20->pos = 0.0f;
 					modelApplyBoneTransforms(vtxs,
