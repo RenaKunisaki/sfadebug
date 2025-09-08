@@ -83,7 +83,7 @@ void vtxAnimFn_800279cc(ModelInstance *modelInstance,int param_3,int param_4,int
 void LAB_80080c00(double param_1,int *param_2,int param_3);
 void modelFn_80080c28(double param1,Model *model);
 void copyVtxsToModelInstance(ModelInstance *modelInstance);
-void LAB_80081084(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf);
+void fn_80081084(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf);
 void modelApplyBoneTransforms(S16Vec *vtxs,S16Vec *vtxs2,uint numPositions,short *anims1,short *anims2,int pos);
 BOOL countModels(void);
 void modelApplyBoneTransform(undefined4 *param_1,undefined4 *param_2,int param_3,short **param_4,short **param_5,int param_6,undefined4 param_7,int param_8);
@@ -745,7 +745,7 @@ LAB_80080df0:
 	}
 }
 
-void LAB_80081084(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf) { // 8008102C
+void fn_80081084(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf) { // 8008102C
 	MtxPtr jMtx;
 	Model *model;
 	uint iMtx;
