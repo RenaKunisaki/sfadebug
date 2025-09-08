@@ -83,7 +83,7 @@ void vtxAnimFn_800279cc(ModelInstance *modelInstance,int param_3,int param_4,int
 void LAB_80080c00(double param_1,int *param_2,int param_3);
 void modelFn_80080c28(double param1,Model *model);
 void copyVtxsToModelInstance(ModelInstance *modelInstance);
-void LAB_80081084(ModelInstance *param_1,Mtx *param_2,int param_3);
+void LAB_80081084(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf);
 void modelApplyBoneTransforms(S16Vec *vtxs,S16Vec *vtxs2,uint numPositions,short *anims1,short *anims2,int pos);
 BOOL countModels(void);
 void modelApplyBoneTransform(undefined4 *param_1,undefined4 *param_2,int param_3,short **param_4,short **param_5,int param_6,undefined4 param_7,int param_8);
@@ -745,7 +745,29 @@ LAB_80080df0:
 	}
 }
 
-//void LAB_80081084(ModelInstance *param_1,Mtx43 *param_2,int param_3) { //8008102C
+void LAB_80081084(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf) { // 8008102C
+	MtxPtr jMtx;
+	Model *model;
+	uint iMtx;
+	Mtx mTmp;
+
+	model = modelInstance->mod;
+	if(model->numJoints == 0) {
+		jMtx = (MtxPtr)modelInstGetjMtx(modelInstance, 0);
+		MTXConcat(mtx, jMtx, jMtx);
+	} else {
+		for(iMtx = 0; iMtx < model->numJoints; iMtx += 1) {
+			jMtx = (MtxPtr)modelInstGetjMtx(modelInstance, iMtx);
+			MTXTrans(mTmp,
+				-model->joints[iMtx].bindTranslation.x,
+			    -model->joints[iMtx].bindTranslation.y,
+			    -model->joints[iMtx].bindTranslation.z);
+			MTXConcat(jMtx, mTmp, mTmp);
+			mtxTranspose43(&mTmp, &mtxBuf[iMtx*4*12]);
+			MTXConcat(mtx, jMtx, jMtx);
+		}
+	}
+}
 
 //void modelApplyBoneTransforms(S16Vec *vtxs,S16Vec *vtxs2,uint numPositions,
 // short *anims1,short *anims2,int pos) { //80081134
