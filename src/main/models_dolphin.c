@@ -81,7 +81,7 @@ void LAB_8008086c(ModelInstance *param_1,int param_2,ObjInstance *param_3,Mtx *p
 void vtxAnimFn80080A50(ModelInstance *modelInstance);
 void vtxAnimFn_800279cc(ModelInstance *modelInstance,int param_3,int param_4,int param_5,float param_1,s8 param_6);
 void LAB_80080c00(double param_1,int *param_2,int param_3);
-void modelFn_80080c28(double param1,Model *model);
+void modelFn_80080c28(float scale, ModelInstance *modelInstance);
 void copyVtxsToModelInstance(ModelInstance *modelInstance);
 void fn_8008102C(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf);
 void modelApplyBoneTransforms(S16Vec *vtxs,S16Vec *vtxs2,uint numPositions,short *anims1,short *anims2,int pos);
@@ -658,7 +658,32 @@ void fn_80080bdc(float pos, ModelInstance *modelInstance, int idx) { // 80080BDC
     field20->flags = field20->flags | 4;
 }
 
-//void modelFn_80080c28(double param1,Model *model) { //80080C28
+void modelFn_80080c28(float scale, ModelInstance *modelInstance) { //80080C28
+	int ii;
+	ModelInstanceField20 *field20;
+
+	if(!modelInstance->mod->vertexAnims) return;
+	for(ii = 0; ii < 3; ii += 1) {
+		field20 = &modelInstance->unk20[ii];
+		if(field20->animsIdx1 == -1) {
+			if(field20->animsIdx2 != -1) goto LAB_80080c74;
+		} else {
+LAB_80080c74:
+			if(!(field20->flags & 1)) {
+				field20->pos += field20->speed * scale;
+				if(field20->pos > 1.0f) {
+					field20->pos = 0.99f;
+					field20->speed = 0.001f;
+					field20->flags &= ~4;
+				} else if(field20->pos < 0.0f) {
+					field20->pos = 0.002f;
+					field20->speed = 0.001f;
+					field20->flags &= ~4;
+				}
+			}
+		}
+	}
+}
 
 //int DWORD_ARRAY_802cf000[] = {0, 0, 0};
 //int DWORD_ARRAY_802cf00c[] = {0, 0, 0};
