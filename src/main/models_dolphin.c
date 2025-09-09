@@ -36,7 +36,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
 int Model_setupAnimInstance(Model *model,uint flags,AnimInstance *anim,int param4);
 int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations);
 undefined4 Model_makeModelAnimation(Model *model,uint animId,HitSpherePos *hits);
-void modelSetupAnims(ModelInstance *minst,AnimInstance *param2);
+void modelSetupAnims(ModelInstance *modelInstance,AnimInstance *animInstance);
 void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 param_4);
 void LAB_8007d540(double animTimer,float *modelMatrix,ModelInstance *modelInstance,AnimInstance *animInstance,uint param_5);
 void LAB_8007d6ec(double param_1,undefined4 param_2,int *param_3,int param_4,uint param_5,uint param_6,uint param_7,s8 param_8,uint param_9,short param_10);
@@ -244,14 +244,57 @@ int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 
 //undefined4 Model_makeModelAnimation(Model *model,uint animId,HitSpherePos *hits) { //8007CC94
 
-//void modelSetupAnims(ModelInstance *minst,AnimInstance *param2) { //8007CFA4
+void modelSetupAnims(
+    ModelInstance *modelInstance, AnimInstance *animInstance) { // 8007CFA4
+	Animation *anim;
+	Model *model;
+
+	animInstance->iJoint[0] = 0;
+	animInstance->unk5e = 0;
+	animInstance->unk58 = 0;
+	animInstance->unk5a = 0;
+	animInstance->unk5c = 0;
+	animInstance->hitboxSize[1][0] = 0.0;
+	animInstance->hitboxSize[0][0] = 0.0;
+	animInstance->hitboxSize[2][0] = 0.0;
+	animInstance->unk60[0] = 0;
+	model = modelInstance->mod;
+	if(model->numAnims != 0) {
+		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+			loadModelAnimation(model, *model->animIds, 0, animInstance->animData[0]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->animData[1]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->animData[2]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->animData[3]);
+			animInstance->iJoint[0] = 0;
+			anim = (Animation *)&animInstance->animData[animInstance->iJoint[0]][1];
+		} else {
+			anim = (Animation*)model->anims[animInstance->iJoint[0]];
+		}
+		animInstance->joints[0] = (Bone *)(anim + 1);
+		animInstance->unk60[0] = anim->flags01 & 0xf0;
+		animInstance->hitboxSize[2][0] = animInstance->joints[0]->idx[1];
+		if(animInstance->unk60[0] == 0) {
+			animInstance->hitboxSize[2][0] -= 1.0f;
+		}
+		animInstance->unk60[1] = animInstance->unk60[0];
+		animInstance->joints[1] = animInstance->joints[0];
+		animInstance->iJoint[1] = animInstance->iJoint[0];
+		animInstance->hitboxSize[0][1] = animInstance->hitboxSize[0][0];
+		animInstance->hitboxSize[2][1] = animInstance->hitboxSize[2][0];
+		animInstance->hitboxSize[1][1] = animInstance->hitboxSize[1][0];
+		animInstance->joints[2] = animInstance->joints[0];
+		animInstance->iJoint[2] = animInstance->iJoint[0];
+		animInstance->joints[3] = animInstance->joints[0];
+		animInstance->iJoint[3] = animInstance->iJoint[0];
+	}
+}
 
 void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 param_4) { //8007D174
-  void *result;
+	void *result;
 
-  result = NULL;
-  loadAsset_Animation(&result,param_1,param_2,param_3,param_4);
-  return result;
+	result = NULL;
+	loadAsset_Animation(&result,param_1,param_2,param_3,param_4);
+	return result;
 }
 
 //void LAB_8007d540(double animTimer,float *modelMatrix,ModelInstance *modelInstance,
