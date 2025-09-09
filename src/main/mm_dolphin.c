@@ -537,7 +537,9 @@ int alignTo2(int param1) { //8007C524
 	return param1;
 }
 
+#ifdef __MWERKS__
 #pragma peephole off
+#endif
 int getTotalHeapUsed(int unused) { //8007C54C
 	register Heap *dummy = heaps;
 	return heapUsed0 + heapUsed1 + heapUsed2;
