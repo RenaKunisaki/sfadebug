@@ -496,15 +496,12 @@ int type2, u32 tag, const char *name) { // 8007C328
 		idx = entry[iEntry].next;
 		if(((idx != -1) && (entry[idx].type == 0)) && (type2 == 0)) {
 			//merge with next block
-			//this assignment is swapped (add r9, r5, r0; should be add r9, r0, r5)
-			//and I can't find why. just changing the operand order doesn't help.
-			entry[idx].entry.loc = (void*)((uint)entry[iEntry].entry.loc + size);
+			entry[idx].entry.loc = &((u8*)entry[iEntry].entry.loc)[size];
 			entry[idx].entry.size += oldSize - size;
             return idx;
 		} else {
             idx = entry[heaps[iHeap].used++].stack;
-			//same here.
-			entry[idx].entry.loc = (void *)((uint)entry[iEntry].entry.loc + size);
+			entry[idx].entry.loc = &((u8*)entry[iEntry].entry.loc)[size];
 			entry[idx].entry.size = oldSize - size;
 			entry[idx].type = type2;
 			oldSize = entry[iEntry].next;
