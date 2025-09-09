@@ -51,7 +51,7 @@ void Model_freeTextures(Model *model);
 void Model_freeAnimations(Model *model);
 int Model_lookupModelInd(int id);
 void Model_initPtrs(Model *model);
-void LAB_8007e7f8(Model *model,ModelInstance *minst);
+void Model_initSkinningWeights(Model *model,ModelInstance *mInst);
 void Model_initShaders(Model *model);
 void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,float *modelMatrix);
 void tiltListFn_8007ebe8(int param1,int param2,int param3);
@@ -436,7 +436,22 @@ int Model_lookupModelInd(int id) { // 8007E160
 
 //void Model_initPtrs(Model *model) { //8007E1B8
 
-//void LAB_8007e7f8(Model *model,ModelInstance *minst) { //8007E76C
+void Model_initSkinningWeights(Model *model, ModelInstance *mInst) { // 8007E76C
+	int ii;
+
+	if(!(model->flags & ModelDataFlags2_CopyVtxsOnLoad)) return;
+	model->skin.sk2ListArray = model->posFineSkinningConfig;
+	for(ii = 0; ii < model->skin.numPieces; ii++) {
+		mInst->skinVtxs[ii] = (VertexPosition *)
+			((uint)mInst->vertexPositions + model->posFineSkinningConfig[ii].vertSrc);
+		if(model->posFineSkinningConfig[ii].weightsSrc < model->skinWeights) { //sus
+			model->posFineSkinningConfig[ii].weightsSrc =
+				(UNKTYPE*)((uint)model->skinWeights +
+					(uint)model->posFineSkinningConfig[ii].weightsSrc);
+		}
+	}
+}
+
 
 void Model_initShaders(Model *model) { // 8007e814
 	Shader *shader;
