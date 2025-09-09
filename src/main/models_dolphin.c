@@ -730,12 +730,9 @@ LAB_80080c74:
 	}
 }
 
-//int DWORD_ARRAY_802cf000[] = {0, 0, 0};
-//int DWORD_ARRAY_802cf00c[] = {0, 0, 0};
-
 typedef struct { int val[3]; } int3_80080D04;
-int3_80080D04 DWORD_ARRAY_802cf000;
-int3_80080D04 DWORD_ARRAY_802cf00c;
+int3_80080D04 DWORD_ARRAY_802cf000 = {0};
+int3_80080D04 DWORD_ARRAY_802cf00c = {0};
 
 void copyVtxsToModelInstance(ModelInstance *modelInstance) { // 80080D04
 	short endPos;
