@@ -52,7 +52,7 @@ void Model_freeAnimations(Model *model);
 int Model_lookupModelInd(int id);
 void Model_initPtrs(Model *model);
 void LAB_8007e7f8(Model *model,ModelInstance *minst);
-void Model_loadShaderTextures(Model *model);
+void Model_initShaders(Model *model);
 void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,float *modelMatrix);
 void tiltListFn_8007ebe8(int param1,int param2,int param3);
 void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj);
@@ -438,7 +438,37 @@ int Model_lookupModelInd(int id) { // 8007E160
 
 //void LAB_8007e7f8(Model *model,ModelInstance *minst) { //8007E76C
 
-//void Model_loadShaderTextures(Model *model) { //8007E814
+void Model_initShaders(Model *model) { // 8007e814
+	Shader *shader;
+	int iShader;
+	int iLayer;
+
+	for(iShader = 0; iShader < model->numShaders; iShader++) {
+		shader = &model->shaders[iShader];
+		for(iLayer = 0; iLayer < shader->numMaterialLayers; iLayer++) {
+			if(shader->layer[iLayer].tex.id != -1) {
+				shader->layer[iLayer].tex.ptr =
+					model->GCtextures[shader->layer[iLayer].tex.id];
+			}
+			else shader->layer[iLayer].tex.ptr = NULL;
+		}
+
+		if(shader->tex34.id != -1) shader->tex34.ptr = model->GCtextures[shader->tex34.id];
+		else shader->tex34.ptr = NULL;
+
+		if(shader->tex1C.id != -1) {
+			if(shader->tex1C.id == -2) shader->tex1C.ptr = NULL;
+			else shader->tex1C.ptr = model->GCtextures[shader->tex1C.id];
+		}
+		else shader->tex1C.ptr = NULL;
+
+		if(shader->tex18.id != -1) shader->tex18.ptr = model->GCtextures[shader->tex18.id];
+		else shader->tex18.ptr = NULL;
+
+		if(!(model->shaderFlags & 0xc)) shader->unk08 = 0;
+		if(!(model->shaderFlags & 0xe00)) shader->unk14 = 0;
+	}
+}
 
 //void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,float *modelMatrix) { //8007E974
 
