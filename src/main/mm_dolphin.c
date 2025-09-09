@@ -477,7 +477,7 @@ void _mmActuallyFree(int iHeap, int iEntry) { // 8007C154 regswap
 	return;
 }
 
-void *getHeapData(int iHeap) { // 8007C310
+void *mmGetSlotPtr(int iHeap) { // 8007C310
 	return (void *)heaps[iHeap].data;
 }
 
