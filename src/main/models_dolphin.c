@@ -439,7 +439,42 @@ uint Model_checksumHeader(Model *model) { //8007DE30
 	return result;
 }
 
-//Model * Model_load(uint id) { //8007DE70
+Model* Model_load(uint id) { //8007DE70
+	int dummy1;
+	int dummy2;
+	int dummy3;
+	uint *modelsTab;
+	uint amapSize;
+	uint offset;
+	int size;
+	undefined4 nAnimations;
+	uint animCacheSize;
+	BOOL bNoAmap;
+	Model *model;
+
+	modelsTab = (uint *)getTable(FILE_MODELS_tab);
+	offset = modelsTab[id];
+	loadModelsBin(offset, &nAnimations, &animCacheSize, &bNoAmap, &size);
+	animCacheSize = alignTo8(animCacheSize);
+	animCacheSize += 0xb0;
+
+	model = (Model *)mmAlloc(size +
+		modelGetAmapSize(id, bNoAmap, nAnimations) + 500,
+		ALLOC_TAG_MODELS_COL, (volatile u32)"mod");
+	ASSERTLINE(491, model);
+
+	model = (Model *)alignTo16(model);
+	loadAndDecompressDataFile(FILE_MODELS_bin, (s8 *)model, offset,
+		size, NULL, id, 0);
+	model->animCacheSize = animCacheSize;
+	model->cacheModNo = id;
+	model->numAnims = nAnimations;
+	model->flags = model->flags & ~ModelDataFlags2_UseLocalModAnimTab;
+	model->usage = 1;
+	if(!model->numAnims) model->flags |= ModelDataFlags2_NoAnimations;
+	if(bNoAmap) model->flags |= ModelDataFlags2_UseLocalModAnimTab;
+	return model;
+}
 
 void Model_loadTextures(Model *model) { // 8007DFF4
 	int iTex;
