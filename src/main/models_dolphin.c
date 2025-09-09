@@ -30,6 +30,8 @@ SparseArray *animsLoadedTable; //80398a3c
 
 Texture * textureLoad(int id,int param_2);
 void * getTable(DataFileId32 file);
+void loadModelsBin(uint offset,int *outNAnimations,uint *outAnimCacheSize,
+	BOOL *outNoAmap,int *outSize,int id);
 
 void *loadModelInstanceAsset(int id, void *buf);
 ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
@@ -45,7 +47,7 @@ void initModels(void);
 ModelInstance * loadModelInstance(int id,uint flags);
 void modelInstanceFree(ModelInstance *modelInstance);
 uint Model_checksumHeader(Model *model);
-Model* Model_load(uint id);
+Model* Model_load(int id);
 void Model_loadTextures(Model *model);
 void Model_freeTextures(Model *model);
 void Model_freeAnimations(Model *model);
@@ -439,42 +441,50 @@ uint Model_checksumHeader(Model *model) { //8007DE30
 	return result;
 }
 
-Model* Model_load(uint id) { //8007DE70
-	int dummy1;
+#ifdef __MWERKS__
+#pragma peephole off
+#endif
+
+Model* Model_load(int id) { //8007DE70
+	int dummy;
 	int dummy2;
 	int dummy3;
 	uint *modelsTab;
 	uint amapSize;
-	uint offset;
 	int size;
-	undefined4 nAnimations;
+	int size2;
+	int nAnimations;
 	uint animCacheSize;
 	BOOL bNoAmap;
 	Model *model;
 
 	modelsTab = (uint *)getTable(FILE_MODELS_tab);
-	offset = modelsTab[id];
-	loadModelsBin(offset, &nAnimations, &animCacheSize, &bNoAmap, &size);
+	loadModelsBin(modelsTab[id], &nAnimations,
+		&animCacheSize, &bNoAmap, &size, id);
 	animCacheSize = alignTo8(animCacheSize);
 	animCacheSize += 0xb0;
 
-	model = (Model *)mmAlloc(size +
-		modelGetAmapSize(id, bNoAmap, nAnimations) + 500,
+	size2 = size + modelGetAmapSize(id, bNoAmap, nAnimations) + 500;
+	model = (Model *)mmAlloc(size2,
 		ALLOC_TAG_MODELS_COL, (volatile u32)"mod");
-	ASSERTLINE(491, model);
+	BADASSERTLINE(491, model);
 
 	model = (Model *)alignTo16(model);
-	loadAndDecompressDataFile(FILE_MODELS_bin, (s8 *)model, offset,
+	loadAndDecompressDataFile(FILE_MODELS_bin, (s8 *)model, modelsTab[id],
 		size, NULL, id, 0);
 	model->animCacheSize = animCacheSize;
-	model->cacheModNo = id;
-	model->numAnims = nAnimations;
-	model->flags = model->flags & ~ModelDataFlags2_UseLocalModAnimTab;
-	model->usage = 1;
+	model->cacheModNo    = id;
+	model->numAnims      = nAnimations;
+	model->flags        &= ~ModelDataFlags2_UseLocalModAnimTab;
+	model->usage         = 1;
 	if(!model->numAnims) model->flags |= ModelDataFlags2_NoAnimations;
 	if(bNoAmap) model->flags |= ModelDataFlags2_UseLocalModAnimTab;
 	return model;
 }
+
+#ifdef __MWERKS__
+#pragma peephole on
+#endif
 
 void Model_loadTextures(Model *model) { // 8007DFF4
 	int iTex;
