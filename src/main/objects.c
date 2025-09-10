@@ -559,7 +559,7 @@ void modelInitSkeleton(float scale, ModelInstance *modelInstance) {
 		skel->scale[iJoint] = scale * radi[iJoint];
 		skel->unk08[iJoint] = skel->scale[iJoint] * skel->scale[iJoint];
 
-		iParent = model->joints[iJoint].parent;
+		iParent = model->joints[iJoint].idx[0];
 		distV.x = model->joints[iJoint].translation.x;
 		distV.y = model->joints[iJoint].translation.y;
 		distV.z = model->joints[iJoint].translation.z;
