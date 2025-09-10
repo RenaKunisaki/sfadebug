@@ -576,7 +576,7 @@ Model *mod, ModelInstance *mInst) {
 		LAB_800a5074(gfx, NULL, NULL, 0x80000002, 0, 0, 1);
 		for(jj = 0; jj < 2; jj++) {
 			if(jj) iParent = ii;
-            else iParent = mod->joints[ii].parent;
+            else iParent = mod->joints[ii].idx[0];
 			jMtx = (Mtx44Ptr)modelInstGetjMtx(mInst, ii);
             ASSERTLINE(1990, jMtx);
 			mtxTmp[3][1] = jMtx[0][3];
@@ -596,7 +596,7 @@ Model *mod, ModelInstance *mInst) {
 				xf.pos.y = mtxTmp[3][2];
 				xf.pos.z = mtxTmp[3][3];
 				jMtx = (Mtx44Ptr)modelInstGetjMtx(mInst,
-                    mod->joints[ii].parent);
+                    mod->joints[ii].idx[0]);
                 ASSERTLINE(2014, jMtx);
 				mtxTmp[3][1] = jMtx[0][3];
 				mtxTmp[3][2] = jMtx[1][3];
