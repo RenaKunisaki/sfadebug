@@ -120,7 +120,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 
 	memclr(minst, size);
 	next = (void*)(minst + 1);
-    next = (void*)alignTo16(next);
+    next = mmAlign16(next);
 	minst->jMtxs[0] = next; ADVANCE_PTR(next,animUnk.mtxSize >> 1);
 	minst->jMtxs[1] = next; ADVANCE_PTR(next,animUnk.mtxSize >> 1);
 	minst->jMtxs4C = minst->jMtxs[0];
@@ -140,7 +140,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 		minst->vertexPositions2 = model->vertexPositions;
 	}
 
-	next = (void*)alignTo4((uint)next);
+	next = mmAlign4(next);
 	minst->animInstances[0] = next; ADVANCE_PTR_BY(next,1,AnimInstance);
 
 	if(flags & CreateModelInstanceFlags_DoubleBufferAnims) {
@@ -164,7 +164,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 	}
 
 	if(model->bCopyVtxsToModelInst) {
-		next = (void*)alignTo4((uint)next);
+		next = mmAlign4(next);
 		minst->unk20 = next; ADVANCE_PTR_BY(next,3,ModelInstanceField20);
 		for(ii = 0; ii < 3; ii = ii + 1) {
 			unk20 = &minst->unk20[ii];
@@ -177,14 +177,14 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 	}
 
 	if(animUnk.hitSphereDataSize > 0) {
-		next = (void*)alignTo4((uint)next);
+		next = mmAlign4(next);
 		minst->hitSpheres[0] = next; ADVANCE_PTR_BY(next,model->numHitSpheres,HitSphere);
 		minst->hitSpheres[1] = next; ADVANCE_PTR_BY(next,model->numHitSpheres,HitSphere);
 		minst->activeHitSphere = minst->hitSpheres[0];
 	}
 
 	if(model->joints && model->numJoints && model->radi && model->exT) {
-		next = (void*)alignTo4((uint)next);
+		next = mmAlign4(next);
 		minst->skeleton            = next; ADVANCE_PTR_BY(next,1,ModelSkeletonStruct);
 		minst->skeleton->joints    = next; ADVANCE_PTR_BY(next,model->numJoints,Vec);
 		minst->skeleton->scale     = next; ADVANCE_PTR_BY(next,model->numJoints,float);
@@ -197,15 +197,15 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 	}
 
 	if(model->posFineSkinningConfig) {
-		next = (void*)alignTo4((uint)next);
+		next = mmAlign4(next);
 		minst->skinVtxs = next; ADVANCE_PTR_BY(next,model->skin.numPieces,VertexPosition*);
 	}
 
-	next = (void *)alignTo4((uint)next);
+	next = mmAlign4(next);
 	minst->shaderDefs = next; ADVANCE_PTR_BY(next,model->numShaders,ShaderDef);
 
 	if(flags & CreateModelInstanceFlags_TexturedShadow) {
-		next = (void*)alignTo2((uint)next);
+		next = mmAlign2(next);
 		minst->shadow = next; ADVANCE_PTR_BY(next,1,TexturedShadow);
 		minst->shadow->state = 0;
 	}
@@ -461,7 +461,7 @@ Model* Model_load(int id) { //8007DE70
 	modelsTab = (uint *)getTable(FILE_MODELS_tab);
 	loadModelsBin(modelsTab[id], &nAnimations,
 		&animCacheSize, &bNoAmap, &size, id);
-	animCacheSize = alignTo8(animCacheSize);
+	animCacheSize = (uint)mmAlign8((void*)animCacheSize);
 	animCacheSize += 0xb0;
 
 	size2 = size + modelGetAmapSize(id, bNoAmap, nAnimations) + 500;
@@ -469,7 +469,7 @@ Model* Model_load(int id) { //8007DE70
 		ALLOC_TAG_MODELS_COL, (volatile u32)"mod");
 	BADASSERTLINE(491, model);
 
-	model = (Model *)alignTo16(model);
+	model = (Model *)mmAlign16(model);
 	loadAndDecompressDataFile(FILE_MODELS_bin, (s8 *)model, modelsTab[id],
 		size, NULL, id, 0);
 	model->animCacheSize = animCacheSize;

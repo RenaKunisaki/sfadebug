@@ -131,6 +131,10 @@ void mmFree(void *__ptr);
 void checkHeaps(void);
 int heapSetEntry(int iHeap, int iEntry, int size, int type, int type2, u32 tag,
     const char *name);
+void* mmAlign16(void *ptr);
+void* mmAlign8(void *ptr);
+void* mmAlign4(void *ptr);
+void* mmAlign2(void *ptr);
 int getTotalHeapUsed(int unused);
 
 #endif //_SYS_ALLOC_H_

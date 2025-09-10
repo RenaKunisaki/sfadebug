@@ -32,7 +32,7 @@ ObjInstance **Object_playerGetObject(int typ, int *outNumObjs); /* extern */
 void Object_objRemoveObjectType(
     ObjInstance *obj, int playerObjIdx); /* extern */
 void Object_streamFn_8018fa50(ObjInstance *obj, int romDefNo); /* extern */
-void *alignTo4(void *); /* extern */
+void *mmAlign4(void *); /* extern */
 void *alignTo64(void *); /* extern */
 void debugPrint(char *fmt, ...); /* extern */
 void dll_26F_init(ObjInstance *object, ObjDef *objDef, ObjInstance *obj2,

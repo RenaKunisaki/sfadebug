@@ -364,23 +364,23 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 		}
 	}
 	if((u8)objData->nJoints != 0) {
-		next = alignTo4(next);
+		next = mmAlign4(next);
 		result->joints = next;
 		next = (void *)((s32)next + ((u8)objData->nJoints * sizeof(Joint)));
 	}
 	if((u8)objData->nTextures != 0) {
-		next = alignTo4(next);
+		next = mmAlign4(next);
 		result->pTextures = next;
 		next = (void *)((s32)next + ((u8)objData->nTextures * 0x10));
 	}
 	if((u8)objData->numLockData != 0) {
-		next = alignTo4(next);
+		next = mmAlign4(next);
 		result->romLockdata = next;
 		next = (void *)((s32)next
 		    + ((u8)objData->numLockData * sizeof(RomLockData)));
 	}
 	if(((u8)objData->maybeNumHits != 0) && ((u8)objData->bDisableHits != 0)) {
-		next = alignTo4(next);
+		next = mmAlign4(next);
 		next = Object_objSetupHits((s32)result->romdefno,
 		    (ModelInstance *)result->frames[0],
 		    result->hits,
@@ -388,7 +388,7 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 		    result);
 	}
 	if(objData->numLockData != 0) {
-		next = alignTo4(next);
+		next = mmAlign4(next);
 		result->lockdata = next;
 		for(iLock = 0; iLock < objData->numLockData; iLock++) {
 			result->lockdata[iLock].flags = objData->lockdata[iLock].flags;
@@ -487,44 +487,44 @@ uint objGetTotalDataSize(
 	size += objData->noframes * 4;
 	size += objGetExtraSize(obj, (void*)size);
 	if(flags & 0x40) {
-		size = (int)alignTo4((void *)size);
+		size = (int)mmAlign4((void *)size);
 		size += 8;
-		size = alignTo8(size);
+		size = (uint)mmAlign8((void*)size);
 		size += 0x50;
 	}
 	if(flags & 0x100) {
-		size = (int)alignTo4((void *)size);
+		size = (int)mmAlign4((void *)size);
 		size += 8;
-		size = alignTo8(size);
+		size = (uint)mmAlign8((void*)size);
 		size += 0x400;
 	}
 	if(flags & 2 && objData->shadowType != ObjShadowType_None) {
-		size = (int)alignTo4((void *)size);
+		size = (int)mmAlign4((void *)size);
 		size += sizeof(Shadow);
 	}
 	if(objData->maybeNumHits) {
-		size = (uint)alignTo4((void *)size);
+		size = (uint)mmAlign4((void *)size);
 		size += 0xa4;
 		if((objData->flags93 & 8) != 0) { size += 0x110; }
 	}
 	if(objData->nJoints) {
-		size = (int)alignTo4((void *)size);
+		size = (int)mmAlign4((void *)size);
 		size += (uint)objData->nJoints * sizeof(Joint);
 	}
 	if(objData->nTextures) {
-		size = (int)alignTo4((void *)size);
+		size = (int)mmAlign4((void *)size);
 		size += (uint)objData->nTextures * 0x10;
 	}
 	if(objData->numLockData) {
-		size = (int)alignTo4((void *)size);
+		size = (int)mmAlign4((void *)size);
 		size += (uint)objData->numLockData * sizeof(RomLockData);
 	}
 	if(objData->maybeNumHits && objData->bDisableHits) {
-		size = alignTo8(size);
+		size = (uint)mmAlign8((void*)size);
 		size += 300;
 	}
 	if(objData->numLockData) {
-		size = (int)alignTo4((void *)size);
+		size = (int)mmAlign4((void *)size);
 		size += (uint)objData->numLockData * sizeof(RamLockData);
 	}
 	return size;
@@ -883,7 +883,7 @@ void fn_80084238(ObjInstance *object) {
 void* Object_objInitState(ObjInstance *object,void *state) {
     int size;
 
-    state = (void *)alignTo4(state);
+    state = mmAlign4(state);
     size = objGetExtraSize(object, state);
     if(size) {
         object->state = (undefined *)state;
@@ -911,11 +911,11 @@ u32 Object_getModelFlags(ObjInstance *object) {
 }
 
 void* Object_objSetupEvents(int romdefno, ObjInstance *object, void *ptr) {
-    ptr = (ObjEventData *)alignTo4(ptr);
+    ptr = (ObjEventData *)mmAlign4(ptr);
     object->pEventName = ptr;
 
     ptr = (void*)((uint)ptr + sizeof(ObjEventData));
-    ptr = (void *)alignTo8(ptr);
+    ptr = (void *)mmAlign8(ptr);
     object->pEventName->data = (ObjEventData2*)ptr;
 
     ptr = (void *)((uint)ptr + sizeof(ObjEventData2));
@@ -956,10 +956,10 @@ void* Object_objSetupModels(int romdefno, Model *model,
 ObjInstance *object,void *ptr) {
     if(!model) return ptr;
 
-    ptr = alignTo4(ptr);
+    ptr = mmAlign4(ptr);
     object->models = ptr;
     ptr = (void*)((uint)ptr + 8);
-    ptr = (void*)alignTo8(ptr);
+    ptr = (void*)mmAlign8(ptr);
     *(uint *)&object->models->cacheModNo = (uint)ptr;
     ptr = (void *)((uint)ptr + 0x400);
     return ptr;

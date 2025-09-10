@@ -445,32 +445,32 @@ int _mmGetHeapIdx(void *offset) { // 8007C0DC
 }
 
 void _mmActuallyFree(int iHeap, int iEntry) { // 8007C154 regswap
-	int sVar1;
-	int sVar2;
-	int sVar3;
+	int next;
+	int prev;
+	int tmp;
 	HeapEntry *entry;
 
 	entry = heaps[iHeap].data;
-	sVar1 = entry[iEntry].next;
-	sVar2 = entry[iEntry].prev;
+	next  = entry[iEntry].next;
+	prev  = entry[iEntry].prev;
 	entry[iEntry].type = 0;
-	LAB_8018fa40(entry[iEntry].entry.loc);
+	fn_8018F9F0(entry[iEntry].entry.loc);
 	heaps[iHeap].used2 -= entry[iEntry].entry.size;
-	if((sVar1 != -1) && (entry[sVar1].type == 0)) {
-		entry[iEntry].entry.size += entry[sVar1].entry.size;
-		sVar3 = entry[sVar1].next;
-		entry[iEntry].next = sVar3;
-		if(sVar3 != -1) {
-            entry[sVar3].prev = (s16)iEntry;
+	if((next != -1) && (entry[next].type == 0)) {
+		entry[iEntry].entry.size += entry[next].entry.size;
+		tmp = entry[next].next;
+		entry[iEntry].next = tmp;
+		if(tmp != -1) {
+            entry[tmp].prev = (s16)iEntry;
         }
-		entry[--heaps[iHeap].used].stack = sVar1;
+		entry[--heaps[iHeap].used].stack = next;
 	}
-	if((sVar2 != -1) && (entry[sVar2].type == 0)) {
-		entry[sVar2].entry.size += entry[iEntry].entry.size;
-		sVar1 = entry[iEntry].next;
-		entry[sVar2].next = sVar1;
-		if(sVar1 != -1) {
-            entry[sVar1].prev = sVar2;
+	if((prev != -1) && (entry[prev].type == 0)) {
+		entry[prev].entry.size += entry[iEntry].entry.size;
+		next = entry[iEntry].next;
+		entry[prev].next = next;
+		if(next != -1) {
+            entry[next].prev = prev;
         }
 		entry[--heaps[iHeap].used].stack = (s16)iEntry;
 	}
@@ -515,26 +515,56 @@ int type2, u32 tag, const char *name) { // 8007C328
 	return iEntry;
 }
 
-int alignTo16(int param1) { //8007C4AC
-	int pad = param1 & 15;
-	if(pad > 0) param1 += (16 - pad);
-	return param1;
+/**
+ * @brief Returns the passed in address aligned to
+ *  the next 16-byte boundary.
+ *
+ *  @param ptr The address.
+ *  @return void* The aligned address.
+ */
+void* mmAlign16(void *ptr) { //8007C4AC
+	int pad = (uint)ptr & 15;
+	if(pad > 0) ptr = (void*)(((uint)ptr)+(16 - pad));
+	return ptr;
 }
-int alignTo8(int param1) { //8007C4D4
-	int pad = param1 & 7;
-	if(pad > 0) param1 += (8 - pad);
-	return param1;
-}
-int alignTo4(int param1) { //8007C4FC
 
-	int pad = param1 & 3;
-	if(pad > 0) param1 += (4 - pad);
-	return param1;
+/**
+ * @brief Returns the passed in address aligned to
+ *  the next 8-byte boundary.
+ *
+ *  @param ptr The address.
+ *  @return void* The aligned address.
+ */
+void* mmAlign8(void *ptr) { //8007C4D4
+	int pad = (uint)ptr & 7;
+	if(pad > 0) ptr = (void*)(((uint)ptr)+(8 - pad));
+	return ptr;
 }
-int alignTo2(int param1) { //8007C524
-	int pad = param1 & 1;
-	if(pad > 0) param1 += (2 - pad);
-	return param1;
+
+/**
+ * @brief Returns the passed in address aligned to
+ *  the next 4-byte boundary.
+ *
+ *  @param ptr The address.
+ *  @return void* The aligned address.
+ */
+void* mmAlign4(void *ptr) { //8007C4FC
+	int pad = (uint)ptr & 3;
+	if(pad > 0) ptr = (void*)(((uint)ptr)+(4 - pad));
+	return ptr;
+}
+
+/**
+ * @brief Returns the passed in address aligned to
+ *  the next 2-byte boundary.
+ *
+ *  @param ptr The address.
+ *  @return void* The aligned address.
+ */
+void* mmAlign2(void *ptr) { //8007C524
+	int pad = (uint)ptr & 1;
+	if(pad > 0) ptr = (void*)(((uint)ptr)+(2 - pad));
+	return ptr;
 }
 
 #ifdef __MWERKS__
