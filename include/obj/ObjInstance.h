@@ -453,8 +453,8 @@ typedef struct ObjInstance {
     /* 0x7c */ ModelInstance **frames; //one per model
     /* 0x80 */ Vec oldPos;
     /* 0x8c */ Vec pos_0x8c;
-    /* 0x98 */ float animTimer; //controls idle animation
-    /* 0x9c */ float frame;
+    /* 0x98 */ float frame1; //controls idle animation; relates to animInstance field 58/5a
+    /* 0x9c */ float frame2; //relates to animInstance field 58/5a
     /* 0xa0 */ s16 animId; //which animation is playing
     /* 0xa2 */ s16 curAnimId; //maybe next?
     /* 0xa4 */ float depth; //for render sorting

@@ -15,6 +15,11 @@
 #include "obj/ObjInstance.h"
 #include "sys/files.h"
 
+//x, y, z but not S16Vec or array
+s16 objAnimVar_8039872c_x;
+s16 objAnimVar_8039872c_y;
+s16 objAnimVar_8039872c_z;
+
 int DAT_80398a10;
 int DWORD_80398a14;
 int DWORD_80398a18;
@@ -40,8 +45,8 @@ int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations);
 undefined4 Model_makeModelAnimation(Model *model,uint animId,HitSpherePos *hits);
 void modelSetupAnims(ModelInstance *modelInstance,AnimInstance *animInstance);
 void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 param_4);
-void LAB_8007d540(double animTimer,float *modelMatrix,ModelInstance *modelInstance,AnimInstance *animInstance,uint param_5);
-void LAB_8007d6ec(double param_1,undefined4 param_2,int *param_3,int param_4,uint param_5,uint param_6,uint param_7,s8 param_8,uint param_9,short param_10);
+void LAB_8007d540(Mtx44Ptr modelMatrix,ModelInstance *modelInstance,AnimInstance *animInstance,float frame,int param_5);
+void LAB_8007d6ec(Mtx44Ptr modelMatrix,ModelInstance *modelInstance,AnimInstance *animInstance,float frame,int param_5,u8 param_6,u8 param_7,s8 iJoint,uint flags,short param_10);
 void LAB_8007da34(int param_1,int param_2,int param_3);
 void initModels(void);
 ModelInstance * loadModelInstance(int id,uint flags);
@@ -55,8 +60,8 @@ int Model_lookupModelInd(int id);
 void Model_initPtrs(Model *model);
 void Model_initSkinningWeights(Model *model,ModelInstance *mInst);
 void Model_initShaders(Model *model);
-void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,float *modelMatrix);
-void tiltListFn_8007ebe8(int param1,int param2,int param3);
+void modelAnimFn_8007e974(ModelInstance *modelInstance,Model *model,ObjInstance *object,Mtx44 *modelMatrix);
+void tiltListFn_8007ebe8(ObjInstance *object,ModelInstance *modelInstance,Model *model);
 void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj);
 void ModelInstance_unloadShaders(ModelInstance *model);
 TexturePtr* ModelInstance_getShaderTexture(ModelInstance *modelInstance,int shaderNum);
@@ -78,7 +83,7 @@ Animation * loadAnimation(Model *model,short id,short id2,void *dest);
 Animation * modelLoadAnimation(Model *model,int index,int id,void *dest);
 Animation * getAnimation(short id);
 void unloadAnimation(Animation *anim);
-void objAnimFn_8008045c(double param_1,double scale,ModelInstance *mInst,int whichBuf,int animIdx,Vec *outPos,S16Vec *outRot);
+void objAnimFn_8008045c(ModelInstance *mInst,int whichBuf,int animIdx,float param_1,float scale,Vec *outPos,S16Vec *outRot);
 void LAB_8008086c(ModelInstance *param_1,int param_2,ObjInstance *param_3,Mtx *param_4,ObjInstance *param_5);
 void vtxAnimFn80080A50(ModelInstance *modelInstance);
 void vtxAnimFn_80080adc(ModelInstance *modelInstance,int idx,int animIdx1,int animIdx2,float speed,s8 flags);
@@ -573,7 +578,64 @@ void Model_initShaders(Model *model) { // 8007e814
 	}
 }
 
-//void modelAnimFn_8007e974(ModelInstance *modelInstance,int model,int object,float *modelMatrix) { //8007E974
+void modelAnimFn_8007e974(ModelInstance *modelInstance, Model *model,
+ObjInstance *object, Mtx44 *modelMatrix) { // 8007E974
+	AnimInstance *animInstance2;
+	AnimInstance *animInstance;
+	Vec VStack_30;
+	S16Vec local_38;
+
+	ASSERTLINE(915, modelInstance);
+	ASSERTLINE(916, model);
+	ASSERTLINE(917, modelMatrix);
+	ASSERTLINE(918, object);
+	tiltListFn_8007ebe8(object, modelInstance, model);
+	modelInstSwapJmtxs(modelInstance);
+	animInstance = modelInstance->animInstances[0];
+	ASSERTLINE(924, animInstance);
+	if(animInstance->flags63 & 4) {
+		objAnimFn_8008045c(modelInstance, 0, 0,
+			object->frame1, object->pos.scale,
+		    &VStack_30, &local_38);
+		objAnimVar_8039872c_x = local_38.x;
+		objAnimVar_8039872c_y = local_38.y;
+		objAnimVar_8039872c_z = local_38.z;
+	}
+	if(modelInstance->mod->flags & 8) {
+		LAB_8007d540((Mtx44Ptr)modelMatrix,
+		    modelInstance, modelInstance->animInstances[0],
+		    object->frame1, 0x7f);
+	} else {
+		if(modelInstance->animInstances[0]->flags63 & 8) {
+			animInstance2 = modelInstance->animInstances[1];
+			LAB_8007d6ec((Mtx44Ptr)modelMatrix, modelInstance,
+				animInstance, object->frame1,
+				0x7f, 0, 0, 2, 0x14,
+				animInstance->unk5a);
+			LAB_8007d6ec((Mtx44Ptr)modelMatrix, modelInstance,
+				animInstance2, object->frame2,
+				0x7f, 0, 0, 2, 0x18,
+				animInstance2->unk5a);
+			LAB_8007d6ec((Mtx44Ptr)modelMatrix, modelInstance,
+				animInstance, object->frame1,
+				0x7f, 0, 0, 0, 7,
+				animInstance2->unk58);
+			LAB_8007d6ec((Mtx44Ptr)modelMatrix, modelInstance,
+				animInstance, object->frame1,
+				0x7f, 0, 1, 1, 1,
+				animInstance->unk58);
+		} else {
+			LAB_8007d540((Mtx44Ptr)modelMatrix, modelInstance,
+				modelInstance->animInstances[0],
+			    object->frame1, 0x7f);
+			if(modelInstance->animInstances[1] && (-1 < object->curAnimId)) {
+				LAB_8007d540((Mtx44Ptr)modelMatrix, modelInstance,
+				    modelInstance->animInstances[1],
+				    object->frame2,-1);
+			}
+		}
+	}
+}
 
 //void tiltListFn_8007ebe8(int param1,int param2,int param3) { //8007EBE8
 
