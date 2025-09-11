@@ -81,7 +81,7 @@ void unloadAnimation(Animation *anim);
 void objAnimFn_8008045c(double param_1,double scale,ModelInstance *mInst,int whichBuf,int animIdx,Vec *outPos,S16Vec *outRot);
 void LAB_8008086c(ModelInstance *param_1,int param_2,ObjInstance *param_3,Mtx *param_4,ObjInstance *param_5);
 void vtxAnimFn80080A50(ModelInstance *modelInstance);
-void vtxAnimFn_800279cc(ModelInstance *modelInstance,int param_3,int param_4,int param_5,float param_1,s8 param_6);
+void vtxAnimFn_80080adc(ModelInstance *modelInstance,int idx,int animIdx1,int animIdx2,float speed,s8 flags);
 void LAB_80080c00(double param_1,int *param_2,int param_3);
 void modelFn_80080c28(float scale, ModelInstance *modelInstance);
 void copyVtxsToModelInstance(ModelInstance *modelInstance);
@@ -774,12 +774,49 @@ void unloadAnimation(Animation *anim) { // 8008039C
 
 void vtxAnimFn80080A50(ModelInstance *modelInstance) {
 	if(!modelInstance->mod->vertexAnims) return;
-    vtxAnimFn_800279cc(modelInstance, 0, -1, -1, 0.0f, 7);
-    vtxAnimFn_800279cc(modelInstance, 1, -1, -1, 0.0f, 7);
-    vtxAnimFn_800279cc(modelInstance, 2, -1, -1, 0.0f, 7);
+    vtxAnimFn_80080adc(modelInstance, 0, -1, -1, 0.0f, 7);
+    vtxAnimFn_80080adc(modelInstance, 1, -1, -1, 0.0f, 7);
+    vtxAnimFn_80080adc(modelInstance, 2, -1, -1, 0.0f, 7);
 }
 
-//void vtxAnimFn_800279cc(ModelInstance *modelInstance,int param_3,int param_4,int param_5,float param_1,s8 param_6) { //80080ADC
+void vtxAnimFn_80080adc(ModelInstance *modelInstance, int idx,
+int animIdx1, int animIdx2, float speed, s8 flags) { // 80080ADC
+	ModelInstanceField20 *field20;
+
+	if(idx > 2) return;
+	if(!modelInstance->mod->vertexAnims) {
+		STUBBED_OP(modelInstance);
+		return;
+	}
+	if(animIdx1 < -1) return;
+	if(animIdx2 < -1) return;
+	if(animIdx1 >= modelInstance->mod->bCopyVtxsToModelInst) return;
+	if(animIdx2 >= modelInstance->mod->bCopyVtxsToModelInst) {
+		STUBBED_OP(modelInstance);
+		return;
+	}
+
+	field20 = modelInstance->unk20 + idx;
+	if((animIdx1 == -1) && (animIdx2 == -1)) {
+		if((field20->animsIdx1 == -1) && (field20->animsIdx2 == -1)) {
+			return;
+		}
+		flags |= 6;
+	}
+	else {
+		STUBBED_OP(modelInstance);
+		return;
+	}
+	if((field20->animsIdx1 != animIdx1)
+		|| (field20->animsIdx2 != animIdx2)) {
+		field20->animsIdx1 = (s8)animIdx1;
+		field20->animsIdx2 = (s8)animIdx2;
+		if((flags & 0x10U) == 0) { field20->pos = 0.0; }
+		field20->prevPos = -1.0;
+		field20->speed = speed;
+		field20->flags = flags | 4;
+	}
+}
 
 void fn_80080bdc(float pos, ModelInstance *modelInstance, int idx) { // 80080BDC
 	ModelInstanceField20 *field20;
