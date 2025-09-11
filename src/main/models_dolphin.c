@@ -796,23 +796,22 @@ int animIdx1, int animIdx2, float speed, s8 flags) { // 80080ADC
 		return;
 	}
 
-	field20 = modelInstance->unk20 + idx;
-	if((animIdx1 == -1) && (animIdx2 == -1)) {
-		if((field20->animsIdx1 == -1) && (field20->animsIdx2 == -1)) {
-			return;
-		}
+	field20 = &modelInstance->unk20[idx];
+	if(animIdx1 != -1 || animIdx2 != -1) {
+		/* do nothing */
+	}
+	else if(field20->animsIdx1 != -1 || field20->animsIdx2 != -1) {
 		flags |= 6;
 	}
 	else {
-		STUBBED_OP(modelInstance);
 		return;
 	}
 	if((field20->animsIdx1 != animIdx1)
-		|| (field20->animsIdx2 != animIdx2)) {
-		field20->animsIdx1 = (s8)animIdx1;
-		field20->animsIdx2 = (s8)animIdx2;
-		if((flags & 0x10U) == 0) { field20->pos = 0.0; }
-		field20->prevPos = -1.0;
+	|| (field20->animsIdx2 != animIdx2)) {
+		field20->animsIdx1 = animIdx1;
+		field20->animsIdx2 = animIdx2;
+		if((flags & 0x10) == 0) { field20->pos = 0.0f; }
+		field20->prevPos = -1.0f;
 		field20->speed = speed;
 		field20->flags = flags | 4;
 	}
