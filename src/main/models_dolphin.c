@@ -46,8 +46,8 @@ undefined4 Model_makeModelAnimation(Model *model,uint animId,HitSpherePos *hits)
 void modelSetupAnims(ModelInstance *modelInstance,AnimInstance *animInstance);
 void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 param_4);
 void LAB_8007d540(Mtx44Ptr modelMatrix,ModelInstance *modelInstance,AnimInstance *animInstance,float frame,int param_5);
-void LAB_8007d6ec(Mtx44Ptr modelMatrix,ModelInstance *modelInstance,AnimInstance *animInstance,float frame,int param_5,u8 param_6,u8 param_7,s8 iJoint,uint flags,short param_10);
-void LAB_8007da34(int param_1,int param_2,int param_3);
+void fn_8007d678(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,AnimInstance *animInstance,float frame,undefined4 param_5, u8 param_6, u8 param_7,u8 iJoint, u8 flags, short param_10);
+void fn_8007d8e4(Model *model,AnimInstance *animInstance,int count);
 void initModels(void);
 ModelInstance * loadModelInstance(int id,uint flags);
 void modelInstanceFree(ModelInstance *modelInstance);
@@ -307,8 +307,62 @@ void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 para
 //void LAB_8007d540(double animTimer,float *modelMatrix,ModelInstance *modelInstance,
 //                 AnimInstance *animInstance,uint param_5) { //8007D1C4
 
-//void LAB_8007d6ec(double param_1,undefined4 param_2,int *param_3,int param_4,uint param_5,
-//                 uint param_6,uint param_7,s8 param_8,uint param_9,short param_10) { //8007D678
+s16 Tiltlist[];
+
+void fn_8007d678(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,
+AnimInstance *animInstance, float frame, undefined4 param_5, u8 param_6, u8 param_7,
+u8 iJoint, u8 flags, short param_10) { // 8007D678
+	Model *model;
+	int newFlags;
+	AnimInstance anim2;
+	Mtx44 *jMtx[2];
+
+	model = modelInstance->mod;
+	jMtx[0] = modelInstance->jMtxs[modelInstance->flags & 1];
+	if(flags & 0x10) {
+		animInstance->hitboxSize[0][0] = frame * animInstance->hitboxSize[2][0];
+	}
+	anim2.unk60[0] = animInstance->unk60[param_6];
+	anim2.hitboxSize[2][0] = animInstance->hitboxSize[2][param_6];
+	anim2.hitboxSize[0][0] = animInstance->hitboxSize[0][param_6];
+	anim2.joints[0] = animInstance->joints[param_6];
+	anim2.unk60[1] = animInstance->unk60[param_7];
+	anim2.hitboxSize[2][1] = animInstance->hitboxSize[2][param_7];
+	anim2.hitboxSize[0][1] = animInstance->hitboxSize[0][param_7];
+	anim2.joints[1] = animInstance->joints[iJoint];
+	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+		anim2.iJoint[0] = 0;
+		anim2.iJoint[1] = 1;
+		anim2.animData[0]
+		    = animInstance->animData[animInstance->iJoint[param_6]];
+		if(iJoint < 2) {
+			anim2.animData[1]
+			    = animInstance->animData[animInstance->iJoint[iJoint]];
+		} else {
+			anim2.animData[1]
+			    = animInstance->animData[animInstance->iJoint[iJoint]];
+		}
+	} else {
+		anim2.iJoint[0] = animInstance->iJoint[param_6];
+		anim2.iJoint[1] = animInstance->iJoint[iJoint];
+	}
+	if(param_10 == 0) { param_10 = 1; }
+	anim2.unk58 = param_10;
+	fn_8007d8e4(model, &anim2, 2);
+	newFlags = flags & 0xf;
+	if(!(newFlags & 0xc)) {
+		if((animInstance->flags63 & 1) != 0) { newFlags |= 0x10; }
+		if((animInstance->flags63 & 4) != 0) { newFlags |= 0x20; }
+	}
+	FUN_80065ff8(jMtx,
+	    modelMatrix,
+	    &anim2,
+	    model->joints,
+	    (uint)model->numJoints,
+	    Tiltlist,
+	    param_5,
+	    newFlags);
+}
 
 void fn_8007D8E4(Model *model, AnimInstance *animInst, int count) { // 8007D8E4
 	float hitboxSize;
@@ -608,19 +662,19 @@ ObjInstance *object, Mtx44 *modelMatrix) { // 8007E974
 	} else {
 		if(modelInstance->animInstances[0]->flags63 & 8) {
 			animInstance2 = modelInstance->animInstances[1];
-			LAB_8007d6ec((Mtx44Ptr)modelMatrix, modelInstance,
+			fn_8007d678((Mtx44Ptr)modelMatrix, modelInstance,
 				animInstance, object->frame1,
 				0x7f, 0, 0, 2, 0x14,
 				animInstance->unk5a);
-			LAB_8007d6ec((Mtx44Ptr)modelMatrix, modelInstance,
+			fn_8007d678((Mtx44Ptr)modelMatrix, modelInstance,
 				animInstance2, object->frame2,
 				0x7f, 0, 0, 2, 0x18,
 				animInstance2->unk5a);
-			LAB_8007d6ec((Mtx44Ptr)modelMatrix, modelInstance,
+			fn_8007d678((Mtx44Ptr)modelMatrix, modelInstance,
 				animInstance, object->frame1,
 				0x7f, 0, 0, 0, 7,
 				animInstance2->unk58);
-			LAB_8007d6ec((Mtx44Ptr)modelMatrix, modelInstance,
+			fn_8007d678((Mtx44Ptr)modelMatrix, modelInstance,
 				animInstance, object->frame1,
 				0x7f, 0, 1, 1, 1,
 				animInstance->unk58);

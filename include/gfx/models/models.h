@@ -374,7 +374,7 @@ typedef struct {
     /* 0x5e */ short unk5e;
     /* 0x60 */ s8 unk60[2];
     /* 0x62 */ undefined unk62;
-    /* 0x63 */ u8 flags63;
+    /* 0x63 */ s8 flags63;
     /* 0x64 */ undefined unk64;
     /* 0x65 */ undefined unk65;
     /* 0x66 */ undefined unk66;
