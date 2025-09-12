@@ -50,7 +50,7 @@ undefined4 Model_makeModelAnimation(Model *model,uint animId,HitSpherePos *hits)
 void modelSetupAnims(ModelInstance *modelInstance,AnimInstance *animInstance);
 void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 param_4);
 void LAB_8007d540(Mtx44Ptr modelMatrix,ModelInstance *modelInstance,AnimInstance *animInstance,float frame,int param_5);
-void fn_8007d678(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,AnimInstance *animInstance,float frame,undefined4 param_5, u8 param_6, u8 param_7,u8 iJoint, u8 flags, short param_10);
+void tiltListFn_8007d678(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,AnimInstance *animInstance,float frame,undefined4 param_5, u8 param_6, u8 param_7,u8 iJoint, u8 flags, short param_10);
 void fn_8007d8e4(Model *model,AnimInstance *animInstance,int count);
 void initModels(void);
 ModelInstance * loadModelInstance(int id,uint flags);
@@ -311,7 +311,7 @@ void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 para
 //void LAB_8007d540(double animTimer,float *modelMatrix,ModelInstance *modelInstance,
 //                 AnimInstance *animInstance,uint param_5) { //8007D1C4
 
-void fn_8007d678(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,
+void tiltListFn_8007d678(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,
 AnimInstance *animInstance, float frame, undefined4 param_5, u8 iJoint1, u8 iJoint2,
 u8 iJoint3, u8 flags, short unk58) { // 8007D678
 	Model *model;
@@ -655,19 +655,19 @@ ObjInstance *object, Mtx44 *modelMatrix) { // 8007E974
 	} else {
 		if(modelInstance->animInstances[0]->flags63 & 8) {
 			animInstance2 = modelInstance->animInstances[1];
-			fn_8007d678((Mtx44Ptr)modelMatrix, modelInstance,
+			tiltListFn_8007d678((Mtx44Ptr)modelMatrix, modelInstance,
 				animInstance, object->frame1,
 				0x7f, 0, 0, 2, 0x14,
 				animInstance->unk5a);
-			fn_8007d678((Mtx44Ptr)modelMatrix, modelInstance,
+			tiltListFn_8007d678((Mtx44Ptr)modelMatrix, modelInstance,
 				animInstance2, object->frame2,
 				0x7f, 0, 0, 2, 0x18,
 				animInstance2->unk5a);
-			fn_8007d678((Mtx44Ptr)modelMatrix, modelInstance,
+			tiltListFn_8007d678((Mtx44Ptr)modelMatrix, modelInstance,
 				animInstance, object->frame1,
 				0x7f, 0, 0, 0, 7,
 				animInstance2->unk58);
-			fn_8007d678((Mtx44Ptr)modelMatrix, modelInstance,
+			tiltListFn_8007d678((Mtx44Ptr)modelMatrix, modelInstance,
 				animInstance, object->frame1,
 				0x7f, 0, 1, 1, 1,
 				animInstance->unk58);
