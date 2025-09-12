@@ -357,8 +357,9 @@ typedef struct {
 #define AnimInstance_MAX_JOINTS 4
 typedef struct {
     /* 0x00 */ Model *model;
-    /* 0x04 */ float hitboxSize[3][2];
-    /* 0x1c */ AmapBinEntry *animData[AnimInstance_MAX_ANIMS];
+    /* 0x04 */ float hitboxSize[3][2]; //related to joints, might not be size
+    /* 0x1c */ AmapBinEntry *animData[2];
+    /* 0x24 */ AmapBinEntry *animData2[2];
     /* 0x2c */ undefined4 unk2c;
     /* 0x30 */ int unk30;
     /* 0x34 */ Bone *joints[AnimInstance_MAX_JOINTS];
@@ -372,8 +373,8 @@ typedef struct {
     /* 0x5a */ short unk5a;
     /* 0x5c */ short unk5c;
     /* 0x5e */ short unk5e;
-    /* 0x60 */ s8 unk60[2];
-    /* 0x62 */ undefined unk62;
+    /* 0x60 */ s8 unk60[2]; //related to joints
+    /* 0x62 */ undefined unk62; //possibly part of unk60
     /* 0x63 */ s8 flags63;
     /* 0x64 */ undefined unk64;
     /* 0x65 */ undefined unk65;

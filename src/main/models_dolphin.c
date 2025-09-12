@@ -24,6 +24,9 @@ int DAT_80398a10;
 int DWORD_80398a14;
 int DWORD_80398a18;
 
+#define TILTLIST_MAX 44
+s16 Tiltlist[TILTLIST_MAX]; //80357698
+
 int maxModelNum; //80398a20
 s16 *globalModAnimBuffer; //80398a24
 int *pAmapTab; //int[8] @ 80398a28
@@ -37,6 +40,7 @@ Texture * textureLoad(int id,int param_2);
 void * getTable(DataFileId32 file);
 void loadModelsBin(uint offset,int *outNAnimations,uint *outAnimCacheSize,
 	BOOL *outNoAmap,int *outSize,int id);
+void FUN_80065ff8(Mtx44 **pjMtx,Mtx44Ptr modelMatrix,AnimInstance *animInstance,Bone *joints,int numJoints,undefined2 *tiltList,int param_7,u32 flags);
 
 void *loadModelInstanceAsset(int id, void *buf);
 ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
@@ -307,61 +311,50 @@ void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 para
 //void LAB_8007d540(double animTimer,float *modelMatrix,ModelInstance *modelInstance,
 //                 AnimInstance *animInstance,uint param_5) { //8007D1C4
 
-s16 Tiltlist[];
-
 void fn_8007d678(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,
-AnimInstance *animInstance, float frame, undefined4 param_5, u8 param_6, u8 param_7,
-u8 iJoint, u8 flags, short param_10) { // 8007D678
+AnimInstance *animInstance, float frame, undefined4 param_5, u8 iJoint1, u8 iJoint2,
+u8 iJoint3, u8 flags, short unk58) { // 8007D678
 	Model *model;
-	int newFlags;
+	Mtx44 *jMtx;
 	AnimInstance anim2;
-	Mtx44 *jMtx[2];
 
 	model = modelInstance->mod;
-	jMtx[0] = modelInstance->jMtxs[modelInstance->flags & 1];
+	jMtx = modelInstance->jMtxs[modelInstance->flags & 1];
 	if(flags & 0x10) {
 		animInstance->hitboxSize[0][0] = frame * animInstance->hitboxSize[2][0];
 	}
-	anim2.unk60[0] = animInstance->unk60[param_6];
-	anim2.hitboxSize[2][0] = animInstance->hitboxSize[2][param_6];
-	anim2.hitboxSize[0][0] = animInstance->hitboxSize[0][param_6];
-	anim2.joints[0] = animInstance->joints[param_6];
-	anim2.unk60[1] = animInstance->unk60[param_7];
-	anim2.hitboxSize[2][1] = animInstance->hitboxSize[2][param_7];
-	anim2.hitboxSize[0][1] = animInstance->hitboxSize[0][param_7];
-	anim2.joints[1] = animInstance->joints[iJoint];
+	anim2.unk60[0] = animInstance->unk60[iJoint1];
+	anim2.hitboxSize[2][0] = animInstance->hitboxSize[2][iJoint1];
+	anim2.hitboxSize[0][0] = animInstance->hitboxSize[0][iJoint1];
+	anim2.joints[0] = animInstance->joints[iJoint1];
+	anim2.unk60[1] = animInstance->unk60[iJoint2];
+	anim2.hitboxSize[2][1] = animInstance->hitboxSize[2][iJoint2];
+	anim2.hitboxSize[0][1] = animInstance->hitboxSize[0][iJoint2];
+	anim2.joints[1] = animInstance->joints[iJoint3];
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		anim2.iJoint[0] = 0;
 		anim2.iJoint[1] = 1;
-		anim2.animData[0]
-		    = animInstance->animData[animInstance->iJoint[param_6]];
-		if(iJoint < 2) {
-			anim2.animData[1]
-			    = animInstance->animData[animInstance->iJoint[iJoint]];
+		anim2.animData[0] = animInstance->animData[animInstance->iJoint[iJoint1]];
+		if(iJoint3 < 2) {
+			anim2.animData[1] = animInstance->animData[animInstance->iJoint[iJoint3]];
 		} else {
-			anim2.animData[1]
-			    = animInstance->animData[animInstance->iJoint[iJoint]];
+			anim2.animData[1] = animInstance->animData2[animInstance->iJoint[iJoint3]];
 		}
 	} else {
-		anim2.iJoint[0] = animInstance->iJoint[param_6];
-		anim2.iJoint[1] = animInstance->iJoint[iJoint];
+		anim2.iJoint[0] = animInstance->iJoint[iJoint1];
+		anim2.iJoint[1] = animInstance->iJoint[iJoint3];
 	}
-	if(param_10 == 0) { param_10 = 1; }
-	anim2.unk58 = param_10;
+	if(!unk58) unk58 = 1;
+	anim2.unk58 = unk58;
 	fn_8007d8e4(model, &anim2, 2);
-	newFlags = flags & 0xf;
-	if(!(newFlags & 0xc)) {
-		if((animInstance->flags63 & 1) != 0) { newFlags |= 0x10; }
-		if((animInstance->flags63 & 4) != 0) { newFlags |= 0x20; }
+	flags &= 0xf;
+	if(!(flags & 0xc)) {
+		if(animInstance->flags63 & 1) flags |= 0x10;
+		if(animInstance->flags63 & 4) flags |= 0x20;
 	}
-	FUN_80065ff8(jMtx,
-	    modelMatrix,
-	    &anim2,
-	    model->joints,
-	    (uint)model->numJoints,
-	    Tiltlist,
-	    param_5,
-	    newFlags);
+	FUN_80065ff8(&jMtx, modelMatrix, &anim2,
+	    model->joints, model->numJoints,
+	    Tiltlist, param_5, flags);
 }
 
 void fn_8007D8E4(Model *model, AnimInstance *animInst, int count) { // 8007D8E4
