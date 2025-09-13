@@ -338,7 +338,7 @@ typedef struct {
     /* 0x04 */ int hitSphereDataSize;
     /* 0x08 */ int unk08;
     /* 0x0c */ int nAnims;
-    /* 0x10 */ int unk10;
+    /* 0x10 */ int size10; //sizeof(AnimInstance), sometimes + mtxs
     /* 0x14 */ int animCacheSize;
     /* 0x18 */ int mtxSize;
 } AnimUnk;

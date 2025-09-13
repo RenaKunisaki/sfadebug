@@ -237,51 +237,46 @@ Model *model, int flags, AnimUnk *anim, BOOL bAlways0) { // 8007C9C0
 
 	if(model->numAnims) {
 		/* final: mtxSize = (model->nBones + model->nVtxGroups) * 0x80 */
-		anim->mtxSize = model->numJoints * 64 * 2;
+		anim->mtxSize = model->numJoints * sizeof(Mtx44) * 2;
 	}
 	else {
-		anim->mtxSize = 0x80;
+		anim->mtxSize = 0x80; //possibly sizeof(AmapBinEntry)
 	}
 
 	if(model->bCopyVtxsToModelInst || model->skin2Matrices) {
 		/* final: +0x20 => +0x60 */
-		anim->unk00 = model->numPositions * 2 * 6 + 0x20;
+		anim->unk00 = model->numPositions * 2 * sizeof(S16Vec) + 0x20;
 	} else {
 		anim->unk00 = 0;
 	}
 
-	anim->hitSphereDataSize = model->numHitSpheres * 16 * 2;
+	anim->hitSphereDataSize = model->numHitSpheres * sizeof(HitSpherePos) * 2;
 	anim->nAnims = 0;
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-		anim->animCacheSize = (int)model->animCacheSize;
-		while(anim->animCacheSize & 7) {
-			anim->animCacheSize = anim->animCacheSize + 1;
-		}
+		anim->animCacheSize = model->animCacheSize;
+		while(anim->animCacheSize & 7) anim->animCacheSize++;
 		anim->nAnims = anim->animCacheSize * 4;
 	}
-	anim->unk10 = 0x68;
+	anim->size10 = sizeof(AnimInstance);
 	if(flags & 0x80) {
-		anim->unk10 = anim->unk10 << 1;
-		anim->nAnims = anim->nAnims << 1;
+		anim->size10 *= 2;
+		anim->nAnims *= 2;
 	}
 	if((flags & 1) || model->bCopyVtxsToModelInst || bAlways0) {
-		anim->unk10 += 0x30;
-		result = 0x54;
-		result += anim->mtxSize;
-		result += anim->hitSphereDataSize;
-		result += anim->unk10;
-		result += anim->nAnims;
+		anim->size10 += 0x30; //sizeof(Mtx)? but these are Mtx44?
+		result = 0x54; //probably sizeof(ModelInstance)
+		result += anim->nAnims + anim->size10;
+		result += anim->mtxSize + anim->hitSphereDataSize + 8;
 	} else {
-		result =
-			anim->nAnims +
-			anim->mtxSize +
-			anim->hitSphereDataSize +
-			anim->unk10 +
-			0x5c;
+		//same as above but ordered different. why!?
+		result = 0x54;
+		result += anim->size10;
+		result += anim->nAnims + anim->mtxSize + anim->hitSphereDataSize + 8;
 	}
 	result += anim->unk00;
 	if(model->joints && model->numJoints && model->radi) {
-		result += (model->numJoints * 2) + (model->numJoints * 7) * 4 + 0x1c;
+		result += (model->numJoints * 2) + (model->numJoints * 7) * 4 +
+			0x1c; //possibly sizeof(AnimUnk)
 	}
 	if(model->skin2Matrices) {
 		result += model->skin.numPieces * 4 + 4;
