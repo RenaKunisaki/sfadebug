@@ -45,7 +45,7 @@ void FUN_80065ff8(Mtx44 **pjMtx,Mtx44Ptr modelMatrix,AnimInstance *animInstance,
 
 void *loadModelInstanceAsset(int id, void *buf);
 ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
-int Model_setupAnimInstance(Model *model,uint flags,AnimInstance *anim,int param4);
+int Model_setupAnimInstance(Model *model,int flags,AnimUnk *anim,BOOL bAlways0);
 int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations);
 undefined4 Model_makeModelAnimation(Model *model,uint animId,HitSpherePos *hits);
 void modelSetupAnims(ModelInstance *modelInstance,AnimInstance *animInstance);
@@ -231,7 +231,68 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 	return minst;
 }
 
-//int Model_setupAnimInstance(Model *model,uint flags,AnimInstance *anim,int param4) { //8007C9C0
+int Model_setupAnimInstance(
+Model *model, int flags, AnimUnk *anim, BOOL bAlways0) { // 8007C9C0
+	int result;
+
+	if(model->numAnims) {
+		/* final: mtxSize = (model->nBones + model->nVtxGroups) * 0x80 */
+		anim->mtxSize = model->numJoints * 64 * 2;
+	}
+	else {
+		anim->mtxSize = 0x80;
+	}
+
+	if(model->bCopyVtxsToModelInst || model->skin2Matrices) {
+		/* final: +0x20 => +0x60 */
+		anim->unk00 = model->numPositions * 2 * 6 + 0x20;
+	} else {
+		anim->unk00 = 0;
+	}
+
+	anim->hitSphereDataSize = model->numHitSpheres * 16 * 2;
+	anim->nAnims = 0;
+	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+		anim->animCacheSize = (int)model->animCacheSize;
+		while(anim->animCacheSize & 7) {
+			anim->animCacheSize = anim->animCacheSize + 1;
+		}
+		anim->nAnims = anim->animCacheSize * 4;
+	}
+	anim->unk10 = 0x68;
+	if(flags & 0x80) {
+		anim->unk10 = anim->unk10 << 1;
+		anim->nAnims = anim->nAnims << 1;
+	}
+	if((flags & 1) || model->bCopyVtxsToModelInst || bAlways0) {
+		anim->unk10 += 0x30;
+		result = 0x54;
+		result += anim->mtxSize;
+		result += anim->hitSphereDataSize;
+		result += anim->unk10;
+		result += anim->nAnims;
+	} else {
+		result =
+			anim->nAnims +
+			anim->mtxSize +
+			anim->hitSphereDataSize +
+			anim->unk10 +
+			0x5c;
+	}
+	result += anim->unk00;
+	if(model->joints && model->numJoints && model->radi) {
+		result += (model->numJoints * 2) + (model->numJoints * 7) * 4 + 0x1c;
+	}
+	if(model->skin2Matrices) {
+		result += model->skin.numPieces * 4 + 4;
+	}
+	result += model->numShaders * 8;
+	if(flags & 0x8000) result += 0x1a;
+
+	result = (result + 0x2f & ~0xf) + 0x10;
+	return result;
+}
+
 
 int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 	int result;

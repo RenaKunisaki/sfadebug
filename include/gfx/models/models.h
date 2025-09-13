@@ -334,7 +334,7 @@ typedef struct { //XXX populate
 } Animation;
 
 typedef struct {
-    /* 0x00 */ undefined4 unk00;
+    /* 0x00 */ undefined4 unk00; //model->numPositions * 2 * 6 + 0x20
     /* 0x04 */ int hitSphereDataSize;
     /* 0x08 */ int unk08;
     /* 0x0c */ int nAnims;
