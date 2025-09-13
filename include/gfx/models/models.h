@@ -297,14 +297,14 @@ typedef struct {
     /* 0x89 */ u8 unk89;
     /* 0x8a */ u8 unk8a;
     /* 0x8b */ u8 unk8b;
-    /* 0x8c */ FineSkinningPiece *posFineSkinningConfig; //aka skin2Matrices
+    /* 0x8c */ FineSkinningPiece *skin2Matrices; //aka posFineSkinningConfig; //aka skin2Matrices
     /* 0x90 */ UNKTYPE *skinWeights;
     /* 0x94 */ DisplayList *displayLists;
     /* 0x98 */ BitStream *renderStream;
     /* 0x9c */ u16 renderStreamLen;
     /* 0x9e */ u8 unk9e;
     /* 0x9f */ u8 unk9f;
-    /* 0xa0 */ undefined4 *vertexAnims;
+    /* 0xa0 */ UNKTYPE **vertexAnims; //likely points to some struct, using UNKTYPE** to satisfy checks for now
     /* 0xa4 */ u16 unka4;
     /* 0xa6 */ u16 shaderFlags; //ModelShaderFlags
     /* 0xa8 */ ushort numPositions;

@@ -66,8 +66,22 @@ and have just arbitrarily chosen x to be the statement.
 #define SHRT_MAX 32767
 #define PI 3.141593f
 
+/**
+ * @brief Given an object, convert `field`
+ *  from an offset (relative to the object)
+ *  to a pointer.
+ */
 #define OFFSET_TO_PTR(type, obj, field) \
     (obj)->field = (type*)((uint)(obj) + (uint)(obj)->field)
+
+/**
+ * @brief Given an object and a base address,
+ *  convert `field` from an offset (relative
+ *  to `base`) to a pointer.
+ * Used by model_setOffsets.
+ */
+#define OFFSET_TO_PTR2(type, obj, field, base) \
+    (obj)->field = (type*)((intptr_t)(base) + (intptr_t)(obj)->field)
 
 #define ADVANCE_PTR(ptr, size) \
     (ptr) = (void*)((uint)(ptr) + (size))

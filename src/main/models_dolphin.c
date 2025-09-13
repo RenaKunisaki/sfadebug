@@ -14,6 +14,7 @@
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"
 #include "sys/files.h"
+#include <stddef.h>
 
 //x, y, z but not S16Vec or array
 s16 objAnimVar_8039872c_x;
@@ -61,7 +62,7 @@ void Model_loadTextures(Model *model);
 void Model_freeTextures(Model *model);
 void Model_freeAnimations(Model *model);
 int Model_lookupModelInd(int id);
-void Model_initPtrs(Model *model);
+void Model_setOffsets(Model *model);
 void Model_initSkinningWeights(Model *model,ModelInstance *mInst);
 void Model_initShaders(Model *model);
 void modelAnimFn_8007e974(ModelInstance *modelInstance,Model *model,ObjInstance *object,Mtx44 *modelMatrix);
@@ -135,7 +136,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 	minst->jMtxs4C = minst->jMtxs[0];
 
 	if(model->bCopyVtxsToModelInst
-    || model->posFineSkinningConfig) {
+    || model->skin2Matrices) {
 		next = (void *)((int)next + 0x1f & ~0x1f);
 		minst->vertexPositions  = next; ADVANCE_PTR_BY(next,model->numPositions,S16Vec);
 		minst->vertexPositions2 = next; ADVANCE_PTR_BY(next,model->numPositions,S16Vec);
@@ -205,7 +206,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
         minst->skeleton = NULL;
 	}
 
-	if(model->posFineSkinningConfig) {
+	if(model->skin2Matrices) {
 		next = mmAlign4(next);
 		minst->skinVtxs = next; ADVANCE_PTR_BY(next,model->skin.numPieces,VertexPosition*);
 	}
@@ -574,20 +575,111 @@ int Model_lookupModelInd(int id) { // 8007E160
 	return id;
 }
 
-//void Model_initPtrs(Model *model) { //8007E1B8
+void Model_setOffsets(Model *model) { // 8007E1B8
+	int i;
+	void *modelEnd;
+	void *modelBase;
+
+	modelBase = (void*)model;
+	modelEnd  = (void *)((intptr_t)model + model->size);
+	ASSERTLINE(650, model);
+
+	if(model->sphereHits) {
+		OFFSET_TO_PTR2(HitSphere, model, sphereHits, modelBase);
+		ASSERTLINE(655, model->sphereHits>=modelBase && model->sphereHits<modelEnd);
+	}
+
+	if(model->joints) {
+		OFFSET_TO_PTR2(Bone, model, joints, modelBase);
+		ASSERTLINE(675, model->joints>=modelBase && model->joints<modelEnd);
+		if(model->radi) {
+			OFFSET_TO_PTR2(float, model, radi, modelBase);
+		    ASSERTLINE(679, model->radi>=modelBase && model->radi<modelEnd);
+		}
+		if(model->exT) {
+			OFFSET_TO_PTR2(float, model, exT, modelBase);
+		    ASSERTLINE(684, model->exT>=modelBase && model->exT<modelEnd);
+		}
+	}
+
+	if(model->GCtextures) {
+		OFFSET_TO_PTR2(Texture*, model, GCtextures, modelBase);
+	    ASSERTLINE(691, model->GCtextures>=modelBase && model->GCtextures<modelEnd);
+	}
+
+	OFFSET_TO_PTR2(S16Vec, model, vertexPositions, modelBase);
+	ASSERTLINE(694, model->vertexPositions>=modelBase && model->vertexPositions<modelEnd);
+
+	if(model->vertexNormals) {
+		OFFSET_TO_PTR2(S16Vec, model, vertexNormals, modelBase);
+	    ASSERTLINE(699, model->vertexNormals>=modelBase && model->vertexNormals<modelEnd);
+	}
+
+	if(model->vertexColours) {
+		OFFSET_TO_PTR2(u16, model, vertexColours, modelBase);
+	    ASSERTLINE(705, model->vertexColours>=modelBase && model->vertexColours<modelEnd);
+	}
+
+	OFFSET_TO_PTR2(S16Vec, model, vertexTexCoords, modelBase);
+	ASSERTLINE(709, model->vertexTexCoords>=modelBase && model->vertexTexCoords<modelEnd);
+
+	OFFSET_TO_PTR2(BitStream, model, renderStream, modelBase);
+	ASSERTLINE(711, model->renderStream>=modelBase && model->renderStream<modelEnd);
+
+	OFFSET_TO_PTR2(DisplayList, model, displayLists, modelBase);
+	ASSERTLINE(713, model->displayLists>=modelBase && model->displayLists<modelEnd);
+
+	if(model->vertexAnims) {
+		OFFSET_TO_PTR2(UNKTYPE*, model, vertexAnims, modelBase);
+	    ASSERTLINE(718, model->vertexAnims>=modelBase && model->vertexAnims<modelEnd);
+	}
+
+	if(model->skin2Matrices) {
+		OFFSET_TO_PTR2(FineSkinningPiece, model, skin2Matrices, modelBase);
+		ASSERTLINE(723, model->skin2Matrices>=modelBase && model->skin2Matrices<modelEnd);
+	}
+
+	if(model->skinWeights) {
+		OFFSET_TO_PTR2(UNKTYPE*, model, skinWeights, modelBase);
+	    ASSERTLINE(728, model->skinWeights>=modelBase && model->skinWeights<modelEnd);
+	}
+
+	if(model->shaders) {
+		OFFSET_TO_PTR2(Shader, model, shaders, modelBase);
+	    ASSERTLINE(733, model->shaders>=modelBase && model->shaders<modelEnd);
+	}
+
+	for(i = 0; i < model->numDisplayLists; i++) {
+		OFFSET_TO_PTR2(void, model, displayLists[i].displayList, modelBase);
+		ASSERTLINE(739, model->displayLists[i].displayList>=modelBase && model->displayLists [i].displayList<modelEnd);
+		ASSERTLINE(740, ((int)model->displayLists[i].displayList&0x1f)==0);
+	}
+	for(i = 0; i < model->bCopyVtxsToModelInst; i++) {
+		OFFSET_TO_PTR2(UNKTYPE**, model, vertexAnims[i], modelBase);
+		ASSERTLINE(745, model->vertexAnims[i]>=modelBase && model->vertexAnims[i]<modelEnd);
+	}
+	if(model->GCpolygons) {
+		OFFSET_TO_PTR2(GCPolygon, model, GCpolygons, modelBase);
+		ASSERTLINE(751, model->GCpolygons>=modelBase && model->GCpolygons<modelEnd);
+	}
+	if(model->polygonGroups) {
+		OFFSET_TO_PTR2(PolygonGroup, model, polygonGroups, modelBase);
+		ASSERTLINE(757, model->polygonGroups>=modelBase && model->polygonGroups<modelEnd);
+	}
+}
 
 void Model_initSkinningWeights(Model *model, ModelInstance *mInst) { // 8007E76C
 	int ii;
 
 	if(!(model->flags & ModelDataFlags2_CopyVtxsOnLoad)) return;
-	model->skin.sk2ListArray = model->posFineSkinningConfig;
+	model->skin.sk2ListArray = model->skin2Matrices;
 	for(ii = 0; ii < model->skin.numPieces; ii++) {
 		mInst->skinVtxs[ii] = (VertexPosition *)
-			((uint)mInst->vertexPositions + model->posFineSkinningConfig[ii].vertSrc);
-		if(model->posFineSkinningConfig[ii].weightsSrc < model->skinWeights) { //sus
-			model->posFineSkinningConfig[ii].weightsSrc =
+			((uint)mInst->vertexPositions + model->skin2Matrices[ii].vertSrc);
+		if(model->skin2Matrices[ii].weightsSrc < model->skinWeights) { //sus
+			model->skin2Matrices[ii].weightsSrc =
 				(UNKTYPE*)((uint)model->skinWeights +
-					(uint)model->posFineSkinningConfig[ii].weightsSrc);
+					(uint)model->skin2Matrices[ii].weightsSrc);
 		}
 	}
 }
