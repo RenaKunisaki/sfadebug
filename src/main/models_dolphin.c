@@ -575,6 +575,12 @@ int Model_lookupModelInd(int id) { // 8007E160
 	return id;
 }
 
+/**
+ * @brief Convert the offsets in a model to pointers.
+ *  Used after loading the model.
+ *
+ *  @param model The model.
+ */
 void Model_setOffsets(Model *model) { // 8007E1B8
 	int i;
 	void *modelEnd;
