@@ -30,24 +30,26 @@ s16 Tiltlist[TILTLIST_MAX]; //80357698
 
 int maxModelNum; //80398a20
 s16 *globalModAnimBuffer; //80398a24
-int *pAmapTab; //int[8] @ 80398a28
+int *pAmapTab; //s16[16] @ 80398a28, also accessed as int
 u32 *animOffsetTbl; //80398a2c
 UNKTYPE *globalModAnimBufferPlus0x810; //80398a30
 BOOL bHaveAnimTab; //80398a34
 SparseArray *modelsLoadedTable; //80398a38
 SparseArray *animsLoadedTable; //80398a3c
 
+void debugPrint(char *fmt,...);
 Texture * textureLoad(int id,int param_2);
 void * getTable(DataFileId32 file);
 void loadModelsBin(uint offset,int *outNAnimations,uint *outAnimCacheSize,
 	BOOL *outNoAmap,int *outSize,int id);
 void FUN_80065ff8(Mtx44 **pjMtx,Mtx44Ptr modelMatrix,AnimInstance *animInstance,Bone *joints,int numJoints,undefined2 *tiltList,int param_7,u32 flags);
+Animation * loadModelAnimation(Model *model,short id,short id2,void *dest);
 
 void *loadModelInstanceAsset(int id, void *buf);
 ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
 int Model_setupAnimInstance(Model *model,int flags,AnimUnk *anim,BOOL bAlways0);
 int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations);
-undefined4 Model_makeModelAnimation(Model *model,uint animId,HitSpherePos *hits);
+BOOL makeModelAnimation(Model *model,uint animId,void *hits);
 void modelSetupAnims(ModelInstance *modelInstance,AnimInstance *animInstance);
 void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 param_4);
 void LAB_8007d540(Mtx44Ptr modelMatrix,ModelInstance *modelInstance,AnimInstance *animInstance,float frame,int param_5);
@@ -310,7 +312,94 @@ int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 	return result;
 }
 
-//undefined4 Model_makeModelAnimation(Model *model,uint animId,HitSpherePos *hits) { //8007CC94
+BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
+	uint bank;
+	int nextId;
+	int thisId;
+	uint offset;
+	uint offsNext;
+	int iVar5;
+	int animBank;
+	int iVar6;
+	uint uVar7;
+	int size;
+	s16 *amap;
+
+	uVar7 = 0;
+	amap = (s16*)pAmapTab;
+	loadDataFileWithLength(FILE_MODANIM_TAB, amap, animId * 2, 0x10);
+	offset = amap[0];
+	offsNext = amap[1];
+	size = (offsNext - offset) / 2;
+	if(size != model->numAnims) {
+		printf("makeModelAnimation() size mismatch!! (%d,%d)\n", model->numAnims, size);
+		model->numAnims = size;
+	}
+	if(!model->numAnims) return FALSE;
+
+	size = model->numAnims * 2 + 8;
+	if(size > 0x800) {
+		debugPrint("Warning: Model animation buffer overflow!! size=%d\n", size);
+	}
+	loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, (animId & ~3) * 4, 0x20);
+	bank = animId & 3;
+	model->animOffset = pAmapTab[bank];
+	thisId = pAmapTab[bank];
+	nextId = pAmapTab[bank + 1] - thisId;
+	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+		model->animIds = (s16 *)hits;
+		while(size & 7) size++;
+		hits = (void*)((intptr_t)hits + size);
+		loadDataFileWithLength(FILE_MODANIM_BIN, model->animIds, offset, size);
+	} else {
+		loadDataFileWithLength(FILE_MODANIM_BIN, globalModAnimBuffer, offset, size);
+		model->animIds = globalModAnimBuffer;
+	}
+	model->animBank[0] = 0;
+	animBank = 1;
+	for(iVar6 = 0; iVar6 < model->numAnims; iVar6 += 1) {
+		iVar5 = animBank;
+		if(model->animIds[iVar6] == -1) {
+			iVar5 = animBank + 1;
+			model->animBank[animBank] = (short)iVar6 + 1;
+		}
+		animBank = iVar5;
+	}
+	if(8 < animBank) printf("ANIMBANK overflow\n");
+	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+		model->anims = NULL;
+	}
+	else {
+		model->animIds = NULL;
+		model->anims = (struct Animation **)hits;
+		hits = (void*)((intptr_t)hits + model->numAnims);
+		for(uVar7 += model->numAnims * 4; uVar7 & 7; uVar7 += 1) {
+			hits = (void*)((intptr_t)hits + 1);
+		}
+		model->curHitSpherePos = hits;
+		loadDataFileWithLength(FILE_AMAP_BIN, model->curHitSpherePos,
+			model->animOffset, nextId - thisId);
+		nextId = 0;
+		do {
+			if(globalModAnimBuffer[nextId] != -1) {
+				model->anims[nextId] = (struct Animation*)loadModelAnimation(
+					model, globalModAnimBuffer[nextId], (short)nextId, NULL);;
+				if(!model->anims[nextId]) {
+					for(thisId = 0; thisId < nextId; thisId++) {
+						unloadAnimation((Animation*)model->anims[thisId]);
+					}
+					model->anims = NULL;
+					return TRUE;
+				}
+			} else {
+				model->anims[nextId] = NULL;
+			}
+			nextId += 1;
+		} while(nextId < model->numAnims);
+		model->anims = NULL;
+	}
+	return FALSE;
+}
 
 void modelSetupAnims(
     ModelInstance *modelInstance, AnimInstance *animInstance) { // 8007CFA4
