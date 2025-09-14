@@ -277,6 +277,7 @@ typedef struct {
     /* 0x44 */ GCPolygon *GCpolygons;
     /* 0x48 */ PolygonGroup *polygonGroups;
     /* 0x4c */ struct Animation **anims;
+        //might just be u8[]
     /* 0x50 */ HitSpherePos *curHitSpherePos; //=hitSpherePositions[n] for current frame
     /* 0x54 */ s16 *animIds;
     /* 0x58 */ s16 animBank[8];

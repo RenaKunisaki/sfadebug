@@ -321,7 +321,7 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 	int iVar5;
 	int animBank;
 	int iVar6;
-	uint uVar7;
+	int uVar7;
 	int size;
 	s16 *amap;
 
@@ -366,19 +366,18 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 		animBank = iVar5;
 	}
 	if(8 < animBank) printf("ANIMBANK overflow\n");
-	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-		model->anims = NULL;
-	}
-	else {
+	if(!(model->flags & ModelDataFlags2_UseLocalModAnimTab)) {
 		model->animIds = NULL;
 		model->anims = (struct Animation **)hits;
-		hits = (void*)((intptr_t)hits + model->numAnims);
+		hits = (void*)((intptr_t)hits + model->numAnims * 4);
 		for(uVar7 += model->numAnims * 4; uVar7 & 7; uVar7 += 1) {
 			hits = (void*)((intptr_t)hits + 1);
 		}
 		model->curHitSpherePos = hits;
+		hits = (void*)((intptr_t)hits+nextId);
+		uVar7 += nextId;
 		loadDataFileWithLength(FILE_AMAP_BIN, model->curHitSpherePos,
-			model->animOffset, nextId - thisId);
+			model->animOffset, nextId);
 		nextId = 0;
 		do {
 			if(globalModAnimBuffer[nextId] != -1) {
@@ -396,6 +395,8 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 			}
 			nextId += 1;
 		} while(nextId < model->numAnims);
+	}
+	else {
 		model->anims = NULL;
 	}
 	return FALSE;
