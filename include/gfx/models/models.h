@@ -43,16 +43,6 @@ typedef enum {
     CreateModelInstanceFlags_TexturedShadow    = 0x8000,
 } CreateModelInstanceFlags;
 
-//The kiosk AMAP.BIN file looks like
-//it's just u8 unk[0x28]
-//but this seems to be something else,
-//maybe not AMAP.BIN at all.
-//see setupAnimInstance which allocates
-//either 0x80 or (numJoints << 7) bytes.
-typedef struct {
-    s8 unk[0x80]; //maybe 0x48 or something else
-} AmapBinEntry;
-
 typedef struct {
     s16 x;
     s16 y;
@@ -288,7 +278,13 @@ typedef struct {
     /* 0x48 */ PolygonGroup *polygonGroups;
     /* 0x4c */ struct Animation **anims;
     /* 0x50 */ //HitSpherePos *curHitSpherePos; //=hitSpherePositions[n] for current frame
-    /* 0x50 */ AmapBinEntry **amap; //related to joint anims
+    //The kiosk AMAP.BIN file looks like
+    //it's just u8 unk[0x28]
+    //but this seems to be something else,
+    //maybe not AMAP.BIN at all.
+    //see setupAnimInstance which allocates
+    //either 0x80 or (numJoints << 7) bytes.
+    /* 0x50 */ s8 **amap; //related to joint anims
     /* 0x54 */ s16 *animIds;
     /* 0x58 */ s16 animBank[8];
     /* 0x68 */ u32 animOffset;
@@ -359,8 +355,8 @@ typedef struct {
 typedef struct {
     /* 0x00 */ Model *model;
     /* 0x04 */ float hitboxSize[3][2]; //related to joints, might not be size
-    /* 0x1c */ AmapBinEntry *animData[2];
-    /* 0x24 */ AmapBinEntry *animData2[2];
+    /* 0x1c */ s8 *animData[2];
+    /* 0x24 */ s8 *animData2[2];
     /* 0x2c */ undefined4 unk2c;
     /* 0x30 */ int unk30;
     /* 0x34 */ Bone *joints[AnimInstance_MAX_JOINTS];

@@ -508,7 +508,7 @@ u8 iJoint3, u8 flags, short unk58) { // 8007D678
 void fn_8007D8E4(Model *model, AnimInstance *animInst, int count) { // 8007D8E4
 	float hitboxSize;
 	Bone *bone;
-    AmapBinEntry *animData;
+    s8 *animData;
 	Animation *anim;
 	int ii;
 	int iJoint;
@@ -519,13 +519,13 @@ void fn_8007D8E4(Model *model, AnimInstance *animInst, int count) { // 8007D8E4
             animData = animInst->animData[animInst->iJoint[ii]];
 			anim = (Animation *)&animInst->animData[animInst->iJoint[ii]][1];
 		} else {
-			animData = (AmapBinEntry *)((int)&model->amap
+			animData = (s8 *)((int)&model->amap
 			    + (uint)animInst->iJoint[ii]
 			        * ((model->numJoints - 1 & ~7) + 8));
 			anim = (Animation*)model->anims[animInst->iJoint[ii]];
 		}
 		for(iJoint = 0; iJoint < model->numJoints; iJoint++) {
-			model->joints[iJoint].idx2[ii] = animData->unk[iJoint];
+			model->joints[iJoint].idx2[ii] = animData[iJoint];
 		}
 		joint = animInst->joints[ii]->idx2[0];
 		hitboxSize = (int)animInst->hitboxSize[0][ii];
@@ -931,78 +931,74 @@ ObjInstance *object, Mtx44 *modelMatrix) { // 8007E974
 
 void tiltListFn_8007ebe8(ObjInstance *object, ModelInstance *modelInstance,
 Model *model) { //8007EBE8
-	AmapBinEntry *amap;
-	int iVar2;
-	int iJoint;
-	ObjData *objdata;
-	int wVar3;
-	Joint *joint;
-	int idx;
+	int offsJoint;
 	u8 jointId;
+	ObjData *objdata;
+	int iList;
+	int offsList;
+	Joint *joint;
+	s8 *amap;
+	int iJoint;
 
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		amap = modelInstance->animInstances[0]->animData[
 			modelInstance->animInstances[0]->iJoint[0]];
 	} else {
-		//wtf is going on here?
-		amap = (AmapBinEntry *)
-           ((int)model->amap +
-           (uint)modelInstance->animInstances[0]->iJoint[0] *
-           ((model->numJoints - 1 & 0xfffffff8) + 8));
-		//amap = (AmapBinEntry *)&model->amap[
-        //    modelInstance->animInstances[0]->iJoint[0] *
-        //    	((model->numJoints - 1 & ~7) + 8)];
+		amap = (s8 *)(
+			(int)model->amap +
+			(uint)modelInstance->animInstances[0]->iJoint[0] *
+				((model->numJoints - 1 & ~7) + 8)
+			);
 	}
 	objdata = object->objdata;
-	iVar2 = 0;
-	idx = 0;
+	offsJoint = 0;
+	iList = 0;
 	for(iJoint = 0; iJoint < objdata->nJoints; iJoint += 1) {
-		jointId = objdata->joints[iVar2 + object->modelno + 1];
+		jointId = objdata->joints[offsJoint + object->modelno + 1];
 		if(jointId != 0xff) {
 			joint = &object->joints[iJoint];
-			//and wtf is going on here?
-			wVar3 = ((int) *(s8 *)((int)amap + (uint)jointId) * 64);
+			offsList = ((s8*)amap)[jointId] * 64;
 			if(joint->unk00.x != 0) {
-				Tiltlist[idx++] = wVar3;
-				Tiltlist[idx++] = (joint->unk00).x;
+				Tiltlist[iList++] = offsList;
+				Tiltlist[iList++] = (joint->unk00).x;
 			}
 			if(joint->unk00.y != 0) {
-				Tiltlist[idx++] = wVar3 + 2;
-				Tiltlist[idx++] = (joint->unk00).y;
+				Tiltlist[iList++] = offsList + 2;
+				Tiltlist[iList++] = (joint->unk00).y;
 			}
 			if(joint->unk00.z != 0) {
-				Tiltlist[idx++] = wVar3 + 4;
-				Tiltlist[idx++] = (joint->unk00).z;
+				Tiltlist[iList++] = offsList + 4;
+				Tiltlist[iList++] = (joint->unk00).z;
 			}
 			if(joint->unk06 != 0) {
-				Tiltlist[idx++] = wVar3 + 0xc;
-				Tiltlist[idx++] = joint->unk06;
+				Tiltlist[iList++] = offsList + 0xc;
+				Tiltlist[iList++] = joint->unk06;
 			}
 			if(joint->unk08 != 0) {
-				Tiltlist[idx++] = wVar3 + 0xe;
-				Tiltlist[idx++] = joint->unk08;
+				Tiltlist[iList++] = offsList + 0xe;
+				Tiltlist[iList++] = joint->unk08;
 			}
 			if(joint->unk0a != 0) {
-				Tiltlist[idx++] = wVar3 + 0x10;
-				Tiltlist[idx++] = joint->unk0a;
+				Tiltlist[iList++] = offsList + 0x10;
+				Tiltlist[iList++] = joint->unk0a;
 			}
 			if(joint->unk0c != 0) {
-				Tiltlist[idx++] = wVar3 + 0x18;
-				Tiltlist[idx++] = joint->unk0c;
+				Tiltlist[iList++] = offsList + 0x18;
+				Tiltlist[iList++] = joint->unk0c;
 			}
 			if(joint->unk0e != 0) {
-				Tiltlist[idx++] = wVar3 + 0x1a;
-				Tiltlist[idx++] = joint->unk0e;
+				Tiltlist[iList++] = offsList + 0x1a;
+				Tiltlist[iList++] = joint->unk0e;
 			}
 			if(joint->unk10 != 0) {
-				Tiltlist[idx++] = wVar3 + 0x1c;
-				Tiltlist[idx++] = joint->unk10;
+				Tiltlist[iList++] = offsList + 0x1c;
+				Tiltlist[iList++] = joint->unk10;
 			}
 		}
-		iVar2 += objdata->noframes + 1;
+		offsJoint += objdata->noframes + 1;
 	}
-	Tiltlist[idx] = 0x1000;
-	if(idx >= 43) { printf("Warning! Tiltlist overflow!!\n"); }
+	Tiltlist[iList] = 0x1000;
+	if(iList >= TILTLIST_MAX+1) { printf("Warning! Tiltlist overflow!!\n"); }
 	return;
 }
 
