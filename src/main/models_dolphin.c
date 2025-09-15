@@ -243,7 +243,7 @@ Model *model, int flags, AnimUnk *anim, BOOL bAlways0) { // 8007C9C0
 		anim->mtxSize = model->numJoints * sizeof(Mtx44) * 2;
 	}
 	else {
-		anim->mtxSize = 0x80; //possibly sizeof(AmapBinEntry)
+		anim->mtxSize = 0x80;
 	}
 
 	if(model->bCopyVtxsToModelInst || model->skin2Matrices) {
