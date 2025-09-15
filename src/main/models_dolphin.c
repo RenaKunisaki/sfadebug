@@ -44,6 +44,7 @@ void loadModelsBin(uint offset,int *outNAnimations,uint *outAnimCacheSize,
 	BOOL *outNoAmap,int *outSize,int id);
 void FUN_80065ff8(Mtx44 **pjMtx,Mtx44Ptr modelMatrix,AnimInstance *animInstance,Bone *joints,int numJoints,undefined2 *tiltList,int param_7,u32 flags);
 Animation * loadModelAnimation(Model *model,short id,short id2,void *dest);
+void * loadDataFileWithLength(DataFileId32 file,void *dest,uint offset,u32 len);
 
 void *loadModelInstanceAsset(int id, void *buf);
 ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
@@ -313,33 +314,34 @@ int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 }
 
 BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
-	uint bank;
-	int nextId;
-	int thisId;
-	uint offset;
-	uint offsNext;
-	int iVar5;
-	int animBank;
-	int iVar6;
-	int uVar7;
-	int size;
 	s16 *amap;
+	int bank;
+	int thisId;
+	int nextId;
+	int offset;
+	int offsNext;
+	int animBank;
+	int nAnims;
+	int size;
+	int ii;
+	int totalSize;
 
-	uVar7 = 0;
+	totalSize = 0;
 	amap = (s16*)pAmapTab;
 	loadDataFileWithLength(FILE_MODANIM_TAB, amap, animId * 2, 0x10);
 	offset = amap[0];
 	offsNext = amap[1];
-	size = (offsNext - offset) / 2;
-	if(size != model->numAnims) {
-		printf("makeModelAnimation() size mismatch!! (%d,%d)\n", model->numAnims, size);
-		model->numAnims = size;
+	size = offset;
+	nAnims = (offsNext - offset) >> 1;
+	if(nAnims != model->numAnims) {
+		printf("makeModelAnimation() size mismatch!! (%d,%d)\n", model->numAnims, nAnims);
+		model->numAnims = nAnims;
 	}
 	if(!model->numAnims) return FALSE;
 
-	size = model->numAnims * 2 + 8;
-	if(size > 0x800) {
-		debugPrint("Warning: Model animation buffer overflow!! size=%d\n", size);
+	nAnims = model->numAnims * 2 + 8;
+	if(nAnims > 0x800) {
+		debugPrint("Warning: Model animation buffer overflow!! size=%d\n", nAnims);
 	}
 	loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, (animId & ~3) * 4, 0x20);
 	bank = animId & 3;
@@ -348,53 +350,52 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 	nextId = pAmapTab[bank + 1] - thisId;
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		model->animIds = (s16 *)hits;
-		while(size & 7) size++;
-		hits = (void*)((intptr_t)hits + size);
-		loadDataFileWithLength(FILE_MODANIM_BIN, model->animIds, offset, size);
+		while(nAnims & 7) nAnims++;
+		totalSize += nAnims;
+		hits = (void*)((intptr_t)hits + nAnims);
+		//sus, using size as offset here
+		loadDataFileWithLength(FILE_MODANIM_BIN, model->animIds, size, nAnims);
 	} else {
-		loadDataFileWithLength(FILE_MODANIM_BIN, globalModAnimBuffer, offset, size);
+		loadDataFileWithLength(FILE_MODANIM_BIN, globalModAnimBuffer, size, nAnims);
 		model->animIds = globalModAnimBuffer;
 	}
-	model->animBank[0] = 0;
-	animBank = 1;
-	for(iVar6 = 0; iVar6 < model->numAnims; iVar6 += 1) {
-		iVar5 = animBank;
-		if(model->animIds[iVar6] == -1) {
-			iVar5 = animBank + 1;
-			model->animBank[animBank] = (short)iVar6 + 1;
+	animBank = 0;
+	model->animBank[animBank++] = 0;
+	for(ii = 0; ii < model->numAnims; ii += 1) {
+		if(model->animIds[ii] == -1) {
+			model->animBank[animBank++] = ii + 1;
 		}
-		animBank = iVar5;
 	}
 	if(8 < animBank) printf("ANIMBANK overflow\n");
 	if(!(model->flags & ModelDataFlags2_UseLocalModAnimTab)) {
 		model->animIds = NULL;
 		model->anims = (struct Animation **)hits;
 		hits = (void*)((intptr_t)hits + model->numAnims * 4);
-		for(uVar7 += model->numAnims * 4; uVar7 & 7; uVar7 += 1) {
+		for(totalSize += model->numAnims * 4; totalSize & 7; totalSize += 1) {
 			hits = (void*)((intptr_t)hits + 1);
 		}
 		model->curHitSpherePos = hits;
 		hits = (void*)((intptr_t)hits+nextId);
-		uVar7 += nextId;
+		totalSize += nextId;
 		loadDataFileWithLength(FILE_AMAP_BIN, model->curHitSpherePos,
 			model->animOffset, nextId);
-		nextId = 0;
+		nAnims = 0;
 		do {
-			if(globalModAnimBuffer[nextId] != -1) {
-				model->anims[nextId] = (struct Animation*)loadModelAnimation(
-					model, globalModAnimBuffer[nextId], (short)nextId, NULL);;
-				if(!model->anims[nextId]) {
-					for(thisId = 0; thisId < nextId; thisId++) {
-						unloadAnimation((Animation*)model->anims[thisId]);
+			if(globalModAnimBuffer[nAnims] != -1) {
+				model->anims[nAnims] = (struct Animation*)loadModelAnimation(
+					model, globalModAnimBuffer[nAnims], (short)nAnims, NULL);
+				if(!model->anims[nAnims]) {
+					for(bank = 0; bank < nAnims; bank++) {
+						unloadAnimation((Animation*)model->anims[bank]);
 					}
 					model->anims = NULL;
 					return TRUE;
 				}
 			} else {
-				model->anims[nextId] = NULL;
+				model->anims[nAnims] = NULL;
 			}
-			nextId += 1;
-		} while(nextId < model->numAnims);
+			nAnims += 1;
+		} while(nAnims < model->numAnims);
 	}
 	else {
 		model->anims = NULL;
