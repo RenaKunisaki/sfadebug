@@ -164,7 +164,8 @@ typedef struct {
     /* 0x04 */ float scale;
     /* 0x08 */ u32 *pModelList; //-> list of model IDs
     /* 0x0c */ TexturePtr textures;
-    /* 0x10 */ Joint *joints;
+    /* 0x10 */ //Joint *joints;
+    /* 0x10 */ u8 *joints;
     /* 0x14 */ void *unk14;
     /* 0x18 */ ObjSeqCmd *offset_0x18; //[OPTIONAL] a file containing functions
     /* 0x1c */ u16 *pSeq; //[OPTIONAL] -> seq IDs

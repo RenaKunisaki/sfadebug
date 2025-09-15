@@ -929,7 +929,85 @@ ObjInstance *object, Mtx44 *modelMatrix) { // 8007E974
 	}
 }
 
-//void tiltListFn_8007ebe8(int param1,int param2,int param3) { //8007EBE8
+void tiltListFn_8007ebe8(ObjInstance *object, ModelInstance *modelInstance,
+Model *model) { //8007EBE8
+	float *pfVar1;
+	int iVar2;
+	int iJoint;
+	ObjData *objdata;
+	short wVar3;
+	Joint *joint;
+	int idx;
+	u8 jointId;
+
+	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+		pfVar1 = (float *)modelInstance->animInstances[0]
+		             ->animData[modelInstance->animInstances[0]->iJoint[0]];
+	} else {
+		pfVar1 = (float *)((int)&model->curHitSpherePos->radius
+		    + (uint)modelInstance->animInstances[0]->iJoint[0]
+		        * ((model->numJoints - 1 & ~7) + 8));
+	}
+	objdata = object->objdata;
+	iVar2 = 0;
+	idx = 0;
+	for(iJoint = 0; iJoint < objdata->nJoints; iJoint += 1) {
+		jointId = objdata->joints[iVar2 + object->modelno + 1];
+		if(jointId != 0xff) {
+			joint = object->joints + iJoint;
+			wVar3 = (short)((int)*(char *)((int)pfVar1 + (uint)jointId) << 6);
+			if((joint->unk00).x != 0) {
+				Tiltlist[idx] = wVar3;
+				Tiltlist[idx + 1] = (joint->unk00).x;
+				idx += 2;
+			}
+			if((joint->unk00).y != 0) {
+				Tiltlist[idx] = wVar3 + 2;
+				Tiltlist[idx + 1] = (joint->unk00).y;
+				idx += 2;
+			}
+			if((joint->unk00).z != 0) {
+				Tiltlist[idx] = wVar3 + 4;
+				Tiltlist[idx + 1] = (joint->unk00).z;
+				idx += 2;
+			}
+			if(joint->unk06 != 0) {
+				Tiltlist[idx] = wVar3 + 0xc;
+				Tiltlist[idx + 1] = joint->unk06;
+				idx += 2;
+			}
+			if(joint->unk08 != 0) {
+				Tiltlist[idx] = wVar3 + 0xe;
+				Tiltlist[idx + 1] = joint->unk08;
+				idx += 2;
+			}
+			if(joint->unk0a != 0) {
+				Tiltlist[idx] = wVar3 + 0x10;
+				Tiltlist[idx + 1] = joint->unk0a;
+				idx += 2;
+			}
+			if(joint->unk0c != 0) {
+				Tiltlist[idx] = wVar3 + 0x18;
+				Tiltlist[idx + 1] = joint->unk0c;
+				idx += 2;
+			}
+			if(joint->unk0e != 0) {
+				Tiltlist[idx] = wVar3 + 0x1a;
+				Tiltlist[idx + 1] = joint->unk0e;
+				idx += 2;
+			}
+			if(joint->unk10 != 0) {
+				Tiltlist[idx] = wVar3 + 0x1c;
+				Tiltlist[idx + 1] = joint->unk10;
+				idx += 2;
+			}
+		}
+		iVar2 = objdata->noframes + iVar2 + 1;
+	}
+	Tiltlist[idx] = 0x1000;
+	if(44 < idx) { printf("Warning! Tiltlist overflow!!\n"); }
+	return;
+}
 
 void ModelInstance_loadShaders(ModelInstance *minst, ObjInstance *obj) { // 8007EE90
     int iShader;
