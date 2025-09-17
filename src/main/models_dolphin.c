@@ -17,6 +17,8 @@
 #include "sys/files.h"
 #include <stddef.h>
 
+//strings at 802eb690 - 802ec988
+
 //x, y, z but not S16Vec or array
 s16 objAnimVar_8039872c_x;
 s16 objAnimVar_8039872c_y;
@@ -124,7 +126,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
     AnimUnk animUnk;
 
 	if(!model) {
-		printf("WARNING _ createModelInstance called with NULL pointer\n");
+		printf("WARNING :: createModelInstance called with NULL pointer\n");
 		return NULL;
 	}
 	size = setupAnimInstance(model, flags, &animUnk, 0);
