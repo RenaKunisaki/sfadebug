@@ -269,7 +269,7 @@ typedef struct {
 } ObjHitsEntry_final;
 
 typedef struct {
-    u32 frame;
+    u32 frame[];
 } ObjHitsEntry;
 
 typedef enum { //u16

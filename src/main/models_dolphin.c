@@ -11,6 +11,7 @@
 #include "gfx/render.h"
 #include "gfx/models/models.h"
 #include "sys/dll.h"
+#include "obj/Objects.h"
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"
 #include "sys/files.h"
@@ -77,7 +78,7 @@ Mtx44* modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
 void modelInstSwapJmtxs(ModelInstance *modelInstance);
 void ModelInstance_setTexFuncPtr(ModelInstance *modelInstance,TexFuncPtr cb);
 TexFuncPtr ModelInstance_getTexFuncPtr(ModelInstance *modelInstance);
-void freezeModelFn_8007f184(undefined4 param_1,undefined4 param_2,char param3);
+//void freezeModelFn_8007f184(undefined4 param_1,undefined4 param_2,char param3);
 void ModelInstance_freeField48(ModelInstance *modelInstance);
 u16 modelGetFieldA4(Model *model);
 Shader* modelGetShader(Model *model,int shaderNum);
@@ -92,7 +93,7 @@ Animation * modelLoadAnimation(Model *model,int index,int id,void *dest);
 Animation * getAnimation(short id);
 void unloadAnimation(Animation *anim);
 void objAnimFn_8008045c(ModelInstance *mInst,int whichBuf,int animIdx,float param_1,float scale,Vec *outPos,S16Vec *outRot);
-void LAB_8008086c(ModelInstance *param_1,int param_2,ObjInstance *param_3,Mtx *param_4,ObjInstance *param_5);
+void fn_80080734(ModelInstance *modelInstance,Model *model,ObjInstance *object,Mtx44 *mtx,ObjInstance *parent);
 void vtxAnimFn80080A50(ModelInstance *modelInstance);
 void vtxAnimFn_80080adc(ModelInstance *modelInstance,int idx,int animIdx1,int animIdx2,float speed,s8 flags);
 void LAB_80080c00(double param_1,int *param_2,int param_3);
@@ -101,7 +102,7 @@ void copyVtxsToModelInstance(ModelInstance *modelInstance);
 void fn_8008102C(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf);
 void modelApplyBoneTransforms(S16Vec *vtxs,S16Vec *vtxs2,uint numPositions,short *anims1,short *anims2,int pos);
 BOOL countModels(void);
-void modelApplyBoneTransform(undefined4 *param_1,undefined4 *param_2,int param_3,short **param_4,short **param_5,int param_6,undefined4 param_7,int param_8);
+//void modelApplyBoneTransform(undefined4 *param_1,undefined4 *param_2,int param_3,short **param_4,short **param_5,int param_6,undefined4 param_7,int param_8);
 void LAB_80081578(void);
 void modelGetVtxPosFloat(Model *model,int positionNum,Vec *posVec);
 
@@ -161,7 +162,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 	}
 
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-		next = (void *)alignTo64((uint)next);
+		next = (void *)alignTo64(next);
 		anim = minst->animInstances[0];
 		anim->animData[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
         anim->animData[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
@@ -191,8 +192,8 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 
 	if(animUnk.hitSphereDataSize > 0) {
 		next = mmAlign4(next);
-		minst->hitSpheres[0] = next; ADVANCE_PTR_BY(next,model->numHitSpheres,HitSphere);
-		minst->hitSpheres[1] = next; ADVANCE_PTR_BY(next,model->numHitSpheres,HitSphere);
+		minst->hitSpheres[0] = next; ADVANCE_PTR_BY(next,model->numHitSpheres,RamHitSphere);
+		minst->hitSpheres[1] = next; ADVANCE_PTR_BY(next,model->numHitSpheres,RamHitSphere);
 		minst->activeHitSphere = minst->hitSpheres[0];
 	}
 
@@ -290,7 +291,6 @@ Model *model, int flags, AnimUnk *anim, BOOL bAlways0) { // 8007C9C0
 	result = (result + 0x2f & ~0xf) + 0x10;
 	return result;
 }
-
 
 int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 	int result;
@@ -1194,8 +1194,83 @@ void unloadAnimation(Animation *anim) { // 8008039C
 //void objAnimFn_8008045c(double param_1,double scale,ModelInstance *mInst,int whichBuf,int animIdx,
 //                       Vec *outPos,S16Vec *outRot) { //8008045C
 
-//void LAB_8008086c(ModelInstance *param_1,int param_2,ObjInstance *param_3,Mtx43 *param_4,
-//                 ObjInstance *param_5) { //80080734
+void fn_80080734(ModelInstance *modelInstance, Model *model,
+ObjInstance *object, Mtx44 *mtx, ObjInstance *parent) { // 80080734
+	Mtx44 *mtxTmp;
+	s16 fVar1;
+	int frameMax;
+	int frame;
+	int iSphere;
+	Vec pos;
+	uint curSphere;
+	uint uStack_3c;
+	ObjHitsEntry *hits;
+	float radius;
+
+	frame = 0;
+	if(parent->hits && parent->objdata->bDisableHits) {
+	    frameMax = parent->hits->objHitsSize >> 2;
+		if(frameMax > 0) {
+			hits = parent->hits->objHits;
+			frame = parent->frame1 * (float)frameMax;
+			if(frame >= frameMax) {
+				frame = frameMax - 1;
+			}
+			frame = hits->frame[frame];
+		}
+	}
+	if(object->hits) {
+		object->hits->state2 = object->hits->state2 + -1;
+		if(object->hits->state2 < 0) {
+			object->hits->state2 = 0;
+		}
+		object->hits->prevFrame = object->hits->frame;
+		object->hits->frame = frame;
+	}
+	modelInstance->flags ^= ModelFlags18_UseOtherHitboxes;
+	curSphere = modelInstance->flags >> 2 & 1;
+	modelInstance->activeHitSphere = modelInstance->hitSpheres[curSphere];
+	mtxTmp = mtx;
+	for(iSphere = 0; iSphere < model->numHitSpheres; iSphere++) {
+		if(!mtx) {
+			mtxTmp = modelInstGetjMtx(
+			    modelInstance, model->sphereHits[iSphere].bone);
+		}
+		if((iSphere == 0) && (parent != object)) {
+			pos.x = 0.0;
+			pos.y = 0.0;
+			pos.z = 0.0;
+			MTXMultVec(*mtxTmp, &pos, &pos);
+			(object->pos).pos.x = pos.x + playerMapOffsetX;
+			(object->pos).pos.y = pos.y;
+			(object->pos).pos.z = pos.z + playerMapOffsetZ;
+			objMultPosByMtx(object,
+			    &(object->prevPos).x,
+			    &(object->prevPos).y,
+			    &(object->prevPos).z);
+		}
+		pos.x = model->sphereHits[iSphere].pos.x;
+		pos.y = model->sphereHits[iSphere].pos.y;
+		pos.z = model->sphereHits[iSphere].pos.z;
+		radius = model->sphereHits[iSphere].radius;
+		modelInstance->activeHitSphere[iSphere].radius =
+			radius * parent->pos.scale;
+		MTXMultVec(*mtxTmp, &pos,
+			&(modelInstance->activeHitSphere[iSphere].pos));
+		if(parent->heldBy) {
+			multVectorByObjMtx(
+			    modelInstance->activeHitSphere[iSphere].pos.x,
+			    modelInstance->activeHitSphere[iSphere].pos.y,
+			    modelInstance->activeHitSphere[iSphere].pos.z,
+			    &modelInstance->activeHitSphere[iSphere].pos.x,
+			    &modelInstance->activeHitSphere[iSphere].pos.y,
+			    &modelInstance->activeHitSphere[iSphere].pos.z,
+			    parent->heldBy);
+			modelInstance->activeHitSphere[iSphere].pos.x -= playerMapOffsetX;
+			modelInstance->activeHitSphere[iSphere].pos.z -= playerMapOffsetX;
+		}
+	}
+}
 
 void vtxAnimFn80080A50(ModelInstance *modelInstance) {
 	if(!modelInstance->mod->vertexAnims) return;

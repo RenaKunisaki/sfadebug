@@ -32,8 +32,8 @@ typedef enum {
 
 typedef enum {
     ModelFlags18_UseOtherMtxs     =  1, //which index into jMtxs to use for double buffering
-    ModelFlags18_UseOtherVtxs     =  2,
-    ModelFlags18_UseOtherHitboxes =  4,
+    ModelFlags18_UseOtherVtxs     =  2, //which vtxs
+    ModelFlags18_UseOtherHitboxes =  4, //which hit spheres
     ModelFlags18_MtxsLoaded       =  8,
     ModelFlags18_ShadersLoaded    = 64,
 } ModelFlags18;
@@ -56,19 +56,20 @@ typedef struct {
 } GCPolygon;
 
 typedef struct {
-    /* 0x00 */ u16 bone; //bone idx
-    /* 0x02 */ u16 unk02; //always 0?
+    /* 0x00 */ float radius;
+    /* 0x04 */ Vec pos;
+} RamHitSphere; //hitbox in memory
+
+typedef struct {
+    /* 0x00 */ s16 bone; //bone idx
+    /* 0x02 */ s16 unk02; //always 0?
     /* 0x04 */ float radius;
     /* 0x08 */ Vec pos; //offset from bone
     /* 0x14 */ u8 unk14; //always 0?
     /* 0x15 */ u8 unk15; //always 0?
     /* 0x16 */ u8 unk16; //increments
     /* 0x17 */ u8 unk17; //same as 0x16?
-} HitSphere_FinalVer; //hitbox in model file
-
-typedef struct {
-    u8 unk[0x10];
-} HitSphere;
+} HitSphere; //hitbox in model file
 
 typedef struct {
     /* 0x00 */ void *displayList; //to raw GX commands
@@ -428,8 +429,8 @@ typedef struct {
     /* 0x2c */ ShaderDef *shaderDefs;
     /* 0x30 */ TexFuncPtr texFuncPtr;
     /* 0x34 */ VertexPosition **skinVtxs;
-    /* 0x38 */ HitSphere *hitSpheres[2];
-    /* 0x40 */ HitSphere *activeHitSphere;
+    /* 0x38 */ RamHitSphere *hitSpheres[2];
+    /* 0x40 */ RamHitSphere *activeHitSphere;
     /* 0x44 */ TexturedShadow *shadow;
     /* 0x48 */ void *unk48;
     /* 0x4c */ Mtx44 *jMtxs4C;
