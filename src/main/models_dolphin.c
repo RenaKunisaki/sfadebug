@@ -1196,39 +1196,37 @@ void unloadAnimation(Animation *anim) { // 8008039C
 
 void fn_80080734(ModelInstance *modelInstance, Model *model,
 ObjInstance *object, Mtx44 *mtx, ObjInstance *parent) { // 80080734
-	Mtx44 *mtxTmp;
-	s16 fVar1;
+	ObjHitsEntry *hits;
 	int frameMax;
+	uint curMtx; //set but not used
+	uint curSphere;
 	int frame;
+	int frame2;
 	int iSphere;
 	Vec pos;
-	uint curSphere;
-	uint uStack_3c;
-	ObjHitsEntry *hits;
+	Mtx44 *mtxTmp;
 	float radius;
 
-	frame = 0;
+	frame2 = 0;
 	if(parent->hits && parent->objdata->bDisableHits) {
 	    frameMax = parent->hits->objHitsSize >> 2;
 		if(frameMax > 0) {
 			hits = parent->hits->objHits;
-			frame = parent->frame1 * (float)frameMax;
-			if(frame >= frameMax) {
-				frame = frameMax - 1;
-			}
+			frame = parent->frame1 * frameMax;
+			if(frame >= frameMax) frame = frameMax - 1;
 			frame = hits->frame[frame];
+			frame2 = frame;
 		}
 	}
 	if(object->hits) {
-		object->hits->state2 = object->hits->state2 + -1;
-		if(object->hits->state2 < 0) {
-			object->hits->state2 = 0;
-		}
+		object->hits->state2--;
+		if(object->hits->state2 < 0) object->hits->state2 = 0;
 		object->hits->prevFrame = object->hits->frame;
-		object->hits->frame = frame;
+		object->hits->frame = frame2;
 	}
 	modelInstance->flags ^= ModelFlags18_UseOtherHitboxes;
-	curSphere = modelInstance->flags >> 2 & 1;
+	curSphere = modelInstance->flags >> 2 & 1; //ModelFlags18_UseOtherHitboxes
+	curMtx = modelInstance->flags & ModelFlags18_UseOtherMtxs;
 	modelInstance->activeHitSphere = modelInstance->hitSpheres[curSphere];
 	mtxTmp = mtx;
 	for(iSphere = 0; iSphere < model->numHitSpheres; iSphere++) {
@@ -1236,22 +1234,22 @@ ObjInstance *object, Mtx44 *mtx, ObjInstance *parent) { // 80080734
 			mtxTmp = modelInstGetjMtx(
 			    modelInstance, model->sphereHits[iSphere].bone);
 		}
-		if((iSphere == 0) && (parent != object)) {
-			pos.x = 0.0;
-			pos.y = 0.0;
-			pos.z = 0.0;
+		if(iSphere == 0 && parent != object) {
+			pos.x = 0.0f;
+			pos.y = 0.0f;
+			pos.z = 0.0f;
 			MTXMultVec(*mtxTmp, &pos, &pos);
-			(object->pos).pos.x = pos.x + playerMapOffsetX;
-			(object->pos).pos.y = pos.y;
-			(object->pos).pos.z = pos.z + playerMapOffsetZ;
+			object->pos.pos.x = pos.x + playerMapOffsetX;
+			object->pos.pos.y = pos.y;
+			object->pos.pos.z = pos.z + playerMapOffsetZ;
 			objMultPosByMtx(object,
 			    &(object->prevPos).x,
 			    &(object->prevPos).y,
 			    &(object->prevPos).z);
 		}
-		pos.x = model->sphereHits[iSphere].pos.x;
-		pos.y = model->sphereHits[iSphere].pos.y;
-		pos.z = model->sphereHits[iSphere].pos.z;
+		pos.x  = model->sphereHits[iSphere].pos.x;
+		pos.y  = model->sphereHits[iSphere].pos.y;
+		pos.z  = model->sphereHits[iSphere].pos.z;
 		radius = model->sphereHits[iSphere].radius;
 		modelInstance->activeHitSphere[iSphere].radius =
 			radius * parent->pos.scale;
