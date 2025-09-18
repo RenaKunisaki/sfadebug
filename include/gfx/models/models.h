@@ -7,6 +7,7 @@
 #include "gfx/models/hit.h"
 #include "gfx/models/shaders.h"
 #include "sys/SparseArray.h"
+#include "types.h"
 
 typedef u32 ModelFlags_loadCharacter;
 
@@ -337,7 +338,7 @@ typedef struct {
 typedef struct { //XXX populate
     /* 0x00 */ s8 usage; //reference count
     /* 0x01 */ u8 flags01;
-    /* 0x02 */ u8 sizeVar02[4]; //unsure of length
+    /* 0x02 */ s16 sizeVar02[4]; //unsure of length
     //...more...
 } Animation;
 
@@ -358,7 +359,7 @@ typedef struct {
     /* 0x04 */ float hitboxSize[3][2]; //related to joints, might not be size
     /* 0x1c */ s8 *animData[2];
     /* 0x24 */ s8 *animData2[2];
-    /* 0x2c */ undefined4 unk2c;
+    /* 0x2c */ UNKTYPE *unk2c;
     /* 0x30 */ int unk30;
     /* 0x34 */ Bone *joints[AnimInstance_MAX_JOINTS];
     /* 0x44 */ ushort iJoint[AnimInstance_MAX_JOINTS];

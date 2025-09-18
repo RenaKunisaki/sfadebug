@@ -18,6 +18,7 @@
 #include <stddef.h>
 
 //strings at 802eb690 - 802ec988
+//1280 -> 7c
 
 //x, y, z but not S16Vec or array
 s16 objAnimVar_8039872c_x;
@@ -94,7 +95,7 @@ Animation * loadAnimation(Model *model,short id,short id2,void *dest);
 Animation * modelLoadAnimation(Model *model,int index,int id,void *dest);
 Animation * getAnimation(short id);
 void unloadAnimation(Animation *anim);
-void objAnimFn_8008045c(ModelInstance *mInst,int whichBuf,int animIdx,float param_1,float scale,Vec *outPos,S16Vec *outRot);
+void objAnimFn_8008045c(ModelInstance *mInst, int which, int iJoint, float inScale, float outPosScale, Vec *outPos, S16Vec *outRot);
 void fn_80080734(ModelInstance *modelInstance,Model *model,ObjInstance *object,Mtx44 *mtx,ObjInstance *parent);
 void vtxAnimFn80080A50(ModelInstance *modelInstance);
 void vtxAnimFn_80080adc(ModelInstance *modelInstance,int idx,int animIdx1,int animIdx2,float speed,s8 flags);
@@ -1193,8 +1194,82 @@ void unloadAnimation(Animation *anim) { // 8008039C
     }
 }
 
-//void objAnimFn_8008045c(double param_1,double scale,ModelInstance *mInst,int whichBuf,int animIdx,
-//                       Vec *outPos,S16Vec *outRot) { //8008045C
+
+void objAnimFn_8008045c(ModelInstance *mInst, int which, int iJoint,
+float inScale, float outPosScale, Vec *outPos, S16Vec *outRot) { //8008045C
+	Bone *joint;
+	Animation *anim;
+	AnimInstance *animInstance;
+	double dVar1;
+	double dVar2;
+	short local_5c;
+	short local_5a;
+	short local_58;
+	undefined4 local_50;
+	uint uStack_4c;
+	undefined4 local_48;
+	uint uStack_44;
+	double local_40;
+	s8 animField2;
+	uint size;
+	float size2;
+
+	if(mInst->mod->numAnims == 0) {
+		outPos->x = 0.0;
+		outPos->y = 0.0;
+		outPos->z = 0.0;
+		outRot->x = 0;
+		outRot->y = 0;
+		outRot->z = 0;
+	}
+	if(which) {
+		animInstance = mInst->animInstances[1];
+	} else {
+		animInstance = mInst->animInstances[0];
+	}
+	joint = animInstance->joints[0];
+	animInstance->joints[0] = animInstance->joints[iJoint];
+	if(mInst->mod->flags & ModelDataFlags2_UseLocalModAnimTab) {
+		if(iJoint > 1) {
+			anim = (Animation *)&animInstance
+					->animData[animInstance->iJoint[iJoint]][1]
+					; //.field_0x38;
+		} else {
+			anim = (Animation *)&animInstance
+		           ->animData[animInstance->iJoint[iJoint]][1]
+		           ; //.field_0x38;
+		}
+	} else {
+		anim = (Animation*)mInst->mod->anims[animInstance->iJoint[iJoint]];
+	}
+	animInstance->hitboxSize[0][0]
+	    = (float)inScale * animInstance->hitboxSize[2][0];
+	animField2 = animInstance->joints[0]->idx[1];
+	size = animInstance->hitboxSize[0][0];
+	size2 = size;
+	if(size2 != animInstance->hitboxSize[0][0]) {
+		animInstance->sizeVar4c[0] = animField2;
+	} else {
+		animInstance->sizeVar4c[0] = 0;
+	}
+	if((animInstance->unk60[0] != 0)
+	    && (size2 == animInstance->hitboxSize[2][0] - 1.0f)) {
+		animInstance->sizeVar4c[0] = -(ushort)animField2 * (short)size;
+	}
+	animInstance->unk2c
+	    = &anim->usage + (int)anim->sizeVar02 + animField2 * size;
+	LAB_800658d0(animInstance, &local_5c, outRot);
+	animInstance->joints[0] = joint;
+	outPos->x = size * (1.0f / 512.0f);
+	outPos->y = size * (1.0f / 512.0f);
+	outPos->z = size * (1.0f / 512.0f);
+	outPos->x = outPos->x + (mInst->mod->joints->translation).x;
+	outPos->y = outPos->y + (mInst->mod->joints->translation).y;
+	outPos->z = outPos->z + (mInst->mod->joints->translation).z;
+	outPos->x = (float)((double)outPos->x * outPosScale);
+	outPos->y = (float)((double)outPos->y * outPosScale);
+	outPos->z = (float)((double)outPos->z * outPosScale);
+}
 
 void fn_80080734(ModelInstance *modelInstance, Model *model,
 ObjInstance *object, Mtx44 *mtx, ObjInstance *parent) { // 80080734
