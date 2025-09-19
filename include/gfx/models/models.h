@@ -335,12 +335,36 @@ typedef struct {
     /* 0xbc */ u8 maxLights;
 } Model;
 
-typedef struct { //XXX populate
+typedef struct {
+    /* 0x00 */ u8 totalBones;
+    /* 0x01 */ u8 totalKeyframes;
+    /* 0x02 */ u8 keyframeStride;
+    /* 0x03 */ u8 unk_0x9;
+    /** Encodes info about each bone component (SRT):
+    base value throughout animation,
+    the number of bits used in adding a delta to the
+    base per keyframe,
+    and whether TS components are also animated (bones
+    always have rotation component) */
+    /* 0x04 */ u16 animatedComponents; //array
+} AnimationHeader;
+
+typedef struct {
     /* 0x00 */ s8 usage; //reference count
     /* 0x01 */ u8 flags01;
-    /* 0x02 */ s16 sizeVar02[4]; //unsure of length
-    //...more...
+    /* 0x02 */ s16 keyframeOffset;
+    /** keyframes for the root translation of the model
+(used to map the anim playback progress based on character speed, e.g. during walk cycles) */
+    /* 0x04 */ s16 rootMotionOffset;
+    /* 0x06 */ AnimationHeader animHeader;
+    //size is likely 0xC
 } Animation;
+
+#define ANIMMAP_SIZE 0x80
+typedef struct {
+    u8 animMap[ANIMMAP_SIZE];
+    Animation animData[0]; //unknown size
+} AnimCache;
 
 typedef struct {
     /* 0x00 */ undefined4 unk00; //model->numPositions * 2 * 6 + 0x20
@@ -357,8 +381,8 @@ typedef struct {
 typedef struct {
     /* 0x00 */ Model *model;
     /* 0x04 */ float hitboxSize[3][2]; //related to joints, might not be size
-    /* 0x1c */ s8 *animData[2];
-    /* 0x24 */ s8 *animData2[2];
+    /* 0x1c */ AnimCache *cache[2];
+    /* 0x24 */ AnimCache *cache2[2];
     /* 0x2c */ UNKTYPE *unk2c;
     /* 0x30 */ int unk30;
     /* 0x34 */ Bone *joints[AnimInstance_MAX_JOINTS];
@@ -380,12 +404,6 @@ typedef struct {
     /* 0x66 */ undefined unk66;
     /* 0x67 */ undefined unk67;
 } AnimInstance;
-
-#define ANIMMAP_SIZE 0x80
-typedef struct {
-    u8 animMap[ANIMMAP_SIZE];
-    Animation animData[0]; //unknown size
-} AnimCache;
 
 typedef struct {
     /* 0x00 */ float pos;
@@ -415,7 +433,7 @@ typedef struct {
 typedef struct {
     /* 0x00 */ Model *mod;
     /* 0x04 */ S16Vec *vertexPositions2;
-    /* 0x08 */ s32 unk08;
+    /* 0x08 */ s32 unk08; //vertexPositions2[1]?
     /* 0x0c */ Mtx44 *jMtxs[2]; //joint matrices
         //obj->frames->jMtxs[(char)obj->modelno + -3]
         //is actually:

@@ -167,16 +167,16 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		next = (void *)alignTo64(next);
 		anim = minst->animInstances[0];
-		anim->animData[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-        anim->animData[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-		anim->animData[2] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-		anim->animData[3] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+		anim->cache[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+        anim->cache[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+		anim->cache[2] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+		anim->cache[3] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
 		if(minst->animInstances[1]) {
 			anim = minst->animInstances[1];
-			anim->animData[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-			anim->animData[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-			anim->animData[2] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-			anim->animData[3] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->cache[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->cache[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->cache[2] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->cache[3] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
 		}
 	}
 
@@ -423,12 +423,12 @@ void modelSetupAnims(
 	model = modelInstance->mod;
 	if(model->numAnims != 0) {
 		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-			loadModelAnimation(model, *model->animIds, 0, animInstance->animData[0]);
-			loadModelAnimation(model, *model->animIds, 0, animInstance->animData[1]);
-			loadModelAnimation(model, *model->animIds, 0, animInstance->animData[2]);
-			loadModelAnimation(model, *model->animIds, 0, animInstance->animData[3]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->cache[0]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->cache[1]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->cache[2]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->cache[3]);
 			animInstance->iJoint[0] = 0;
-			anim = (Animation *)&animInstance->animData[animInstance->iJoint[0]][1];
+			anim = (Animation *)&animInstance->cache[animInstance->iJoint[0]][1];
 		} else {
 			anim = (Animation*)model->anims[animInstance->iJoint[0]];
 		}
@@ -485,11 +485,11 @@ u8 iJoint3, u8 flags, short unk58) { // 8007D678
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		anim2.iJoint[0] = 0;
 		anim2.iJoint[1] = 1;
-		anim2.animData[0] = animInstance->animData[animInstance->iJoint[iJoint1]];
+		anim2.cache[0] = animInstance->cache[animInstance->iJoint[iJoint1]];
 		if(iJoint3 < 2) {
-			anim2.animData[1] = animInstance->animData[animInstance->iJoint[iJoint3]];
+			anim2.cache[1] = animInstance->cache[animInstance->iJoint[iJoint3]];
 		} else {
-			anim2.animData[1] = animInstance->animData2[animInstance->iJoint[iJoint3]];
+			anim2.cache[1] = animInstance->cache2[animInstance->iJoint[iJoint3]];
 		}
 	} else {
 		anim2.iJoint[0] = animInstance->iJoint[iJoint1];
@@ -511,7 +511,7 @@ u8 iJoint3, u8 flags, short unk58) { // 8007D678
 void fn_8007D8E4(Model *model, AnimInstance *animInst, int count) { // 8007D8E4
 	float hitboxSize;
 	Bone *bone;
-    s8 *animData;
+    AnimCache *animCache;
 	Animation *anim;
 	int ii;
 	int iJoint;
@@ -519,16 +519,16 @@ void fn_8007D8E4(Model *model, AnimInstance *animInst, int count) { // 8007D8E4
 
 	for(ii = 0; ii < count; ii++) {
 		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-            animData = animInst->animData[animInst->iJoint[ii]];
-			anim = (Animation *)&animInst->animData[animInst->iJoint[ii]][1];
+            animCache = animInst->cache[animInst->iJoint[ii]];
+			anim = (Animation *)&animInst->cache[animInst->iJoint[ii]][1];
 		} else {
-			animData = (s8 *)((int)&model->amap
+			animCache = (AnimCache *)((int)&model->amap
 			    + (uint)animInst->iJoint[ii]
 			        * ((model->numJoints - 1 & ~7) + 8));
 			anim = (Animation*)model->anims[animInst->iJoint[ii]];
 		}
 		for(iJoint = 0; iJoint < model->numJoints; iJoint++) {
-			model->joints[iJoint].idx2[ii] = animData[iJoint];
+			model->joints[iJoint].idx2[ii] = animCache->animMap[iJoint];
 		}
 		joint = animInst->joints[ii]->idx2[0];
 		hitboxSize = (int)animInst->hitboxSize[0][ii];
@@ -542,7 +542,8 @@ void fn_8007D8E4(Model *model, AnimInstance *animInst, int count) { // 8007D8E4
 			animInst->sizeVar4c[ii] = -joint * (int)hitboxSize;
 		}
 		animInst->joints[ii] = (Bone *)(&anim->usage
-		    + (int)anim->sizeVar02[joint] * (int)hitboxSize);
+		    + anim->keyframeOffset * (int)hitboxSize);
+		    //+ (int)anim->sizeVar02[joint] * (int)hitboxSize);
 	}
 }
 
@@ -940,14 +941,14 @@ Model *model) { //8007EBE8
 	int iList;
 	int offsList;
 	Joint *joint;
-	s8 *amap;
+	AnimCache *cache;
 	int iJoint;
 
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-		amap = modelInstance->animInstances[0]->animData[
+		cache = modelInstance->animInstances[0]->cache[
 			modelInstance->animInstances[0]->iJoint[0]];
 	} else {
-		amap = (s8 *)(
+		cache = (AnimCache *)(
 			(int)model->amap +
 			(uint)modelInstance->animInstances[0]->iJoint[0] *
 				((model->numJoints - 1 & ~7) + 8)
@@ -960,7 +961,7 @@ Model *model) { //8007EBE8
 		jointId = objdata->joints[offsJoint + object->modelno + 1];
 		if(jointId != 0xff) {
 			joint = &object->joints[iJoint];
-			offsList = ((s8*)amap)[jointId] * 64;
+			offsList = cache->animMap[jointId] * 64;
 			if(joint->unk00.x != 0) {
 				Tiltlist[iList++] = offsList;
 				Tiltlist[iList++] = (joint->unk00).x;
@@ -1200,18 +1201,9 @@ float inScale, float outPosScale, Vec *outPos, S16Vec *outRot) { //8008045C
 	Bone *joint;
 	Animation *anim;
 	AnimInstance *animInstance;
-	double dVar1;
-	double dVar2;
-	short local_5c;
-	short local_5a;
-	short local_58;
-	undefined4 local_50;
-	uint uStack_4c;
-	undefined4 local_48;
-	uint uStack_44;
-	double local_40;
-	s8 animField2;
-	uint size;
+	S16Vec local_5c;
+	uint iJoint1;
+	int size;
 	float size2;
 
 	if(mInst->mod->numAnims == 0) {
@@ -1222,53 +1214,50 @@ float inScale, float outPosScale, Vec *outPos, S16Vec *outRot) { //8008045C
 		outRot->y = 0;
 		outRot->z = 0;
 	}
-	if(which) {
-		animInstance = mInst->animInstances[1];
-	} else {
-		animInstance = mInst->animInstances[0];
-	}
+	if(which) animInstance = mInst->animInstances[1];
+	else      animInstance = mInst->animInstances[0];
 	joint = animInstance->joints[0];
 	animInstance->joints[0] = animInstance->joints[iJoint];
+
 	if(mInst->mod->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		if(iJoint > 1) {
-			anim = (Animation *)&animInstance
-					->animData[animInstance->iJoint[iJoint]][1]
-					; //.field_0x38;
+			anim = animInstance->cache2[animInstance->iJoint[iJoint]]->animData;
 		} else {
-			anim = (Animation *)&animInstance
-		           ->animData[animInstance->iJoint[iJoint]][1]
-		           ; //.field_0x38;
+			anim = animInstance->cache[animInstance->iJoint[iJoint]]->animData;
 		}
 	} else {
 		anim = (Animation*)mInst->mod->anims[animInstance->iJoint[iJoint]];
 	}
-	animInstance->hitboxSize[0][0]
-	    = (float)inScale * animInstance->hitboxSize[2][0];
-	animField2 = animInstance->joints[0]->idx[1];
+	animInstance->hitboxSize[0][0] = inScale *
+		animInstance->hitboxSize[2][0];
+	//XXX this is out of bounds, we probably have a wrong type
+	iJoint1 = animInstance->joints[0]->idx[2];
 	size = animInstance->hitboxSize[0][0];
 	size2 = size;
 	if(size2 != animInstance->hitboxSize[0][0]) {
-		animInstance->sizeVar4c[0] = animField2;
+		animInstance->sizeVar4c[0] = (s16)iJoint1;
 	} else {
 		animInstance->sizeVar4c[0] = 0;
 	}
-	if((animInstance->unk60[0] != 0)
-	    && (size2 == animInstance->hitboxSize[2][0] - 1.0f)) {
-		animInstance->sizeVar4c[0] = -(ushort)animField2 * (short)size;
+
+	if(animInstance->unk60[0] &&
+	(size2 == animInstance->hitboxSize[2][0] - 1.0f)) {
+		animInstance->sizeVar4c[0] = -iJoint1 * size;
 	}
-	animInstance->unk2c
-	    = &anim->usage + (int)anim->sizeVar02 + animField2 * size;
+	animInstance->unk2c = (UNKTYPE*)((uint)anim +
+		anim->keyframeOffset + iJoint1 * size);
+
 	LAB_800658d0(animInstance, &local_5c, outRot);
 	animInstance->joints[0] = joint;
-	outPos->x = size * (1.0f / 512.0f);
-	outPos->y = size * (1.0f / 512.0f);
-	outPos->z = size * (1.0f / 512.0f);
+	outPos->x = local_5c.x * (1.0f / 512.0f);
+	outPos->y = local_5c.y * (1.0f / 512.0f);
+	outPos->z = local_5c.z * (1.0f / 512.0f);
 	outPos->x = outPos->x + (mInst->mod->joints->translation).x;
 	outPos->y = outPos->y + (mInst->mod->joints->translation).y;
 	outPos->z = outPos->z + (mInst->mod->joints->translation).z;
-	outPos->x = (float)((double)outPos->x * outPosScale);
-	outPos->y = (float)((double)outPos->y * outPosScale);
-	outPos->z = (float)((double)outPos->z * outPosScale);
+	outPos->x = (outPos->x * outPosScale);
+	outPos->y = (outPos->y * outPosScale);
+	outPos->z = (outPos->z * outPosScale);
 }
 
 void fn_80080734(ModelInstance *modelInstance, Model *model,
