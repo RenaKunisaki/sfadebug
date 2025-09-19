@@ -362,7 +362,7 @@ typedef struct {
 
 #define ANIMMAP_SIZE 0x80
 typedef struct {
-    u8 animMap[ANIMMAP_SIZE];
+    u8 animMap[ANIMMAP_SIZE]; //at index 6 is (sometimes?) a Bone
     Animation animData[0]; //unknown size
 } AnimCache;
 
@@ -381,8 +381,8 @@ typedef struct {
 typedef struct {
     /* 0x00 */ Model *model;
     /* 0x04 */ float hitboxSize[3][2]; //related to joints, might not be size
-    /* 0x1c */ AnimCache *cache[2];
-    /* 0x24 */ AnimCache *cache2[2];
+    /* 0x1c */ AnimCache *cache0[2];
+    /* 0x24 */ AnimCache *cache1[2];
     /* 0x2c */ UNKTYPE *unk2c;
     /* 0x30 */ int unk30;
     /* 0x34 */ Bone *joints[AnimInstance_MAX_JOINTS];

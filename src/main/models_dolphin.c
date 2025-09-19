@@ -167,16 +167,16 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		next = (void *)alignTo64(next);
 		anim = minst->animInstances[0];
-		anim->cache[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-        anim->cache[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-		anim->cache[2] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-		anim->cache[3] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+		anim->cache0[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+        anim->cache0[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+		anim->cache1[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+		anim->cache1[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
 		if(minst->animInstances[1]) {
 			anim = minst->animInstances[1];
-			anim->cache[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-			anim->cache[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-			anim->cache[2] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-			anim->cache[3] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->cache0[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->cache0[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->cache1[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->cache1[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
 		}
 	}
 
@@ -408,7 +408,7 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 
 void modelSetupAnims(
     ModelInstance *modelInstance, AnimInstance *animInstance) { // 8007CFA4
-	Animation *anim;
+	AnimCache *anim;
 	Model *model;
 
 	animInstance->iJoint[0] = 0;
@@ -423,17 +423,17 @@ void modelSetupAnims(
 	model = modelInstance->mod;
 	if(model->numAnims != 0) {
 		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-			loadModelAnimation(model, *model->animIds, 0, animInstance->cache[0]);
-			loadModelAnimation(model, *model->animIds, 0, animInstance->cache[1]);
-			loadModelAnimation(model, *model->animIds, 0, animInstance->cache[2]);
-			loadModelAnimation(model, *model->animIds, 0, animInstance->cache[3]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->cache0[0]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->cache0[1]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->cache1[0]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->cache1[1]);
 			animInstance->iJoint[0] = 0;
-			anim = (Animation *)&animInstance->cache[animInstance->iJoint[0]][1];
+			anim = (AnimCache *)&animInstance->cache0[animInstance->iJoint[0]][1];
 		} else {
-			anim = (Animation*)model->anims[animInstance->iJoint[0]];
+			anim = (AnimCache*)model->anims[animInstance->iJoint[0]];
 		}
-		animInstance->joints[0] = (Bone *)(anim + 1);
-		animInstance->unk60[0] = anim->flags01 & 0xf0;
+		animInstance->joints[0] = (Bone *)&anim->animMap[6];
+		animInstance->unk60[0] = anim->animMap[1] & 0xf0;
 		animInstance->hitboxSize[2][0] = animInstance->joints[0]->idx[1];
 		if(animInstance->unk60[0] == 0) {
 			animInstance->hitboxSize[2][0] -= 1.0f;
@@ -485,11 +485,11 @@ u8 iJoint3, u8 flags, short unk58) { // 8007D678
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		anim2.iJoint[0] = 0;
 		anim2.iJoint[1] = 1;
-		anim2.cache[0] = animInstance->cache[animInstance->iJoint[iJoint1]];
+		anim2.cache0[0] = animInstance->cache0[animInstance->iJoint[iJoint1]];
 		if(iJoint3 < 2) {
-			anim2.cache[1] = animInstance->cache[animInstance->iJoint[iJoint3]];
+			anim2.cache0[1] = animInstance->cache0[animInstance->iJoint[iJoint3]];
 		} else {
-			anim2.cache[1] = animInstance->cache2[animInstance->iJoint[iJoint3]];
+			anim2.cache1[1] = animInstance->cache1[animInstance->iJoint[iJoint3]];
 		}
 	} else {
 		anim2.iJoint[0] = animInstance->iJoint[iJoint1];
@@ -519,8 +519,8 @@ void fn_8007D8E4(Model *model, AnimInstance *animInst, int count) { // 8007D8E4
 
 	for(ii = 0; ii < count; ii++) {
 		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-            animCache = animInst->cache[animInst->iJoint[ii]];
-			anim = (Animation *)&animInst->cache[animInst->iJoint[ii]][1];
+            animCache = animInst->cache0[animInst->iJoint[ii]];
+			anim = (Animation *)&animInst->cache0[animInst->iJoint[ii]][1];
 		} else {
 			animCache = (AnimCache *)((int)&model->amap
 			    + (uint)animInst->iJoint[ii]
@@ -945,7 +945,7 @@ Model *model) { //8007EBE8
 	int iJoint;
 
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-		cache = modelInstance->animInstances[0]->cache[
+		cache = modelInstance->animInstances[0]->cache0[
 			modelInstance->animInstances[0]->iJoint[0]];
 	} else {
 		cache = (AnimCache *)(
@@ -1195,7 +1195,6 @@ void unloadAnimation(Animation *anim) { // 8008039C
     }
 }
 
-
 void objAnimFn_8008045c(ModelInstance *mInst, int which, int iJoint,
 float inScale, float outPosScale, Vec *outPos, S16Vec *outRot) { //8008045C
 	Bone *joint;
@@ -1221,9 +1220,9 @@ float inScale, float outPosScale, Vec *outPos, S16Vec *outRot) { //8008045C
 
 	if(mInst->mod->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		if(iJoint > 1) {
-			anim = animInstance->cache2[animInstance->iJoint[iJoint]]->animData;
+			anim = animInstance->cache1[animInstance->iJoint[iJoint]]->animData;
 		} else {
-			anim = animInstance->cache[animInstance->iJoint[iJoint]]->animData;
+			anim = animInstance->cache0[animInstance->iJoint[iJoint]]->animData;
 		}
 	} else {
 		anim = (Animation*)mInst->mod->anims[animInstance->iJoint[iJoint]];
