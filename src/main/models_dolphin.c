@@ -57,7 +57,7 @@ int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations);
 BOOL makeModelAnimation(Model *model,uint animId,void *hits);
 void modelSetupAnims(ModelInstance *modelInstance,AnimInstance *animInstance);
 void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 param_4);
-void LAB_8007d540(Mtx44Ptr modelMatrix,ModelInstance *modelInstance,AnimInstance *animInstance,float frame,int param_5);
+void fn_8007D1C4(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,AnimInstance *animInstance, float frame, int param_5);
 void tiltListFn_8007d678(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,AnimInstance *animInstance,float frame,undefined4 param_5, u8 param_6, u8 param_7,u8 iJoint, u8 flags, short param_10);
 void fn_8007d8e4(Model *model,AnimInstance *animInstance,int count);
 void initModels(void);
@@ -459,8 +459,113 @@ void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 para
 	return result;
 }
 
-//void LAB_8007d540(double animTimer,float *modelMatrix,ModelInstance *modelInstance,
-//                 AnimInstance *animInstance,uint param_5) { //8007D1C4
+void fn_8007D1C4(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,
+AnimInstance *animInstance, float frame, int param_5) { //8007D1C4
+	int flags2;
+	uint flags;
+	Model *model;
+	int ii;
+	int iSrc;
+	AnimInstance animInst;
+	Mtx44 *jMtx;
+
+	model = modelInstance->mod;
+	jMtx = modelInstance->jMtxs[modelInstance->flags & 1];
+	animInstance->hitboxSize[0][0] = frame * animInstance->hitboxSize[2][0];
+	flags = 0;
+	if(model->flags & 8) {
+		animInst.cache0[0] = animInstance->cache0[0];
+		animInst.cache0[1] = animInstance->cache0[1];
+		animInst.cache1[0] = animInstance->cache1[0];
+		animInst.cache1[1] = animInstance->cache1[1];
+		for(ii = 0; ii < 2; ii++) {
+			iSrc = animInstance->unk58 ? ii : 0;
+			animInst.iJoint[ii] = animInstance->iJoint[iSrc];
+			animInst.unk60[ii] = animInstance->unk60[iSrc];
+			animInst.hitboxSize[2][ii] = animInstance->hitboxSize[2][iSrc];
+			animInst.hitboxSize[0][ii] = animInstance->hitboxSize[0][iSrc];
+			animInst.joints[ii] = animInstance->joints[iSrc];
+		}
+		animInst.unk58 = animInstance->unk58;
+		fn_8007d8e4(model, &animInst, 2);
+		if(animInstance->flags63 & 1) flags |= 0x10;
+		if(animInstance->flags63 & 4) flags |= 0x20;
+		FUN_80065ff8(&jMtx,
+		    modelMatrix,
+		    &animInst,
+		    model->joints,
+		    (uint)model->numJoints,
+		    Tiltlist,
+		    param_5,
+		    flags | 0x40);
+	} else {
+		for(ii = 0; ii < 2; ii++) {
+			animInst.unk58 = ii ? animInstance->unk5c : animInstance->unk5a;
+			if(animInst.unk58) {
+				flags2 = animInstance->unk58 ? (4 << ii) : 0;
+				animInst.unk60[0] = animInstance->unk60[ii];
+				animInst.hitboxSize[2][0] = animInstance->hitboxSize[2][ii];
+				animInst.hitboxSize[0][0] = animInstance->hitboxSize[0][ii];
+				animInst.joints[0] = animInstance->joints[ii];
+				animInst.unk60[1] = animInstance->unk60[ii];
+				animInst.hitboxSize[2][1] = animInstance->hitboxSize[2][ii];
+				animInst.hitboxSize[0][1] = animInstance->hitboxSize[0][ii];
+				animInst.joints[1] = animInstance->joints[ii + 2];
+				if((model->flags & ModelDataFlags2_UseLocalModAnimTab) == 0) {
+					animInst.iJoint[0] = animInstance->iJoint[ii];
+					animInst.iJoint[1] = animInstance->iJoint[ii + 2];
+				} else {
+					animInst.iJoint[0] = 0;
+					animInst.iJoint[1] = 1;
+					animInst.cache0[0] = animInstance->cache0[animInstance->iJoint[ii]];
+					animInst.cache0[1] = animInstance->cache0[animInstance->iJoint[ii + 2] + 2];
+				}
+				fn_8007d8e4(model, &animInst, 2);
+				FUN_80065ff8(&jMtx,
+				    modelMatrix,
+				    &animInst,
+				    model->joints,
+				    (uint)model->numJoints,
+				    Tiltlist,
+				    param_5,
+				    flags2);
+				if(flags2 != 0) { flags |= 1 << ii; }
+			}
+		}
+		if(((animInstance->unk5a == 0)
+		       && (animInstance->unk5c == 0))
+		    || (flags != 0)) {
+			ii = 1;
+			if(animInstance->unk58 != 0) { ii = 2; }
+			animInst.cache0[0] = animInstance->cache0[0];
+			animInst.cache0[1] = animInstance->cache0[1];
+			animInst.cache1[0] = animInstance->cache1[0];
+			animInst.cache1[1] = animInstance->cache1[1];
+			for(iSrc = 0; iSrc < ii; iSrc += 1) {
+				animInst.iJoint[iSrc] = animInstance->iJoint[iSrc];
+				animInst.unk60[iSrc]
+				    = animInstance->unk60[iSrc];
+				animInst.hitboxSize[2][iSrc]
+				    = animInstance->hitboxSize[2][iSrc];
+				animInst.hitboxSize[0][iSrc]
+				    = animInstance->hitboxSize[0][iSrc];
+				animInst.joints[iSrc] = animInstance->joints[iSrc];
+			}
+			animInst.unk58 = animInstance->unk58;
+			fn_8007d8e4(model, &animInst, ii);
+			if((animInstance->flags63 & 1) != 0) { flags |= 0x10; }
+			if((animInstance->flags63 & 4) != 0) { flags |= 0x20; }
+			FUN_80065ff8(&jMtx,
+			    modelMatrix,
+			    &animInst,
+			    model->joints,
+			    (uint)model->numJoints,
+			    Tiltlist,
+			    param_5,
+			    flags);
+		}
+	}
+}
 
 void tiltListFn_8007d678(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,
 AnimInstance *animInstance, float frame, undefined4 param_5, u8 iJoint1, u8 iJoint2,
@@ -898,7 +1003,7 @@ ObjInstance *object, Mtx44 *modelMatrix) { // 8007E974
 		objAnimVar_8039872c_z = local_38.z;
 	}
 	if(modelInstance->mod->flags & 8) {
-		LAB_8007d540((Mtx44Ptr)modelMatrix,
+		fn_8007D1C4((Mtx44Ptr)modelMatrix,
 		    modelInstance, modelInstance->animInstances[0],
 		    object->frame1, 0x7f);
 	} else {
@@ -921,11 +1026,11 @@ ObjInstance *object, Mtx44 *modelMatrix) { // 8007E974
 				0x7f, 0, 1, 1, 1,
 				animInstance->unk58);
 		} else {
-			LAB_8007d540((Mtx44Ptr)modelMatrix, modelInstance,
+			fn_8007D1C4((Mtx44Ptr)modelMatrix, modelInstance,
 				modelInstance->animInstances[0],
 			    object->frame1, 0x7f);
 			if(modelInstance->animInstances[1] && (-1 < object->curAnimId)) {
-				LAB_8007d540((Mtx44Ptr)modelMatrix, modelInstance,
+				fn_8007D1C4((Mtx44Ptr)modelMatrix, modelInstance,
 				    modelInstance->animInstances[1],
 				    object->frame2,-1);
 			}

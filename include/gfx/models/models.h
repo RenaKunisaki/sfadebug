@@ -392,10 +392,10 @@ typedef struct {
     /* 0x55 */ undefined unk55;
     /* 0x56 */ undefined unk56;
     /* 0x57 */ undefined unk57;
-    /* 0x58 */ short unk58;
-    /* 0x5a */ short unk5a;
-    /* 0x5c */ short unk5c;
-    /* 0x5e */ short unk5e;
+    /* 0x58 */ ushort unk58;
+    /* 0x5a */ ushort unk5a;
+    /* 0x5c */ ushort unk5c;
+    /* 0x5e */ ushort unk5e;
     /* 0x60 */ s8 unk60[2]; //related to joints
     /* 0x62 */ undefined unk62; //possibly part of unk60
     /* 0x63 */ s8 flags63;
