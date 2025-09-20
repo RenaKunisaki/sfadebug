@@ -1,5 +1,7 @@
 #ifndef _GFX_MODELS_BITSTREAM_H_
 #define _GFX_MODELS_BITSTREAM_H_
+#include "types.h"
+
 typedef struct {
     /* 0x00 */ u8 *data;
     /* 0x04 */ int nBytes;

@@ -1,5 +1,6 @@
 #ifndef _GFX_MODELS_SHADERS_H_
 #define _GFX_MODELS_SHADERS_H_
+#include "types.h"
 #include "gfx/textures.h"
 
 typedef enum {
