@@ -49,6 +49,7 @@ void loadModelsBin(uint offset,int *outNAnimations,uint *outAnimCacheSize,
 void FUN_80065ff8(Mtx44 **pjMtx,Mtx44Ptr modelMatrix,AnimInstance *animInstance,Bone *joints,int numJoints,undefined2 *tiltList,int param_7,u32 flags);
 Animation * loadModelAnimation(Model *model,short id,short id2,void *dest);
 void * loadDataFileWithLength(DataFileId32 file,void *dest,uint offset,u32 len);
+int loadAndDecompressDataFile(DataFileId32 file,void *dest,uint offset,size_t length,uint *outSize,int index,s8 flags);
 
 void *loadModelInstanceAsset(int id, void *buf);
 ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
@@ -740,8 +741,7 @@ uint Model_checksumHeader(Model *model) { //8007DE30
 
 Model* Model_load(int id) { //8007DE70
 	int dummy;
-	int dummy2;
-	int dummy3;
+	int realId;
 	uint *modelsTab;
 	uint amapSize;
 	int size;
@@ -751,25 +751,30 @@ Model* Model_load(int id) { //8007DE70
 	BOOL bNoAmap;
 	Model *model;
 
+	realId = id;
 	modelsTab = (uint *)getTable(FILE_MODELS_tab);
-	loadModelsBin(modelsTab[id], &nAnimations,
-		&animCacheSize, &bNoAmap, &size, id);
+	loadModelsBin(modelsTab[realId], &nAnimations,
+		&animCacheSize, &bNoAmap, &size, realId);
 	animCacheSize = (uint)mmAlign8((void*)animCacheSize);
 	animCacheSize += 0xb0;
 
-	size2 = size + modelGetAmapSize(id, bNoAmap, nAnimations) + 500;
+	size2 = size + modelGetAmapSize(realId, bNoAmap, nAnimations) + 500;
 	model = (Model *)mmAlloc(size2,
 		ALLOC_TAG_MODELS_COL, (volatile u32)"mod");
+	//something odd with strings here.
 	BADASSERTLINE(491, model);
-
 	model = (Model *)mmAlign16(model);
-	loadAndDecompressDataFile(FILE_MODELS_bin, (s8 *)model, modelsTab[id],
-		size, NULL, id, 0);
+
+	loadAndDecompressDataFile(FILE_MODELS_bin, model,
+		modelsTab[realId], size, NULL,
+		realId, 0);
+
 	model->animCacheSize = animCacheSize;
-	model->cacheModNo    = id;
+	model->cacheModNo    = realId;
 	model->numAnims      = nAnimations;
 	model->flags        &= ~ModelDataFlags2_UseLocalModAnimTab;
 	model->usage         = 1;
+
 	if(!model->numAnims) model->flags |= ModelDataFlags2_NoAnimations;
 	if(bNoAmap) model->flags |= ModelDataFlags2_UseLocalModAnimTab;
 	return model;
@@ -1223,7 +1228,7 @@ Model *model, int index, int id, void *dest) { // 80080168
 	uint offset;
 	u32 len;
 	Animation *anim;
-	int animSize;
+	uint animSize;
 
 	offset = animOffsetTbl[index];
 	loadAndDecompressDataFile(FILE_ANIM_BIN, NULL, offset,
