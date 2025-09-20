@@ -460,17 +460,18 @@ void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 para
 }
 
 void fn_8007D1C4(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,
-AnimInstance *animInstance, float frame, int param_5) { //8007D1C4
+AnimInstance *animInstance, float frame, int param_5) { //8007D1C4 regswap
 	int flags2;
-	uint flags;
-	Model *model;
+	int flags;
 	int ii;
 	int iSrc;
-	AnimInstance animInst;
+	int unk5a;
 	Mtx44 *jMtx;
+	Model *model;
+	AnimInstance animInst;
 
 	model = modelInstance->mod;
-	jMtx = modelInstance->jMtxs[modelInstance->flags & 1];
+	jMtx  = modelInstance->jMtxs[modelInstance->flags & 1];
 	animInstance->hitboxSize[0][0] = frame * animInstance->hitboxSize[2][0];
 	flags = 0;
 	if(model->flags & 8) {
@@ -490,19 +491,16 @@ AnimInstance *animInstance, float frame, int param_5) { //8007D1C4
 		fn_8007d8e4(model, &animInst, 2);
 		if(animInstance->flags63 & 1) flags |= 0x10;
 		if(animInstance->flags63 & 4) flags |= 0x20;
-		FUN_80065ff8(&jMtx,
-		    modelMatrix,
-		    &animInst,
-		    model->joints,
-		    (uint)model->numJoints,
-		    Tiltlist,
-		    param_5,
-		    flags | 0x40);
+		FUN_80065ff8(&jMtx, modelMatrix, &animInst,
+		    model->joints, model->numJoints,
+		    Tiltlist, param_5, flags | 0x40);
 	} else {
 		for(ii = 0; ii < 2; ii++) {
-			animInst.unk58 = ii ? animInstance->unk5c : animInstance->unk5a;
-			if(animInst.unk58) {
-				flags2 = animInstance->unk58 ? (4 << ii) : 0;
+			if(ii) unk5a = animInstance->unk5c;
+			else   unk5a = animInstance->unk5a;
+			if(unk5a) {
+				if(animInstance->unk58) flags2 = 4 << ii;
+				else flags2 = 0;
 				animInst.unk60[0] = animInstance->unk60[ii];
 				animInst.hitboxSize[2][0] = animInstance->hitboxSize[2][ii];
 				animInst.hitboxSize[0][0] = animInstance->hitboxSize[0][ii];
@@ -511,58 +509,44 @@ AnimInstance *animInstance, float frame, int param_5) { //8007D1C4
 				animInst.hitboxSize[2][1] = animInstance->hitboxSize[2][ii];
 				animInst.hitboxSize[0][1] = animInstance->hitboxSize[0][ii];
 				animInst.joints[1] = animInstance->joints[ii + 2];
-				if((model->flags & ModelDataFlags2_UseLocalModAnimTab) == 0) {
-					animInst.iJoint[0] = animInstance->iJoint[ii];
-					animInst.iJoint[1] = animInstance->iJoint[ii + 2];
-				} else {
+				if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 					animInst.iJoint[0] = 0;
 					animInst.iJoint[1] = 1;
 					animInst.cache0[0] = animInstance->cache0[animInstance->iJoint[ii]];
-					animInst.cache0[1] = animInstance->cache0[animInstance->iJoint[ii + 2] + 2];
+					animInst.cache0[1] = animInstance->cache1[animInstance->iJoint[ii + 2]];
+				} else {
+					animInst.iJoint[0] = animInstance->iJoint[ii];
+					animInst.iJoint[1] = animInstance->iJoint[ii + 2];
 				}
+				animInst.unk58 = unk5a;
 				fn_8007d8e4(model, &animInst, 2);
-				FUN_80065ff8(&jMtx,
-				    modelMatrix,
-				    &animInst,
-				    model->joints,
-				    (uint)model->numJoints,
-				    Tiltlist,
-				    param_5,
-				    flags2);
-				if(flags2 != 0) { flags |= 1 << ii; }
+				FUN_80065ff8(&jMtx, modelMatrix, &animInst,
+				    model->joints, model->numJoints,
+				    Tiltlist, param_5, flags2);
+				if(flags2) flags |= 1 << ii;
 			}
 		}
-		if(((animInstance->unk5a == 0)
-		       && (animInstance->unk5c == 0))
-		    || (flags != 0)) {
-			ii = 1;
-			if(animInstance->unk58 != 0) { ii = 2; }
+		if(((!animInstance->unk5a) && (!animInstance->unk5c)) || flags) {
+			iSrc = 1;
+			if(animInstance->unk58) iSrc = 2;
 			animInst.cache0[0] = animInstance->cache0[0];
 			animInst.cache0[1] = animInstance->cache0[1];
 			animInst.cache1[0] = animInstance->cache1[0];
 			animInst.cache1[1] = animInstance->cache1[1];
-			for(iSrc = 0; iSrc < ii; iSrc += 1) {
-				animInst.iJoint[iSrc] = animInstance->iJoint[iSrc];
-				animInst.unk60[iSrc]
-				    = animInstance->unk60[iSrc];
-				animInst.hitboxSize[2][iSrc]
-				    = animInstance->hitboxSize[2][iSrc];
-				animInst.hitboxSize[0][iSrc]
-				    = animInstance->hitboxSize[0][iSrc];
-				animInst.joints[iSrc] = animInstance->joints[iSrc];
+			for(ii = 0; ii < iSrc; ii += 1) {
+				animInst.iJoint[ii] = animInstance->iJoint[ii];
+				animInst.unk60[ii] = animInstance->unk60[ii];
+				animInst.hitboxSize[2][ii] = animInstance->hitboxSize[2][ii];
+				animInst.hitboxSize[0][ii] = animInstance->hitboxSize[0][ii];
+				animInst.joints[ii] = animInstance->joints[ii];
 			}
 			animInst.unk58 = animInstance->unk58;
-			fn_8007d8e4(model, &animInst, ii);
-			if((animInstance->flags63 & 1) != 0) { flags |= 0x10; }
-			if((animInstance->flags63 & 4) != 0) { flags |= 0x20; }
-			FUN_80065ff8(&jMtx,
-			    modelMatrix,
-			    &animInst,
-			    model->joints,
-			    (uint)model->numJoints,
-			    Tiltlist,
-			    param_5,
-			    flags);
+			fn_8007d8e4(model, &animInst, iSrc);
+			if(animInstance->flags63 & 1) flags |= 0x10;
+			if(animInstance->flags63 & 4) flags |= 0x20;
+			FUN_80065ff8(&jMtx, modelMatrix, &animInst,
+			    model->joints, model->numJoints,
+			    Tiltlist, param_5, flags);
 		}
 	}
 }
