@@ -599,41 +599,42 @@ u8 iJoint3, u8 flags, short unk58) { // 8007D678
 }
 
 void fn_8007D8E4(Model *model, AnimInstance *animInst, int count) { // 8007D8E4
-	float hitboxSize;
 	Bone *bone;
-    AnimCache *animCache;
 	Animation *anim;
-	int ii;
+    AnimCache *animCache;
+	int offset;
+	int hitboxSize;
 	int iJoint;
-	int joint;
+	int ii;
+	float hitboxSizeFloat;
 
 	for(ii = 0; ii < count; ii++) {
+		iJoint = ii;
 		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
             animCache = animInst->cache0[animInst->iJoint[ii]];
 			anim = (Animation *)&animInst->cache0[animInst->iJoint[ii]][1];
 		} else {
-			animCache = (AnimCache *)((int)&model->amap
-			    + (uint)animInst->iJoint[ii]
-			        * ((model->numJoints - 1 & ~7) + 8));
+			animCache = (AnimCache *)((int)model->amap +
+				animInst->iJoint[ii] * ((model->numJoints - 1 & ~7) + 8));
 			anim = (Animation*)model->anims[animInst->iJoint[ii]];
 		}
 		for(iJoint = 0; iJoint < model->numJoints; iJoint++) {
 			model->joints[iJoint].idx2[ii] = animCache->animMap[iJoint];
 		}
-		joint = animInst->joints[ii]->idx2[0];
-		hitboxSize = (int)animInst->hitboxSize[0][ii];
+		offset = animInst->joints[ii]->idx2[0] & 0xFF;
+		hitboxSizeFloat = animInst->hitboxSize[0][ii];
+		hitboxSize = hitboxSizeFloat;
 		if(hitboxSize != animInst->hitboxSize[0][ii]) {
-            animInst->sizeVar4c[ii] = (s16)joint;
+            animInst->sizeVar4c[ii] = (s16)offset;
 		} else {
 			animInst->sizeVar4c[ii] = 0;
 		}
 		if(animInst->unk60[ii]
-        && (hitboxSize == animInst->hitboxSize[2][ii] - 1.0f)) {
-			animInst->sizeVar4c[ii] = -joint * (int)hitboxSize;
+        && (hitboxSizeFloat == animInst->hitboxSize[2][ii] - 1)) {
+			animInst->sizeVar4c[ii] = -offset * hitboxSize;
 		}
-		animInst->joints[ii] = (Bone *)(&anim->usage
-		    + anim->keyframeOffset * (int)hitboxSize);
-		    //+ (int)anim->sizeVar02[joint] * (int)hitboxSize);
+		animInst->unk2c[ii] = (&anim->usage
+		    + anim->keyframeOffset + offset * hitboxSize);
 	}
 }
 
@@ -1337,7 +1338,7 @@ float inScale, float outPosScale, Vec *outPos, S16Vec *outRot) { //8008045C
 	(size2 == animInstance->hitboxSize[2][0] - 1.0f)) {
 		animInstance->sizeVar4c[0] = -iJoint1 * size;
 	}
-	animInstance->unk2c = (UNKTYPE*)((uint)anim +
+	animInstance->unk2c[0] = (UNKTYPE*)((uint)anim +
 		anim->keyframeOffset + iJoint1 * size);
 
 	LAB_800658d0(animInstance, &local_5c, outRot);

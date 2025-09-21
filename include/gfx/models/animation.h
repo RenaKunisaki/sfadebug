@@ -177,8 +177,7 @@ typedef struct {
     /* 0x04 */ float hitboxSize[3][2]; //related to joints, might not be size
     /* 0x1c */ AnimCache *cache0[2];
     /* 0x24 */ AnimCache *cache1[2];
-    /* 0x2c */ UNKTYPE *unk2c;
-    /* 0x30 */ int unk30;
+    /* 0x2c */ UNKTYPE *unk2c[2];
     /* 0x34 */ Bone *joints[AnimInstance_MAX_JOINTS];
     /* 0x44 */ ushort iJoint[AnimInstance_MAX_JOINTS];
     /* 0x4c */ ushort sizeVar4c[AnimInstance_MAX_JOINTS];
