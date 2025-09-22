@@ -1171,7 +1171,7 @@ bool param3) { // 8007F184
 	uint uVar4;
 	int nBones;
 	int iVar5;
-	short nBonesDiv3;
+	int nBonesDiv3;
 	uint jj;
 	Model *model;
 	FreezeModelField00 *field0;
@@ -1196,29 +1196,15 @@ bool param3) { // 8007F184
 	Mtx44 *jMtx2;
 	Mtx44 *jMtx1;
 	Bone *joint2;
-	double local_b8;
-	double local_b0;
-	double local_a8;
-	undefined4 local_a0;
-	uint uStack_9c;
-	undefined4 local_98;
-	uint uStack_94;
-	undefined4 local_90;
-	uint uStack_8c;
-	undefined4 local_88;
-	uint uStack_84;
-	undefined4 local_80;
-	uint uStack_7c;
-	undefined4 local_78;
-	uint uStack_74;
-	double local_70;
-	double local_68;
-	double local_60;
+	REGISTER int size1, size2;
 
 	if(modelInstance->freezeModel) return;
 	model = modelInstance->mod;
-	if(model->numJoints < 1) return;
+	if(model->numJoints < 2) return;
 
+	size1 = 0x2a;
+	size2 = 0x50;
+	size2 += 8;
 	nBones = model->numJoints - 1;
 	freezemodel = (FreezeModel *)mmAlloc(
 		nBones * 0x46c + 0x10, ALLOC_TAG_ANIMS_COL,
@@ -1227,8 +1213,8 @@ bool param3) { // 8007F184
 	if(!modelInstance->freezeModel) return;
 
 	freezeModel2 = modelInstance->freezeModel;
-	freezeModel2->a.nJointsMinus1Times0x58 = (short)nBones * 0x58;
-	freezeModel2->a.nJointsMinus1Times0x2A = (short)nBones * 0x2a;
+	freezeModel2->a.nJointsMinus1Times0x58 = nBones * size2;
+	freezeModel2->a.nJointsMinus1Times0x2A = nBones * size1;
 	freezeModel2->a._00 = (FreezeModelField00 *)(freezeModel2 + 1);
 	freezeModel2->a._04 = (FreezeModelField04 *)(freezeModel2->a._00 + nBones * 0x58);
 	zero.x = 0.0f;
@@ -1242,7 +1228,7 @@ bool param3) { // 8007F184
 	MTXInverse(*modelMatrix, modelMatrixInv);
 	for(jointNum = model->numJoints-1; jointNum > 0; jointNum--) {
 		joint1 = modelGetJoint(model, jointNum);
-		if(joint1->idx[0] == 0xff) continue;
+		if(joint1->idx[0] == -1) continue;
 
 		joint2 = modelGetJoint(model, joint1->idx[0]);
 		jMtx1 = modelInstGetjMtx(modelInstance, jointNum);
@@ -1252,12 +1238,12 @@ bool param3) { // 8007F184
 		MTXMultVec(jMtxModel1, &zero, &jPos1);
 		MTXMultVec(jMtxModel2, &zero, &jPos2);
 		VECSubtract(&jPos2, &jPos1, &jPosDelta);
-		if(((!model->radi) || (0.0f < model->radi[jointNum]))
-		&& ((jPosDelta.x != 0.0f || ((jPosDelta.y != 0.0f || (jPosDelta.z != 0.0f)))))) {
+		if(((!model->radi) || (model->radi[jointNum] > 0.0f))
+		&& (jPosDelta.x != 0.0f || jPosDelta.y != 0.0f || jPosDelta.z != 0.0f)) {
 			VECNormalize(&jPosDelta, &jPosDeltaNrm);
 			vTmp.x = 1.0f; vTmp.y = 0.0f; vTmp.z = 0.0f;
 			fVar8 = VECDotProduct(&jPosDeltaNrm, &vTmp);
-			if((0.9f < fVar8) || (fVar8 < -0.9f)) {
+			if((fVar8 > 0.9f) || (fVar8 < -0.9f)) {
 				vTmp.x = 0.0f; vTmp.y = 1.0f; vTmp.z = 0.0f;
 			}
 			VECCrossProduct(&jPosDeltaNrm, &vTmp, &jPosDeltaNrm);

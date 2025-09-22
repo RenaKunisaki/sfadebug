@@ -5,8 +5,8 @@
 
 #define MAX_JOINTS 150
 typedef struct {
-    /* 0x00 */ u8 idx[2]; //idx to write to? high bit is a flag?; first idx is parent
-    /* 0x02 */ u8 idx2[2]; //weird
+    /* 0x00 */ s8 idx[2]; //idx to write to? high bit is a flag?; first idx is parent
+    /* 0x02 */ s8 idx2[2]; //weird
     /* 0x04 */ Vec translation;
     /* 0x10 */ Vec bindTranslation;
 } Bone;
