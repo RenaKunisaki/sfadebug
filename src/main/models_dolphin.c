@@ -1162,23 +1162,22 @@ TexFuncPtr ModelInstance_getTexFuncPtr(ModelInstance *modelInstance) { //8007F13
 
 void freezeModelFn_8007f184(ModelInstance *modelInstance, Mtx *modelMatrix,
 bool param3) { // 8007F184
-	short sVar1;
-	short sVar2;
-	short sVar3;
 	FreezeModel *freezemodel;
-	uint jointNum;
+	int jointNum;
 	Bone *joint1;
-	uint uVar4;
-	int nBones;
+	float nrmRnd;
+	int nJoints;
+	int nJointsMinus1;
 	int iVar5;
 	int nBonesDiv3;
-	uint jj;
 	Model *model;
 	FreezeModelField00 *field0;
 	int idx;
 	int iVar6;
 	int iVar7;
 	uint ii;
+	int jj;
+	int kk;
 	FreezeModel *freezeModel2;
 	float fVar8;
 	short jointVar414[256];
@@ -1205,28 +1204,32 @@ bool param3) { // 8007F184
 	size1 = 0x2a;
 	size2 = 0x50;
 	size2 += 8;
-	nBones = model->numJoints - 1;
+	nJoints = model->numJoints;
+	nJointsMinus1 = nJoints - 1;
 	freezemodel = (FreezeModel *)mmAlloc(
-		nBones * 0x46c + 0x10, ALLOC_TAG_ANIMS_COL,
+		//total: 0x46c
+		(nJointsMinus1*(size2*10)) +
+		(nJointsMinus1*(size1*6)) + 16,
+		ALLOC_TAG_ANIMS_COL,
 		(volatile u32)"mod:freezemodel");
 	modelInstance->freezeModel = freezemodel;
 	if(!modelInstance->freezeModel) return;
 
 	freezeModel2 = modelInstance->freezeModel;
-	freezeModel2->a.nJointsMinus1Times0x58 = nBones * size2;
-	freezeModel2->a.nJointsMinus1Times0x2A = nBones * size1;
-	freezeModel2->a._00 = (FreezeModelField00 *)(freezeModel2 + 1);
-	freezeModel2->a._04 = (FreezeModelField04 *)(freezeModel2->a._00 + nBones * 0x58);
+	freezeModel2->a.nJointsMinus1Times0x58 = nJointsMinus1 * size2;
+	freezeModel2->a.nJointsMinus1Times0x2A = nJointsMinus1 * size1;
+	freezeModel2->a._00 = (FreezeModelField00*)(freezeModel2 + 1);
+	freezeModel2->a._04 = (FreezeModelField04*)(freezeModel2->a._00 + nJointsMinus1 * size2);
 	zero.x = 0.0f;
 	zero.y = 0.0f;
 	zero.z = 0.0f;
-	nBones = 0;
+	nJointsMinus1 = 0;
 	idx = 0;
 	for(iVar7 = 0; iVar7 < model->numJoints; iVar7 += 1) {
 		jointVar414[iVar7] = -1;
 	}
 	MTXInverse(*modelMatrix, modelMatrixInv);
-	for(jointNum = model->numJoints-1; jointNum > 0; jointNum--) {
+	for(jointNum = model->numJoints-1; jointNum >= 0; jointNum--) {
 		joint1 = modelGetJoint(model, jointNum);
 		if(joint1->idx[0] == -1) continue;
 
@@ -1248,127 +1251,116 @@ bool param3) { // 8007F184
 			}
 			VECCrossProduct(&jPosDeltaNrm, &vTmp, &jPosDeltaNrm);
 			VECNormalize(&jPosDeltaNrm, &jPosDeltaNrm);
-			nBonesDiv3 = nBones / 3;
+			nBonesDiv3 = nJointsMinus1 / 3;
 			if(jointVar414[joint1->idx[0]] == -1) {
 				jointVar414[joint1->idx[0]] = nBonesDiv3;
 			} else {
 				jointVar414[joint1->idx[0]] = -2;
 			}
-			for(ii = 0; ii < 8; ii += 1) {
+			for(ii = 0; ii < 8; ii++) {
 				MTXRotAxisRad(MStack_1c8, &jPosDelta,
 					ii * 6.283f * 0.125f);
-				for(jj = 0; jj < 5; jj += 1) {
+				for(jj = 0; jj < 5; jj++) {
 					vTmp.z = jj * 0.25f;
 					vTmp.x = jPosDelta.x * vTmp.z;
 					vTmp.y = jPosDelta.y * vTmp.z;
 					vTmp.z = jPosDelta.z * vTmp.z;
-					uVar4 = randInt(10, 60);
-					if(model->radi == NULL) {
-						fVar8 = 0.04;
-					} else if(model->radi[jointNum]
-						<= model->radi[(char)joint1->idx[0]]) {
-						fVar8 = model->radi[(char)joint1->idx[0]];
-					} else {
-						fVar8 = model->radi[jointNum];
-					}
-					fVar8 *= ((float)uVar4 * 0.01f + 1.0f);
-					vTmp.x = jPosDeltaNrm.x * fVar8 + vTmp.x;
-					vTmp.y = jPosDeltaNrm.y * fVar8 + vTmp.y;
-					vTmp.z = jPosDeltaNrm.z * fVar8 + vTmp.z;
+					nrmRnd = randInt(10, 60);
+					if(model->radi) {
+						if(model->radi[joint1->idx[0]] > model->radi[jointNum]) {
+							fVar8 = model->radi[joint1->idx[0]];
+						} else fVar8 = model->radi[jointNum];
+					} else fVar8 = 0.04f;
+					fVar8 *= (nrmRnd * 0.01f + 1.0f);
+					vTmp.x += jPosDeltaNrm.x * fVar8;
+					vTmp.y += jPosDeltaNrm.y * fVar8;
+					vTmp.z += jPosDeltaNrm.z * fVar8;
 					MTXMultVec(MStack_1c8, &vTmp, &vTmp);
-					vTmp.x = vTmp.x + jPos1.x;
-					vTmp.y = vTmp.y + jPos1.y;
-					vTmp.z = vTmp.z + jPos1.z;
-					freezeModel2->a._04[nBones].boneVec.x = vTmp.x * 256.0f;
-					freezeModel2->a._04[nBones].boneVec.y = vTmp.y * 256.0f;
-					freezeModel2->a._04[nBones].boneVec.z = vTmp.z * 256.0f;
-					nBones += 3;
+					vTmp.x += jPos1.x;
+					vTmp.y += jPos1.y;
+					vTmp.z += jPos1.z;
+					freezeModel2->a._04[nJointsMinus1].unk00 = vTmp.x * 256.0f;
+					freezeModel2->a._04[nJointsMinus1].unk02 = vTmp.y * 256.0f;
+					freezeModel2->a._04[nJointsMinus1].unk04 = vTmp.z * 256.0f;
+					nJointsMinus1 += 3;
 				}
 			}
-			local_214 = nBones / 3;
-			jPos1.x = jPos1.x - jPosDelta.x;
-			jPos1.y = jPos1.y - jPosDelta.y;
-			jPos1.z = jPos1.z - jPosDelta.z;
+			local_214 = nJointsMinus1 / 3;
+			jPos1.x -= jPosDelta.x;
+			jPos1.y -= jPosDelta.y;
+			jPos1.z -= jPosDelta.z;
 			if(jointVar414[jointNum] == -1) {
-				freezeModel2->a._04[nBones].boneVec.x = jPos1.x * 256.0f;
-				freezeModel2->a._04[nBones].boneVec.y = jPos1.y * 256.0f;
-				freezeModel2->a._04[nBones].boneVec.z = jPos1.z * 256.0f;
-				nBones += 3;
+				freezeModel2->a._04[nJointsMinus1].unk00 = jPos1.x * 256.0f;
+				freezeModel2->a._04[nJointsMinus1].unk02 = jPos1.y * 256.0f;
+				freezeModel2->a._04[nJointsMinus1].unk04 = jPos1.z * 256.0f;
+				nJointsMinus1 += 3;
 			}
-			for(iVar7 = 0; iVar7 < 8; iVar7 += 1) {
-				iVar5 = iVar7 + 1;
+			for(jj = 0; jj < 8; jj++) {
+				iVar5 = jj + 1;
 				if(iVar5 == 8) { iVar5 = 0; }
-				sVar1 = (short)iVar7;
-				sVar2 = (short)iVar5;
-				if(-1 < jointVar414[jointNum]) {
-					freezeModel2->a._00[idx].x = jointVar414[jointNum] + sVar1 * 5 + 4;
-					freezeModel2->a._00[idx].y = nBonesDiv3 + sVar1 * 5;
-					freezeModel2->a._00[idx].z = nBonesDiv3 + sVar2 * 5;
-					iVar5 = idx + 1;
+				if(jointVar414[jointNum] >= 0) {
+					freezeModel2->a._00[idx].unk00 = jointVar414[jointNum] + jj * 5 + 4;
+					freezeModel2->a._00[idx].unk02 = nBonesDiv3 + jj * 5;
+					freezeModel2->a._00[idx].unk04 = nBonesDiv3 + iVar5 * 5;
+					idx++;
 
-					freezeModel2->a._00[iVar5].x = jointVar414[jointNum] + sVar1 * 5 + 4;
-					freezeModel2->a._00[iVar5].y = nBonesDiv3 + sVar2 * 5;
-					freezeModel2->a._00[iVar5].z = jointVar414[jointNum] + sVar2 * 5 + 4;
-					idx += 2;
+					freezeModel2->a._00[idx].unk00 = jointVar414[jointNum] + jj * 5 + 4;
+					freezeModel2->a._00[idx].unk02 = nBonesDiv3 + iVar5 * 5;
+					freezeModel2->a._00[idx].unk04 = jointVar414[jointNum] + iVar5 * 5 + 4;
+					idx++;
 				}
-				for(iVar5 = 0; iVar5 < 4; iVar5 += 1) {
-					sVar3 = (short)iVar5;
-					freezeModel2->a._00[idx].x = nBonesDiv3 + sVar1 * 5 + sVar3;
-					freezeModel2->a._00[idx].y = nBonesDiv3 + sVar1 * 5 + sVar3 + 1;
-					freezeModel2->a._00[idx].z = nBonesDiv3 + sVar2 * 5 + sVar3 + 1;
-					iVar6 = idx + 1;
-					freezeModel2->a._00[iVar6].x = nBonesDiv3 + sVar1 * 5 + sVar3;
-					freezeModel2->a._00[iVar6].y = nBonesDiv3 + sVar2 * 5 + sVar3 + 1;
-					freezeModel2->a._00[iVar6].z = nBonesDiv3 + sVar2 * 5 + sVar3;
-					idx += 2;
+				for(kk = 0; kk < 4; kk++) {
+					freezeModel2->a._00[idx].unk00 = nBonesDiv3 + jj * 5 + kk;
+					freezeModel2->a._00[idx].unk02 = nBonesDiv3 + jj * 5 + kk + 1;
+					freezeModel2->a._00[idx].unk04 = nBonesDiv3 + iVar5 * 5 + kk + 1;
+					idx++;
+
+					freezeModel2->a._00[idx].unk00 = nBonesDiv3 + jj * 5 + kk;
+					freezeModel2->a._00[idx].unk02 = nBonesDiv3 + iVar5 * 5 + kk + 1;
+					freezeModel2->a._00[idx].unk04 = nBonesDiv3 + iVar5 * 5 + kk;
+					idx++;
 				}
 				if(jointVar414[jointNum] < 0) {
-					freezeModel2->a._00[idx].x = nBonesDiv3 + sVar1 * 5;
-					freezeModel2->a._00[idx].y = nBonesDiv3 + sVar2 * 5;
-					freezeModel2->a._00[idx].z = (u16)local_214;
-					idx += 1;
+					freezeModel2->a._00[idx].unk00 = nBonesDiv3 + jj * 5;
+					freezeModel2->a._00[idx].unk02 = nBonesDiv3 + iVar5 * 5;
+					freezeModel2->a._00[idx].unk04 = (u16)local_214;
+					idx++;
 				}
 			}
 		}
 	}
-	freezeModel2->a.nJointsMinus1Times0x58 = (s16)idx;
-	for(nBones = 0; nBones
-		< (int)(uint)(ushort)freezeModel2->a.nJointsMinus1Times0x58;
-		nBones += 1) {
-		field0 = freezeModel2->a._00 + nBones;
-		jPosDelta.x = (float)freezeModel2->a._04[field0->unk02].boneVec.x -
-				(float)freezeModel2->a._04[field0->unk00].boneVec.x;
-		jPosDelta.y = (float)freezeModel2->a._04[field0->unk02].boneVec.y -
-				(float)freezeModel2->a._04[field0->unk00].boneVec.y;
-		jPosDelta.z = (float)freezeModel2->a._04[field0->unk02].boneVec.z -
-				(float)freezeModel2->a._04[field0->unk00].boneVec.z;
+	freezeModel2->a.nJointsMinus1Times0x58 = idx;
+	for(nJointsMinus1 = 0; nJointsMinus1 < freezeModel2->a.nJointsMinus1Times0x58;
+	nJointsMinus1++) {
+		field0 = freezeModel2->a._00 + nJointsMinus1;
+		jPosDelta.x = (float)freezeModel2->a._04[field0->unk02].unk00 -
+				(float)freezeModel2->a._04[field0->unk00].unk00;
+		jPosDelta.y = (float)freezeModel2->a._04[field0->unk02].unk02 -
+				(float)freezeModel2->a._04[field0->unk00].unk02;
+		jPosDelta.z = (float)freezeModel2->a._04[field0->unk02].unk04 -
+				(float)freezeModel2->a._04[field0->unk00].unk04;
 
-		jPosDeltaNrm.x = (float)freezeModel2->a._04[field0->unk04].boneVec.x -
-			(float)freezeModel2->a._04[field0->unk00].boneVec.x;
-		jPosDeltaNrm.y = (float)freezeModel2->a._04[field0->unk04].boneVec.y -
-			(float)freezeModel2->a._04[field0->unk00].boneVec.y;
-		jPosDeltaNrm.z = (float)freezeModel2->a._04[field0->unk04].boneVec.z -
-			(float)freezeModel2->a._04[field0->unk00].boneVec.z;
+		jPosDeltaNrm.x = (float)freezeModel2->a._04[field0->unk04].unk00 -
+			(float)freezeModel2->a._04[field0->unk00].unk00;
+		jPosDeltaNrm.y = (float)freezeModel2->a._04[field0->unk04].unk02 -
+			(float)freezeModel2->a._04[field0->unk00].unk02;
+		jPosDeltaNrm.z = (float)freezeModel2->a._04[field0->unk04].unk04 -
+			(float)freezeModel2->a._04[field0->unk00].unk04;
 
 		VECCrossProduct(&jPosDelta, &jPosDeltaNrm, &vTmp);
-		fVar8 = VECLength(&vTmp.x);
-		if(fVar8 == 0.0f) {
-			vTmp.x = 0.0f;
-			vTmp.y = 1.0f;
-			vTmp.z = 0.0f;
-		} else {
+		if(VECLength(&vTmp)) {
 			VECNormalize(&vTmp, &vTmp);
-		}
+		} else { vTmp.x = 0.0f; vTmp.y = 1.0f; vTmp.z = 0.0f; }
 		field0->x = vTmp.x * 127.0f;
 		field0->y = vTmp.y * 127.0f;
 		field0->z = vTmp.z * 127.0f;
 	}
-	if(param3 == false) {
-		freezeModel2->animsIdx1 = 0;
-		freezeModel2->animsIdx2 = 0;
-	} else {
+	if(param3) {
 		freezeModel2->animsIdx1 = -1;
 		freezeModel2->animsIdx2 = -1;
+	} else {
+		freezeModel2->animsIdx1 = 0;
+		freezeModel2->animsIdx2 = 0;
 	}
 }
 

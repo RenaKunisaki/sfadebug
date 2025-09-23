@@ -156,7 +156,9 @@ typedef struct FreezeModelField00 {
 } FreezeModelField00;
 
 typedef struct FreezeModelField04 {
-    /* 0x00 */ S16Vec boneVec;
+    /* 0x00 */ u16 unk00;
+    /* 0x02 */ u16 unk02;
+    /* 0x04 */ u16 unk04;
     /* 0x06 */ s8 unk06;
     /* 0x07 */ s8 unk07;
     /* 0x08 */ s8 unk08;
@@ -213,8 +215,8 @@ typedef struct {
         struct {
             /* 0x00 */ FreezeModelField00 *_00;
             /* 0x04 */ FreezeModelField04 *_04;
-            /* 0x08 */ s16 nJointsMinus1Times0x58;
-            /* 0x0a */ s16 nJointsMinus1Times0x2A;
+            /* 0x08 */ u16 nJointsMinus1Times0x58;
+            /* 0x0a */ u16 nJointsMinus1Times0x2A;
         } a;
         //this is probably something that comes later
         struct {
