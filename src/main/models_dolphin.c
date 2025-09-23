@@ -123,7 +123,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
     uint resultSize;
 	int ii;
 	AnimInstance *anim;
-	FreezeModel *unk20;
+	ModelInstanceField20 *unk20;
 	void *next;
     AnimUnk animUnk;
 
@@ -183,14 +183,14 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 
 	if(model->bCopyVtxsToModelInst) {
 		next = mmAlign4(next);
-		minst->unk20 = next; ADVANCE_PTR_BY(next,3,FreezeModel);
+		minst->unk20 = next; ADVANCE_PTR_BY(next,ModelInstanceField20_MAX_NUM,ModelInstanceField20);
 		for(ii = 0; ii < 3; ii = ii + 1) {
 			unk20 = &minst->unk20[ii];
 			unk20->animsIdx1 = -1;
             unk20->animsIdx2 = -1;
-            unk20->b.pos     = 0.0f;
-            unk20->b.prevPos = 0.0f;
-            unk20->b.speed   = 0.0f;
+            unk20->pos       = 0.0f;
+            unk20->prevPos   = 0.0f;
+            unk20->speed     = 0.0f;
 		}
 	}
 
@@ -1216,10 +1216,10 @@ bool param3) { // 8007F184
 	if(!modelInstance->freezeModel) return;
 
 	freezeModel2 = modelInstance->freezeModel;
-	freezeModel2->a.nJointsMinus1Times0x58 = nJointsMinus1 * size2;
-	freezeModel2->a.nJointsMinus1Times0x2A = nJointsMinus1 * size1;
-	freezeModel2->a._00 = (FreezeModelField00*)(freezeModel2 + 1);
-	freezeModel2->a._04 = (FreezeModelField04*)(freezeModel2->a._00 + nJointsMinus1 * size2);
+	freezeModel2->nJointsMinus1Times0x58 = nJointsMinus1 * size2;
+	freezeModel2->nJointsMinus1Times0x2A = nJointsMinus1 * size1;
+	freezeModel2->_00 = (FreezeModelField00*)(freezeModel2 + 1);
+	freezeModel2->_04 = (FreezeModelField04*)(freezeModel2->_00 + nJointsMinus1 * size2);
 	zero.x = 0.0f;
 	zero.y = 0.0f;
 	zero.z = 0.0f;
@@ -1279,9 +1279,9 @@ bool param3) { // 8007F184
 					vTmp.x += jPos1.x;
 					vTmp.y += jPos1.y;
 					vTmp.z += jPos1.z;
-					freezeModel2->a._04[nJointsMinus1].unk00 = vTmp.x * 256.0f;
-					freezeModel2->a._04[nJointsMinus1].unk02 = vTmp.y * 256.0f;
-					freezeModel2->a._04[nJointsMinus1].unk04 = vTmp.z * 256.0f;
+					freezeModel2->_04[nJointsMinus1].unk00 = vTmp.x * 256.0f;
+					freezeModel2->_04[nJointsMinus1].unk02 = vTmp.y * 256.0f;
+					freezeModel2->_04[nJointsMinus1].unk04 = vTmp.z * 256.0f;
 					nJointsMinus1 += 3;
 				}
 			}
@@ -1290,62 +1290,62 @@ bool param3) { // 8007F184
 			jPos1.y -= jPosDelta.y;
 			jPos1.z -= jPosDelta.z;
 			if(jointVar414[jointNum] == -1) {
-				freezeModel2->a._04[nJointsMinus1].unk00 = jPos1.x * 256.0f;
-				freezeModel2->a._04[nJointsMinus1].unk02 = jPos1.y * 256.0f;
-				freezeModel2->a._04[nJointsMinus1].unk04 = jPos1.z * 256.0f;
+				freezeModel2->_04[nJointsMinus1].unk00 = jPos1.x * 256.0f;
+				freezeModel2->_04[nJointsMinus1].unk02 = jPos1.y * 256.0f;
+				freezeModel2->_04[nJointsMinus1].unk04 = jPos1.z * 256.0f;
 				nJointsMinus1 += 3;
 			}
 			for(jj = 0; jj < 8; jj++) {
 				iVar5 = jj + 1;
 				if(iVar5 == 8) { iVar5 = 0; }
 				if(jointVar414[jointNum] >= 0) {
-					freezeModel2->a._00[idx].unk00 = jointVar414[jointNum] + jj * 5 + 4;
-					freezeModel2->a._00[idx].unk02 = nBonesDiv3 + jj * 5;
-					freezeModel2->a._00[idx].unk04 = nBonesDiv3 + iVar5 * 5;
+					freezeModel2->_00[idx].unk00 = jointVar414[jointNum] + jj * 5 + 4;
+					freezeModel2->_00[idx].unk02 = nBonesDiv3 + jj * 5;
+					freezeModel2->_00[idx].unk04 = nBonesDiv3 + iVar5 * 5;
 					idx++;
 
-					freezeModel2->a._00[idx].unk00 = jointVar414[jointNum] + jj * 5 + 4;
-					freezeModel2->a._00[idx].unk02 = nBonesDiv3 + iVar5 * 5;
-					freezeModel2->a._00[idx].unk04 = jointVar414[jointNum] + iVar5 * 5 + 4;
+					freezeModel2->_00[idx].unk00 = jointVar414[jointNum] + jj * 5 + 4;
+					freezeModel2->_00[idx].unk02 = nBonesDiv3 + iVar5 * 5;
+					freezeModel2->_00[idx].unk04 = jointVar414[jointNum] + iVar5 * 5 + 4;
 					idx++;
 				}
 				for(kk = 0; kk < 4; kk++) {
-					freezeModel2->a._00[idx].unk00 = nBonesDiv3 + jj * 5 + kk;
-					freezeModel2->a._00[idx].unk02 = nBonesDiv3 + jj * 5 + kk + 1;
-					freezeModel2->a._00[idx].unk04 = nBonesDiv3 + iVar5 * 5 + kk + 1;
+					freezeModel2->_00[idx].unk00 = nBonesDiv3 + jj * 5 + kk;
+					freezeModel2->_00[idx].unk02 = nBonesDiv3 + jj * 5 + kk + 1;
+					freezeModel2->_00[idx].unk04 = nBonesDiv3 + iVar5 * 5 + kk + 1;
 					idx++;
 
-					freezeModel2->a._00[idx].unk00 = nBonesDiv3 + jj * 5 + kk;
-					freezeModel2->a._00[idx].unk02 = nBonesDiv3 + iVar5 * 5 + kk + 1;
-					freezeModel2->a._00[idx].unk04 = nBonesDiv3 + iVar5 * 5 + kk;
+					freezeModel2->_00[idx].unk00 = nBonesDiv3 + jj * 5 + kk;
+					freezeModel2->_00[idx].unk02 = nBonesDiv3 + iVar5 * 5 + kk + 1;
+					freezeModel2->_00[idx].unk04 = nBonesDiv3 + iVar5 * 5 + kk;
 					idx++;
 				}
 				if(jointVar414[jointNum] < 0) {
-					freezeModel2->a._00[idx].unk00 = nBonesDiv3 + jj * 5;
-					freezeModel2->a._00[idx].unk02 = nBonesDiv3 + iVar5 * 5;
-					freezeModel2->a._00[idx].unk04 = (u16)local_214;
+					freezeModel2->_00[idx].unk00 = nBonesDiv3 + jj * 5;
+					freezeModel2->_00[idx].unk02 = nBonesDiv3 + iVar5 * 5;
+					freezeModel2->_00[idx].unk04 = (u16)local_214;
 					idx++;
 				}
 			}
 		}
 	}
-	freezeModel2->a.nJointsMinus1Times0x58 = idx;
-	for(nJointsMinus1 = 0; nJointsMinus1 < freezeModel2->a.nJointsMinus1Times0x58;
+	freezeModel2->nJointsMinus1Times0x58 = idx;
+	for(nJointsMinus1 = 0; nJointsMinus1 < freezeModel2->nJointsMinus1Times0x58;
 	nJointsMinus1++) {
-		field0 = freezeModel2->a._00 + nJointsMinus1;
-		jPosDelta.x = (float)freezeModel2->a._04[field0->unk02].unk00 -
-				(float)freezeModel2->a._04[field0->unk00].unk00;
-		jPosDelta.y = (float)freezeModel2->a._04[field0->unk02].unk02 -
-				(float)freezeModel2->a._04[field0->unk00].unk02;
-		jPosDelta.z = (float)freezeModel2->a._04[field0->unk02].unk04 -
-				(float)freezeModel2->a._04[field0->unk00].unk04;
+		field0 = freezeModel2->_00 + nJointsMinus1;
+		jPosDelta.x = (float)freezeModel2->_04[field0->unk02].unk00 -
+				(float)freezeModel2->_04[field0->unk00].unk00;
+		jPosDelta.y = (float)freezeModel2->_04[field0->unk02].unk02 -
+				(float)freezeModel2->_04[field0->unk00].unk02;
+		jPosDelta.z = (float)freezeModel2->_04[field0->unk02].unk04 -
+				(float)freezeModel2->_04[field0->unk00].unk04;
 
-		jPosDeltaNrm.x = (float)freezeModel2->a._04[field0->unk04].unk00 -
-			(float)freezeModel2->a._04[field0->unk00].unk00;
-		jPosDeltaNrm.y = (float)freezeModel2->a._04[field0->unk04].unk02 -
-			(float)freezeModel2->a._04[field0->unk00].unk02;
-		jPosDeltaNrm.z = (float)freezeModel2->a._04[field0->unk04].unk04 -
-			(float)freezeModel2->a._04[field0->unk00].unk04;
+		jPosDeltaNrm.x = (float)freezeModel2->_04[field0->unk04].unk00 -
+			(float)freezeModel2->_04[field0->unk00].unk00;
+		jPosDeltaNrm.y = (float)freezeModel2->_04[field0->unk04].unk02 -
+			(float)freezeModel2->_04[field0->unk00].unk02;
+		jPosDeltaNrm.z = (float)freezeModel2->_04[field0->unk04].unk04 -
+			(float)freezeModel2->_04[field0->unk00].unk04;
 
 		VECCrossProduct(&jPosDelta, &jPosDeltaNrm, &vTmp);
 		if(VECLength(&vTmp)) {
@@ -1642,7 +1642,7 @@ void vtxAnimFn80080A50(ModelInstance *modelInstance) {
 
 void vtxAnimFn_80080adc(ModelInstance *modelInstance, int idx,
 int animIdx1, int animIdx2, float speed, s8 flags) { // 80080ADC
-	FreezeModel *field20;
+	ModelInstanceField20 *field20;
 
 	if(idx > 2) return;
 	if(!modelInstance->mod->vertexAnims) {
@@ -1671,26 +1671,26 @@ int animIdx1, int animIdx2, float speed, s8 flags) { // 80080ADC
 	|| (field20->animsIdx2 != animIdx2)) {
 		field20->animsIdx1 = animIdx1;
 		field20->animsIdx2 = animIdx2;
-		if((flags & 0x10) == 0) { field20->b.pos = 0.0f; }
-		field20->b.prevPos = -1.0f;
-		field20->b.speed = speed;
+		if((flags & 0x10) == 0) { field20->pos = 0.0f; }
+		field20->prevPos = -1.0f;
+		field20->speed = speed;
 		field20->flags = flags | 4;
 	}
 }
 
 void fn_80080bdc(float pos, ModelInstance *modelInstance, int idx) { // 80080BDC
-	FreezeModel *field20;
+	ModelInstanceField20 *field20;
 
     if(idx > (ModelInstanceField20_MAX_NUM-1)
     || !modelInstance->mod->vertexAnims) return;
     field20 = &modelInstance->unk20[idx];
-    field20->b.pos = pos;
+    field20->pos = pos;
     field20->flags = field20->flags | 4;
 }
 
 void modelFn_80080c28(float scale, ModelInstance *modelInstance) { //80080C28
 	int ii;
-	FreezeModel *field20;
+	ModelInstanceField20 *field20;
 
 	if(!modelInstance->mod->vertexAnims) return;
 	for(ii = 0; ii < 3; ii += 1) {
@@ -1700,14 +1700,14 @@ void modelFn_80080c28(float scale, ModelInstance *modelInstance) { //80080C28
 		} else {
 LAB_80080c74:
 			if(!(field20->flags & 1)) {
-				field20->b.pos += field20->b.speed * scale;
-				if(field20->b.pos > 1.0f) {
-					field20->b.pos = 0.99f;
-					field20->b.speed = 0.001f;
+				field20->pos += field20->speed * scale;
+				if(field20->pos > 1.0f) {
+					field20->pos = 0.99f;
+					field20->speed = 0.001f;
 					field20->flags &= ~4;
-				} else if(field20->b.pos < 0.0f) {
-					field20->b.pos = 0.002f;
-					field20->b.speed = 0.001f;
+				} else if(field20->pos < 0.0f) {
+					field20->pos = 0.002f;
+					field20->speed = 0.001f;
 					field20->flags &= ~4;
 				}
 			}
@@ -1728,7 +1728,7 @@ void copyVtxsToModelInstance(ModelInstance *modelInstance) { // 80080D04
 	S16Vec *vtxs;
 	Model *model;
 	int ii;
-	FreezeModel *field20;
+	ModelInstanceField20 *field20;
 
 	flags0 = DWORD_ARRAY_802cf000;
 	flags1 = DWORD_ARRAY_802cf00c;
@@ -1737,7 +1737,7 @@ void copyVtxsToModelInstance(ModelInstance *modelInstance) { // 80080D04
 		endPos = model->numPositions + 1;
 		for(ii = 0; ii < 3; ii++) {
 			field20 = modelInstance->unk20 + ii;
-			if(field20->b.pos != field20->b.prevPos) {
+			if(field20->pos != field20->prevPos) {
 				field20->flags &= ~0xc;
 				field20->flags |= 4;
 			}
@@ -1766,7 +1766,7 @@ LAB_80080df0:
 				field20 = modelInstance->unk20 + ii;
 				if(field20->flags & 2) {
 					field20->flags &= ~2;
-					field20->b.pos = 0.0f;
+					field20->pos = 0.0f;
 				}
 				if(flags0.val[ii] && flags1.val[ii]) {
 					if(field20->animsIdx1 > -1) {
@@ -1783,14 +1783,14 @@ LAB_80080df0:
 						} else vtxs = modelInstance->vertexPositions;
 					} else vtxs = model->vertexPositions;
 
-					if(field20->b.pos > 1.0f) field20->b.pos = 1.0f;
-					else if(field20->b.pos < 0.0f) field20->b.pos = 0.0f;
+					if(field20->pos > 1.0f) field20->pos = 1.0f;
+					else if(field20->pos < 0.0f) field20->pos = 0.0f;
 					modelApplyBoneTransforms(vtxs,
 					    modelInstance->vertexPositions,
 					    (uint)model->numPositions,
-					    anims1, anims2, field20->b.pos * 65536.0f);
+					    anims1, anims2, field20->pos * 65536.0f);
 				}
-				field20->b.prevPos = field20->b.pos;
+				field20->prevPos = field20->pos;
 			}
 			modelInstance->bUseVertexPositions1C = 1;
 		}

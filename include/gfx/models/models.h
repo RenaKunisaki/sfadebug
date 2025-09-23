@@ -211,24 +211,23 @@ typedef struct FreezeModelField04 {
 } FreezeModelField04;
 
 typedef struct {
-    union {
-        struct {
-            /* 0x00 */ FreezeModelField00 *_00;
-            /* 0x04 */ FreezeModelField04 *_04;
-            /* 0x08 */ u16 nJointsMinus1Times0x58;
-            /* 0x0a */ u16 nJointsMinus1Times0x2A;
-        } a;
-        //this is probably something that comes later
-        struct {
-            float pos;
-            float prevPos;
-            float speed; //guessed
-        } b;
-    };
+    /* 0x00 */ FreezeModelField00 *_00;
+    /* 0x04 */ FreezeModelField04 *_04;
+    /* 0x08 */ u16 nJointsMinus1Times0x58;
+    /* 0x0a */ u16 nJointsMinus1Times0x2A;
     /* 0x0c */ s8 animsIdx1;
     /* 0x0d */ s8 animsIdx2;
     /* 0x0e */ u8 flags;
 } FreezeModel; //size: 0x10
+
+typedef struct ModelInstanceField20 {
+    /* 0x00 */ float pos;
+    /* 0x04 */ float prevPos;
+    /* 0x08 */ float speed; //guessed
+    /* 0x0c */ s8 animsIdx1;
+    /* 0x0d */ s8 animsIdx2;
+    /* 0x0e */ u8 flags;
+} ModelInstanceField20; //size: 0x10
 #define ModelInstanceField20_MAX_NUM 3 //most instances of this a ModelInstance can have
 
 //this struct is actually just what was being
@@ -259,7 +258,7 @@ typedef struct {
     /* 0x1a */ s8 unk1a;
     /* 0x1b */ s8 unk1b;
     /* 0x1c */ S16Vec *vertexPositions;
-    /* 0x20 */ FreezeModel *unk20; //-> ModelInstanceField20[ModelInstanceField20_MAX_NUM]
+    /* 0x20 */ ModelInstanceField20 *unk20; //-> ModelInstanceField20[ModelInstanceField20_MAX_NUM]
     /* 0x24 */ AnimInstance *animInstances[2]; //only one in final?
     /* 0x2c */ ShaderDef *shaderDefs;
     /* 0x30 */ TexFuncPtr texFuncPtr;
