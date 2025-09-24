@@ -212,11 +212,17 @@ typedef struct FreezeModelField04 {
 
 typedef struct {
     /* 0x00 */ FreezeModelField00 *_00;
-    /* 0x04 */ FreezeModelField04 *_04;
+    /* 0x04 */ //FreezeModelField04 *_04;
+    u16 *_04;
     /* 0x08 */ u16 nJointsMinus1Times0x58;
     /* 0x0a */ u16 nJointsMinus1Times0x2A;
-    /* 0x0c */ s8 animsIdx1;
-    /* 0x0d */ s8 animsIdx2;
+    union {
+        struct {
+            /* 0x0c */ s8 animsIdx1;
+            /* 0x0d */ s8 animsIdx2;
+        };
+        u16 animsIdx;
+    };
     /* 0x0e */ u8 flags;
 } FreezeModel; //size: 0x10
 
