@@ -1187,8 +1187,8 @@ bool param3) { // 8007F184
 	Vec jPos2;
 	Vec jPos1;
 	Mtx mTmp;
-	Mtx modelMatrixInv;
 	Mtx jMtxModel2;
+	Mtx modelMatrixInv;
 	Mtx jMtxModel1;
 	Mtx44 *jMtx2;
 	Mtx44 *jMtx1;
@@ -1218,7 +1218,7 @@ bool param3) { // 8007F184
 	freezeModel->nJointsMinus1Times0x58 = nJointsMinus1 * size2;
 	freezeModel->nJointsMinus1Times0x2A = nJointsMinus1 * size1;
 	freezeModel->_00 = (FreezeModelField00*)(freezeModel + 1);
-	freezeModel->_04 = (u16*)(freezeModel->_00 + nJointsMinus1 * size2);
+	freezeModel->_04 = &freezeModel->_00[nJointsMinus1 * size2].unk00;
 	zero.x = 0.0f;
 	zero.y = 0.0f;
 	zero.z = 0.0f;
