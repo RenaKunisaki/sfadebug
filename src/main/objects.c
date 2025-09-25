@@ -836,7 +836,7 @@ ObjData *Object_objLoadData(int objType) {
 		if(objData->pWeaponDa) OFFSET_TO_PTR(ObjWeaponData, objData, pWeaponDa);
 		OFFSET_TO_PTR(u32, objData, pModelList);
 		OFFSET_TO_PTR(Texture, objData, textures.ptr);
-		OFFSET_TO_PTR(Joint, objData, joints);
+		OFFSET_TO_PTR(u8, objData, joints);
 		if(objData->offset_0x18) OFFSET_TO_PTR(ObjSeqCmd, objData, offset_0x18);
 		if(objData->lockdata) OFFSET_TO_PTR(RomLockData, objData, lockdata);
 		if(objData->pSeq) OFFSET_TO_PTR(u16, objData, pSeq);
