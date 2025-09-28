@@ -120,7 +120,7 @@ typedef struct Model {
     /* 0x90 */ UNKTYPE *skinWeights;
     /* 0x94 */ DisplayList *displayLists;
     /* 0x98 */ BitStream *renderStream;
-    /* 0x9c */ u16 renderStreamLen;
+    /* 0x9c */ u16 renderStreamSize;
     /* 0x9e */ u8 unk9e;
     /* 0x9f */ u8 unk9f;
     /* 0xa0 */ UNKTYPE **vertexAnims; //likely points to some struct, using UNKTYPE** to satisfy checks for now
@@ -133,7 +133,7 @@ typedef struct Model {
     /* 0xad */ s8 unkad;
     /* 0xae */ s8 unkae;
     /* 0xaf */ s8 unkaf;
-    /* 0xb0 */ u16 numAnims;
+    /* 0xb0 */ u16 numAnims; //tnumVertexAnims?
     /* 0xb2 */ u16 numPolygons;
     /* 0xb4 */ u16 numGroups;
     /* 0xb6 */ u8 numTextures;

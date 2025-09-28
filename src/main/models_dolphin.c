@@ -664,6 +664,7 @@ ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
 	int modelNum;
 	ModelInstance *modelInstance;
 	Model *model;
+	int i;
 
 	/* final:
 	   loadDataFileWithLength(MODELIND.bin,globalModAnimBuffer,id << 1,8);
@@ -701,6 +702,54 @@ ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
 	model->headerCksum = Model_checksumHeader(model);
 	DCStoreRange(model, model->size);
 	return modelInstance;
+}
+
+void modelDebugPrint(Model *model) { //unused, only strings remain
+	int i;
+
+	printf("\n\n********** MODEL PRINT BEGIN **********\n");
+	printf("***** STRUCTURE:\n");
+	printf("\tsize=%d\n", model->size);
+	printf("\ttextures=%x\n", model->GCtextures);
+	printf("\tvertexPositions=%x\n", model->vertexPositions);
+	printf("\tvertexNormals=%x\n", model->vertexNormals);
+	printf("\tvertexColours=%x\n", model->vertexColours);
+	printf("\tvertexTexcoords=%x\n", model->vertexTexCoords);
+	printf("\trenderStream=%x\n", model->renderStream);
+	printf("\tnumPositions=%d\n", model->numPositions);
+	printf("\tnumNormals=%d\n", model->numNormals);
+	printf("\tnumColours=%d\n", model->numColours);
+	printf("\tnumTexCoords=%d\n", model->numTexCoords);
+	printf("\tnumTextures=%d\n", model->numTextures);
+	printf("\tnumJoints=%d\n", model->numJoints);
+	printf("\tnumDisplayLists=%d\n", model->numDisplayLists);
+	printf("\trenderStreamSize=%d\n", model->renderStreamSize);
+	printf("\tnumVertexAnims=%d\n", model->numAnims);
+
+	printf("***** VERTEX POSITIONS:\n");
+	for(i=0; i<model->numPositions; i++) {
+		printf("\tvertexPositions[%d]=(%d,%d,%d)\n", i,
+			model->vertexPositions[i].x,
+			model->vertexPositions[i].y,
+			model->vertexPositions[i].z);
+	}
+
+	printf("***** VERTEX NORMALS:\n");
+	printf("\tvertexNormals[%d]=(%d,%d,%d)\n");
+
+	printf("***** VERTEX COLOURS:\n");
+
+	printf("***** VERTEX TEXCOORDS:\n");
+	printf("\tvertexTexCoords[%d]=(%d,%d)\n");
+
+	printf("***** TEXTURES:\n");
+	printf("\ttextures[%d]=%d\n");
+
+	printf("***** DISPLAY LISTS:\n");
+	printf("\tdisplayLists[%d]=%x size=%d\n");
+	printf("\tmin %d, %d, %d\tmax %d, %d, %d\n");
+
+	printf("********** MODEL PRINT END **********\n\n");
 }
 
 void modelInstanceFree(ModelInstance *modelInstance) { // 8007DD68
