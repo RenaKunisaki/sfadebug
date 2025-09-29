@@ -735,19 +735,39 @@ void modelDebugPrint(Model *model) { //unused, only strings remain
 	}
 
 	printf("***** VERTEX NORMALS:\n");
-	printf("\tvertexNormals[%d]=(%d,%d,%d)\n");
+	for(i=0; i<model->numNormals; i++) {
+		printf("\tvertexNormals[%d]=(%d,%d,%d)\n", i,
+			model->vertexNormals[i].x,
+			model->vertexNormals[i].y,
+			model->vertexNormals[i].z);
+	}
 
 	printf("***** VERTEX COLOURS:\n");
+	for(i=0; i<model->numColours; i++) {
+		//I guess they forgot to actually print this
+	}
 
 	printf("***** VERTEX TEXCOORDS:\n");
-	printf("\tvertexTexCoords[%d]=(%d,%d)\n");
+	for(i=0; i<model->numTexCoords; i++) {
+		printf("\tvertexTexCoords[%d]=(%d,%d)\n", i,
+			model->vertexTexCoords[i].x,
+			model->vertexTexCoords[i].y);
+	}
 
 	printf("***** TEXTURES:\n");
-	printf("\ttextures[%d]=%d\n");
+	for(i=0; i<model->numTextures; i++) {
+		printf("\ttextures[%d]=%d\n", i,
+			model->GCtextures[i]); //might be something else
+	}
 
 	printf("***** DISPLAY LISTS:\n");
-	printf("\tdisplayLists[%d]=%x size=%d\n");
-	printf("\tmin %d, %d, %d\tmax %d, %d, %d\n");
+	for(i=0; i<model->numDisplayLists; i++) {
+		printf("\tdisplayLists[%d]=%x size=%d\n", i,
+			model->displayLists[i],
+			model->displayLists[i].length);
+		printf("\tmin %d, %d, %d\tmax %d, %d, %d\n");
+		//XXX what are these fields?
+	}
 
 	printf("********** MODEL PRINT END **********\n\n");
 }
@@ -953,7 +973,7 @@ void Model_setOffsets(Model *model) { // 8007E1B8
 
 	for(i = 0; i < model->numDisplayLists; i++) {
 		OFFSET_TO_PTR2(void, model, displayLists[i].displayList, modelBase);
-		ASSERTLINE(739, model->displayLists[i].displayList>=modelBase && model->displayLists [i].displayList<modelEnd);
+		ASSERTLINE(739, model->displayLists[i].displayList>=modelBase && model->displayLists[i].displayList<modelEnd);
 		ASSERTLINE(740, ((int)model->displayLists[i].displayList&0x1f)==0);
 	}
 	for(i = 0; i < model->bCopyVtxsToModelInst; i++) {
