@@ -65,7 +65,7 @@ void initModels(void);
 ModelInstance * loadModelInstance(int id,uint flags);
 void modelInstanceFree(ModelInstance *modelInstance);
 uint Model_checksumHeader(Model *model);
-Model* Model_load(int id);
+Model* loadModel(int id);
 void Model_loadTextures(Model *model);
 void Model_freeTextures(Model *model);
 void Model_freeAnimations(Model *model);
@@ -674,7 +674,7 @@ ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
 
     if(!SparseArray_get(modelsLoadedTable,
     modelNum, &model)) {
-		model = Model_load(modelNum);
+		model = loadModel(modelNum);
         BADASSERTLINE(218, model);
 		if(isModelAnimDisabled()) {
             model->flags |= ModelDataFlags2_NoAnimations;
@@ -810,26 +810,33 @@ uint Model_checksumHeader(Model *model) { //8007DE30
 #pragma peephole off
 #endif
 
-Model* Model_load(int id) { //8007DE70
+Model* loadModel(int id) { //8007DE70
 	int dummy;
 	int realId;
 	uint *modelsTab;
 	uint amapSize;
-	int size;
+	int decompSize;
 	int size2;
 	int nAnimations;
 	uint animCacheSize;
 	BOOL bNoAmap;
 	Model *model;
 
+	STUBBED_PRINTF("\t+++++ loadModel +++++ ARGS: %d\n", id);
+
 	realId = id;
 	modelsTab = (uint *)getTable(FILE_MODELS_tab);
+	STUBBED_PRINTF("MODEL OFFSET %x  MODELNUM %d\n",
+		modelsTab[realId], realId);
+
 	loadModelsBin(modelsTab[realId], &nAnimations,
-		&animCacheSize, &bNoAmap, &size, realId);
+		&animCacheSize, &bNoAmap, &decompSize, realId);
 	animCacheSize = (uint)mmAlign8((void*)animCacheSize);
 	animCacheSize += 0xb0;
 
-	size2 = size + modelGetAmapSize(realId, bNoAmap, nAnimations) + 500;
+	size2 = decompSize + modelGetAmapSize(realId, bNoAmap, nAnimations) + 500;
+	STUBBED_PRINTF("\t decompSize=%d\n", decompSize);
+
 	model = (Model *)mmAlloc(size2,
 		ALLOC_TAG_MODELS_COL, (volatile u32)"mod");
 	//something odd with strings here.
@@ -837,7 +844,7 @@ Model* Model_load(int id) { //8007DE70
 	model = (Model *)mmAlign16(model);
 
 	loadAndDecompressDataFile(FILE_MODELS_bin, model,
-		modelsTab[realId], size, NULL,
+		modelsTab[realId], decompSize, NULL,
 		realId, 0);
 
 	model->animCacheSize = animCacheSize;
@@ -848,6 +855,8 @@ Model* Model_load(int id) { //8007DE70
 
 	if(!model->numAnims) model->flags |= ModelDataFlags2_NoAnimations;
 	if(bNoAmap) model->flags |= ModelDataFlags2_UseLocalModAnimTab;
+
+	STUBBED_PRINTF("\t----- loadModel ----- RETURN: %x\n", model);
 	return model;
 }
 

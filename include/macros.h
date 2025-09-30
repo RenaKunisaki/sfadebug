@@ -37,7 +37,7 @@
 
 #define ASSERT(cond) ASSERTLINE(__LINE__, cond)
 
-#define STUBBED_PRINTF(...)
+#define STUBBED_PRINTF(...) (__VA_ARGS__);
 
 //make this a macro so we can easily disable it if
 //we want to use a newer compiler which no longer
