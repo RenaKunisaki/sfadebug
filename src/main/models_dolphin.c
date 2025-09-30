@@ -856,12 +856,12 @@ Model* Model_load(int id) { //8007DE70
 #endif
 
 void Model_loadTextures(Model *model) { // 8007DFF4
-	int iTex;
+	int i;
     BADASSERTLINE(541, model);
-	for(iTex = 0; iTex < model->numTextures; iTex++) {
-		model->GCtextures[iTex] = textureLoad(
-            -((uint)model->GCtextures[iTex] | 0x8000), 0);
-		BADASSERTLINE(546, model->GCtextures[iTex]);
+	for(i = 0; i < model->numTextures; i++) {
+		model->GCtextures[i] = textureLoad(
+            -((uint)model->GCtextures[i] | 0x8000), 0);
+		BADASSERTLINE(546, model->GCtextures[i]);
 	}
 }
 
