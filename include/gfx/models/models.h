@@ -131,9 +131,8 @@ typedef struct Model {
     /* 0xab */ s8 numColours;
     /* 0xac */ s8 numTexCoords;
     /* 0xad */ s8 unkad;
-    /* 0xae */ s8 unkae;
-    /* 0xaf */ s8 unkaf;
-    /* 0xb0 */ u16 numAnims; //tnumVertexAnims?
+    /* 0xae */ u16 numVertexAnims; //guessing at offset and size
+    /* 0xb0 */ u16 numAnims;
     /* 0xb2 */ u16 numPolygons;
     /* 0xb4 */ u16 numGroups;
     /* 0xb6 */ u8 numTextures;

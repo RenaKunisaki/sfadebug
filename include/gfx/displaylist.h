@@ -5,7 +5,7 @@
 
 typedef struct {
     /* 0x00 */ void *displayList; //to raw GX commands
-    /* 0x04 */ u16 length;
+    /* 0x04 */ u16 displayListSize;
     /* 0x06 */ s8 unk06;
     /* 0x07 */ s8 unk07;
     /* 0x08 */ s8 unk08;

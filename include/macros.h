@@ -65,6 +65,7 @@ and have just arbitrarily chosen x to be the statement.
 
 //really? this isn't defined?
 #define UCHAR_MAX 255u
+#define SHRT_MIN -32768
 #define SHRT_MAX 32767
 #define PI 3.141593f
 

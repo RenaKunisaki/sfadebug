@@ -1,5 +1,6 @@
 #include "dolphin.h"
 #include "dolphin/mtx.h"
+#include "gfx/models/animation.h"
 #include "gfx/models/shaders.h"
 #include "gfx/textures.h"
 #include "macros.h"
@@ -35,7 +36,7 @@ s16 Tiltlist[TILTLIST_MAX]; //80357698
 int maxModelNum; //80398a20
 s16 *globalModAnimBuffer; //80398a24
 int *pAmapTab; //s16[16] @ 80398a28, also accessed as int
-u32 *animOffsetTbl; //80398a2c
+u32 *animOffsetTable; //80398a2c
 UNKTYPE *globalModAnimBufferPlus0x810; //80398a30
 BOOL bHaveAnimTab; //80398a34
 SparseArray *modelsLoadedTable; //80398a38
@@ -95,7 +96,7 @@ GCPolygon* modelGetGCPoly(Model *model,int polygonNum);
 Animation * loadAnimation(Model *model,short id,short id2,void *dest);
 Animation * modelLoadAnimation(Model *model,int index,int id,void *dest);
 Animation * getAnimation(short id);
-void unloadAnimation(Animation *anim);
+void freeAnimation(Animation *anim);
 void objAnimFn_8008045c(ModelInstance *mInst, int which, int iJoint, float inScale, float outPosScale, Vec *outPos, S16Vec *outRot);
 void fn_80080734(ModelInstance *modelInstance,Model *model,ObjInstance *object,Mtx44 *mtx,ObjInstance *parent);
 void vtxAnimFn80080A50(ModelInstance *modelInstance);
@@ -390,7 +391,7 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 					model, globalModAnimBuffer[nAnims], (short)nAnims, NULL);
 				if(!model->anims[nAnims]) {
 					for(bank = 0; bank < nAnims; bank++) {
-						unloadAnimation((Animation*)model->anims[bank]);
+						freeAnimation((Animation*)model->anims[bank]);
 					}
 					model->anims = NULL;
 					return TRUE;
@@ -406,6 +407,8 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 	}
 	return FALSE;
 }
+
+//XXX functions up to at least here do not belong in this file
 
 void modelSetupAnims(
     ModelInstance *modelInstance, AnimInstance *animInstance) { // 8007CFA4
@@ -764,7 +767,7 @@ void modelDebugPrint(Model *model) { //unused, only strings remain
 	for(i=0; i<model->numDisplayLists; i++) {
 		printf("\tdisplayLists[%d]=%x size=%d\n", i,
 			model->displayLists[i],
-			model->displayLists[i].length);
+			model->displayLists[i].displayListSize);
 		printf("\tmin %d, %d, %d\tmax %d, %d, %d\n");
 		//XXX what are these fields?
 	}
@@ -885,7 +888,7 @@ void Model_freeAnimations(Model *model) { //8007E0F8
 	int ii;
 	if(model->anims && model->numAnims) {
 		for(ii = 0; ii < model->numAnims; ii++) {
-			unloadAnimation((Animation*)model->anims[ii]);
+			freeAnimation((Animation*)model->anims[ii]);
 		}
 	}
 }
@@ -1451,10 +1454,35 @@ Shader* modelGetShader(Model *model, int shaderNum) { // 8007FD8C
 	return &model->shaders[shaderNum];
 }
 
+S16Vec *modelInstanceGetVtxPos(ModelInstance *modelInstance, int positionNum) { //unused, only strings remain
+    BADASSERTLINE(0, modelInstance);
+    BADASSERTLINE(0, positionNum>=0 && positionNum<modelInstance->mod->numPositions);
+	return &modelInstance->mod->vertexPositions[positionNum];
+}
+
 S16Vec *modelGetVtxPos(Model *model, int positionNum) { // 8007FE10
     BADASSERTLINE(1671, model);
     BADASSERTLINE(1672, positionNum>=0 && positionNum<model->numPositions);
 	return &model->vertexPositions[positionNum];
+}
+
+S16Vec *modelGetVtxNormal(Model *model, int normalNum) { //unused
+    BADASSERTLINE(0, model);
+    BADASSERTLINE(0, normalNum>=0 && normalNum<model->numNormals);
+	return &model->vertexNormals[normalNum];
+}
+
+u16 *modelGetVtxColour(Model *model, int colourNum) { //unused
+    BADASSERTLINE(0, model);
+    BADASSERTLINE(0, colourNum>=0 && colourNum<model->numColours);
+	return &model->vertexColours[colourNum];
+}
+
+S16Vec *modelGetVtxTexCoord(Model *model, int coordNum) { //unused
+    BADASSERTLINE(0, model);
+	//@BUG: should be comparing to numTexCoords
+    BADASSERTLINE(0, coordNum>=0 && coordNum<model->numColours);
+	return &model->vertexTexCoords[coordNum];
 }
 
 Texture *modelGetGCTexture(Model *model, int textureNum) { // 8007FE94
@@ -1475,6 +1503,26 @@ DisplayList *modelGetDisplayList(Model *model, int listNum) { // 8007FF9C
 	return &model->displayLists[listNum];
 }
 
+//unused, only assert string, so no way to know what exactly
+//this accessed.
+UNKTYPE *modelGetDisplayListUnk(Model *model, int listNum) {
+    BADASSERTLINE(0, model);
+    BADASSERTLINE(0, model->displayLists[listNum].displayListSize>0 && !(model->displayLists[listNum].displayListSize&0x1f));
+	return NULL;
+}
+
+UNKTYPE *modelGetVertexAnim(Model *model, int animNum) { //unused
+    BADASSERTLINE(0, model);
+    BADASSERTLINE(0, animNum>=0 && animNum<model->numVertexAnims);
+	return model->vertexAnims[animNum];
+}
+
+Animation *modelGetAnimation(Model *model, int animNum) { //unused
+    BADASSERTLINE(0, model);
+    BADASSERTLINE(0, animNum>=0 && animNum<model->numAnims);
+	return (Animation*)model->anims[animNum];
+}
+
 PolygonGroup *modelGetPolyGroup(Model *model, int groupNum) { // 80080020
     BADASSERTLINE(1906, model);
     BADASSERTLINE(1907, groupNum>=0 && groupNum<model->numGroups);
@@ -1485,6 +1533,19 @@ GCPolygon* modelGetGCPoly(Model *model, int polygonNum) { // 800800A4
     //missing: BADASSERTLINE(1926, model);
     BADASSERTLINE(1927, polygonNum>=0 && polygonNum<model->numPolygons);
 	return &model->GCpolygons[polygonNum];
+}
+
+void modelUnkVec16Fn(int x, int y, int z) { //unused
+	//no way to know what exactly goes on in here
+	BADASSERTLINE(0, x>=SHRT_MIN && x<=SHRT_MAX);
+	BADASSERTLINE(0, y>=SHRT_MIN && y<=SHRT_MAX);
+	BADASSERTLINE(0, z>=SHRT_MIN && z<=SHRT_MAX);
+}
+
+void modelUnkTexCoordFn(int s, int t) { //unused
+	//no way to know what exactly goes on in here
+	BADASSERTLINE(0, s>=SHRT_MIN && s<=SHRT_MAX);
+	BADASSERTLINE(0, t>=SHRT_MIN && t<=SHRT_MAX);
 }
 
 Animation *loadAnimation(
@@ -1503,7 +1564,7 @@ Model *model, int index, int id, void *dest) { // 80080168
 	Animation *anim;
 	uint animSize;
 
-	offset = animOffsetTbl[index];
+	offset = animOffsetTable[index];
 	loadAndDecompressDataFile(FILE_ANIM_BIN, NULL, offset,
         0, &animSize, index, 1);
     BADASSERTLINE(2150, animSize<model->animCacheSize-ANIMMAP_SIZE);
@@ -1526,7 +1587,7 @@ Animation *getAnimation(short id) { // 80080270
 
 	if(!SparseArray_get(animsLoadedTable, id, &anim)) {
         //anim isn't loaded; load it now
-		offset = animOffsetTbl[id];
+		offset = animOffsetTable[id];
 		loadAndDecompressDataFile(FILE_ANIM_BIN, NULL, offset, 0, &size, id, 1);
 		anim = (Animation *)mmAlloc(size,
             ALLOC_TAG_ANIMS_COL, (volatile u32)"mod:anim");
@@ -1542,14 +1603,13 @@ Animation *getAnimation(short id) { // 80080270
 	return anim;
 }
 
-
-void unloadAnimation(Animation *anim) { // 8008039C
+void freeAnimation(Animation *anim) { // 8008039C
 	bool success;
     int dummy;
 	int key;
 
     if(!anim) {
-        STUBBED_OP(anim);
+        STUBBED_PRINTF("freeAnimation() ---- Trying to free NULL anim \n");
         return;
     }
     BADASSERTLINE(2248, anim);
@@ -1560,6 +1620,17 @@ void unloadAnimation(Animation *anim) { // 8008039C
         SparseArray_remove(animsLoadedTable, key);
         mmFree(anim);
     }
+}
+
+void *modelOffsetTable;
+void modelLoadOffsetTables() { //unused
+	printf("--------MODELS Load Offset Tables-------\n");
+	if(!modelOffsetTable) {
+		printf("modelLoadOffsetTables() --- modelOffsetTable is NULL\n");
+	}
+	if(!animOffsetTable) {
+		printf("modelLoadOffsetTables() --- animOffsetTable is NULL\n");
+	}
 }
 
 void objAnimFn_8008045c(ModelInstance *mInst, int which, int iJoint,
@@ -1906,8 +1977,8 @@ BOOL countModels(void) { // 800812A0
 
     //looks like a bug, but maxModelNum is int, not short.
     BADASSERTLINE(3301, maxModelNum<=SHRT_MAX);
-    animOffsetTbl = (u32 *)getTable(FILE_ANIM_TAB);
-    if(!animOffsetTbl) return FALSE;
+    animOffsetTable = (u32 *)getTable(FILE_ANIM_TAB);
+    if(!animOffsetTable) return FALSE;
     bHaveAnimTab = FALSE; //XXX wrong name?
     return TRUE;
 }
