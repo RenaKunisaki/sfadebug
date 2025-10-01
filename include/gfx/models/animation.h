@@ -156,7 +156,7 @@ typedef struct {
 
 #define ANIMMAP_SIZE 0x80
 typedef struct {
-    u8 animMap[ANIMMAP_SIZE]; //at index 6 is (sometimes?) a Bone
+    s8 animMap[ANIMMAP_SIZE]; //at index 6 is (sometimes?) a Bone
     Animation animData[0]; //unknown size
 } AnimCache;
 

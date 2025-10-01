@@ -1943,7 +1943,7 @@ u8 iJoint3, u8 flags, short unk58) { // 8007D678
 		if(iJoint3 < 2) {
 			anim2.cache0[1] = animInstance->cache0[animInstance->iJoint[iJoint3]];
 		} else {
-			anim2.cache1[1] = animInstance->cache1[animInstance->iJoint[iJoint3]];
+			anim2.cache0[1] = animInstance->cache1[animInstance->iJoint[iJoint3]];
 		}
 	} else {
 		anim2.iJoint[0] = animInstance->iJoint[iJoint1];
