@@ -36,6 +36,7 @@ s16 Tiltlist[TILTLIST_MAX]; //80357698
 int maxModelNum; //80398a20
 s16 *globalModAnimBuffer; //80398a24
 int *pAmapTab; //s16[16] @ 80398a28, also accessed as int
+void *modelOffsetTable;
 u32 *animOffsetTable; //80398a2c
 UNKTYPE *globalModAnimBufferPlus0x810; //80398a30
 BOOL bHaveAnimTab; //80398a34
@@ -115,530 +116,6 @@ void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
 	void *result;
 	loadAsset_modelInstance(&result, id, buf);
 	return result;
-}
-
-//flags: CreateModelInstanceFlags
-ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 8007C5B4
-	ModelInstance *minst;
-	uint size;
-    uint resultSize;
-	int ii;
-	AnimInstance *anim;
-	ModelInstanceField20 *unk20;
-	void *next;
-    AnimUnk animUnk;
-
-	if(!model) {
-		printf("WARNING :: createModelInstance called with NULL pointer\n");
-		return NULL;
-	}
-	size = setupAnimInstance(model, flags, &animUnk, 0);
-	minst = (ModelInstance *)mmAlloc(
-	    size, ALLOC_TAG_MODEL_INSTANCE, (volatile u32) "minst");
-	if(!minst) return NULL;
-
-	memclr(minst, size);
-	next = (void*)(minst + 1);
-    next = mmAlign16(next);
-	minst->jMtxs[0] = next; ADVANCE_PTR(next,animUnk.mtxSize >> 1);
-	minst->jMtxs[1] = next; ADVANCE_PTR(next,animUnk.mtxSize >> 1);
-	minst->jMtxs4C = minst->jMtxs[0];
-
-	if(model->bCopyVtxsToModelInst
-    || model->skin2Matrices) {
-		next = (void *)((int)next + 0x1f & ~0x1f);
-		minst->vertexPositions  = next; ADVANCE_PTR_BY(next,model->numPositions,S16Vec);
-		minst->vertexPositions2 = next; ADVANCE_PTR_BY(next,model->numPositions,S16Vec);
-		memcpy(minst->vertexPositions,
-		    model->vertexPositions,
-		    (uint)model->numPositions * sizeof(S16Vec));
-		DCFlushRange(minst->vertexPositions,
-            (uint)model->numPositions * sizeof(S16Vec));
-	} else {
-		minst->vertexPositions  = model->vertexPositions;
-		minst->vertexPositions2 = model->vertexPositions;
-	}
-
-	next = mmAlign4(next);
-	minst->animInstances[0] = next; ADVANCE_PTR_BY(next,1,AnimInstance);
-
-	if(flags & CreateModelInstanceFlags_DoubleBufferAnims) {
-		minst->animInstances[1] = next; ADVANCE_PTR_BY(next,1,AnimInstance);
-	}
-
-	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-		next = (void *)alignTo64(next);
-		anim = minst->animInstances[0];
-		anim->cache0[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-        anim->cache0[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-		anim->cache1[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-		anim->cache1[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-		if(minst->animInstances[1]) {
-			anim = minst->animInstances[1];
-			anim->cache0[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-			anim->cache0[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-			anim->cache1[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-			anim->cache1[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
-		}
-	}
-
-	if(model->bCopyVtxsToModelInst) {
-		next = mmAlign4(next);
-		minst->unk20 = next; ADVANCE_PTR_BY(next,ModelInstanceField20_MAX_NUM,ModelInstanceField20);
-		for(ii = 0; ii < 3; ii = ii + 1) {
-			unk20 = &minst->unk20[ii];
-			unk20->animsIdx1 = -1;
-            unk20->animsIdx2 = -1;
-            unk20->pos       = 0.0f;
-            unk20->prevPos   = 0.0f;
-            unk20->speed     = 0.0f;
-		}
-	}
-
-	if(animUnk.hitSphereDataSize > 0) {
-		next = mmAlign4(next);
-		minst->hitSpheres[0] = next; ADVANCE_PTR_BY(next,model->numHitSpheres,RamHitSphere);
-		minst->hitSpheres[1] = next; ADVANCE_PTR_BY(next,model->numHitSpheres,RamHitSphere);
-		minst->activeHitSphere = minst->hitSpheres[0];
-	}
-
-	if(model->joints && model->numJoints && model->radi && model->exT) {
-		next = mmAlign4(next);
-		minst->skeleton            = next; ADVANCE_PTR_BY(next,1,ModelSkeletonStruct);
-		minst->skeleton->joints    = next; ADVANCE_PTR_BY(next,model->numJoints,Vec);
-		minst->skeleton->scale     = next; ADVANCE_PTR_BY(next,model->numJoints,float);
-		minst->skeleton->unk08     = next; ADVANCE_PTR_BY(next,model->numJoints,float);
-		minst->skeleton->jointDist = next; ADVANCE_PTR_BY(next,model->numJoints,float);
-		minst->skeleton->totalDist = next; ADVANCE_PTR_BY(next,model->numJoints,float);
-		minst->skeleton->unk18     = next; ADVANCE_PTR_BY(next,model->numJoints,u8);
-	} else {
-        minst->skeleton = NULL;
-	}
-
-	if(model->skin2Matrices) {
-		next = mmAlign4(next);
-		minst->skinVtxs = next; ADVANCE_PTR_BY(next,model->skin.numPieces,VertexPosition*);
-	}
-
-	next = mmAlign4(next);
-	minst->shaderDefs = next; ADVANCE_PTR_BY(next,model->numShaders,ShaderDef);
-
-	if(flags & CreateModelInstanceFlags_TexturedShadow) {
-		next = mmAlign2(next);
-		minst->shadow = next; ADVANCE_PTR_BY(next,1,TexturedShadow);
-		minst->shadow->state = 0;
-	}
-
-    resultSize = (int)next - (int)minst;
-	if((int)resultSize >= (int)size) {
-		printf("DANGER: createModelInstance: Actual size exceeded totalsize!!!\n");
-	}
-
-	minst->freezeModel = NULL;
-	minst->mod = model;
-	minst->bUseVertexPositions1C = 0;
-	return minst;
-}
-
-int Model_setupAnimInstance(
-Model *model, int flags, AnimUnk *anim, BOOL bAlways0) { // 8007C9C0
-	int result;
-
-	if(model->numAnims) {
-		/* final: mtxSize = (model->nBones + model->nVtxGroups) * 0x80 */
-		anim->mtxSize = model->numJoints * sizeof(Mtx44) * 2;
-	}
-	else {
-		anim->mtxSize = 0x80;
-	}
-
-	if(model->bCopyVtxsToModelInst || model->skin2Matrices) {
-		/* final: +0x20 => +0x60 */
-		anim->unk00 = model->numPositions * 2 * sizeof(S16Vec) + 0x20;
-	} else {
-		anim->unk00 = 0;
-	}
-
-	anim->hitSphereDataSize = model->numHitSpheres * sizeof(HitSpherePos) * 2;
-	anim->nAnims = 0;
-	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-		anim->animCacheSize = model->animCacheSize;
-		while(anim->animCacheSize & 7) anim->animCacheSize++;
-		anim->nAnims = anim->animCacheSize * 4;
-	}
-	anim->size10 = sizeof(AnimInstance);
-	if(flags & 0x80) {
-		anim->size10 *= 2;
-		anim->nAnims *= 2;
-	}
-	if((flags & 1) || model->bCopyVtxsToModelInst || bAlways0) {
-		anim->size10 += 0x30; //sizeof(Mtx)? but these are Mtx44?
-		result = 0x54; //probably sizeof(ModelInstance)
-		result += anim->nAnims + anim->size10;
-		result += anim->mtxSize + anim->hitSphereDataSize + 8;
-	} else {
-		//same as above but ordered different. why!?
-		result = 0x54;
-		result += anim->size10;
-		result += anim->nAnims + anim->mtxSize + anim->hitSphereDataSize + 8;
-	}
-	result += anim->unk00;
-	if(model->joints && model->numJoints && model->radi) {
-		result += (model->numJoints * 2) + (model->numJoints * 7) * 4 +
-			0x1c; //possibly sizeof(AnimUnk)
-	}
-	if(model->skin2Matrices) {
-		result += model->skin.numPieces * 4 + 4;
-	}
-	result += model->numShaders * 8;
-	if(flags & 0x8000) result += 0x1a;
-
-	result = (result + 0x2f & ~0xf) + 0x10;
-	return result;
-}
-
-int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
-	int result;
-    int idx;
-    int ent;
-
-    result = 0;
-	if(bypassAmapTab) {
-        result += nAnimations * 2 + 8;
-        while(result & 7) result++;
-	} else {
-		result += nAnimations * 4;
-        while(result & 7) result++;
-        loadDataFileWithLength(FILE_AMAP_TAB,
-            pAmapTab, (id & ~3) * 4, sizeof(int)*8);
-        idx = id & 3;
-        ent = pAmapTab[idx+1] - pAmapTab[idx];
-        result += ent;
-	}
-	return result;
-}
-
-BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
-	s16 *amap;
-	int bank;
-	int thisId;
-	int nextId;
-	int offset;
-	int offsNext;
-	int animBank;
-	int nAnims;
-	int size;
-	int ii;
-	int totalSize;
-
-	totalSize = 0;
-	amap = (s16*)pAmapTab;
-	loadDataFileWithLength(FILE_MODANIM_TAB, amap, animId * 2, 0x10);
-	offset = amap[0];
-	offsNext = amap[1];
-	size = offset;
-	nAnims = (offsNext - offset) >> 1;
-	if(nAnims != model->numAnims) {
-		printf("makeModelAnimation() size mismatch!! (%d,%d)\n", model->numAnims, nAnims);
-		model->numAnims = nAnims;
-	}
-	if(!model->numAnims) return FALSE;
-
-	nAnims = model->numAnims * 2 + 8;
-	if(nAnims > 0x800) {
-		debugPrint("Warning: Model animation buffer overflow!! size=%d\n", nAnims);
-	}
-	loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, (animId & ~3) * 4, 0x20);
-	bank = animId & 3;
-	model->animOffset = pAmapTab[bank];
-	thisId = pAmapTab[bank];
-	nextId = pAmapTab[bank + 1] - thisId;
-	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-		model->animIds = (s16 *)hits;
-		while(nAnims & 7) nAnims++;
-		totalSize += nAnims;
-		hits = (void*)((intptr_t)hits + nAnims);
-		//sus, using size as offset here
-		loadDataFileWithLength(FILE_MODANIM_BIN, model->animIds, size, nAnims);
-	} else {
-		loadDataFileWithLength(FILE_MODANIM_BIN, globalModAnimBuffer, size, nAnims);
-		model->animIds = globalModAnimBuffer;
-	}
-	animBank = 0;
-	model->animBank[animBank++] = 0;
-	for(ii = 0; ii < model->numAnims; ii += 1) {
-		if(model->animIds[ii] == -1) {
-			model->animBank[animBank++] = ii + 1;
-		}
-	}
-	if(8 < animBank) printf("ANIMBANK overflow\n");
-	if(!(model->flags & ModelDataFlags2_UseLocalModAnimTab)) {
-		model->animIds = NULL;
-		model->anims = (struct Animation **)hits;
-		hits = (void*)((intptr_t)hits + model->numAnims * 4);
-		for(totalSize += model->numAnims * 4; totalSize & 7; totalSize += 1) {
-			hits = (void*)((intptr_t)hits + 1);
-		}
-		model->amap = hits;
-		hits = (void*)((intptr_t)hits+nextId);
-		totalSize += nextId;
-		loadDataFileWithLength(FILE_AMAP_BIN, model->amap,
-			model->animOffset, nextId);
-		nAnims = 0;
-		do {
-			if(globalModAnimBuffer[nAnims] != -1) {
-				model->anims[nAnims] = (struct Animation*)loadModelAnimation(
-					model, globalModAnimBuffer[nAnims], (short)nAnims, NULL);
-				if(!model->anims[nAnims]) {
-					for(bank = 0; bank < nAnims; bank++) {
-						freeAnimation((Animation*)model->anims[bank]);
-					}
-					model->anims = NULL;
-					return TRUE;
-				}
-			} else {
-				model->anims[nAnims] = NULL;
-			}
-			nAnims += 1;
-		} while(nAnims < model->numAnims);
-	}
-	else {
-		model->anims = NULL;
-	}
-	return FALSE;
-}
-
-//XXX functions up to at least here do not belong in this file
-
-void modelSetupAnims(
-    ModelInstance *modelInstance, AnimInstance *animInstance) { // 8007CFA4
-	AnimCache *anim;
-	Model *model;
-
-	animInstance->iJoint[0] = 0;
-	animInstance->unk5e = 0;
-	animInstance->unk58 = 0;
-	animInstance->unk5a = 0;
-	animInstance->unk5c = 0;
-	animInstance->hitboxSize[1][0] = 0.0;
-	animInstance->hitboxSize[0][0] = 0.0;
-	animInstance->hitboxSize[2][0] = 0.0;
-	animInstance->unk60[0] = 0;
-	model = modelInstance->mod;
-	if(model->numAnims != 0) {
-		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-			loadModelAnimation(model, *model->animIds, 0, animInstance->cache0[0]);
-			loadModelAnimation(model, *model->animIds, 0, animInstance->cache0[1]);
-			loadModelAnimation(model, *model->animIds, 0, animInstance->cache1[0]);
-			loadModelAnimation(model, *model->animIds, 0, animInstance->cache1[1]);
-			animInstance->iJoint[0] = 0;
-			anim = (AnimCache *)&animInstance->cache0[animInstance->iJoint[0]][1];
-		} else {
-			anim = (AnimCache*)model->anims[animInstance->iJoint[0]];
-		}
-		animInstance->joints[0] = (Bone *)&anim->animMap[6];
-		animInstance->unk60[0] = anim->animMap[1] & 0xf0;
-		animInstance->hitboxSize[2][0] = animInstance->joints[0]->idx[1];
-		if(animInstance->unk60[0] == 0) {
-			animInstance->hitboxSize[2][0] -= 1.0f;
-		}
-		animInstance->unk60[1] = animInstance->unk60[0];
-		animInstance->joints[1] = animInstance->joints[0];
-		animInstance->iJoint[1] = animInstance->iJoint[0];
-		animInstance->hitboxSize[0][1] = animInstance->hitboxSize[0][0];
-		animInstance->hitboxSize[2][1] = animInstance->hitboxSize[2][0];
-		animInstance->hitboxSize[1][1] = animInstance->hitboxSize[1][0];
-		animInstance->joints[2] = animInstance->joints[0];
-		animInstance->iJoint[2] = animInstance->iJoint[0];
-		animInstance->joints[3] = animInstance->joints[0];
-		animInstance->iJoint[3] = animInstance->iJoint[0];
-	}
-}
-
-void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 param_4) { //8007D174
-	void *result;
-
-	result = NULL;
-	loadAsset_Animation(&result,param_1,param_2,param_3,param_4);
-	return result;
-}
-
-void fn_8007D1C4(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,
-AnimInstance *animInstance, float frame, int param_5) { //8007D1C4 regswap
-	int flags2;
-	int flags;
-	int ii;
-	int iSrc;
-	int unk5a;
-	Mtx44 *jMtx;
-	Model *model;
-	AnimInstance animInst;
-
-	model = modelInstance->mod;
-	jMtx  = modelInstance->jMtxs[modelInstance->flags & 1];
-	animInstance->hitboxSize[0][0] = frame * animInstance->hitboxSize[2][0];
-	flags = 0;
-	if(model->flags & 8) {
-		animInst.cache0[0] = animInstance->cache0[0];
-		animInst.cache0[1] = animInstance->cache0[1];
-		animInst.cache1[0] = animInstance->cache1[0];
-		animInst.cache1[1] = animInstance->cache1[1];
-		for(ii = 0; ii < 2; ii++) {
-			iSrc = animInstance->unk58 ? ii : 0;
-			animInst.iJoint[ii] = animInstance->iJoint[iSrc];
-			animInst.unk60[ii] = animInstance->unk60[iSrc];
-			animInst.hitboxSize[2][ii] = animInstance->hitboxSize[2][iSrc];
-			animInst.hitboxSize[0][ii] = animInstance->hitboxSize[0][iSrc];
-			animInst.joints[ii] = animInstance->joints[iSrc];
-		}
-		animInst.unk58 = animInstance->unk58;
-		fn_8007d8e4(model, &animInst, 2);
-		if(animInstance->flags63 & 1) flags |= 0x10;
-		if(animInstance->flags63 & 4) flags |= 0x20;
-		FUN_80065ff8(&jMtx, modelMatrix, &animInst,
-		    model->joints, model->numJoints,
-		    Tiltlist, param_5, flags | 0x40);
-	} else {
-		for(ii = 0; ii < 2; ii++) {
-			if(ii) unk5a = animInstance->unk5c;
-			else   unk5a = animInstance->unk5a;
-			if(unk5a) {
-				if(animInstance->unk58) flags2 = 4 << ii;
-				else flags2 = 0;
-				animInst.unk60[0] = animInstance->unk60[ii];
-				animInst.hitboxSize[2][0] = animInstance->hitboxSize[2][ii];
-				animInst.hitboxSize[0][0] = animInstance->hitboxSize[0][ii];
-				animInst.joints[0] = animInstance->joints[ii];
-				animInst.unk60[1] = animInstance->unk60[ii];
-				animInst.hitboxSize[2][1] = animInstance->hitboxSize[2][ii];
-				animInst.hitboxSize[0][1] = animInstance->hitboxSize[0][ii];
-				animInst.joints[1] = animInstance->joints[ii + 2];
-				if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-					animInst.iJoint[0] = 0;
-					animInst.iJoint[1] = 1;
-					animInst.cache0[0] = animInstance->cache0[animInstance->iJoint[ii]];
-					animInst.cache0[1] = animInstance->cache1[animInstance->iJoint[ii + 2]];
-				} else {
-					animInst.iJoint[0] = animInstance->iJoint[ii];
-					animInst.iJoint[1] = animInstance->iJoint[ii + 2];
-				}
-				animInst.unk58 = unk5a;
-				fn_8007d8e4(model, &animInst, 2);
-				FUN_80065ff8(&jMtx, modelMatrix, &animInst,
-				    model->joints, model->numJoints,
-				    Tiltlist, param_5, flags2);
-				if(flags2) flags |= 1 << ii;
-			}
-		}
-		if(((!animInstance->unk5a) && (!animInstance->unk5c)) || flags) {
-			iSrc = 1;
-			if(animInstance->unk58) iSrc = 2;
-			animInst.cache0[0] = animInstance->cache0[0];
-			animInst.cache0[1] = animInstance->cache0[1];
-			animInst.cache1[0] = animInstance->cache1[0];
-			animInst.cache1[1] = animInstance->cache1[1];
-			for(ii = 0; ii < iSrc; ii += 1) {
-				animInst.iJoint[ii] = animInstance->iJoint[ii];
-				animInst.unk60[ii] = animInstance->unk60[ii];
-				animInst.hitboxSize[2][ii] = animInstance->hitboxSize[2][ii];
-				animInst.hitboxSize[0][ii] = animInstance->hitboxSize[0][ii];
-				animInst.joints[ii] = animInstance->joints[ii];
-			}
-			animInst.unk58 = animInstance->unk58;
-			fn_8007d8e4(model, &animInst, iSrc);
-			if(animInstance->flags63 & 1) flags |= 0x10;
-			if(animInstance->flags63 & 4) flags |= 0x20;
-			FUN_80065ff8(&jMtx, modelMatrix, &animInst,
-			    model->joints, model->numJoints,
-			    Tiltlist, param_5, flags);
-		}
-	}
-}
-
-void tiltListFn_8007d678(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,
-AnimInstance *animInstance, float frame, undefined4 param_5, u8 iJoint1, u8 iJoint2,
-u8 iJoint3, u8 flags, short unk58) { // 8007D678
-	Model *model;
-	Mtx44 *jMtx;
-	AnimInstance anim2;
-
-	model = modelInstance->mod;
-	jMtx = modelInstance->jMtxs[modelInstance->flags & 1];
-	if(flags & 0x10) {
-		animInstance->hitboxSize[0][0] = frame * animInstance->hitboxSize[2][0];
-	}
-	anim2.unk60[0] = animInstance->unk60[iJoint1];
-	anim2.hitboxSize[2][0] = animInstance->hitboxSize[2][iJoint1];
-	anim2.hitboxSize[0][0] = animInstance->hitboxSize[0][iJoint1];
-	anim2.joints[0] = animInstance->joints[iJoint1];
-	anim2.unk60[1] = animInstance->unk60[iJoint2];
-	anim2.hitboxSize[2][1] = animInstance->hitboxSize[2][iJoint2];
-	anim2.hitboxSize[0][1] = animInstance->hitboxSize[0][iJoint2];
-	anim2.joints[1] = animInstance->joints[iJoint3];
-	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-		anim2.iJoint[0] = 0;
-		anim2.iJoint[1] = 1;
-		anim2.cache0[0] = animInstance->cache0[animInstance->iJoint[iJoint1]];
-		if(iJoint3 < 2) {
-			anim2.cache0[1] = animInstance->cache0[animInstance->iJoint[iJoint3]];
-		} else {
-			anim2.cache1[1] = animInstance->cache1[animInstance->iJoint[iJoint3]];
-		}
-	} else {
-		anim2.iJoint[0] = animInstance->iJoint[iJoint1];
-		anim2.iJoint[1] = animInstance->iJoint[iJoint3];
-	}
-	if(!unk58) unk58 = 1;
-	anim2.unk58 = unk58;
-	fn_8007d8e4(model, &anim2, 2);
-	flags &= 0xf;
-	if(!(flags & 0xc)) {
-		if(animInstance->flags63 & 1) flags |= 0x10;
-		if(animInstance->flags63 & 4) flags |= 0x20;
-	}
-	FUN_80065ff8(&jMtx, modelMatrix, &anim2,
-	    model->joints, model->numJoints,
-	    Tiltlist, param_5, flags);
-}
-
-void fn_8007D8E4(Model *model, AnimInstance *animInst, int count) { // 8007D8E4
-	Bone *bone;
-	Animation *anim;
-    AnimCache *animCache;
-	int offset;
-	int hitboxSize;
-	int iJoint;
-	int ii;
-	float hitboxSizeFloat;
-
-	for(ii = 0; ii < count; ii++) {
-		iJoint = ii;
-		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-            animCache = animInst->cache0[animInst->iJoint[ii]];
-			anim = (Animation *)&animInst->cache0[animInst->iJoint[ii]][1];
-		} else {
-			animCache = (AnimCache *)((int)model->amap +
-				animInst->iJoint[ii] * ((model->numJoints - 1 & ~7) + 8));
-			anim = (Animation*)model->anims[animInst->iJoint[ii]];
-		}
-		for(iJoint = 0; iJoint < model->numJoints; iJoint++) {
-			model->joints[iJoint].idx2[ii] = animCache->animMap[iJoint];
-		}
-		offset = animInst->joints[ii]->idx2[0] & 0xFF;
-		hitboxSizeFloat = animInst->hitboxSize[0][ii];
-		hitboxSize = hitboxSizeFloat;
-		if(hitboxSize != animInst->hitboxSize[0][ii]) {
-            animInst->sizeVar4c[ii] = (s16)offset;
-		} else {
-			animInst->sizeVar4c[ii] = 0;
-		}
-		if(animInst->unk60[ii]
-        && (hitboxSizeFloat == animInst->hitboxSize[2][ii] - 1)) {
-			animInst->sizeVar4c[ii] = -offset * hitboxSize;
-		}
-		animInst->unk2c[ii] = (&anim->usage
-		    + anim->keyframeOffset + offset * hitboxSize);
-	}
 }
 
 void initModels(void) { //8007DAB0
@@ -1241,6 +718,24 @@ TexFuncPtr ModelInstance_getTexFuncPtr(ModelInstance *modelInstance) { //8007F13
     return modelInstance->texFuncPtr;
 }
 
+void ModelInstance_freeField48(ModelInstance *modelInstance) { //8007FCF8
+	if(modelInstance->freezeModel) {
+		mmFree(modelInstance->freezeModel);
+		modelInstance->freezeModel = NULL;
+	}
+}
+
+u16 modelGetFieldA4(Model *model) { //8007FD3C
+    BADASSERTLINE(1627, model);
+    return model->unka4;
+}
+
+S16Vec *modelInstanceGetVtxPos(ModelInstance *modelInstance, int positionNum) { //unused, only strings remain
+    BADASSERTLINE(0, modelInstance);
+    BADASSERTLINE(0, positionNum>=0 && positionNum<modelInstance->mod->numPositions);
+	return &modelInstance->mod->vertexPositions[positionNum];
+}
+
 void freezeModelFn_8007f184(ModelInstance *modelInstance, Mtx *modelMatrix,
 bool param3) { // 8007F184
 	const f32 twopi = 6.283f;
@@ -1436,28 +931,10 @@ bool param3) { // 8007F184
 	else freezeModel->animsIdx = 0;
 }
 
-void ModelInstance_freeField48(ModelInstance *modelInstance) { //8007FCF8
-	if(modelInstance->freezeModel) {
-		mmFree(modelInstance->freezeModel);
-		modelInstance->freezeModel = NULL;
-	}
-}
-
-u16 modelGetFieldA4(Model *model) { //8007FD3C
-    BADASSERTLINE(1627, model);
-    return model->unka4;
-}
-
 Shader* modelGetShader(Model *model, int shaderNum) { // 8007FD8C
     BADASSERTLINE(1648, model);
     BADASSERTLINE(1649, shaderNum>=0 && shaderNum<model->numShaders);
 	return &model->shaders[shaderNum];
-}
-
-S16Vec *modelInstanceGetVtxPos(ModelInstance *modelInstance, int positionNum) { //unused, only strings remain
-    BADASSERTLINE(0, modelInstance);
-    BADASSERTLINE(0, positionNum>=0 && positionNum<modelInstance->mod->numPositions);
-	return &modelInstance->mod->vertexPositions[positionNum];
 }
 
 S16Vec *modelGetVtxPos(Model *model, int positionNum) { // 8007FE10
@@ -1620,17 +1097,6 @@ void freeAnimation(Animation *anim) { // 8008039C
         SparseArray_remove(animsLoadedTable, key);
         mmFree(anim);
     }
-}
-
-void *modelOffsetTable;
-void modelLoadOffsetTables() { //unused
-	printf("--------MODELS Load Offset Tables-------\n");
-	if(!modelOffsetTable) {
-		printf("modelLoadOffsetTables() --- modelOffsetTable is NULL\n");
-	}
-	if(!animOffsetTable) {
-		printf("modelLoadOffsetTables() --- animOffsetTable is NULL\n");
-	}
 }
 
 void objAnimFn_8008045c(ModelInstance *mInst, int which, int iJoint,
@@ -1856,8 +1322,8 @@ LAB_80080c74:
 }
 
 typedef struct { int val[3]; } int3_80080D04;
-int3_80080D04 DWORD_ARRAY_802cf000 = {0};
-int3_80080D04 DWORD_ARRAY_802cf00c = {0};
+extern int3_80080D04 DWORD_ARRAY_802cf000;
+extern int3_80080D04 DWORD_ARRAY_802cf00c;
 
 void copyVtxsToModelInstance(ModelInstance *modelInstance) { // 80080D04
 	short endPos;
@@ -1964,6 +1430,17 @@ void fn_8008102C(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf) { // 8008
 //void modelApplyBoneTransforms(S16Vec *vtxs,S16Vec *vtxs2,uint numPositions,
 // short *anims1,short *anims2,int pos) { //80081134
 
+void modelLoadOffsetTables() { //unused
+	printf("--------MODELS Load Offset Tables-------\n");
+	if(!modelOffsetTable) {
+		printf("modelLoadOffsetTables() --- modelOffsetTable is NULL\n");
+	}
+	BADASSERTLINE(3301, maxModelNum<=SHRT_MAX);
+	if(!animOffsetTable) {
+		printf("modelLoadOffsetTables() --- animOffsetTable is NULL\n");
+	}
+}
+
 BOOL countModels(void) { // 800812A0
 	int *modelsTab;
 
@@ -2001,4 +1478,526 @@ void modelGetVtxPosFloat(Model *model, int positionNum, Vec *posVec) { // 800815
 	posVec->x = vp->x / 256.0f;
 	posVec->y = vp->y / 256.0f;
 	posVec->z = vp->z / 256.0f;
+}
+
+//flags: CreateModelInstanceFlags
+ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 8007C5B4
+	ModelInstance *minst;
+	uint size;
+    uint resultSize;
+	int ii;
+	AnimInstance *anim;
+	ModelInstanceField20 *unk20;
+	void *next;
+    AnimUnk animUnk;
+
+	if(!model) {
+		printf("WARNING :: createModelInstance called with NULL pointer\n");
+		return NULL;
+	}
+	size = setupAnimInstance(model, flags, &animUnk, 0);
+	minst = (ModelInstance *)mmAlloc(
+	    size, ALLOC_TAG_MODEL_INSTANCE, (volatile u32) "minst");
+	if(!minst) return NULL;
+
+	memclr(minst, size);
+	next = (void*)(minst + 1);
+    next = mmAlign16(next);
+	minst->jMtxs[0] = next; ADVANCE_PTR(next,animUnk.mtxSize >> 1);
+	minst->jMtxs[1] = next; ADVANCE_PTR(next,animUnk.mtxSize >> 1);
+	minst->jMtxs4C = minst->jMtxs[0];
+
+	if(model->bCopyVtxsToModelInst
+    || model->skin2Matrices) {
+		next = (void *)((int)next + 0x1f & ~0x1f);
+		minst->vertexPositions  = next; ADVANCE_PTR_BY(next,model->numPositions,S16Vec);
+		minst->vertexPositions2 = next; ADVANCE_PTR_BY(next,model->numPositions,S16Vec);
+		memcpy(minst->vertexPositions,
+		    model->vertexPositions,
+		    (uint)model->numPositions * sizeof(S16Vec));
+		DCFlushRange(minst->vertexPositions,
+            (uint)model->numPositions * sizeof(S16Vec));
+	} else {
+		minst->vertexPositions  = model->vertexPositions;
+		minst->vertexPositions2 = model->vertexPositions;
+	}
+
+	next = mmAlign4(next);
+	minst->animInstances[0] = next; ADVANCE_PTR_BY(next,1,AnimInstance);
+
+	if(flags & CreateModelInstanceFlags_DoubleBufferAnims) {
+		minst->animInstances[1] = next; ADVANCE_PTR_BY(next,1,AnimInstance);
+	}
+
+	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+		next = (void *)alignTo64(next);
+		anim = minst->animInstances[0];
+		anim->cache0[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+        anim->cache0[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+		anim->cache1[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+		anim->cache1[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+		if(minst->animInstances[1]) {
+			anim = minst->animInstances[1];
+			anim->cache0[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->cache0[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->cache1[0] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+			anim->cache1[1] = next; ADVANCE_PTR(next,animUnk.animCacheSize);
+		}
+	}
+
+	if(model->bCopyVtxsToModelInst) {
+		next = mmAlign4(next);
+		minst->unk20 = next; ADVANCE_PTR_BY(next,ModelInstanceField20_MAX_NUM,ModelInstanceField20);
+		for(ii = 0; ii < 3; ii = ii + 1) {
+			unk20 = &minst->unk20[ii];
+			unk20->animsIdx1 = -1;
+            unk20->animsIdx2 = -1;
+            unk20->pos       = 0.0f;
+            unk20->prevPos   = 0.0f;
+            unk20->speed     = 0.0f;
+		}
+	}
+
+	if(animUnk.hitSphereDataSize > 0) {
+		next = mmAlign4(next);
+		minst->hitSpheres[0] = next; ADVANCE_PTR_BY(next,model->numHitSpheres,RamHitSphere);
+		minst->hitSpheres[1] = next; ADVANCE_PTR_BY(next,model->numHitSpheres,RamHitSphere);
+		minst->activeHitSphere = minst->hitSpheres[0];
+	}
+
+	if(model->joints && model->numJoints && model->radi && model->exT) {
+		next = mmAlign4(next);
+		minst->skeleton            = next; ADVANCE_PTR_BY(next,1,ModelSkeletonStruct);
+		minst->skeleton->joints    = next; ADVANCE_PTR_BY(next,model->numJoints,Vec);
+		minst->skeleton->scale     = next; ADVANCE_PTR_BY(next,model->numJoints,float);
+		minst->skeleton->unk08     = next; ADVANCE_PTR_BY(next,model->numJoints,float);
+		minst->skeleton->jointDist = next; ADVANCE_PTR_BY(next,model->numJoints,float);
+		minst->skeleton->totalDist = next; ADVANCE_PTR_BY(next,model->numJoints,float);
+		minst->skeleton->unk18     = next; ADVANCE_PTR_BY(next,model->numJoints,u8);
+	} else {
+        minst->skeleton = NULL;
+	}
+
+	if(model->skin2Matrices) {
+		next = mmAlign4(next);
+		minst->skinVtxs = next; ADVANCE_PTR_BY(next,model->skin.numPieces,VertexPosition*);
+	}
+
+	next = mmAlign4(next);
+	minst->shaderDefs = next; ADVANCE_PTR_BY(next,model->numShaders,ShaderDef);
+
+	if(flags & CreateModelInstanceFlags_TexturedShadow) {
+		next = mmAlign2(next);
+		minst->shadow = next; ADVANCE_PTR_BY(next,1,TexturedShadow);
+		minst->shadow->state = 0;
+	}
+
+    resultSize = (int)next - (int)minst;
+	if((int)resultSize >= (int)size) {
+		printf("DANGER: createModelInstance: Actual size exceeded totalsize!!!\n");
+	}
+
+	minst->freezeModel = NULL;
+	minst->mod = model;
+	minst->bUseVertexPositions1C = 0;
+	return minst;
+}
+
+int Model_setupAnimInstance(
+Model *model, int flags, AnimUnk *anim, BOOL bAlways0) { // 8007C9C0
+	int result;
+
+	if(model->numAnims) {
+		/* final: mtxSize = (model->nBones + model->nVtxGroups) * 0x80 */
+		anim->mtxSize = model->numJoints * sizeof(Mtx44) * 2;
+	}
+	else {
+		anim->mtxSize = 0x80;
+	}
+
+	if(model->bCopyVtxsToModelInst || model->skin2Matrices) {
+		/* final: +0x20 => +0x60 */
+		anim->unk00 = model->numPositions * 2 * sizeof(S16Vec) + 0x20;
+	} else {
+		anim->unk00 = 0;
+	}
+
+	anim->hitSphereDataSize = model->numHitSpheres * sizeof(HitSpherePos) * 2;
+	anim->nAnims = 0;
+	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+		anim->animCacheSize = model->animCacheSize;
+		while(anim->animCacheSize & 7) anim->animCacheSize++;
+		anim->nAnims = anim->animCacheSize * 4;
+	}
+	anim->size10 = sizeof(AnimInstance);
+	if(flags & 0x80) {
+		anim->size10 *= 2;
+		anim->nAnims *= 2;
+	}
+	if((flags & 1) || model->bCopyVtxsToModelInst || bAlways0) {
+		anim->size10 += 0x30; //sizeof(Mtx)? but these are Mtx44?
+		result = 0x54; //probably sizeof(ModelInstance)
+		result += anim->nAnims + anim->size10;
+		result += anim->mtxSize + anim->hitSphereDataSize + 8;
+	} else {
+		//same as above but ordered different. why!?
+		result = 0x54;
+		result += anim->size10;
+		result += anim->nAnims + anim->mtxSize + anim->hitSphereDataSize + 8;
+	}
+	result += anim->unk00;
+	if(model->joints && model->numJoints && model->radi) {
+		result += (model->numJoints * 2) + (model->numJoints * 7) * 4 +
+			0x1c; //possibly sizeof(AnimUnk)
+	}
+	if(model->skin2Matrices) {
+		result += model->skin.numPieces * 4 + 4;
+	}
+	result += model->numShaders * 8;
+	if(flags & 0x8000) result += 0x1a;
+
+	result = (result + 0x2f & ~0xf) + 0x10;
+	return result;
+}
+
+int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
+	int result;
+    int idx;
+    int ent;
+
+    result = 0;
+	if(bypassAmapTab) {
+        result += nAnimations * 2 + 8;
+        while(result & 7) result++;
+	} else {
+		result += nAnimations * 4;
+        while(result & 7) result++;
+        loadDataFileWithLength(FILE_AMAP_TAB,
+            pAmapTab, (id & ~3) * 4, sizeof(int)*8);
+        idx = id & 3;
+        ent = pAmapTab[idx+1] - pAmapTab[idx];
+        result += ent;
+	}
+	return result;
+}
+
+BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
+	s16 *amap;
+	int bank;
+	int thisId;
+	int nextId;
+	int offset;
+	int offsNext;
+	int animBank;
+	int nAnims;
+	int size;
+	int ii;
+	int totalSize;
+
+	totalSize = 0;
+	amap = (s16*)pAmapTab;
+	loadDataFileWithLength(FILE_MODANIM_TAB, amap, animId * 2, 0x10);
+	offset = amap[0];
+	offsNext = amap[1];
+	size = offset;
+	nAnims = (offsNext - offset) >> 1;
+	if(nAnims != model->numAnims) {
+		printf("makeModelAnimation() size mismatch!! (%d,%d)\n", model->numAnims, nAnims);
+		model->numAnims = nAnims;
+	}
+	if(!model->numAnims) return FALSE;
+
+	nAnims = model->numAnims * 2 + 8;
+	if(nAnims > 0x800) {
+		debugPrint("Warning: Model animation buffer overflow!! size=%d\n", nAnims);
+	}
+	loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, (animId & ~3) * 4, 0x20);
+	bank = animId & 3;
+	model->animOffset = pAmapTab[bank];
+	thisId = pAmapTab[bank];
+	nextId = pAmapTab[bank + 1] - thisId;
+	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+		model->animIds = (s16 *)hits;
+		while(nAnims & 7) nAnims++;
+		totalSize += nAnims;
+		hits = (void*)((intptr_t)hits + nAnims);
+		//sus, using size as offset here
+		loadDataFileWithLength(FILE_MODANIM_BIN, model->animIds, size, nAnims);
+	} else {
+		loadDataFileWithLength(FILE_MODANIM_BIN, globalModAnimBuffer, size, nAnims);
+		model->animIds = globalModAnimBuffer;
+	}
+	animBank = 0;
+	model->animBank[animBank++] = 0;
+	for(ii = 0; ii < model->numAnims; ii += 1) {
+		if(model->animIds[ii] == -1) {
+			model->animBank[animBank++] = ii + 1;
+		}
+	}
+	if(8 < animBank) printf("ANIMBANK overflow\n");
+	if(!(model->flags & ModelDataFlags2_UseLocalModAnimTab)) {
+		model->animIds = NULL;
+		model->anims = (struct Animation **)hits;
+		hits = (void*)((intptr_t)hits + model->numAnims * 4);
+		for(totalSize += model->numAnims * 4; totalSize & 7; totalSize += 1) {
+			hits = (void*)((intptr_t)hits + 1);
+		}
+		model->amap = hits;
+		hits = (void*)((intptr_t)hits+nextId);
+		totalSize += nextId;
+		loadDataFileWithLength(FILE_AMAP_BIN, model->amap,
+			model->animOffset, nextId);
+		nAnims = 0;
+		do {
+			if(globalModAnimBuffer[nAnims] != -1) {
+				model->anims[nAnims] = (struct Animation*)loadModelAnimation(
+					model, globalModAnimBuffer[nAnims], (short)nAnims, NULL);
+				if(!model->anims[nAnims]) {
+					for(bank = 0; bank < nAnims; bank++) {
+						freeAnimation((Animation*)model->anims[bank]);
+					}
+					model->anims = NULL;
+					return TRUE;
+				}
+			} else {
+				model->anims[nAnims] = NULL;
+			}
+			nAnims += 1;
+		} while(nAnims < model->numAnims);
+	}
+	else {
+		model->anims = NULL;
+	}
+	return FALSE;
+}
+
+void modelSetupAnims(
+    ModelInstance *modelInstance, AnimInstance *animInstance) { // 8007CFA4
+	AnimCache *anim;
+	Model *model;
+
+	animInstance->iJoint[0] = 0;
+	animInstance->unk5e = 0;
+	animInstance->unk58 = 0;
+	animInstance->unk5a = 0;
+	animInstance->unk5c = 0;
+	animInstance->hitboxSize[1][0] = 0.0;
+	animInstance->hitboxSize[0][0] = 0.0;
+	animInstance->hitboxSize[2][0] = 0.0;
+	animInstance->unk60[0] = 0;
+	model = modelInstance->mod;
+	if(model->numAnims != 0) {
+		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+			loadModelAnimation(model, *model->animIds, 0, animInstance->cache0[0]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->cache0[1]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->cache1[0]);
+			loadModelAnimation(model, *model->animIds, 0, animInstance->cache1[1]);
+			animInstance->iJoint[0] = 0;
+			anim = (AnimCache *)&animInstance->cache0[animInstance->iJoint[0]][1];
+		} else {
+			anim = (AnimCache*)model->anims[animInstance->iJoint[0]];
+		}
+		animInstance->joints[0] = (Bone *)&anim->animMap[6];
+		animInstance->unk60[0] = anim->animMap[1] & 0xf0;
+		animInstance->hitboxSize[2][0] = animInstance->joints[0]->idx[1];
+		if(animInstance->unk60[0] == 0) {
+			animInstance->hitboxSize[2][0] -= 1.0f;
+		}
+		animInstance->unk60[1] = animInstance->unk60[0];
+		animInstance->joints[1] = animInstance->joints[0];
+		animInstance->iJoint[1] = animInstance->iJoint[0];
+		animInstance->hitboxSize[0][1] = animInstance->hitboxSize[0][0];
+		animInstance->hitboxSize[2][1] = animInstance->hitboxSize[2][0];
+		animInstance->hitboxSize[1][1] = animInstance->hitboxSize[1][0];
+		animInstance->joints[2] = animInstance->joints[0];
+		animInstance->iJoint[2] = animInstance->iJoint[0];
+		animInstance->joints[3] = animInstance->joints[0];
+		animInstance->iJoint[3] = animInstance->iJoint[0];
+	}
+}
+
+void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 param_4) { //8007D174
+	void *result;
+
+	result = NULL;
+	loadAsset_Animation(&result,param_1,param_2,param_3,param_4);
+	return result;
+}
+
+void fn_8007D1C4(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,
+AnimInstance *animInstance, float frame, int param_5) { //8007D1C4 regswap
+	int flags2;
+	int flags;
+	int ii;
+	int iSrc;
+	int unk5a;
+	Mtx44 *jMtx;
+	Model *model;
+	AnimInstance animInst;
+
+	model = modelInstance->mod;
+	jMtx  = modelInstance->jMtxs[modelInstance->flags & 1];
+	animInstance->hitboxSize[0][0] = frame * animInstance->hitboxSize[2][0];
+	flags = 0;
+	if(model->flags & 8) {
+		animInst.cache0[0] = animInstance->cache0[0];
+		animInst.cache0[1] = animInstance->cache0[1];
+		animInst.cache1[0] = animInstance->cache1[0];
+		animInst.cache1[1] = animInstance->cache1[1];
+		for(ii = 0; ii < 2; ii++) {
+			iSrc = animInstance->unk58 ? ii : 0;
+			animInst.iJoint[ii] = animInstance->iJoint[iSrc];
+			animInst.unk60[ii] = animInstance->unk60[iSrc];
+			animInst.hitboxSize[2][ii] = animInstance->hitboxSize[2][iSrc];
+			animInst.hitboxSize[0][ii] = animInstance->hitboxSize[0][iSrc];
+			animInst.joints[ii] = animInstance->joints[iSrc];
+		}
+		animInst.unk58 = animInstance->unk58;
+		fn_8007d8e4(model, &animInst, 2);
+		if(animInstance->flags63 & 1) flags |= 0x10;
+		if(animInstance->flags63 & 4) flags |= 0x20;
+		FUN_80065ff8(&jMtx, modelMatrix, &animInst,
+		    model->joints, model->numJoints,
+		    Tiltlist, param_5, flags | 0x40);
+	} else {
+		for(ii = 0; ii < 2; ii++) {
+			if(ii) unk5a = animInstance->unk5c;
+			else   unk5a = animInstance->unk5a;
+			if(unk5a) {
+				if(animInstance->unk58) flags2 = 4 << ii;
+				else flags2 = 0;
+				animInst.unk60[0] = animInstance->unk60[ii];
+				animInst.hitboxSize[2][0] = animInstance->hitboxSize[2][ii];
+				animInst.hitboxSize[0][0] = animInstance->hitboxSize[0][ii];
+				animInst.joints[0] = animInstance->joints[ii];
+				animInst.unk60[1] = animInstance->unk60[ii];
+				animInst.hitboxSize[2][1] = animInstance->hitboxSize[2][ii];
+				animInst.hitboxSize[0][1] = animInstance->hitboxSize[0][ii];
+				animInst.joints[1] = animInstance->joints[ii + 2];
+				if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+					animInst.iJoint[0] = 0;
+					animInst.iJoint[1] = 1;
+					animInst.cache0[0] = animInstance->cache0[animInstance->iJoint[ii]];
+					animInst.cache0[1] = animInstance->cache1[animInstance->iJoint[ii + 2]];
+				} else {
+					animInst.iJoint[0] = animInstance->iJoint[ii];
+					animInst.iJoint[1] = animInstance->iJoint[ii + 2];
+				}
+				animInst.unk58 = unk5a;
+				fn_8007d8e4(model, &animInst, 2);
+				FUN_80065ff8(&jMtx, modelMatrix, &animInst,
+				    model->joints, model->numJoints,
+				    Tiltlist, param_5, flags2);
+				if(flags2) flags |= 1 << ii;
+			}
+		}
+		if(((!animInstance->unk5a) && (!animInstance->unk5c)) || flags) {
+			iSrc = 1;
+			if(animInstance->unk58) iSrc = 2;
+			animInst.cache0[0] = animInstance->cache0[0];
+			animInst.cache0[1] = animInstance->cache0[1];
+			animInst.cache1[0] = animInstance->cache1[0];
+			animInst.cache1[1] = animInstance->cache1[1];
+			for(ii = 0; ii < iSrc; ii += 1) {
+				animInst.iJoint[ii] = animInstance->iJoint[ii];
+				animInst.unk60[ii] = animInstance->unk60[ii];
+				animInst.hitboxSize[2][ii] = animInstance->hitboxSize[2][ii];
+				animInst.hitboxSize[0][ii] = animInstance->hitboxSize[0][ii];
+				animInst.joints[ii] = animInstance->joints[ii];
+			}
+			animInst.unk58 = animInstance->unk58;
+			fn_8007d8e4(model, &animInst, iSrc);
+			if(animInstance->flags63 & 1) flags |= 0x10;
+			if(animInstance->flags63 & 4) flags |= 0x20;
+			FUN_80065ff8(&jMtx, modelMatrix, &animInst,
+			    model->joints, model->numJoints,
+			    Tiltlist, param_5, flags);
+		}
+	}
+}
+
+void tiltListFn_8007d678(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,
+AnimInstance *animInstance, float frame, undefined4 param_5, u8 iJoint1, u8 iJoint2,
+u8 iJoint3, u8 flags, short unk58) { // 8007D678
+	Model *model;
+	Mtx44 *jMtx;
+	AnimInstance anim2;
+
+	model = modelInstance->mod;
+	jMtx = modelInstance->jMtxs[modelInstance->flags & 1];
+	if(flags & 0x10) {
+		animInstance->hitboxSize[0][0] = frame * animInstance->hitboxSize[2][0];
+	}
+	anim2.unk60[0] = animInstance->unk60[iJoint1];
+	anim2.hitboxSize[2][0] = animInstance->hitboxSize[2][iJoint1];
+	anim2.hitboxSize[0][0] = animInstance->hitboxSize[0][iJoint1];
+	anim2.joints[0] = animInstance->joints[iJoint1];
+	anim2.unk60[1] = animInstance->unk60[iJoint2];
+	anim2.hitboxSize[2][1] = animInstance->hitboxSize[2][iJoint2];
+	anim2.hitboxSize[0][1] = animInstance->hitboxSize[0][iJoint2];
+	anim2.joints[1] = animInstance->joints[iJoint3];
+	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+		anim2.iJoint[0] = 0;
+		anim2.iJoint[1] = 1;
+		anim2.cache0[0] = animInstance->cache0[animInstance->iJoint[iJoint1]];
+		if(iJoint3 < 2) {
+			anim2.cache0[1] = animInstance->cache0[animInstance->iJoint[iJoint3]];
+		} else {
+			anim2.cache1[1] = animInstance->cache1[animInstance->iJoint[iJoint3]];
+		}
+	} else {
+		anim2.iJoint[0] = animInstance->iJoint[iJoint1];
+		anim2.iJoint[1] = animInstance->iJoint[iJoint3];
+	}
+	if(!unk58) unk58 = 1;
+	anim2.unk58 = unk58;
+	fn_8007d8e4(model, &anim2, 2);
+	flags &= 0xf;
+	if(!(flags & 0xc)) {
+		if(animInstance->flags63 & 1) flags |= 0x10;
+		if(animInstance->flags63 & 4) flags |= 0x20;
+	}
+	FUN_80065ff8(&jMtx, modelMatrix, &anim2,
+	    model->joints, model->numJoints,
+	    Tiltlist, param_5, flags);
+}
+
+void fn_8007D8E4(Model *model, AnimInstance *animInst, int count) { // 8007D8E4
+	Bone *bone;
+	Animation *anim;
+    AnimCache *animCache;
+	int offset;
+	int hitboxSize;
+	int iJoint;
+	int ii;
+	float hitboxSizeFloat;
+
+	for(ii = 0; ii < count; ii++) {
+		iJoint = ii;
+		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
+            animCache = animInst->cache0[animInst->iJoint[ii]];
+			anim = (Animation *)&animInst->cache0[animInst->iJoint[ii]][1];
+		} else {
+			animCache = (AnimCache *)((int)model->amap +
+				animInst->iJoint[ii] * ((model->numJoints - 1 & ~7) + 8));
+			anim = (Animation*)model->anims[animInst->iJoint[ii]];
+		}
+		for(iJoint = 0; iJoint < model->numJoints; iJoint++) {
+			model->joints[iJoint].idx2[ii] = animCache->animMap[iJoint];
+		}
+		offset = animInst->joints[ii]->idx2[0] & 0xFF;
+		hitboxSizeFloat = animInst->hitboxSize[0][ii];
+		hitboxSize = hitboxSizeFloat;
+		if(hitboxSize != animInst->hitboxSize[0][ii]) {
+            animInst->sizeVar4c[ii] = (s16)offset;
+		} else {
+			animInst->sizeVar4c[ii] = 0;
+		}
+		if(animInst->unk60[ii]
+        && (hitboxSizeFloat == animInst->hitboxSize[2][ii] - 1)) {
+			animInst->sizeVar4c[ii] = -offset * hitboxSize;
+		}
+		animInst->unk2c[ii] = (&anim->usage
+		    + anim->keyframeOffset + offset * hitboxSize);
+	}
 }
