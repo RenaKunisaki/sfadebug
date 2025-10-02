@@ -118,6 +118,9 @@ void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
 	return result;
 }
 
+#ifdef __MWERKS__
+#pragma peephole on
+#endif
 void initModels(void) { //8007DAB0
 	void *mem;
 
@@ -137,9 +140,6 @@ void initModels(void) { //8007DAB0
 	countModels();
 }
 
-#ifdef __MWERKS__
-#pragma peephole on
-#endif
 ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
 	int modelNum;
 	ModelInstance *modelInstance;
