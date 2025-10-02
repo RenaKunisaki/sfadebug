@@ -65,7 +65,7 @@ void fn_8007d8e4(Model *model,AnimInstance *animInstance,int count);
 void initModels(void);
 void modelInstanceFree(ModelInstance *modelInstance);
 uint Model_checksumHeader(Model *model);
-Model* loadModel(int id);
+Model* loadModel(int modelNum);
 void Model_loadTextures(Model *model);
 void Model_freeTextures(Model *model);
 void Model_freeAnimations(Model *model);
@@ -282,36 +282,30 @@ uint Model_checksumHeader(Model *model) { //8007DE30
 	return result;
 }
 
-//likely fake
-#ifdef __MWERKS__
-#pragma peephole off
-#endif
-
-Model* loadModel(int id) { //8007DE70
-	int dummy;
-	int realId;
+Model* loadModel(int modelNum) { //8007DE70
+	Model *model;
 	uint *modelsTab;
 	uint amapSize;
-	int decompSize;
 	int size2;
+	int decompSize;
 	int nAnimations;
 	uint animCacheSize;
 	BOOL bNoAmap;
-	Model *model;
+	uint offset;
 
-	STUBBED_PRINTF("\t+++++ loadModel +++++ ARGS: %d\n", id);
+	STUBBED_PRINTF("\t+++++ loadModel +++++ ARGS: %d\n", modelNum);
 
-	realId = id;
 	modelsTab = (uint *)getTable(FILE_MODELS_tab);
+	offset = modelsTab[modelNum];
+	loadModelsBin(offset,
+		&nAnimations, &animCacheSize,
+		&bNoAmap, &decompSize, modelNum);
 	STUBBED_PRINTF("MODEL OFFSET %x  MODELNUM %d\n",
-		modelsTab[realId], realId);
-
-	loadModelsBin(modelsTab[realId], &nAnimations,
-		&animCacheSize, &bNoAmap, &decompSize, realId);
+		offset, modelNum);
 	animCacheSize = (uint)mmAlign8((void*)animCacheSize);
 	animCacheSize += 0xb0;
 
-	size2 = decompSize + modelGetAmapSize(realId, bNoAmap, nAnimations) + 500;
+	size2 = decompSize + modelGetAmapSize(modelNum, bNoAmap, nAnimations) + 500;
 	STUBBED_PRINTF("\t decompSize=%d\n", decompSize);
 
 	model = (Model *)mmAlloc(size2,
@@ -321,11 +315,11 @@ Model* loadModel(int id) { //8007DE70
 	model = (Model *)mmAlign16(model);
 
 	loadAndDecompressDataFile(FILE_MODELS_bin, model,
-		modelsTab[realId], decompSize, NULL,
-		realId, 0);
+		offset, decompSize, NULL,
+		modelNum, 0);
 
 	model->animCacheSize = animCacheSize;
-	model->cacheModNo    = realId;
+	model->cacheModNo    = modelNum;
 	model->numAnims      = nAnimations;
 	model->flags        &= ~ModelDataFlags2_UseLocalModAnimTab;
 	model->usage         = 1;
@@ -336,10 +330,6 @@ Model* loadModel(int id) { //8007DE70
 	STUBBED_PRINTF("\t----- loadModel ----- RETURN: %x\n", model);
 	return model;
 }
-
-#ifdef __MWERKS__
-#pragma peephole on
-#endif
 
 void Model_loadTextures(Model *model) { // 8007DFF4
 	int i;
