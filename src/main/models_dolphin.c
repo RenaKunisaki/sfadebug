@@ -53,7 +53,6 @@ Animation * loadModelAnimation(Model *model,short id,short id2,void *dest);
 void * loadDataFileWithLength(DataFileId32 file,void *dest,uint offset,u32 len);
 int loadAndDecompressDataFile(DataFileId32 file,void *dest,uint offset,size_t length,uint *outSize,int index,s8 flags);
 
-void *loadModelInstanceAsset(int id, void *buf);
 ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
 int Model_setupAnimInstance(Model *model,int flags,AnimUnk *anim,BOOL bAlways0);
 int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations);
@@ -64,7 +63,6 @@ void fn_8007D1C4(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,AnimInstance
 void tiltListFn_8007d678(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,AnimInstance *animInstance,float frame,undefined4 param_5, u8 param_6, u8 param_7,u8 iJoint, u8 flags, short param_10);
 void fn_8007d8e4(Model *model,AnimInstance *animInstance,int count);
 void initModels(void);
-ModelInstance * loadModelInstance(int id,uint flags);
 void modelInstanceFree(ModelInstance *modelInstance);
 uint Model_checksumHeader(Model *model);
 Model* loadModel(int id);
@@ -140,16 +138,15 @@ void initModels(void) { //8007DAB0
 	countModels();
 }
 
-ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
-	int modelNum;
-	ModelInstance *modelInstance;
+ModelInstance * loadModelInstance(int modelNum,uint flags) { //8007DB84
 	Model *model;
+	ModelInstance *modelInstance;
 	int i;
 
 	/* final:
-	   loadDataFileWithLength(MODELIND.bin,globalModAnimBuffer,id << 1,8);
+	   loadDataFileWithLength(MODELIND.bin,globalModAnimBuffer,modelNum << 1,8);
 	   modelNum = (uint)*globalModAnimBuffer; */
-	modelNum = Model_lookupModelInd(id);
+	modelNum = Model_lookupModelInd(modelNum);
     BADASSERTLINE(210, modelNum>=0 && modelNum<maxModelNum);
 
     if(!SparseArray_get(modelsLoadedTable,
@@ -171,7 +168,7 @@ ModelInstance * loadModelInstance(int id,uint flags) { //8007DB84
         BADASSERTLINE(237, model->usage<UCHAR_MAX);
 	}
 	modelInstance = createModelInstance(model, flags,
-        (int)model->usage == 1);
+        model->usage == 1);
     BADASSERTLINE(243, modelInstance);
 
 	modelSetupAnims(modelInstance, modelInstance->animInstances[0]);

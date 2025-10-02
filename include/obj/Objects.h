@@ -60,7 +60,7 @@ void loadAsset_fileWithOffsetLength(
     void *dest, DataFileId32 file, int offset, int length); /* extern */
 void *loadDataFileWithLength(
     DataFileId32 file, void *dest, uint offset, u32 len); /* extern */
-ModelInstance *loadModelInstance(int id, uint flags); /* extern */
+ModelInstance *loadModelInstance(int modelNum, uint flags); /* extern */
 ObjDefEnum mapGetPlayerObjType(int *outWhichObjs); /* extern */
 f32 cosf(f32); /* extern */
 void memclr(void *param1, size_t param2); /* extern */
