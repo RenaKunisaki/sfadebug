@@ -1133,8 +1133,7 @@ float inScale, float outPosScale, Vec *outPos, S16Vec *outRot) { //8008045C
 	}
 	animInstance->hitboxSize[0][0] = inScale *
 		animInstance->hitboxSize[2][0];
-	//XXX this is out of bounds, we probably have a wrong type
-	iJoint1 = animInstance->joints[0]->idx[2];
+	iJoint1 = animInstance->joints[0]->idx2[0];
 	size = animInstance->hitboxSize[0][0];
 	size2 = size;
 	if(size2 != animInstance->hitboxSize[0][0]) {
@@ -1682,34 +1681,34 @@ int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 }
 
 BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
-	s16 *amap;
-	int bank;
 	int thisId;
 	int nextId;
-	int offset;
-	int offsNext;
-	int animBank;
-	int nAnims;
+	int bank;
 	int size;
 	int ii;
 	int totalSize;
+	int offset2;
+	int animBank;
+	int offset;
+	int offsNext;
+	s16 *amap;
 
 	totalSize = 0;
 	amap = (s16*)pAmapTab;
 	loadDataFileWithLength(FILE_MODANIM_TAB, amap, animId * 2, 0x10);
 	offset = amap[0];
 	offsNext = amap[1];
-	size = offset;
-	nAnims = (offsNext - offset) >> 1;
-	if(nAnims != model->numAnims) {
-		printf("makeModelAnimation() size mismatch!! (%d,%d)\n", model->numAnims, nAnims);
-		model->numAnims = nAnims;
+	offset2 = offset;
+	size = (offsNext - offset) >> 1;
+	if(size != model->numAnims) {
+		printf("makeModelAnimation() size mismatch!! (%d,%d)\n", model->numAnims, size);
+		model->numAnims = size;
 	}
 	if(!model->numAnims) return FALSE;
 
-	nAnims = model->numAnims * 2 + 8;
-	if(nAnims > 0x800) {
-		debugPrint("Warning: Model animation buffer overflow!! size=%d\n", nAnims);
+	size = model->numAnims * 2 + 8;
+	if(size > 0x800) {
+		debugPrint("Warning: Model animation buffer overflow!! size=%d\n", size);
 	}
 	loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, (animId & ~3) * 4, 0x20);
 	bank = animId & 3;
@@ -1718,13 +1717,12 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 	nextId = pAmapTab[bank + 1] - thisId;
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		model->animIds = (s16 *)hits;
-		while(nAnims & 7) nAnims++;
-		totalSize += nAnims;
-		hits = (void*)((intptr_t)hits + nAnims);
-		//sus, using size as offset here
-		loadDataFileWithLength(FILE_MODANIM_BIN, model->animIds, size, nAnims);
+		while(size & 7) size++;
+		totalSize += size;
+		hits = (void*)((intptr_t)hits + size);
+		loadDataFileWithLength(FILE_MODANIM_BIN, model->animIds, offset2, size);
 	} else {
-		loadDataFileWithLength(FILE_MODANIM_BIN, globalModAnimBuffer, size, nAnims);
+		loadDataFileWithLength(FILE_MODANIM_BIN, globalModAnimBuffer, offset2, size);
 		model->animIds = globalModAnimBuffer;
 	}
 	animBank = 0;
@@ -1747,23 +1745,23 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 		totalSize += nextId;
 		loadDataFileWithLength(FILE_AMAP_BIN, model->amap,
 			model->animOffset, nextId);
-		nAnims = 0;
+		size = 0;
 		do {
-			if(globalModAnimBuffer[nAnims] != -1) {
-				model->anims[nAnims] = (struct Animation*)loadModelAnimation(
-					model, globalModAnimBuffer[nAnims], (short)nAnims, NULL);
-				if(!model->anims[nAnims]) {
-					for(bank = 0; bank < nAnims; bank++) {
+			if(globalModAnimBuffer[size] != -1) {
+				model->anims[size] = (struct Animation*)loadModelAnimation(
+					model, globalModAnimBuffer[size], (short)size, NULL);
+				if(!model->anims[size]) {
+					for(bank = 0; bank < size; bank++) {
 						freeAnimation((Animation*)model->anims[bank]);
 					}
 					model->anims = NULL;
 					return TRUE;
 				}
 			} else {
-				model->anims[nAnims] = NULL;
+				model->anims[size] = NULL;
 			}
-			nAnims += 1;
-		} while(nAnims < model->numAnims);
+			size += 1;
+		} while(size < model->numAnims);
 	}
 	else {
 		model->anims = NULL;
@@ -1962,42 +1960,41 @@ u8 iJoint3, u8 flags, short unk58) { // 8007D678
 	    Tiltlist, param_5, flags);
 }
 
-void fn_8007D8E4(Model *model, AnimInstance *animInst, int count) { // 8007D8E4
-	Bone *bone;
-	Animation *anim;
-    AnimCache *animCache;
-	int offset;
-	int hitboxSize;
-	int iJoint;
+void fn_8007D8E4(Model *model, AnimInstance *animInstance, int count) { // 8007D8E4
 	int ii;
 	float hitboxSizeFloat;
+	int hitboxSize;
+	int iJoint;
+    AnimCache *animCache;
+	Animation *anim;
+	int offset;
+	int dummy;
 
 	for(ii = 0; ii < count; ii++) {
 		iJoint = ii;
 		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-            animCache = animInst->cache0[animInst->iJoint[ii]];
-			anim = (Animation *)&animInst->cache0[animInst->iJoint[ii]][1];
+            animCache = animInstance->cache0[animInstance->iJoint[ii]];
+			anim = (Animation *)&animInstance->cache0[animInstance->iJoint[ii]][1];
 		} else {
 			animCache = (AnimCache *)((int)model->amap +
-				animInst->iJoint[ii] * ((model->numJoints - 1 & ~7) + 8));
-			anim = (Animation*)model->anims[animInst->iJoint[ii]];
+				animInstance->iJoint[ii] * ((model->numJoints - 1 & ~7) + 8));
+			anim = (Animation*)model->anims[animInstance->iJoint[ii]];
 		}
 		for(iJoint = 0; iJoint < model->numJoints; iJoint++) {
 			model->joints[iJoint].idx2[ii] = animCache->animMap[iJoint];
 		}
-		offset = animInst->joints[ii]->idx2[0] & 0xFF;
-		hitboxSizeFloat = animInst->hitboxSize[0][ii];
-		hitboxSize = hitboxSizeFloat;
-		if(hitboxSize != animInst->hitboxSize[0][ii]) {
-            animInst->sizeVar4c[ii] = (s16)offset;
+		offset = animInstance->joints[ii]->idx2[0] & 0xFF;
+		hitboxSizeFloat = hitboxSize = animInstance->hitboxSize[0][ii];
+		if(hitboxSizeFloat != animInstance->hitboxSize[0][ii]) {
+            animInstance->sizeVar4c[ii] = (s16)offset;
 		} else {
-			animInst->sizeVar4c[ii] = 0;
+			animInstance->sizeVar4c[ii] = 0;
 		}
-		if(animInst->unk60[ii]
-        && (hitboxSizeFloat == animInst->hitboxSize[2][ii] - 1)) {
-			animInst->sizeVar4c[ii] = -offset * hitboxSize;
+		if(animInstance->unk60[ii]
+        && (hitboxSizeFloat == animInstance->hitboxSize[2][ii] - 1)) {
+			animInstance->sizeVar4c[ii] = -offset * hitboxSize;
 		}
-		animInst->unk2c[ii] = (&anim->usage
+		animInstance->unk2c[ii] = (&anim->usage
 		    + anim->keyframeOffset + offset * hitboxSize);
 	}
 }
