@@ -284,20 +284,19 @@ uint Model_checksumHeader(Model *model) { //8007DE30
 
 Model* loadModel(int modelNum) { //8007DE70
 	Model *model;
-	uint *modelsTab;
-	uint amapSize;
-	int size2;
+	uint offset;
+	int size;
 	int decompSize;
+	uint *modelsTab;
 	int nAnimations;
 	uint animCacheSize;
 	BOOL bNoAmap;
-	uint offset;
+	void *ptr;
 
 	STUBBED_PRINTF("\t+++++ loadModel +++++ ARGS: %d\n", modelNum);
 
-	modelsTab = (uint *)getTable(FILE_MODELS_tab);
-	offset = modelsTab[modelNum];
-	loadModelsBin(offset,
+	modelsTab = ((uint *)getTable(FILE_MODELS_tab));
+	loadModelsBin(offset = modelsTab[modelNum],
 		&nAnimations, &animCacheSize,
 		&bNoAmap, &decompSize, modelNum);
 	STUBBED_PRINTF("MODEL OFFSET %x  MODELNUM %d\n",
@@ -305,14 +304,16 @@ Model* loadModel(int modelNum) { //8007DE70
 	animCacheSize = (uint)mmAlign8((void*)animCacheSize);
 	animCacheSize += 0xb0;
 
-	size2 = decompSize + modelGetAmapSize(modelNum, bNoAmap, nAnimations) + 500;
+	size = decompSize + modelGetAmapSize(modelNum, bNoAmap, nAnimations) + 500;
 	STUBBED_PRINTF("\t decompSize=%d\n", decompSize);
 
-	model = (Model *)mmAlloc(size2,
+	model = (Model *)mmAlloc(size,
 		ALLOC_TAG_MODELS_COL, (volatile u32)"mod");
 	//something odd with strings here.
 	BADASSERTLINE(491, model);
-	model = (Model *)mmAlign16(model);
+	ptr = model;
+	ptr = mmAlign16(ptr);
+	model = (Model *)ptr;
 
 	loadAndDecompressDataFile(FILE_MODELS_bin, model,
 		offset, decompSize, NULL,
