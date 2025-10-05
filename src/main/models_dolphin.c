@@ -17,9 +17,9 @@
 #include "obj/ObjInstance.h"
 #include "sys/files.h"
 #include <stddef.h>
+#include "placeholder.h"
 
-//strings at 802eb690 - 802ec988
-//1280 -> 7c
+int randInt(int min,int max);
 
 //x, y, z but not S16Vec or array
 s16 objAnimVar_8039872c_x;
@@ -51,7 +51,7 @@ void loadModelsBin(uint offset,int *outNAnimations,uint *outAnimCacheSize,
 void FUN_80065ff8(Mtx44 **pjMtx,Mtx44Ptr modelMatrix,AnimInstance *animInstance,Bone *joints,int numJoints,undefined2 *tiltList,int param_7,u32 flags);
 Animation * loadModelAnimation(Model *model,short id,short id2,void *dest);
 void * loadDataFileWithLength(DataFileId32 file,void *dest,uint offset,u32 len);
-int loadAndDecompressDataFile(DataFileId32 file,void *dest,uint offset,size_t length,uint *outSize,int index,s8 flags);
+int loadAndDecompressDataFile(DataFileId32 file,void *dest,uint offset,size_t length,int *outSize,int index,s8 flags);
 
 ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
 int Model_setupAnimInstance(Model *model,int flags,AnimUnk *anim,BOOL bAlways0);
@@ -794,11 +794,11 @@ bool param3) { // 8007F184
 	MTXInverse(*modelMatrix, modelMatrixInv);
 	for(jointNum = model->numJoints-1; jointNum >= 0; jointNum--) {
 		joint1 = modelGetJoint(model, jointNum);
-		if(joint1->idx[0] == -1) continue;
+		if((s8)joint1->idx[0] == -1) continue;
 
-		joint2 = modelGetJoint(model, joint1->idx[0]);
+		joint2 = modelGetJoint(model, (s8)joint1->idx[0]);
 		jMtx1 = modelInstGetjMtx(modelInstance, jointNum);
-		jMtx2 = modelInstGetjMtx(modelInstance, joint1->idx[0]);
+		jMtx2 = modelInstGetjMtx(modelInstance, (s8)joint1->idx[0]);
 		MTXConcat(modelMatrixInv, *jMtx1, jMtxModel1);
 		MTXConcat(modelMatrixInv, *jMtx2, jMtxModel2);
 		MTXMultVec(jMtxModel1, &zero, &jPos1);
@@ -815,10 +815,10 @@ bool param3) { // 8007F184
 			VECCrossProduct(&jPosDeltaNrm, &vTmp, &jPosDeltaNrm);
 			VECNormalize(&jPosDeltaNrm, &jPosDeltaNrm);
 			nBonesDiv3 = nJointsMinus1 / 3;
-			if(jointVar414[joint1->idx[0]] == -1) {
-				jointVar414[joint1->idx[0]] = nBonesDiv3;
+			if(jointVar414[(s8)joint1->idx[0]] == -1) {
+				jointVar414[(s8)joint1->idx[0]] = nBonesDiv3;
 			} else {
-				jointVar414[joint1->idx[0]] = -2;
+				jointVar414[(s8)joint1->idx[0]] = -2;
 			}
 			for(ii = 0; ii < 8; ii++) {
 				MTXRotAxisRad(mTmp, &jPosDelta, ii * twopi / 8.0f);
@@ -829,9 +829,9 @@ bool param3) { // 8007F184
 					vTmp.z = jPosDelta.z * vTmp.z;
 					nrmRnd = randInt(10, 60) * 0.01f + 1.0f;
 					if(model->radi) {
-						if(model->radi[jointNum] > model->radi[joint1->idx[0]]) {
+						if(model->radi[jointNum] > model->radi[(s8)joint1->idx[0]]) {
 							radi = model->radi[jointNum];
-						} else radi = nrmRnd * model->radi[joint1->idx[0]];
+						} else radi = nrmRnd * model->radi[(s8)joint1->idx[0]];
 					} else radi = 0.04f;
 					radi *= nrmRnd;
 					vTmp.x += jPosDeltaNrm.x * radi;
@@ -1027,7 +1027,7 @@ Model *model, int index, int id, void *dest) { // 80080168
 	uint offset;
 	u32 len;
 	Animation *anim;
-	uint animSize;
+	int animSize;
 
 	offset = animOffsetTable[index];
 	loadAndDecompressDataFile(FILE_ANIM_BIN, NULL, offset,
@@ -1036,7 +1036,8 @@ Model *model, int index, int id, void *dest) { // 80080168
 	anim = (Animation *)((uint)dest + ANIMMAP_SIZE);
     BADASSERTLINE(2155, anim);
 	loadAndDecompressDataFile(
-	    FILE_ANIM_BIN, anim, offset, animSize, NULL, index, 0);
+	    FILE_ANIM_BIN, anim, offset, animSize,
+		NULL, index, 0);
 	len = ((model->numJoints - 1) & ~7) + 8;
 	loadDataFileWithLength(FILE_AMAP_BIN, dest,
         model->animOffset + id * len, len);
@@ -1048,7 +1049,7 @@ Animation *getAnimation(short id) { // 80080270
 	Animation *anim;
     int dummy2;
 	uint offset;
-	uint size;
+	int size;
 
 	if(!SparseArray_get(animsLoadedTable, id, &anim)) {
         //anim isn't loaded; load it now
@@ -1669,27 +1670,28 @@ int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 }
 
 BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
-	int thisId;
 	int nextId;
 	int bank;
 	int size;
+	int offsNext;
 	int ii;
 	int totalSize;
 	int offset2;
-	int animBank;
 	int offset;
-	int offsNext;
+	int animBank;
 	s16 *amap;
 
 	totalSize = 0;
 	amap = (s16*)pAmapTab;
-	loadDataFileWithLength(FILE_MODANIM_TAB, amap, animId * 2, 0x10);
+	loadDataFileWithLength(FILE_MODANIM_TAB,
+		amap, animId * 2, 0x10);
 	offset = amap[0];
 	offsNext = amap[1];
 	offset2 = offset;
 	size = (offsNext - offset) >> 1;
 	if(size != model->numAnims) {
-		printf("makeModelAnimation() size mismatch!! (%d,%d)\n", model->numAnims, size);
+		printf("makeModelAnimation() size mismatch!! (%d,%d)\n",
+			model->numAnims, size);
 		model->numAnims = size;
 	}
 	if(!model->numAnims) return FALSE;
@@ -1698,19 +1700,21 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 	if(size > 0x800) {
 		debugPrint("Warning: Model animation buffer overflow!! size=%d\n", size);
 	}
-	loadDataFileWithLength(FILE_AMAP_TAB, pAmapTab, (animId & ~3) * 4, 0x20);
+	loadDataFileWithLength(FILE_AMAP_TAB,
+		pAmapTab, (animId & ~3) * 4, 0x20);
 	bank = animId & 3;
 	model->animOffset = pAmapTab[bank];
-	thisId = pAmapTab[bank];
-	nextId = pAmapTab[bank + 1] - thisId;
+	nextId = pAmapTab[bank + 1] - pAmapTab[bank];
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		model->animIds = (s16 *)hits;
 		while(size & 7) size++;
 		totalSize += size;
 		hits = (void*)((intptr_t)hits + size);
-		loadDataFileWithLength(FILE_MODANIM_BIN, model->animIds, offset2, size);
+		loadDataFileWithLength(FILE_MODANIM_BIN,
+			model->animIds, offset2, size);
 	} else {
-		loadDataFileWithLength(FILE_MODANIM_BIN, globalModAnimBuffer, offset2, size);
+		loadDataFileWithLength(FILE_MODANIM_BIN,
+			globalModAnimBuffer, offset2, size);
 		model->animIds = globalModAnimBuffer;
 	}
 	animBank = 0;
@@ -1737,7 +1741,8 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 		do {
 			if(globalModAnimBuffer[size] != -1) {
 				model->anims[size] = (struct Animation*)loadModelAnimation(
-					model, globalModAnimBuffer[size], (short)size, NULL);
+					model, globalModAnimBuffer[size],
+					(short)size, NULL);
 				if(!model->anims[size]) {
 					for(bank = 0; bank < size; bank++) {
 						freeAnimation((Animation*)model->anims[bank]);
@@ -1748,7 +1753,7 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 			} else {
 				model->anims[size] = NULL;
 			}
-			size += 1;
+			size++;
 		} while(size < model->numAnims);
 	}
 	else {
