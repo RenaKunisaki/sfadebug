@@ -1,5 +1,6 @@
 #include "dolphin.h"
 #include "dolphin/mtx.h"
+#include "dolphin/os/OSCache.h"
 #include "gfx/models/animation.h"
 #include "gfx/models/shaders.h"
 #include "gfx/textures.h"
@@ -104,7 +105,7 @@ void LAB_80080c00(double param_1,int *param_2,int param_3);
 void modelFn_80080c28(float scale, ModelInstance *modelInstance);
 void copyVtxsToModelInstance(ModelInstance *modelInstance);
 void fn_8008102C(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf);
-void modelApplyBoneTransforms(S16Vec *vtxs,S16Vec *vtxs2,uint numPositions,short *anims1,short *anims2,int pos);
+void modelApplyBoneTransforms(S16Vec *vtxs,S16Vec *vtxs2,u16 numPositions,short *anims1,short *anims2,int pos);
 BOOL countModels(void);
 //void modelApplyBoneTransform(undefined4 *param_1,undefined4 *param_2,int param_3,short **param_4,short **param_5,int param_6,undefined4 param_7,int param_8);
 void LAB_80081578(void);
@@ -1427,6 +1428,66 @@ void modelLoadOffsetTables() { //unused
 	if(!animOffsetTable) {
 		printf("modelLoadOffsetTables() --- animOffsetTable is NULL\n");
 	}
+}
+
+void modelApplyBoneTransforms(S16Vec *vtxs, S16Vec *vtxs2, u16 numPositions,
+short *anims1, short *anims2, int pos) {
+	static u16 MAX_POSITIONS = 672;
+	undefined4 in_r9;
+	int in_r10;
+	uint nBlocks;
+	u32 len;
+	uint idx;
+	uint numBlocks;
+	uint offs;
+	uint nPos;
+	uint lcBank;
+	short *anims1_;
+	short *anims2_;
+	int pos_;
+	void *cacheBase;
+
+	cacheBase = (void*)LC_BASE;
+	offs = 0;
+	nPos = numPositions;
+	if(nPos > MAX_POSITIONS) { nPos = MAX_POSITIONS; }
+	numBlocks = (nPos * 6 + 0x1f) >> 5 & 0x7ff;
+	anims1_ = anims1;
+	anims2_ = anims2;
+	pos_ = pos;
+	LCLoadBlocks(cacheBase, vtxs, numBlocks);
+	lcBank = 0;
+	len = 0;
+	while((numPositions & 0xffff) != 0) {
+		numPositions -= nPos;
+		if((numPositions & 0xffff) != 0) {
+			idx = numPositions;
+			if(672 < (numPositions & 0xffff)) { idx = 672; }
+			nBlocks = (idx & 0xffff) * 6 + 0x1f >> 5 & 0x7ff;
+			LCLoadBlocks((void *)((lcBank ^ 1) * 0x2000 + -0x20000000),
+			    vtxs + (offs & 0xffff) + 672,
+			    nBlocks);
+			len = 1;
+		}
+		LCQueueWait(len);
+		modelApplyBoneTransform((undefined4 *)(lcBank * 0x2000 + -0x20000000),
+		    (undefined4 *)(lcBank * 0x2000 + -0x1ffff000),
+		    nPos,
+		    &anims1_,
+		    &anims2_,
+		    pos_,
+		    in_r9,
+		    in_r10);
+		LCStoreBlocks(vtxs2 + (offs & 0xffff),
+		    (void *)(lcBank * 0x2000 + -0x1ffff000),
+		    numBlocks & 0xffff);
+		offs += nPos;
+		len = 1;
+		lcBank ^= 1;
+		numBlocks = nBlocks;
+		nPos = idx;
+	}
+	LCQueueWait(0);
 }
 
 BOOL countModels(void) { // 800812A0
