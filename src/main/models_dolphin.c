@@ -1433,54 +1433,41 @@ void modelLoadOffsetTables() { //unused
 void modelApplyBoneTransforms(S16Vec *vtxs, S16Vec *vtxs2, u16 numPositions,
 short *anims1, short *anims2, int pos) {
 	static u16 MAX_POSITIONS = 672;
-	undefined4 in_r9;
-	int in_r10;
-	uint nBlocks;
+	u16 nBlocks;
 	u32 len;
-	uint idx;
-	uint numBlocks;
-	uint offs;
-	uint nPos;
-	uint lcBank;
-	short *anims1_;
-	short *anims2_;
-	int pos_;
+	u16 idx;
+	u16 numBlocks;
+	u16 offs;
+	int nPos;
+	u16 lcBank;
 	void *cacheBase;
+	void *tag;
 
 	cacheBase = (void*)LC_BASE;
 	offs = 0;
-	nPos = numPositions;
-	if(nPos > MAX_POSITIONS) { nPos = MAX_POSITIONS; }
+	nPos = numPositions > MAX_POSITIONS ? MAX_POSITIONS : numPositions;
 	numBlocks = (nPos * 6 + 0x1f) >> 5 & 0x7ff;
-	anims1_ = anims1;
-	anims2_ = anims2;
-	pos_ = pos;
-	LCLoadBlocks(cacheBase, vtxs, numBlocks);
+	LCLoadBlocks(cacheBase, vtxs, (u16)numBlocks);
 	lcBank = 0;
 	len = 0;
-	while((numPositions & 0xffff) != 0) {
+	while(numPositions) {
 		numPositions -= nPos;
-		if((numPositions & 0xffff) != 0) {
-			idx = numPositions;
-			if(672 < (numPositions & 0xffff)) { idx = 672; }
-			nBlocks = (idx & 0xffff) * 6 + 0x1f >> 5 & 0x7ff;
-			LCLoadBlocks((void *)((lcBank ^ 1) * 0x2000 + -0x20000000),
-			    vtxs + (offs & 0xffff) + 672,
+		if(numPositions) {
+			idx = numPositions > MAX_POSITIONS ? MAX_POSITIONS : numPositions;
+			nBlocks = (idx * 6 + 0x1f) >> 5 & 0x7ff;
+			tag = (void *)((lcBank ^ 1) * 0x2000);
+			LCLoadBlocks(tag,
+			    vtxs + offs + MAX_POSITIONS,
 			    nBlocks);
 			len = 1;
 		}
 		LCQueueWait(len);
-		modelApplyBoneTransform((undefined4 *)(lcBank * 0x2000 + -0x20000000),
-		    (undefined4 *)(lcBank * 0x2000 + -0x1ffff000),
-		    nPos,
-		    &anims1_,
-		    &anims2_,
-		    pos_,
-		    in_r9,
-		    in_r10);
-		LCStoreBlocks(vtxs2 + (offs & 0xffff),
-		    (void *)(lcBank * 0x2000 + -0x1ffff000),
-		    numBlocks & 0xffff);
+		modelApplyBoneTransform((undefined4 *)(lcBank * 0x2000),
+		    (undefined4 *)(lcBank * 0x2000 - 0x1ffff000),
+		    nPos, &anims1, &anims2, pos);
+		LCStoreBlocks(vtxs2 + offs,
+		    (void *)(lcBank * 0x2000 - 0x1ffff000),
+		    numBlocks);
 		offs += nPos;
 		len = 1;
 		lcBank ^= 1;
