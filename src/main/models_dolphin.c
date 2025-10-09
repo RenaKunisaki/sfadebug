@@ -1435,44 +1435,43 @@ short *anims1, short *anims2, int pos) {
 	static u16 MAX_POSITIONS = 672;
 	u16 nBlocks;
 	u32 len;
-	u16 idx;
+	int idx;
 	u16 numBlocks;
 	u16 offs;
 	int nPos;
 	u16 lcBank;
 	void *cacheBase;
-	void *tag;
 
 	cacheBase = (void*)LC_BASE;
 	offs = 0;
 	nPos = numPositions > MAX_POSITIONS ? MAX_POSITIONS : numPositions;
-	numBlocks = (nPos * 6 + 0x1f) >> 5 & 0x7ff;
-	LCLoadBlocks(cacheBase, vtxs, (u16)numBlocks);
+	numBlocks = ((nPos * sizeof(S16Vec) + 0x1f) >> 5) & 0x7ff;
+	LCLoadBlocks(cacheBase, vtxs, numBlocks);
 	lcBank = 0;
 	len = 0;
 	while(numPositions) {
 		numPositions -= nPos;
 		if(numPositions) {
 			idx = numPositions > MAX_POSITIONS ? MAX_POSITIONS : numPositions;
-			nBlocks = (idx * 6 + 0x1f) >> 5 & 0x7ff;
-			tag = (void *)((lcBank ^ 1) * 0x2000);
-			LCLoadBlocks(tag,
-			    vtxs + offs + MAX_POSITIONS,
-			    nBlocks);
+			nBlocks = (idx * sizeof(S16Vec) + 0x1f) >> 5 & 0x7ff;
+			LCLoadBlocks(
+				(void *)(((lcBank ^ 1) * 0x2000)+(uint)cacheBase),
+			    vtxs + (offs + MAX_POSITIONS), nBlocks);
 			len = 1;
 		}
 		LCQueueWait(len);
-		modelApplyBoneTransform((undefined4 *)(lcBank * 0x2000),
-		    (undefined4 *)(lcBank * 0x2000 - 0x1ffff000),
+		modelApplyBoneTransform(
+			(undefined4 *)(((lcBank * 0x2000) & 0x1FFFE000)+(uint)cacheBase),
+			(undefined4 *)((((lcBank * 0x2000) & 0x1FFFE000)+0x1000)+(uint)cacheBase),
 		    nPos, &anims1, &anims2, pos);
 		LCStoreBlocks(vtxs2 + offs,
-		    (void *)(lcBank * 0x2000 - 0x1ffff000),
+		    (undefined4 *)((((lcBank * 0x2000) & 0x1FFFE000)+0x1000)+(uint)cacheBase),
 		    numBlocks);
 		offs += nPos;
 		len = 1;
 		lcBank ^= 1;
-		numBlocks = nBlocks;
 		nPos = idx;
+		numBlocks = nBlocks;
 	}
 	LCQueueWait(0);
 }
