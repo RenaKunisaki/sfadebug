@@ -1444,18 +1444,18 @@ short *anims1, short *anims2, int pos) {
 
 	cacheBase = (void*)LC_BASE;
 	offs = 0;
-	nPos = numPositions > MAX_POSITIONS ? MAX_POSITIONS : numPositions;
-	numBlocks = ((nPos * sizeof(S16Vec) + 0x1f) >> 5) & 0x7ff;
+	numBlocks = numPositions > MAX_POSITIONS ? MAX_POSITIONS : numPositions;
+	numBlocks = ((numBlocks * sizeof(S16Vec) + 0x1f) / 32) & 0x7ff;
 	LCLoadBlocks(cacheBase, vtxs, numBlocks);
 	lcBank = 0;
 	len = 0;
 	while(numPositions) {
 		numPositions -= nPos;
 		if(numPositions) {
-			idx = numPositions > MAX_POSITIONS ? MAX_POSITIONS : numPositions;
-			nBlocks = (idx * sizeof(S16Vec) + 0x1f) >> 5 & 0x7ff;
+			numBlocks = numPositions > MAX_POSITIONS ? MAX_POSITIONS : numPositions;
+			nBlocks = (numPositions * sizeof(S16Vec) + 0x1f) / 32 & 0x7ff;
 			LCLoadBlocks(
-				(void *)(((lcBank ^ 1) * 0x2000)+(uint)cacheBase),
+				(void *)((uint)cacheBase+((lcBank ^ 1) * 0x2000)),
 			    vtxs + (offs + MAX_POSITIONS), nBlocks);
 			len = 1;
 		}
