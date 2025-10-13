@@ -23,7 +23,7 @@ void LCStoreBlocks(void* destAddr, void* srcTag, u32 numBlocks);
 u32 LCLoadData(void* destAddr, void* srcAddr, u32 nBytes);
 u32 LCStoreData(void* destAddr, void* srcAddr, u32 nBytes);
 u32 LCQueueLength(void);
-void LCQueueWait(u32 len);
+void LCQueueWait(u16 len); //u32 in final
 void LCFlushQueue(void);
 void __OSCacheInit(void);
 
