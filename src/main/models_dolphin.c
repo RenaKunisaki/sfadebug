@@ -107,8 +107,7 @@ void copyVtxsToModelInstance(ModelInstance *modelInstance);
 void fn_8008102C(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf);
 void modelApplyBoneTransforms(S16Vec *vtxs,S16Vec *vtxs2,u16 numPositions,short *anims1,short *anims2,int pos);
 BOOL countModels(void);
-void modelApplyBoneTransform(void *param_1,void *param_2,s16 count,short **param_4,short **param_5,int param_6);
-void LAB_80081578(void);
+void modelApplyBoneTransform(S16Vec *vIn, S16Vec *vOut, int count,short **anims1, short **anims2, int pos);
 void modelGetVtxPosFloat(Model *model,int positionNum,Vec *posVec);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
@@ -1500,9 +1499,192 @@ BOOL countModels(void) { // 800812A0
     return TRUE;
 }
 
-//void modelApplyBoneTransform
-//               (undefined4 *param_1,undefined4 *param_2,int param_3,short **param_4,short **param_5,
-//               int param_6,undefined4 param_7,int param_8) { //8008136C
+//final is definitely asm, it uses psq_l
+asm void modelApplyBoneTransform(
+register S16Vec *vIn, register S16Vec *vOut,
+register int count, register short **anims1, register short **anims2,
+register int pos) {
+	#define ii    r9
+	#define x     r10
+	#define x2    r11
+	#define y     r12
+	#define y2    r14
+	#define z     r15
+	#define z2    r16
+	#define scale r17
+	#define cnt1  r18 //count of something
+	#define cnt2  r19 //count of something else
+	#define src   r20
+	#define in1   r23
+	#define in2   r24
+	#define GETXYZ(r) \
+		mr src, r; \
+		bl getXYZ; \
+		mr r, src
+	#define MULXYZ(rx, ry, rz, mul) \
+		mullw  rx, rx, mul; \
+		mullw  ry, ry, mul; \
+		mullw  rz, rz, mul
+	#define ADDXYZ2 \
+		add x, x, x2; \
+		add y, y, y2; \
+		add z, z, z2
+	#define SHIFT \
+		srwi x, x, 16; \
+		srwi y, y, 16; \
+		srwi z, z, 16
+
+	nofralloc
+	mfspr   r0,    LR
+	stwu    r1,   -0x50(r1)
+	stw     r0,    0x54(r1)
+	stmw    r14,   0x8(r1)
+	lwz     in1,   0x0(anims1)
+	lwz     in2,   0x0(anims2)
+	li      ii,    0x0
+	lis     scale, 0x1
+	subf    scale, pos, scale
+
+next:
+	lha     cnt1,  0x0(in1)
+	lha     cnt2,  0x0(in2)
+	andi.   cnt1,  cnt1,  0x1fff
+	andi.   cnt2,  cnt2,  0x1fff
+
+nextCopyXYZ:
+	cmpw    ii,    cnt1;  bge part2
+	cmpw    ii,    cnt2;  bge part3
+	cmpw    ii,    count; bge end
+
+	//copy x, y, z from input to output
+	lwz     r20,   0x0(vIn) //x,y
+	lha     r22,   0x4(vIn) //z
+	addi    vIn,   vIn,   6
+	stw     r20,   0x0(vOut) //x,y
+	addi    ii,    ii,    1
+	sth     r22,   0x4(vOut) //z
+	addi    vOut,  vOut,  6
+	b       nextCopyXYZ
+
+part2:
+	cmpw    ii,    cnt2;  bne part4
+	GETXYZ(in2)
+	mr      x2,    x
+	mr      y2,    y
+	mr      z2,    z
+	GETXYZ(in1)
+	MULXYZ(x,  y,  z,  scale)
+	MULXYZ(x2, y2, z2, pos)
+	ADDXYZ2
+	SHIFT
+	lha     x2,    0x0(vIn) //x
+	lha     y2,    0x2(vIn) //y
+	lha     z2,    0x4(vIn) //z
+	ADDXYZ2
+	sth     x,     0x0(vOut) //x
+	sth     y,     0x2(vOut) //y
+	sth     z,     0x4(vOut) //z
+	addi    vIn,   vIn,   6
+	addi    vOut,  vOut,  6
+	addi    ii,    ii,    1
+	b       next
+
+part4:
+	GETXYZ(in1)
+	MULXYZ(x, y, z, scale)
+	SHIFT
+	lha     x2,    0x0(vIn) //x
+	lha     y2,    0x2(vIn) //y
+	lha     z2,    0x4(vIn) //z
+	ADDXYZ2
+	sth     x,     0x0(vOut) //x
+	sth     y,     0x2(vOut) //y
+	sth     z,     0x4(vOut) //z
+	addi    vIn,   vIn,   6
+	addi    vOut,  vOut,  6
+	addi    ii,    ii,    1
+	b       next
+
+part3:
+	GETXYZ(in2)
+	mullw   x,     x,     pos
+	lha     r11,   0x0(vIn) //x
+	mullw   y,     y,     pos
+	lha     r14,   0x2(vIn) //y
+	mullw   z,     z,     pos
+	lha     r16,   0x4(vIn) //z
+	SHIFT
+	ADDXYZ2
+	sth     x,     0x0(vOut) //x
+	addi    vIn,   vIn,   6
+	sth     y,     0x2(vOut) //y
+	addi    ii,    ii,    1
+	sth     z,     0x4(vOut) //z
+	addi    vOut,  vOut,  6
+	b       next
+
+end:
+	stw     in1,   0x0(anims1)
+	stw     in2,   0x0(anims2)
+	lwz     r0,    0x54(r1)
+	mtspr   LR,    r0
+	lmw     r14,   0x8(r1)
+	addi    r1,    r1,    0x50
+	blr
+
+//get X, Y, Z values from src.
+//src points to a variable number of u16 values.
+//the first uses the top 3 bits to indicate which
+//of the next 3 are present, in order:
+//0x2000: X is present
+//0x4000: Y is present
+//0x8000: Z is present
+//if the field is present, it's returned in the
+//corresponding register, otherwise, the register
+//is set to zero.
+//src is advanced to point to the next value after
+//all present fields. r21 is left with the first
+//value. r22 is clobbered.
+//this version doesn't use r21 but the final
+//version does.
+getXYZ:
+	lhz     r21,   0x0(src)
+	addi    src,   src,   2
+	andi.   r22,   r21,   0x2000
+	li      x,     0x0
+	beq     _getY
+	lha     x,     0x0(src)
+	addi    src,   src,   2
+_getY:
+	andi.   r22,   r21,   0x4000
+	li      y,     0x0
+	beq     _getZ
+	lha     y,     0x0(src)
+	addi    src,   src,   2
+_getZ:
+	andi.   r22,   r21,   0x8000
+	li      z,     0x0
+	beq     _end
+	lha     z,     0x0(src)
+	addi    src,   src,   2
+_end:
+	blr
+	#undef ii
+	#undef x
+	#undef x2
+	#undef y
+	#undef y2
+	#undef z
+	#undef z2
+	#undef scale
+	#undef cnt1
+	#undef cnt2
+	#undef src
+	#undef in1
+	#undef in2
+	#undef GETXYZ
+}
+
 
 #ifdef __MWERKS__
 #pragma peephole off
