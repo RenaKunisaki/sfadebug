@@ -1415,9 +1415,6 @@ void fn_8008102C(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf) { // 8008
 	}
 }
 
-//void modelApplyBoneTransforms(S16Vec *vtxs,S16Vec *vtxs2,uint numPositions,
-// short *anims1,short *anims2,int pos) { //80081134
-
 void modelLoadOffsetTables() { //unused
 	printf("--------MODELS Load Offset Tables-------\n");
 	if(!modelOffsetTable) {
@@ -1904,6 +1901,8 @@ int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 }
 
 BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
+	s16 *amap;
+	int animBank;
 	int nextId;
 	int bank;
 	int size;
@@ -1912,17 +1911,15 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 	int totalSize;
 	int offset2;
 	int offset;
-	int animBank;
-	s16 *amap;
 
 	totalSize = 0;
 	amap = (s16*)pAmapTab;
 	loadDataFileWithLength(FILE_MODANIM_TAB,
 		amap, animId * 2, 0x10);
-	offset = amap[0];
+	offset   = amap[0];
 	offsNext = amap[1];
-	offset2 = offset;
-	size = (offsNext - offset) >> 1;
+	offset2  = offset;
+	size     = (offsNext - offset) >> 1;
 	if(size != model->numAnims) {
 		printf("makeModelAnimation() size mismatch!! (%d,%d)\n",
 			model->numAnims, size);
