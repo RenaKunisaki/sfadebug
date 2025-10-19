@@ -2209,8 +2209,11 @@ void fn_8007D8E4(Model *model, AnimInstance *animInstance, int count) { // 8007D
 			model->joints[r30].idx2[iJoint] = animCache->animMap[r30];
 		}
 		offset = animInstance->joints[iJoint]->idx2[0] & 0xFF;
-		hitboxSizeFloat = hitboxSize = animInstance->hitboxSize[0][iJoint]; //sus
-		//checking for NaN? this is effectively comparing to itself
+		hitboxSize = animInstance->hitboxSize[0][iJoint];
+		hitboxSizeFloat = hitboxSize;
+
+		//presumably checking if the value fits in an int (if not, these
+		//two won't be equal)
 		if(hitboxSizeFloat != animInstance->hitboxSize[0][iJoint]) {
             animInstance->sizeVar4c[iJoint] = (s16)offset;
 		} else {
@@ -2220,6 +2223,7 @@ void fn_8007D8E4(Model *model, AnimInstance *animInstance, int count) { // 8007D
         && (hitboxSizeFloat == animInstance->hitboxSize[2][iJoint] - 1)) {
 			animInstance->sizeVar4c[iJoint] = -offset * hitboxSize;
 		}
+
 		//very odd. hitboxSize should be a radius; why is it being
 		//used as a data structure size?
 		animInstance->unk2c[iJoint] = (&anim->usage
