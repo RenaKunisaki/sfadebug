@@ -107,7 +107,7 @@ void copyVtxsToModelInstance(ModelInstance *modelInstance);
 void fn_8008102C(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf);
 void modelApplyBoneTransforms(S16Vec *vtxs,S16Vec *vtxs2,u16 numPositions,short *anims1,short *anims2,int pos);
 BOOL countModels(void);
-void modelApplyBoneTransform(S16Vec *vIn, S16Vec *vOut, int count,short **anims1, short **anims2, int pos);
+void modelApplyBoneTransform(S16Vec *vIn, S16Vec *vOut, s16 count,short **anims1, short **anims2, int pos);
 void modelGetVtxPosFloat(Model *model,int positionNum,Vec *posVec);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
@@ -1438,8 +1438,8 @@ short *anims1, short *anims2, int pos) {
 	u16 nPosPrevIter; //r30
 	u16 nPosThisIter; //r31
 	u16 nBlocksLoad; //r23
-	u16 nBlocksStore; //r26
 	uint cacheBase; //r28
+	u16 nBlocksStore; //r26
 	//numPositions: r29
 	//vtxsIn: r22
 
@@ -1499,7 +1499,7 @@ BOOL countModels(void) { // 800812A0
 //final is definitely asm, it uses psq_l
 asm void modelApplyBoneTransform(
 register S16Vec *vIn, register S16Vec *vOut,
-register int count, register short **anims1, register short **anims2,
+register s16 count, register short **anims1, register short **anims2,
 register int pos) {
 	#define ii    r9
 	#define x     r10
@@ -2184,41 +2184,45 @@ u8 iJoint3, u8 flags, short unk58) { // 8007D678
 	    Tiltlist, param_5, flags);
 }
 
+
 void fn_8007D8E4(Model *model, AnimInstance *animInstance, int count) { // 8007D8E4
-	int ii;
-	float hitboxSizeFloat;
-	int hitboxSize;
-	int iJoint;
-    AnimCache *animCache;
-	Animation *anim;
+    int r30;
+	int ii; //r31
 	int offset;
-	int dummy;
+	int hitboxSize; //r27
+	int iJoint; //r29
+	float hitboxSizeFloat;
+	Animation *anim; //r26
+    AnimCache *animCache;
 
 	for(ii = 0; ii < count; ii++) {
 		iJoint = ii;
 		if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
-            animCache = animInstance->cache0[animInstance->iJoint[ii]];
-			anim = (Animation *)&animInstance->cache0[animInstance->iJoint[ii]][1];
+            animCache = animInstance->cache0[animInstance->iJoint[iJoint]];
+			anim = (Animation *)&animInstance->cache0[animInstance->iJoint[iJoint]][1];
 		} else {
 			animCache = (AnimCache *)((int)model->amap +
-				animInstance->iJoint[ii] * ((model->numJoints - 1 & ~7) + 8));
-			anim = (Animation*)model->anims[animInstance->iJoint[ii]];
+				animInstance->iJoint[iJoint] * ((model->numJoints - 1 & ~7) + 8));
+			anim = (Animation*)model->anims[animInstance->iJoint[iJoint]];
 		}
-		for(iJoint = 0; iJoint < model->numJoints; iJoint++) {
-			model->joints[iJoint].idx2[ii] = animCache->animMap[iJoint];
+		for(r30 = 0; r30 < model->numJoints; r30++) {
+			model->joints[r30].idx2[iJoint] = animCache->animMap[r30];
 		}
-		offset = animInstance->joints[ii]->idx2[0] & 0xFF;
-		hitboxSizeFloat = hitboxSize = animInstance->hitboxSize[0][ii];
-		if(hitboxSizeFloat != animInstance->hitboxSize[0][ii]) {
-            animInstance->sizeVar4c[ii] = (s16)offset;
+		offset = animInstance->joints[iJoint]->idx2[0] & 0xFF;
+		hitboxSizeFloat = hitboxSize = animInstance->hitboxSize[0][iJoint]; //sus
+		//checking for NaN? this is effectively comparing to itself
+		if(hitboxSizeFloat != animInstance->hitboxSize[0][iJoint]) {
+            animInstance->sizeVar4c[iJoint] = (s16)offset;
 		} else {
-			animInstance->sizeVar4c[ii] = 0;
+			animInstance->sizeVar4c[iJoint] = 0;
 		}
-		if(animInstance->unk60[ii]
-        && (hitboxSizeFloat == animInstance->hitboxSize[2][ii] - 1)) {
-			animInstance->sizeVar4c[ii] = -offset * hitboxSize;
+		if(animInstance->unk60[iJoint]
+        && (hitboxSizeFloat == animInstance->hitboxSize[2][iJoint] - 1)) {
+			animInstance->sizeVar4c[iJoint] = -offset * hitboxSize;
 		}
-		animInstance->unk2c[ii] = (&anim->usage
+		//very odd. hitboxSize should be a radius; why is it being
+		//used as a data structure size?
+		animInstance->unk2c[iJoint] = (&anim->usage
 		    + anim->keyframeOffset + offset * hitboxSize);
 	}
 }

@@ -180,7 +180,7 @@ typedef struct {
     /* 0x2c */ UNKTYPE *unk2c[2];
     /* 0x34 */ Bone *joints[AnimInstance_MAX_JOINTS];
     /* 0x44 */ ushort iJoint[AnimInstance_MAX_JOINTS];
-    /* 0x4c */ ushort sizeVar4c[AnimInstance_MAX_JOINTS];
+    /* 0x4c */ ushort sizeVar4c[AnimInstance_MAX_JOINTS]; //some type of offset
     /* 0x54 */ undefined unk54;
     /* 0x55 */ undefined unk55;
     /* 0x56 */ undefined unk56;
