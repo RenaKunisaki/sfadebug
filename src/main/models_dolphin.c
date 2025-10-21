@@ -1428,50 +1428,50 @@ void modelLoadOffsetTables() { //unused
 
 void modelApplyBoneTransforms(S16Vec *vtxsIn, S16Vec *vtxsOut, u16 numPositions,
 short *anims1, short *anims2, int pos) {
-	static const u32 LC_BANK_MASK = 0x1FFFE000;
-	static const u32 LC_BANK_SIZE = 0x2000;
+	static const u32 LC_BANK_MASK   = 0x1FFFE000;
+	static const u32 LC_BANK_SIZE   = 0x2000;
+	static const u32 LC_BANK_OFFSET = 0x1000;
 	static u16 MAX_POSITIONS = 672; //most that can be loaded at once?
 
-	u16 nPosThisIter; //r31
-	u16 nPosLoad; //r25
-	u16 offs; //r27
-	u16 nBlocksStore; //r26
-	u16 nPosPrevIter; //r30
-	uint cacheBase; //r28
-	u16 nBlocksLoad; //r23
-	int waitLen; //r24
 	//numPositions: r29
 	//vtxsIn: r22
+	u16 iBank; //r31
+	u16 nPosIter; //r30
+	uint cacheBase; //r28
+	u16 nPosLoad; //r25
+	u16 nBlocksLoad; //r23
+	u16 offs; //r27
+	u16 nBlocksStore; //r26
+	int waitLen; //r24
 
 	cacheBase = (uint)LC_BASE;
 	offs = 0;
-	nPosPrevIter = numPositions > MAX_POSITIONS ? MAX_POSITIONS : numPositions;
-	nBlocksStore = ((nPosPrevIter * sizeof(S16Vec) + 31) / 32) & 0x7ff;
+	nPosIter = numPositions > MAX_POSITIONS ? MAX_POSITIONS : numPositions;
+	nBlocksStore = ((nPosIter * sizeof(S16Vec) + 31) / 32) & 0x7ff;
 	LCLoadBlocks((void*)cacheBase, vtxsIn, nBlocksStore);
-	nPosThisIter = 0;
+	iBank = 0;
 	waitLen = 0;
 	while(numPositions) {
-		numPositions -= nPosPrevIter;
-		if(numPositions) {
-			nPosLoad = (numPositions > MAX_POSITIONS) ? MAX_POSITIONS : numPositions;
+		if(numPositions -= nPosIter) {
+			nPosLoad = numPositions > MAX_POSITIONS ? MAX_POSITIONS : numPositions;
 			nBlocksLoad = (nPosLoad * sizeof(S16Vec) + 31) / 32 & 0x7ff;
 			LCLoadBlocks(
-				(void *)(cacheBase+((nPosThisIter ^ 1) * LC_BANK_SIZE)),
+				(void *)(cacheBase+((iBank ^ 1) * LC_BANK_SIZE)),
 			    vtxsIn + (offs + MAX_POSITIONS), nBlocksLoad);
 			waitLen = 1;
 		}
 		LCQueueWait(waitLen);
 		modelApplyBoneTransform(
-			(void*)(cacheBase+((nPosThisIter * LC_BANK_SIZE) & LC_BANK_MASK)),
-			(void*)(0x1000+cacheBase+((nPosThisIter * LC_BANK_SIZE) & LC_BANK_MASK)),
-		    nPosPrevIter, &anims1, &anims2, pos);
+			(void*)(cacheBase+((iBank * LC_BANK_SIZE) & LC_BANK_MASK)),
+			(void*)(LC_BANK_OFFSET+cacheBase+((iBank * LC_BANK_SIZE) & LC_BANK_MASK)),
+		    nPosIter, &anims1, &anims2, pos);
 		LCStoreBlocks(vtxsOut + offs,
-		    (void *)(0x1000+cacheBase+((nPosThisIter * LC_BANK_SIZE) & LC_BANK_MASK)),
+		    (void *)(LC_BANK_OFFSET+cacheBase+((iBank * LC_BANK_SIZE) & LC_BANK_MASK)),
 		    nBlocksStore);
-		offs += nPosPrevIter;
+		offs += nPosIter;
 		waitLen = 1;
-		nPosThisIter = nPosThisIter ^ 1;
-		nPosPrevIter = nPosLoad;
+		iBank ^= 1;
+		nPosIter = nPosLoad;
 		nBlocksStore = nBlocksLoad;
 	}
 	LCQueueWait(0);
