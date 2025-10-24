@@ -1439,24 +1439,28 @@ short *anims1, short *anims2, int pos) {
 
 	//numPositions: r29
 	//vtxsIn: r22
-	u16 iBank; //r31
-	u16 nPosIter; //r30
-	uint cacheBase; //r28
-	u16 nPosLoad; //r25
-	u16 nBlocksLoad; //r23
-	u16 offs; //r27
 	u16 nBlocksStore; //r26
+	u16 iBank; //r31
+	uint cacheBase; //r28
+	u16 nPosIter; //r30
+	u16 nPosLoad; //r25
 	int waitLen; //r24
+	u16 offs; //r27
+	u16 nBlocksLoad; //r23
 
 	cacheBase = (uint)LC_BASE;
 	offs = 0;
+	offs = 0; //for regswap memes
+	nPosIter = numPositions; //for regswap memes
 	nPosIter = numPositions > MAX_POSITIONS ? MAX_POSITIONS : numPositions;
 	nBlocksStore = _getNumBlocks(nPosIter);
+	//nBlocksStore = ((nPosIter * sizeof(S16Vec) + 31) / 32) & 0x7ff;
 	LCLoadBlocks((void*)cacheBase, vtxsIn, nBlocksStore);
 	iBank = 0;
 	waitLen = 0;
 	while(numPositions) {
 		if(numPositions -= nPosIter) {
+			nPosLoad = numPositions; //for regswap memes
 			nPosLoad = numPositions > MAX_POSITIONS ? MAX_POSITIONS : numPositions;
 			nBlocksLoad = _getNumBlocks(nPosLoad);
 			LCLoadBlocks(
