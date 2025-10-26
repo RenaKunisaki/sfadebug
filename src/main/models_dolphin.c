@@ -1908,16 +1908,17 @@ int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 }
 
 BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
-	s16 *amap;
-	int animBank;
 	int nextId;
+	int animBank;
 	int bank;
+	s16 *amap;
 	int size;
 	int offsNext;
-	int ii;
 	int totalSize;
-	int offset2;
+	int ii;
 	int offset;
+	int offset2;
+	int offset3;
 
 	totalSize = 0;
 	amap = (s16*)pAmapTab;
@@ -1957,12 +1958,12 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 	}
 	animBank = 0;
 	model->animBank[animBank++] = 0;
-	for(ii = 0; ii < model->numAnims; ii += 1) {
+	for(ii = 0; ii < model->numAnims; ii++) {
 		if(model->animIds[ii] == -1) {
 			model->animBank[animBank++] = ii + 1;
 		}
 	}
-	if(8 < animBank) printf("ANIMBANK overflow\n");
+	if(animBank > 8) printf("ANIMBANK overflow\n");
 	if(!(model->flags & ModelDataFlags2_UseLocalModAnimTab)) {
 		model->animIds = NULL;
 		model->anims = (struct Animation **)hits;
@@ -1975,24 +1976,23 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 		totalSize += nextId;
 		loadDataFileWithLength(FILE_AMAP_BIN, model->amap,
 			model->animOffset, nextId);
-		size = 0;
+		offset3 = 0;
 		do {
-			if(globalModAnimBuffer[size] != -1) {
-				model->anims[size] = (struct Animation*)loadModelAnimation(
-					model, globalModAnimBuffer[size],
-					(short)size, NULL);
-				if(!model->anims[size]) {
-					for(bank = 0; bank < size; bank++) {
-						freeAnimation((Animation*)model->anims[bank]);
+			if(globalModAnimBuffer[offset3] != -1) {
+				model->anims[offset3] = (struct Animation*)loadModelAnimation(
+					model, globalModAnimBuffer[offset3],
+					(short)offset3, NULL);
+				if(!model->anims[offset3]) {
+					for(ii = 0; ii < offset3; ii++) {
+						freeAnimation((Animation*)model->anims[ii]);
 					}
 					model->anims = NULL;
 					return TRUE;
 				}
 			} else {
-				model->anims[size] = NULL;
+				model->anims[offset3] = NULL;
 			}
-			size++;
-		} while(size < model->numAnims);
+		} while(++offset3 < model->numAnims);
 	}
 	else {
 		model->anims = NULL;
