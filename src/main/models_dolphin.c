@@ -1024,23 +1024,30 @@ Animation *loadAnimation(
 
 Animation *modelLoadAnimation(
 Model *model, int index, int id, void *dest) { // 80080168
-	uint offset;
 	u32 len;
+	uint offset;
+	uint offset2;
 	Animation *anim;
 	int animSize;
 
+	//get the length (null destination)
 	offset = animOffsetTable[index];
 	loadAndDecompressDataFile(FILE_ANIM_BIN, NULL, offset,
         0, &animSize, index, 1);
     BADASSERTLINE(2150, animSize<model->animCacheSize-ANIMMAP_SIZE);
+
 	anim = (Animation *)((uint)dest + ANIMMAP_SIZE);
     BADASSERTLINE(2155, anim);
+
+	//get the data
 	loadAndDecompressDataFile(
 	    FILE_ANIM_BIN, anim, offset, animSize,
 		NULL, index, 0);
+
+	//get the mapping array
 	len = ((model->numJoints - 1) & ~7) + 8;
-	loadDataFileWithLength(FILE_AMAP_BIN, dest,
-        model->animOffset + id * len, len);
+	offset2 = model->animOffset + id * len;
+	loadDataFileWithLength(FILE_AMAP_BIN, dest, offset2, len);
 	return anim;
 }
 
