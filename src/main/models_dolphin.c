@@ -283,20 +283,21 @@ uint Model_checksumHeader(Model *model) { //8007DE30
 }
 
 Model* loadModel(int modelNum) { //8007DE70
+	void *ptr;
 	Model *model;
-	uint offset;
 	int size;
+	uint offset;
 	int decompSize;
 	uint *modelsTab;
 	int nAnimations;
 	uint animCacheSize;
 	BOOL bNoAmap;
-	void *ptr;
 
 	STUBBED_PRINTF("\t+++++ loadModel +++++ ARGS: %d\n", modelNum);
 
 	modelsTab = ((uint *)getTable(FILE_MODELS_tab));
-	loadModelsBin(offset = modelsTab[modelNum],
+	offset = modelsTab[modelNum];
+	loadModelsBin(offset,
 		&nAnimations, &animCacheSize,
 		&bNoAmap, &decompSize, modelNum);
 	STUBBED_PRINTF("MODEL OFFSET %x  MODELNUM %d\n",
@@ -304,12 +305,12 @@ Model* loadModel(int modelNum) { //8007DE70
 	animCacheSize = (uint)mmAlign8((void*)animCacheSize);
 	animCacheSize += 0xb0;
 
-	size = decompSize + modelGetAmapSize(modelNum, bNoAmap, nAnimations) + 500;
+	size = decompSize + modelGetAmapSize(modelNum,
+		bNoAmap, nAnimations) + 500;
 	STUBBED_PRINTF("\t decompSize=%d\n", decompSize);
 
 	model = (Model *)mmAlloc(size,
 		ALLOC_TAG_MODELS_COL, (volatile u32)"mod");
-	//something odd with strings here.
 	BADASSERTLINE(491, model);
 	ptr = model;
 	ptr = mmAlign16(ptr);
