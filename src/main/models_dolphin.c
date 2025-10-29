@@ -57,7 +57,7 @@ int loadAndDecompressDataFile(DataFileId32 file,void *dest,uint offset,size_t le
 ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
 int Model_setupAnimInstance(Model *model,int flags,AnimUnk *anim,BOOL bAlways0);
 int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations);
-BOOL makeModelAnimation(Model *model,uint animId,void *hits);
+BOOL makeModelAnimation(Model *model,uint animId,s8 *hits);
 void modelSetupAnims(ModelInstance *modelInstance,AnimInstance *animInstance);
 void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 param_4);
 void fn_8007D1C4(Mtx44Ptr modelMatrix, ModelInstance *modelInstance,AnimInstance *animInstance, float frame, int param_5);
@@ -160,7 +160,7 @@ ModelInstance * loadModelInstance(int modelNum,uint flags) { //8007DB84
 		Model_loadTextures(model);
 		Model_initShaders(model);
 		makeModelAnimation(model, modelNum,
-		    (HitSpherePos *)((int)model->animBank + model->size - 0x58));
+		    (s8 *)((int)model->animBank + model->size - 0x58));
 		SparseArray_set(modelsLoadedTable,
             (short)modelNum, &model);
 	} else {
@@ -1907,18 +1907,18 @@ int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 	return result;
 }
 
-BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
-	int nextId;
-	int animBank;
-	int bank;
-	s16 *amap;
+BOOL makeModelAnimation(Model *model, uint animId, s8 *hits) { //8007CC94
 	int size;
 	int offsNext;
+	int nextId;
 	int totalSize;
-	int ii;
 	int offset;
 	int offset2;
 	int offset3;
+	int ii;
+	int animBank;
+	int bank;
+	s16 *amap;
 
 	totalSize = 0;
 	amap = (s16*)pAmapTab;
@@ -1948,7 +1948,7 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 		model->animIds = (s16 *)hits;
 		while(size & 7) size++;
 		totalSize += size;
-		hits = (void*)((intptr_t)hits + size);
+		hits += size;
 		loadDataFileWithLength(FILE_MODANIM_BIN,
 			model->animIds, offset2, size);
 	} else {
@@ -1969,10 +1969,10 @@ BOOL makeModelAnimation(Model *model, uint animId, void *hits) { //8007CC94
 		model->anims = (struct Animation **)hits;
 		hits = (void*)((intptr_t)hits + model->numAnims * 4);
 		for(totalSize += model->numAnims * 4; totalSize & 7; totalSize += 1) {
-			hits = (void*)((intptr_t)hits + 1);
+			hits++;
 		}
-		model->amap = hits;
-		hits = (void*)((intptr_t)hits+nextId);
+		model->amap = (s8**)hits;
+		hits += nextId;
 		totalSize += nextId;
 		loadDataFileWithLength(FILE_AMAP_BIN, model->amap,
 			model->animOffset, nextId);
