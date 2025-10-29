@@ -1908,26 +1908,33 @@ int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 }
 
 BOOL makeModelAnimation(Model *model, uint animId, s8 *hits) { //8007CC94
-	int size;
-	int offsNext;
-	int nextId;
-	int totalSize;
-	int offset;
-	int offset2;
-	int offset3;
+	//official name: makeModelAnimation
+	//unsure what `hits` is supposed to be, but the regalloc tells
+	//us that it's passed as s8* or u8*; else we wouldn't be able
+	//to use += for it.
+	//seems to be a struct with a few different types inside
+	int size; //official name: size
+	int offsThis; //completely redundant, could replace with offset
+	int offsNext; //mostly redundant
+	int totalSize; //for alignment
+	int offset; //where to read from in MODANIM.BIN
+	int iAnim; //loop counter for loading animations
 	int ii;
 	int animBank;
-	int bank;
-	s16 *amap;
+	int animLen;
+	int iBank;
+	s16 *amap; //animation map array
 
 	totalSize = 0;
+
+	//get size and offset from MODANIM.TAB
 	amap = (s16*)pAmapTab;
 	loadDataFileWithLength(FILE_MODANIM_TAB,
 		amap, animId * 2, 0x10);
-	offset   = amap[0];
+	offsThis = amap[0];
 	offsNext = amap[1];
-	offset2  = offset;
-	size     = (offsNext - offset) >> 1;
+	offset   = offsThis;
+	size     = (offsNext - offsThis) >> 1; //size is number of entries, not bytes
 	if(size != model->numAnims) {
 		printf("makeModelAnimation() size mismatch!! (%d,%d)\n",
 			model->numAnims, size);
@@ -1935,27 +1942,33 @@ BOOL makeModelAnimation(Model *model, uint animId, s8 *hits) { //8007CC94
 	}
 	if(!model->numAnims) return FALSE;
 
-	size = model->numAnims * 2 + 8;
+	//find the animations (in MODANIM.BIN) by looking them up in AMAP.TAB
+	size = model->numAnims * sizeof(s16) + 8;
 	if(size > 0x800) {
 		debugPrint("Warning: Model animation buffer overflow!! size=%d\n", size);
 	}
 	loadDataFileWithLength(FILE_AMAP_TAB,
 		pAmapTab, (animId & ~3) * 4, 0x20);
-	bank = animId & 3;
-	model->animOffset = pAmapTab[bank];
-	nextId = pAmapTab[bank + 1] - pAmapTab[bank];
+	iBank = animId & 3;
+	model->animOffset = pAmapTab[iBank];
+	animLen = pAmapTab[iBank + 1] - pAmapTab[iBank];
+
+	//load the animations
 	if(model->flags & ModelDataFlags2_UseLocalModAnimTab) {
 		model->animIds = (s16 *)hits;
 		while(size & 7) size++;
 		totalSize += size;
 		hits += size;
 		loadDataFileWithLength(FILE_MODANIM_BIN,
-			model->animIds, offset2, size);
+			model->animIds, offset, size);
 	} else {
 		loadDataFileWithLength(FILE_MODANIM_BIN,
-			globalModAnimBuffer, offset2, size);
+			globalModAnimBuffer, offset, size);
 		model->animIds = globalModAnimBuffer;
 	}
+
+	//init the anim banks (not entirely sure what this is about)
+	//each tells the index that it begins at
 	animBank = 0;
 	model->animBank[animBank++] = 0;
 	for(ii = 0; ii < model->numAnims; ii++) {
@@ -1964,35 +1977,46 @@ BOOL makeModelAnimation(Model *model, uint animId, s8 *hits) { //8007CC94
 		}
 	}
 	if(animBank > 8) printf("ANIMBANK overflow\n");
+
 	if(!(model->flags & ModelDataFlags2_UseLocalModAnimTab)) {
 		model->animIds = NULL;
 		model->anims = (struct Animation **)hits;
+
+		//find the amap buffer in hits, which is a buffer to overwrite
 		hits = (void*)((intptr_t)hits + model->numAnims * 4);
 		for(totalSize += model->numAnims * 4; totalSize & 7; totalSize += 1) {
 			hits++;
 		}
 		model->amap = (s8**)hits;
-		hits += nextId;
-		totalSize += nextId;
+
+		//pointlessly update two variables that aren't used beyond here
+		hits += animLen;
+		totalSize += animLen;
+
+		//load the amap into that buffer
 		loadDataFileWithLength(FILE_AMAP_BIN, model->amap,
-			model->animOffset, nextId);
-		offset3 = 0;
+			model->animOffset, animLen);
+
+		//load the actual animations
+		iAnim = 0;
 		do {
-			if(globalModAnimBuffer[offset3] != -1) {
-				model->anims[offset3] = (struct Animation*)loadModelAnimation(
-					model, globalModAnimBuffer[offset3],
-					(short)offset3, NULL);
-				if(!model->anims[offset3]) {
-					for(ii = 0; ii < offset3; ii++) {
-						freeAnimation((Animation*)model->anims[ii]);
+			if(globalModAnimBuffer[iAnim] != -1) {
+				model->anims[iAnim] = (struct Animation*)loadModelAnimation(
+					model, globalModAnimBuffer[iAnim],
+					(short)iAnim, NULL);
+				if(!model->anims[iAnim]) {
+					//if loading failed, free all animations...
+					for(iBank = 0; iBank < iAnim; iBank++) {
+						freeAnimation((Animation*)model->anims[iBank]);
 					}
+					//...then clear the pointer and abort
 					model->anims = NULL;
 					return TRUE;
 				}
 			} else {
-				model->anims[offset3] = NULL;
+				model->anims[iAnim] = NULL;
 			}
-		} while(++offset3 < model->numAnims);
+		} while(++iAnim < model->numAnims);
 	}
 	else {
 		model->anims = NULL;
