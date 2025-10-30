@@ -283,11 +283,13 @@ uint Model_checksumHeader(Model *model) { //8007DE30
 }
 
 Model* loadModel(int modelNum) { //8007DE70
+//official name: loadModel
 	void *ptr;
 	Model *model;
 	int size;
 	uint offset;
-	int decompSize;
+	int dummy;
+	int decompSize; //official name: decompSize
 	uint *modelsTab;
 	int nAnimations;
 	uint animCacheSize;
@@ -295,20 +297,25 @@ Model* loadModel(int modelNum) { //8007DE70
 
 	STUBBED_PRINTF("\t+++++ loadModel +++++ ARGS: %d\n", modelNum);
 
-	modelsTab = ((uint *)getTable(FILE_MODELS_tab));
+	//locate the model and read its sizes
+	modelsTab = (uint *)getTable(FILE_MODELS_tab);
 	offset = modelsTab[modelNum];
 	loadModelsBin(offset,
 		&nAnimations, &animCacheSize,
 		&bNoAmap, &decompSize, modelNum);
-	STUBBED_PRINTF("MODEL OFFSET %x  MODELNUM %d\n",
-		offset, modelNum);
-	animCacheSize = (uint)mmAlign8((void*)animCacheSize);
-	animCacheSize += 0xb0;
 
+	//@bug ? or something wrong with this macro?
+	//STUBBED_PRINTF("MODEL OFFSET %x  MODELNUM %d\n", offset, modelNum);
+	STUBBED_PRINTF("MODEL OFFSET %x  MODELNUM %d\n");
+
+	//align the anim cache and add space for something
+	animCacheSize = (uint)mmAlign8((void*)animCacheSize);
+	animCacheSize += 0xb0; //XXX magic number
 	size = decompSize + modelGetAmapSize(modelNum,
-		bNoAmap, nAnimations) + 500;
+		bNoAmap, nAnimations) + 500; //XXX magic number
 	STUBBED_PRINTF("\t decompSize=%d\n", decompSize);
 
+	//allocate and load the model
 	model = (Model *)mmAlloc(size,
 		ALLOC_TAG_MODELS_COL, (volatile u32)"mod");
 	BADASSERTLINE(491, model);
@@ -320,11 +327,12 @@ Model* loadModel(int modelNum) { //8007DE70
 		offset, decompSize, NULL,
 		modelNum, 0);
 
+	//init some fields
 	model->animCacheSize = animCacheSize;
 	model->cacheModNo    = modelNum;
 	model->numAnims      = nAnimations;
 	model->flags        &= ~ModelDataFlags2_UseLocalModAnimTab;
-	model->usage         = 1;
+	model->usage         = 1; //ref count
 
 	if(!model->numAnims) model->flags |= ModelDataFlags2_NoAnimations;
 	if(bNoAmap) model->flags |= ModelDataFlags2_UseLocalModAnimTab;
