@@ -739,7 +739,7 @@ bool param3) { // 8007F184
 	int size1;
 	int size2;
 	int size3;
-	int dummy1;
+	int dummy;
 	int dummy2;
 
 	FreezeModelField04 field04; //seemingly unused
@@ -782,10 +782,10 @@ bool param3) { // 8007F184
 	size2 = 0x50;
 	size2 += 8;
 	maxJoint = model->numJoints - 1;
-	size3 = (maxJoint * (size2 * 10));
+	size3 = (maxJoint * (size2 * 10)) + (maxJoint * (size1 * 6)) + 16;
 	modelInstance->freezeModel = (FreezeModel *)mmAlloc(
 		//total: 0x46c
-		size3 + (maxJoint * (size1 * 6)) + 16,
+		size3,
 		ALLOC_TAG_ANIMS_COL,
 		(volatile u32)"mod:freezemodel");
 	if(!modelInstance->freezeModel) return;
