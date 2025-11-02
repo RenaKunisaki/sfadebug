@@ -740,20 +740,22 @@ bool param3) { // 8007F184
 	int size2;
 	int size3;
 
+	//all stack offsets should be correct now
 	Bone *joint2; //0x368
 	Mtx44 *jMtx1; //0x364
 	Mtx44 *jMtx2; //0x360
-	Mtx jMtxModel1; //0x320
-	Mtx jMtxModel2; //0x2E0
-	Mtx modelMatrixInv; //0x2A0
-	Mtx mTmp; //0x260
+	Mtx44 jMtxModel1; //0x320
+	Mtx44 jMtxModel2; //0x2E0
+	Mtx44 modelMatrixInv; //0x2A0
+	Mtx44 mTmp; //0x260
 	Vec jPos1; //0x254
 	Vec jPos2; //0x248
 	Vec jPosDelta; //0x23C
 	Vec jPosDeltaNrm; //0x230
 	Vec vTmp; //0x224
 	Vec zero; //0x218
-	u8 unk2A4[328];
+	int nJointsMinus1Div3; //0x214
+	u8 unk[0xD4];
 	int jointNum; //r26
 	Bone *joint1; //r22
 	float nrmRnd;
@@ -768,9 +770,8 @@ bool param3) { // 8007F184
 	FreezeModel *freezeModel;
 	float radi;
 	float jPosDot; //f29
-	int nJointsMinus1Div3;
 	int maxJoint;
-	short jointVar414[124]; //0x14; no idea why this size
+	short jointVar414[MAX_JOINTS]; //0x14
 
 	if(modelInstance->freezeModel) return;
 	model = modelInstance->mod;
