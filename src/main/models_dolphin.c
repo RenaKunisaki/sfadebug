@@ -739,40 +739,38 @@ bool param3) { // 8007F184
 	int size1;
 	int size2;
 	int size3;
-	int dummy;
-	int dummy2;
 
-	FreezeModelField04 field04; //seemingly unused
-	short jointVar414[256];
-	int jointNum;
-	Bone *joint1;
+	Bone *joint2; //0x368
+	Mtx44 *jMtx1; //0x364
+	Mtx44 *jMtx2; //0x360
+	Mtx jMtxModel1; //0x320
+	Mtx jMtxModel2; //0x2E0
+	Mtx modelMatrixInv; //0x2A0
+	Mtx mTmp; //0x260
+	Vec jPos1; //0x254
+	Vec jPos2; //0x248
+	Vec jPosDelta; //0x23C
+	Vec jPosDeltaNrm; //0x230
+	Vec vTmp; //0x224
+	Vec zero; //0x218
+	u8 unk2A4[328];
+	int jointNum; //r26
+	Bone *joint1; //r22
 	float nrmRnd;
 	int iNext;
-	int maxJointDiv3;
-	Model *model;
+	int idxDiv3; //r24
+	Model *model; //r27
 	FreezeModelField00 *field0;
-	int idx;
+	int idx; //r21
 	int ii;
 	int jj;
 	int kk;
 	FreezeModel *freezeModel;
 	float radi;
-	float jPosDot;
+	float jPosDot; //f29
 	int nJointsMinus1Div3;
-	Vec zero;
-	Vec vTmp;
-	Vec jPosDeltaNrm;
-	Vec jPosDelta;
-	Vec jPos2;
-	Vec jPos1;
-	Mtx mTmp;
-	Mtx jMtxModel2;
-	Mtx modelMatrixInv;
-	Mtx jMtxModel1;
-	Mtx44 *jMtx2;
-	Mtx44 *jMtx1;
-	Bone *joint2;
 	int maxJoint;
+	short jointVar414[124]; //0x14; no idea why this size
 
 	if(modelInstance->freezeModel) return;
 	model = modelInstance->mod;
@@ -791,11 +789,11 @@ bool param3) { // 8007F184
 	if(!modelInstance->freezeModel) return;
 
 	freezeModel = modelInstance->freezeModel;
-	freezeModel->nJointsMinus1Times0x58 = maxJoint * size2;
-	freezeModel->nJointsMinus1Times0x2A = maxJoint * size1;
+	freezeModel->nJointsMinus1Times0x58 = size2 * maxJoint;
+	freezeModel->nJointsMinus1Times0x2A = size1 * maxJoint;
 	field0 = (FreezeModelField00*)(freezeModel + 1);
 	freezeModel->_00 = field0;
-	freezeModel->_04 = &field0[maxJoint * size2].unk00;
+	freezeModel->_04 = &field0[size2 * maxJoint].unk00;
 	zero.x = 0.0f;
 	zero.y = 0.0f;
 	zero.z = 0.0f;
@@ -827,26 +825,28 @@ bool param3) { // 8007F184
 			}
 			VECCrossProduct(&jPosDeltaNrm, &vTmp, &jPosDeltaNrm);
 			VECNormalize(&jPosDeltaNrm, &jPosDeltaNrm);
-			maxJointDiv3 = maxJoint / 3;
+			idxDiv3 = idx / 3;
 			if(jointVar414[(s8)joint1->idx[0]] == -1) {
-				jointVar414[(s8)joint1->idx[0]] = maxJointDiv3;
+				jointVar414[(s8)joint1->idx[0]] = idxDiv3;
 			} else {
 				jointVar414[(s8)joint1->idx[0]] = -2;
 			}
-			for(ii = 0; ii < 8; ii++) {
-				MTXRotAxisRad(mTmp, &jPosDelta, ii * twopi / 8.0f);
-				for(jj = 0; jj < 5; jj++) {
-					vTmp.z = jj / 4.0f;
-					vTmp.x = jPosDelta.x * vTmp.z;
-					vTmp.y = jPosDelta.y * vTmp.z;
-					vTmp.z = jPosDelta.z * vTmp.z;
+			for(jj = 0; jj < 8; jj++) {
+				MTXRotAxisRad(mTmp, &jPosDelta, jj * twopi / 8.0f);
+				for(kk = 0; kk < 5; kk++) {
+					jPosDot = jj / 4.0f;
+					vTmp.x = jPosDelta.x * jPosDot;
+					vTmp.y = jPosDelta.y * jPosDot;
+					vTmp.z = jPosDelta.z * jPosDot;
 					nrmRnd = randInt(10, 60) * 0.01f + 1.0f;
 					if(model->radi) {
 						if(model->radi[jointNum] > model->radi[(s8)joint1->idx[0]]) {
 							radi = model->radi[jointNum];
-						} else radi = nrmRnd * model->radi[(s8)joint1->idx[0]];
-					} else radi = 0.04f;
-					radi *= nrmRnd;
+						}
+						else radi = model->radi[(s8)joint1->idx[0]];
+						radi *= nrmRnd;
+					}
+					else radi = radi * 0.04f;
 					vTmp.x += jPosDeltaNrm.x * radi;
 					vTmp.y += jPosDeltaNrm.y * radi;
 					vTmp.z += jPosDeltaNrm.z * radi;
@@ -873,29 +873,29 @@ bool param3) { // 8007F184
 				if(iNext == 8) { iNext = 0; }
 				if(jointVar414[jointNum] >= 0) {
 					freezeModel->_00[idx].unk00 = jointVar414[jointNum] + jj * 5 + 4;
-					freezeModel->_00[idx].unk02 = maxJointDiv3 + jj * 5;
-					freezeModel->_00[idx].unk04 = maxJointDiv3 + iNext * 5;
+					freezeModel->_00[idx].unk02 = idxDiv3 + jj * 5;
+					freezeModel->_00[idx].unk04 = idxDiv3 + iNext * 5;
 					idx++;
 
 					freezeModel->_00[idx].unk00 = jointVar414[jointNum] + jj * 5 + 4;
-					freezeModel->_00[idx].unk02 = maxJointDiv3 + iNext * 5;
+					freezeModel->_00[idx].unk02 = idxDiv3 + iNext * 5;
 					freezeModel->_00[idx].unk04 = jointVar414[jointNum] + iNext * 5 + 4;
 					idx++;
 				}
 				for(kk = 0; kk < 4; kk++) {
-					freezeModel->_00[idx].unk00 = maxJointDiv3 + jj * 5 + kk;
-					freezeModel->_00[idx].unk02 = maxJointDiv3 + jj * 5 + kk + 1;
-					freezeModel->_00[idx].unk04 = maxJointDiv3 + iNext * 5 + kk + 1;
+					freezeModel->_00[idx].unk00 = idxDiv3 + jj * 5 + kk;
+					freezeModel->_00[idx].unk02 = idxDiv3 + jj * 5 + kk + 1;
+					freezeModel->_00[idx].unk04 = idxDiv3 + iNext * 5 + kk + 1;
 					idx++;
 
-					freezeModel->_00[idx].unk00 = maxJointDiv3 + jj * 5 + kk;
-					freezeModel->_00[idx].unk02 = maxJointDiv3 + iNext * 5 + kk + 1;
-					freezeModel->_00[idx].unk04 = maxJointDiv3 + iNext * 5 + kk;
+					freezeModel->_00[idx].unk00 = idxDiv3 + jj * 5 + kk;
+					freezeModel->_00[idx].unk02 = idxDiv3 + iNext * 5 + kk + 1;
+					freezeModel->_00[idx].unk04 = idxDiv3 + iNext * 5 + kk;
 					idx++;
 				}
 				if(jointVar414[jointNum] < 0) {
-					freezeModel->_00[idx].unk00 = maxJointDiv3 + jj * 5;
-					freezeModel->_00[idx].unk02 = maxJointDiv3 + iNext * 5;
+					freezeModel->_00[idx].unk00 = idxDiv3 + jj * 5;
+					freezeModel->_00[idx].unk02 = idxDiv3 + iNext * 5;
 					freezeModel->_00[idx].unk04 = (u16)nJointsMinus1Div3;
 					idx++;
 				}
