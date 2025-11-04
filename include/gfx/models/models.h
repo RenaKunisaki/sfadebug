@@ -209,11 +209,12 @@ typedef struct FreezeModelField04 {
     /* 0x36 */ s8 unk36;
 } FreezeModelField04;
 
-typedef struct {
+typedef struct FreezeModel {
     /* 0x00 */ FreezeModelField00 *_00;
     /* 0x04 */ //FreezeModelField04 *_04;
     u16 *_04;
     /* 0x08 */ u16 nJointsMinus1Times0x58;
+    //XXX from here in is FreezeModelField00
     /* 0x0a */ u16 nJointsMinus1Times0x2A;
     union {
         struct {

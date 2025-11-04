@@ -736,9 +736,22 @@ S16Vec *modelInstanceGetVtxPos(ModelInstance *modelInstance, int positionNum) { 
 void freezeModelFn_8007f184(ModelInstance *modelInstance, Mtx *modelMatrix,
 bool param3) { // 8007F184
 	const f32 twopi = 6.283f;
-	int size1;
-	int size2;
-	int size3;
+
+	int size3; //r16
+	int size1; //r17
+	int size2; //r18
+	int idx; //r21
+	Bone *joint1; //r22
+	int iNext; //r23
+	int idxDiv3; //r24
+	int kk; //r25
+	Model *model; //r27
+	int maxJoint; //r28
+	FreezeModelField00 *field0; //r29
+	int ii; //r30
+	int jj; //r30
+	FreezeModel *freezeModel; //r31
+	int jointNum; //r26
 
 	//all stack offsets should be correct now
 	Bone *joint2; //0x368
@@ -756,22 +769,11 @@ bool param3) { // 8007F184
 	Vec zero; //0x218
 	int nJointsMinus1Div3; //0x214
 	u8 unk[0xD4];
-	int jointNum; //r26
-	Bone *joint1; //r22
-	float nrmRnd;
-	int iNext;
-	int idxDiv3; //r24
-	Model *model; //r27
-	FreezeModelField00 *field0;
-	int idx; //r21
-	int ii;
-	int jj;
-	int kk;
-	FreezeModel *freezeModel;
-	float radi;
-	float jPosDot; //f29
-	int maxJoint;
 	short jointVar414[MAX_JOINTS]; //0x14
+
+	float nrmRnd; //f29
+	float jPosDot; //f29
+	float radi; //f31
 
 	if(modelInstance->freezeModel) return;
 	model = modelInstance->mod;
@@ -792,9 +794,8 @@ bool param3) { // 8007F184
 	freezeModel = modelInstance->freezeModel;
 	freezeModel->nJointsMinus1Times0x58 = size2 * maxJoint;
 	freezeModel->nJointsMinus1Times0x2A = size1 * maxJoint;
-	field0 = (FreezeModelField00*)(freezeModel + 1);
-	freezeModel->_00 = field0;
-	freezeModel->_04 = &field0[size2 * maxJoint].unk00;
+	freezeModel->_00 = (FreezeModelField00*)freezeModel + 1;
+	freezeModel->_04 = (u16*)&freezeModel->_00[size2];
 	zero.x = 0.0f;
 	zero.y = 0.0f;
 	zero.z = 0.0f;
@@ -832,10 +833,10 @@ bool param3) { // 8007F184
 			} else {
 				jointVar414[(s8)joint1->idx[0]] = -2;
 			}
-			for(jj = 0; jj < 8; jj++) {
-				MTXRotAxisRad(mTmp, &jPosDelta, jj * twopi / 8.0f);
+			for(ii = 0; ii < 8; ii++) {
+				MTXRotAxisRad(mTmp, &jPosDelta, ii * twopi / 8.0f);
 				for(kk = 0; kk < 5; kk++) {
-					jPosDot = jj / 4.0f;
+					jPosDot = ii / 4.0f;
 					vTmp.x = jPosDelta.x * jPosDot;
 					vTmp.y = jPosDelta.y * jPosDot;
 					vTmp.z = jPosDelta.z * jPosDot;
