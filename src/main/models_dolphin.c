@@ -746,7 +746,7 @@ bool param3) { // 8007F184
 	int idxDiv3; //r24
 	int kk; //r25
 	Model *model; //r27
-	int maxJoint; //r28
+	int maxJoint; //r19
 	FreezeModelField00 *field0; //r29
 	int ii; //r30
 	int jj; //r30
@@ -795,7 +795,8 @@ bool param3) { // 8007F184
 	freezeModel->nJointsMinus1Times0x58 = size2 * maxJoint;
 	freezeModel->nJointsMinus1Times0x2A = size1 * maxJoint;
 	freezeModel->_00 = freezeModel->field0;
-	freezeModel->_04 = (u16*)&freezeModel->_00[size2 * maxJoint];
+	freezeModel->_04 = (u16*)((u32)freezeModel->_00 + (
+		sizeof(FreezeModelField00) * maxJoint * size2)); //sus
 	zero.x = 0.0f;
 	zero.y = 0.0f;
 	zero.z = 0.0f;
