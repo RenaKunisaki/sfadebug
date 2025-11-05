@@ -214,7 +214,6 @@ typedef struct FreezeModel {
     /* 0x04 */ //FreezeModelField04 *_04;
     u16 *_04;
     /* 0x08 */ u16 nJointsMinus1Times0x58;
-    //XXX from here in is FreezeModelField00
     /* 0x0a */ u16 nJointsMinus1Times0x2A;
     union {
         struct {
@@ -224,6 +223,7 @@ typedef struct FreezeModel {
         u16 animsIdx;
     };
     /* 0x0e */ u8 flags;
+    FreezeModelField00 field0[0];
 } FreezeModel; //size: 0x10
 
 typedef struct ModelInstanceField20 {

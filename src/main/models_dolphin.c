@@ -794,8 +794,8 @@ bool param3) { // 8007F184
 	freezeModel = modelInstance->freezeModel;
 	freezeModel->nJointsMinus1Times0x58 = size2 * maxJoint;
 	freezeModel->nJointsMinus1Times0x2A = size1 * maxJoint;
-	freezeModel->_00 = (FreezeModelField00*)freezeModel + 1;
-	freezeModel->_04 = (u16*)&freezeModel->_00[size2];
+	freezeModel->_00 = freezeModel->field0;
+	freezeModel->_04 = (u16*)&freezeModel->_00[size2 * maxJoint];
 	zero.x = 0.0f;
 	zero.y = 0.0f;
 	zero.z = 0.0f;
