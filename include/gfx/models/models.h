@@ -212,7 +212,7 @@ typedef struct FreezeModelField04 {
 typedef struct FreezeModel {
     /* 0x00 */ FreezeModelField00 *_00;
     /* 0x04 */ //FreezeModelField04 *_04;
-    u16 *_04;
+    u16 *circleVtxs; //S16Vec but accessed as u16
     /* 0x08 */ u16 nJointsMinus1Times0x58;
     /* 0x0a */ u16 nJointsMinus1Times0x2A;
     union {
@@ -223,7 +223,9 @@ typedef struct FreezeModel {
         u16 animsIdx;
     };
     /* 0x0e */ u8 flags;
+    //one of these per maxJoint
     FreezeModelField00 field0[0];
+    //one of a 6-byte struct per maxJoint
 } FreezeModel; //size: 0x10
 
 typedef struct ModelInstanceField20 {

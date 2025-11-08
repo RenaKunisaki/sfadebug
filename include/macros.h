@@ -61,7 +61,7 @@ placed in it matches, making the actual contents unknowable.
 use this macro to indicate that we don't know what goes here
 and have just arbitrarily chosen x to be the statement.
 */
-#define STUBBED_OP(x) x
+#define STUBBED_OP(x) ((void)(x))
 
 //really? this isn't defined?
 #define UCHAR_MAX 255u

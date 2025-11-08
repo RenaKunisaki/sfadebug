@@ -740,39 +740,37 @@ bool param3) { // 8007F184
 	int size3; //r16
 	int size1; //r17
 	int size2; //r18
-	int maxJoint; //r30
-	int idx; //r21
-	Bone *joint1; //r22
+	int maxJoint; //r21
+	int idx; //r29
+	Bone *jHead; //r22
 	int iNext; //r23
 	int idxDiv3; //r24
-	int kk; //r25
 	Model *model; //r27
 	FreezeModelField00 *field0; //r29
 	int jointNum; //r26
-	int ii; //r30
+	int ii; //r29
 	int jj; //r30
 	FreezeModel *freezeModel; //r31
 
 	//all stack offsets should be correct now
-	Bone *joint2; //0x368
-	Mtx44 *jMtx1; //0x364
-	Mtx44 *jMtx2; //0x360
-	Mtx44 jMtxModel1; //0x320
-	Mtx44 jMtxModel2; //0x2E0
+	Bone *jTail; //0x368 //bone tail
+	Mtx44 *jMtxHead; //0x364 //bone head matrix
+	Mtx44 *jMtxTail; //0x360 //bone tail matrix
+	Mtx44 jMtxModelHead; //0x320
+	Mtx44 jMtxModelTail; //0x2E0
 	Mtx44 modelMatrixInv; //0x2A0
 	Mtx44 mTmp; //0x260
-	Vec jPos1; //0x254
-	Vec jPos2; //0x248
-	Vec jPosDelta; //0x23C
-	Vec jPosDeltaNrm; //0x230
+	Vec jPosHead; //0x254 //bone head position
+	Vec jPosTail; //0x248 //bone tail position
+	Vec jLength; //0x23C //bone length
+	Vec jLengthNrm; //0x230 //bone length normalized
 	Vec vTmp; //0x224
 	Vec zero; //0x218
 	int nJointsMinus1Div3; //0x214
 	u8 unk[0xD4];
-	short jointVar414[MAX_JOINTS]; //0x14
+	short jointIdx[MAX_JOINTS]; //0x14
 
-
-	float jPosDot; //f29
+	float jAngle; //f29 //used to decide axis to circle a joint with
 	float radi; //f31
 
 	if(modelInstance->freezeModel) return;
@@ -795,91 +793,100 @@ bool param3) { // 8007F184
 	freezeModel->nJointsMinus1Times0x58 = size2 * maxJoint;
 	freezeModel->nJointsMinus1Times0x2A = size1 * maxJoint;
 	freezeModel->_00 = freezeModel->field0;
-	freezeModel->_04 = (u16*)((u32)freezeModel->_00 + (
+	freezeModel->circleVtxs = (u16*)((u32)freezeModel->_00 + (
 		sizeof(FreezeModelField00) * size2 * maxJoint)); //sus
-	zero.x = 0.0f;
-	zero.y = 0.0f;
-	zero.z = 0.0f;
+	zero.x = 0.0f; zero.y = 0.0f; zero.z = 0.0f;
 	idx = 0;
 	maxJoint = 0;
 	for(ii = 0; ii < model->numJoints; ii++) {
-		jointVar414[ii] = -1;
+		jointIdx[ii] = -1;
 	}
 	MTXInverse(*modelMatrix, modelMatrixInv);
 	for(jointNum = model->numJoints-1; jointNum >= 0; jointNum--) {
-		joint1 = modelGetJoint(model, jointNum);
-		if((s8)joint1->idx[0] == -1) continue;
+		jHead = modelGetJoint(model, jointNum);
+		if((s8)jHead->idx[0] == -1) continue;
 
-		joint2 = modelGetJoint(model, (s8)joint1->idx[0]);
-		jMtx1 = modelInstGetjMtx(modelInstance, jointNum);
-		jMtx2 = modelInstGetjMtx(modelInstance, (s8)joint1->idx[0]);
-		MTXConcat(modelMatrixInv, *jMtx1, jMtxModel1);
-		MTXConcat(modelMatrixInv, *jMtx2, jMtxModel2);
-		MTXMultVec(jMtxModel1, &zero, &jPos1);
-		MTXMultVec(jMtxModel2, &zero, &jPos2);
-		VECSubtract(&jPos2, &jPos1, &jPosDelta);
+		jTail = modelGetJoint(model, (s8)jHead->idx[0]);
+		jMtxHead = modelInstGetjMtx(modelInstance, jointNum);
+		jMtxTail = modelInstGetjMtx(modelInstance, (s8)jTail->idx[0]);
+		MTXConcat(modelMatrixInv, *jMtxHead, jMtxModelHead);
+		MTXConcat(modelMatrixInv, *jMtxTail, jMtxModelTail);
+		MTXMultVec(jMtxModelHead, &zero, &jPosHead);
+		MTXMultVec(jMtxModelTail, &zero, &jPosTail);
+		VECSubtract(&jPosTail, &jPosHead, &jLength);
+
 		if(((!model->radi) || (model->radi[jointNum] > 0.0f))
-		&& (jPosDelta.x != 0.0f || jPosDelta.y != 0.0f || jPosDelta.z != 0.0f)) {
-			VECNormalize(&jPosDelta, &jPosDeltaNrm);
+		&& (jLength.x != 0.0f || jLength.y != 0.0f || jLength.z != 0.0f)) {
+			VECNormalize(&jLength, &jLengthNrm);
 			vTmp.x = 1.0f; vTmp.y = 0.0f; vTmp.z = 0.0f;
-			jPosDot = VECDotProduct(&jPosDeltaNrm, &vTmp);
-			if((jPosDot > 0.9f) || (jPosDot < -0.9f)) {
+			jAngle = VECDotProduct(&jLengthNrm, &vTmp);
+			if((jAngle > 0.9f) || (jAngle < -0.9f)) {
+				//bone points mostly along the X axis.
+				//switch the circle direction so it doesn't overlap.
 				vTmp.x = 0.0f; vTmp.y = 1.0f; vTmp.z = 0.0f;
 			}
-			VECCrossProduct(&jPosDeltaNrm, &vTmp, &jPosDeltaNrm);
-			VECNormalize(&jPosDeltaNrm, &jPosDeltaNrm);
+			VECCrossProduct(&jLengthNrm, &vTmp, &jLengthNrm);
+			VECNormalize(&jLengthNrm, &jLengthNrm);
+
 			idxDiv3 = idx / 3;
-			if(jointVar414[(s8)joint1->idx[0]] == -1) {
-				jointVar414[(s8)joint1->idx[0]] = idxDiv3;
+			if(jointIdx[(s8)jTail->idx[0]] == -1) {
+				jointIdx[(s8)jTail->idx[0]] = idxDiv3;
 			} else {
-				jointVar414[(s8)joint1->idx[0]] = -2;
+				jointIdx[(s8)jTail->idx[0]] = -2;
 			}
+
+			//make a wobbly circle
 			for(ii = 0; ii < 8; ii++) {
-				MTXRotAxisRad(mTmp, &jPosDelta, ii * twopi / 8.0f);
+				MTXRotAxisRad(mTmp, &jLength, ii * twopi / 8.0f);
 				for(jj = 0; jj < 5; jj++) {
-					jPosDot = jj / 4.0f;
-					vTmp.x = jPosDelta.x * jPosDot;
-					vTmp.y = jPosDelta.y * jPosDot;
-					vTmp.z = jPosDelta.z * jPosDot;
+					jAngle = jj / 4.0f;
+					vTmp.x = jLength.x * jAngle;
+					vTmp.y = jLength.y * jAngle;
+					vTmp.z = jLength.z * jAngle;
+
 					radi = randInt(10, 60) * 0.01f + 1.0f;
 					if(model->radi) {
 						radi = MAX(model->radi[jointNum],
-							model->radi[(s8)joint1->idx[0]]) * radi;
+							model->radi[(s8)jTail->idx[0]]) * radi;
 					}
 					else radi = radi * 0.04f;
-					vTmp.x += jPosDeltaNrm.x * radi;
-					vTmp.y += jPosDeltaNrm.y * radi;
-					vTmp.z += jPosDeltaNrm.z * radi;
+
+					vTmp.x += jLengthNrm.x * radi;
+					vTmp.y += jLengthNrm.y * radi;
+					vTmp.z += jLengthNrm.z * radi;
 					MTXMultVec(mTmp, &vTmp, &vTmp);
-					vTmp.x += jPos1.x;
-					vTmp.y += jPos1.y;
-					vTmp.z += jPos1.z;
-					freezeModel->_04[idx++] = vTmp.x * 256.0f;
-					freezeModel->_04[idx++] = vTmp.y * 256.0f;
-					freezeModel->_04[idx++] = vTmp.z * 256.0f;
+					vTmp.x += jPosHead.x;
+					vTmp.y += jPosHead.y;
+					vTmp.z += jPosHead.z;
+					freezeModel->circleVtxs[idx++] = vTmp.x * 256.0f;
+					freezeModel->circleVtxs[idx++] = vTmp.y * 256.0f;
+					freezeModel->circleVtxs[idx++] = vTmp.z * 256.0f;
 				}
 			}
+
 			nJointsMinus1Div3 = idx / 3;
-			jPos1.x -= jPosDelta.x;
-			jPos1.y -= jPosDelta.y;
-			jPos1.z -= jPosDelta.z;
-			if(jointVar414[jointNum] == -1) {
-				freezeModel->_04[idx++] = jPos1.x * 256.0f;
-				freezeModel->_04[idx++] = jPos1.y * 256.0f;
-				freezeModel->_04[idx++] = jPos1.z * 256.0f;
+			jPosHead.x -= jLength.x;
+			jPosHead.y -= jLength.y;
+			jPosHead.z -= jLength.z;
+			if(jointIdx[jointNum] == -1) {
+				freezeModel->circleVtxs[idx++] = jPosHead.x * 256.0f;
+				freezeModel->circleVtxs[idx++] = jPosHead.y * 256.0f;
+				freezeModel->circleVtxs[idx++] = jPosHead.z * 256.0f;
 			}
+
 			for(ii = 0; ii < 8; ii++) {
-				iNext = ii + 1;
-				if(iNext == 8) { iNext = 0; }
-				if(jointVar414[jointNum] >= 0) {
-					freezeModel->_00[idx].unk00 = jointVar414[jointNum] + maxJoint * 5 + 4;
-					freezeModel->_00[idx].unk02 = idxDiv3 + ii * 5;
-					freezeModel->_00[idx].unk04 = idxDiv3 + iNext * 5;
+				iNext = maxJoint + 1;
+				if(iNext == 8) iNext = 0;
+
+				if(jointIdx[jointNum] >= 0) {
+					freezeModel->_00[ii].unk00 = jointIdx[jointNum] + maxJoint * 5 + 4;
+					freezeModel->_00[ii].unk02 = idxDiv3 + maxJoint * 5;
+					freezeModel->_00[ii].unk04 = idxDiv3 + maxJoint * 5;
 					idx++;
 
-					freezeModel->_00[idx].unk00 = jointVar414[jointNum] + idx * 5 + 4;
+					freezeModel->_00[idx].unk00 = jointIdx[jointNum] + idx * 5 + 4;
 					freezeModel->_00[idx].unk02 = idxDiv3 + iNext * 5;
-					freezeModel->_00[idx].unk04 = jointVar414[jointNum] + iNext * 5 + 4;
+					freezeModel->_00[idx].unk04 = jointIdx[jointNum] + iNext * 5 + 4;
 					idx++;
 				}
 				for(jj = 0; jj < 4; jj++) {
@@ -889,11 +896,11 @@ bool param3) { // 8007F184
 					idx++;
 
 					freezeModel->_00[idx].unk00 = idxDiv3 + ii * 5 + jj;
-					freezeModel->_00[idx].unk02 = idxDiv3 + iNext * 5 + kk + 1;
-					freezeModel->_00[idx].unk04 = idxDiv3 + iNext * 5 + kk;
+					freezeModel->_00[idx].unk02 = idxDiv3 + iNext * 5 + jj + 1;
+					freezeModel->_00[idx].unk04 = idxDiv3 + iNext * 5 + jj;
 					idx++;
 				}
-				if(jointVar414[jointNum] < 0) {
+				if(jointIdx[jointNum] < 0) {
 					freezeModel->_00[idx].unk00 = idxDiv3 + ii * 5;
 					freezeModel->_00[idx].unk02 = idxDiv3 + iNext * 5;
 					freezeModel->_00[idx].unk04 = (u16)nJointsMinus1Div3;
@@ -903,27 +910,25 @@ bool param3) { // 8007F184
 		}
 	}
 	freezeModel->nJointsMinus1Times0x58 = idx;
-	for(kk = 0; kk < freezeModel->nJointsMinus1Times0x58;
-	kk++) {
-		field0 = freezeModel->_00 + kk;
-		jPosDelta.x = (float)freezeModel->_04[field0->unk02*3] -
-				(float)freezeModel->_04[field0->unk00*3];
-		jPosDelta.y = (float)freezeModel->_04[field0->unk02*3+1] -
-				(float)freezeModel->_04[field0->unk00*3+1];
-		jPosDelta.z = (float)freezeModel->_04[field0->unk02*3+2] -
-				(float)freezeModel->_04[field0->unk00*3+2];
+	for(ii = 0; ii < freezeModel->nJointsMinus1Times0x58; ii++) {
+		field0 = freezeModel->_00 + ii;
+		jLength.x = (float)freezeModel->circleVtxs[field0->unk02*3] -
+				(float)freezeModel->circleVtxs[field0->unk00*3];
+		jLength.y = (float)freezeModel->circleVtxs[field0->unk02*3+1] -
+				(float)freezeModel->circleVtxs[field0->unk00*3+1];
+		jLength.z = (float)freezeModel->circleVtxs[field0->unk02*3+2] -
+				(float)freezeModel->circleVtxs[field0->unk00*3+2];
 
-		jPosDeltaNrm.x = (float)freezeModel->_04[field0->unk04*3] -
-			(float)freezeModel->_04[field0->unk00*3];
-		jPosDeltaNrm.y = (float)freezeModel->_04[field0->unk04*3+1] -
-			(float)freezeModel->_04[field0->unk00*3+1];
-		jPosDeltaNrm.z = (float)freezeModel->_04[field0->unk04*3+2] -
-			(float)freezeModel->_04[field0->unk00*3+2];
+		jLengthNrm.x = (float)freezeModel->circleVtxs[field0->unk04*3] -
+			(float)freezeModel->circleVtxs[field0->unk00*3];
+		jLengthNrm.y = (float)freezeModel->circleVtxs[field0->unk04*3+1] -
+			(float)freezeModel->circleVtxs[field0->unk00*3+1];
+		jLengthNrm.z = (float)freezeModel->circleVtxs[field0->unk04*3+2] -
+			(float)freezeModel->circleVtxs[field0->unk00*3+2];
 
-		VECCrossProduct(&jPosDelta, &jPosDeltaNrm, &vTmp);
-		if(0 != VECLength(&vTmp)) {
-			VECNormalize(&vTmp, &vTmp);
-		} else { vTmp.x = 0.0f; vTmp.y = 1.0f; vTmp.z = 0.0f; }
+		VECCrossProduct(&jLength, &jLengthNrm, &vTmp);
+		if(VECLength(&vTmp) != 0) VECNormalize(&vTmp, &vTmp);
+		else { vTmp.x = 0.0f; vTmp.y = 1.0f; vTmp.z = 0.0f; }
 		field0->x = vTmp.x * 127.0f;
 		field0->y = vTmp.y * 127.0f;
 		field0->z = vTmp.z * 127.0f;
