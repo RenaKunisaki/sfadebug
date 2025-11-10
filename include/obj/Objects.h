@@ -44,7 +44,7 @@ mapId32 mapCoordsToId(float x, float z); /* extern */
 f32 fn_8018FAC0(s16 *, s16); /* extern */
 void fn_801921E8(ObjInstance *); /* extern */
 void fn_80192660(ObjInstance *); /* extern */
-void freezeModelFn_8007f184(ModelInstance *modelInstance,Mtx *modelMatrix,bool param3); /* extern */
+void modelApplyFrozenEffect(ModelInstance *modelInstance,Mtx *modelMatrix,bool param3); /* extern */
 f32 getCameraDepth(f32, f32, f32); /* extern */
 void *getCurCamera(); /* extern */
 s32 getCurMapType(void); /* extern */

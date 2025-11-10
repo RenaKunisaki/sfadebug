@@ -1548,7 +1548,7 @@ void fn_80085d10(ObjInstance *object, int timerE6) {
 			object->freezeTimer = timerE6;
 			object->stateFlags |= OBJ_STATE_ISFROZEN;
 			objModelMtxFn_800859e8(object, &mtx);
-			freezeModelFn_8007f184(objGetModelInstance(object),
+			modelApplyFrozenEffect(objGetModelInstance(object),
 				&mtx, true);
 		}
 	}

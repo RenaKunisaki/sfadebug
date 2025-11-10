@@ -83,7 +83,7 @@ Mtx44* modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
 void modelInstSwapJmtxs(ModelInstance *modelInstance);
 void ModelInstance_setTexFuncPtr(ModelInstance *modelInstance,TexFuncPtr cb);
 TexFuncPtr ModelInstance_getTexFuncPtr(ModelInstance *modelInstance);
-void freezeModelFn_8007f184(ModelInstance *modelInstance,Mtx *modelMatrix,bool param3);
+void modelApplyFrozenEffect(ModelInstance *modelInstance,Mtx *modelMatrix,bool param3);
 void ModelInstance_freeField48(ModelInstance *modelInstance);
 u16 modelGetFieldA4(Model *model);
 Shader* modelGetShader(Model *model,int shaderNum);
@@ -733,21 +733,31 @@ S16Vec *modelInstanceGetVtxPos(ModelInstance *modelInstance, int positionNum) { 
 	return &modelInstance->mod->vertexPositions[positionNum];
 }
 
-void freezeModelFn_8007f184(ModelInstance *modelInstance, Mtx *modelMatrix,
+/**
+ * @brief Does something involving rendering wobbly circles (with random
+ *  vertex offsets) around each joint of a model's skeleton. Related to
+ *  the "encased in ice" effect.
+ *
+ *  @param modelInstance The model instance to use.
+ *  @param modelMatrix The current model matrix.
+ *  @param param3 If true, freezeModel->animsIdx = -1, else freezeModel->animsIdx = 0.
+ */
+void modelApplyFrozenEffect(ModelInstance *modelInstance, Mtx *modelMatrix,
 bool param3) { // 8007F184
+	//this function is completely different from the final version...
 	const f32 twopi = 6.283f;
 
 	int size3; //r16
 	int size1; //r17
 	int size2; //r18
 	int maxJoint; //r21
-	int idx; //r29
+	int iVtx; //r29
 	Bone *jHead; //r22
 	int iNext; //r23
-	int idxDiv3; //r24
+	int iVtxStart; //r24
 	Model *model; //r27
 	FreezeModelField00 *field0; //r29
-	int jointNum; //r26
+	int iJoint; //r26
 	int ii; //r29
 	int jj; //r30
 	FreezeModel *freezeModel; //r31
@@ -766,7 +776,7 @@ bool param3) { // 8007F184
 	Vec jLengthNrm; //0x230 //bone length normalized
 	Vec vTmp; //0x224
 	Vec zero; //0x218
-	int nJointsMinus1Div3; //0x214
+	int nVtxs; //0x214
 	u8 unk[0xD4];
 	short jointIdx[MAX_JOINTS]; //0x14
 
@@ -796,27 +806,28 @@ bool param3) { // 8007F184
 	freezeModel->circleVtxs = (u16*)((u32)freezeModel->_00 + (
 		sizeof(FreezeModelField00) * size2 * maxJoint)); //sus
 	zero.x = 0.0f; zero.y = 0.0f; zero.z = 0.0f;
-	idx = 0;
+	iVtx = 0;
 	maxJoint = 0;
-	for(ii = 0; ii < model->numJoints; ii++) {
-		jointIdx[ii] = -1;
-	}
+	for(ii = 0; ii < model->numJoints; ii++) { jointIdx[ii] = -1; }
 	MTXInverse(*modelMatrix, modelMatrixInv);
-	for(jointNum = model->numJoints-1; jointNum >= 0; jointNum--) {
-		jHead = modelGetJoint(model, jointNum);
+	for(iJoint = model->numJoints-1; iJoint >= 0; iJoint--) {
+		jHead = modelGetJoint(model, iJoint);
 		if((s8)jHead->idx[0] == -1) continue;
 
+		//get a vector perpendicular to the bone
 		jTail = modelGetJoint(model, (s8)jHead->idx[0]);
-		jMtxHead = modelInstGetjMtx(modelInstance, jointNum);
-		jMtxTail = modelInstGetjMtx(modelInstance, (s8)jTail->idx[0]);
+		jMtxHead = modelInstGetjMtx(modelInstance, iJoint);
+		jMtxTail = modelInstGetjMtx(modelInstance, (s8)jHead->idx[0]);
 		MTXConcat(modelMatrixInv, *jMtxHead, jMtxModelHead);
 		MTXConcat(modelMatrixInv, *jMtxTail, jMtxModelTail);
 		MTXMultVec(jMtxModelHead, &zero, &jPosHead);
 		MTXMultVec(jMtxModelTail, &zero, &jPosTail);
 		VECSubtract(&jPosTail, &jPosHead, &jLength);
 
-		if(((!model->radi) || (model->radi[jointNum] > 0.0f))
+		if(((!model->radi) || (model->radi[iJoint] > 0.0f))
 		&& (jLength.x != 0.0f || jLength.y != 0.0f || jLength.z != 0.0f)) {
+			//this bone is not zero length
+
 			VECNormalize(&jLength, &jLengthNrm);
 			vTmp.x = 1.0f; vTmp.y = 0.0f; vTmp.z = 0.0f;
 			jAngle = VECDotProduct(&jLengthNrm, &vTmp);
@@ -828,11 +839,11 @@ bool param3) { // 8007F184
 			VECCrossProduct(&jLengthNrm, &vTmp, &jLengthNrm);
 			VECNormalize(&jLengthNrm, &jLengthNrm);
 
-			idxDiv3 = idx / 3;
-			if(jointIdx[(s8)jTail->idx[0]] == -1) {
-				jointIdx[(s8)jTail->idx[0]] = idxDiv3;
+			iVtxStart = iVtx / 3;
+			if(jointIdx[(s8)jHead->idx[0]] == -1) {
+				jointIdx[(s8)jHead->idx[0]] = iVtxStart;
 			} else {
-				jointIdx[(s8)jTail->idx[0]] = -2;
+				jointIdx[(s8)jHead->idx[0]] = -2;
 			}
 
 			//make a wobbly circle
@@ -846,8 +857,8 @@ bool param3) { // 8007F184
 
 					radi = randInt(10, 60) * 0.01f + 1.0f;
 					if(model->radi) {
-						radi = MAX(model->radi[jointNum],
-							model->radi[(s8)jTail->idx[0]]) * radi;
+						radi = MAX(model->radi[iJoint],
+							model->radi[(s8)jHead->idx[0]]) * radi;
 					}
 					else radi = radi * 0.04f;
 
@@ -858,58 +869,59 @@ bool param3) { // 8007F184
 					vTmp.x += jPosHead.x;
 					vTmp.y += jPosHead.y;
 					vTmp.z += jPosHead.z;
-					freezeModel->circleVtxs[idx++] = vTmp.x * 256.0f;
-					freezeModel->circleVtxs[idx++] = vTmp.y * 256.0f;
-					freezeModel->circleVtxs[idx++] = vTmp.z * 256.0f;
+					freezeModel->circleVtxs[iVtx++] = vTmp.x * 256.0f;
+					freezeModel->circleVtxs[iVtx++] = vTmp.y * 256.0f;
+					freezeModel->circleVtxs[iVtx++] = vTmp.z * 256.0f;
 				}
 			}
 
-			nJointsMinus1Div3 = idx / 3;
+			nVtxs = iVtx / 3;
 			jPosHead.x -= jLength.x;
 			jPosHead.y -= jLength.y;
 			jPosHead.z -= jLength.z;
-			if(jointIdx[jointNum] == -1) {
-				freezeModel->circleVtxs[idx++] = jPosHead.x * 256.0f;
-				freezeModel->circleVtxs[idx++] = jPosHead.y * 256.0f;
-				freezeModel->circleVtxs[idx++] = jPosHead.z * 256.0f;
+			if(jointIdx[iJoint] == -1) {
+				freezeModel->circleVtxs[iVtx++] = jPosHead.x * 256.0f;
+				freezeModel->circleVtxs[iVtx++] = jPosHead.y * 256.0f;
+				freezeModel->circleVtxs[iVtx++] = jPosHead.z * 256.0f;
 			}
 
-			for(ii = 0; ii < 8; ii++) {
+			//create some kind of mesh between the vertices.
+			for(maxJoint = 0; maxJoint < 8; maxJoint++) {
 				iNext = maxJoint + 1;
 				if(iNext == 8) iNext = 0;
 
-				if(jointIdx[jointNum] >= 0) {
-					freezeModel->_00[ii].unk00 = jointIdx[jointNum] + maxJoint * 5 + 4;
-					freezeModel->_00[ii].unk02 = idxDiv3 + maxJoint * 5;
-					freezeModel->_00[ii].unk04 = idxDiv3 + maxJoint * 5;
-					idx++;
+				if(jointIdx[iJoint] >= 0) {
+					freezeModel->_00[ii].unk00 = jointIdx[iJoint] + maxJoint * 5 + 4;
+					freezeModel->_00[ii].unk02 = iVtxStart + maxJoint * 5;
+					freezeModel->_00[ii].unk04 = iVtxStart + iNext * 5;
+					ii++;
 
-					freezeModel->_00[idx].unk00 = jointIdx[jointNum] + idx * 5 + 4;
-					freezeModel->_00[idx].unk02 = idxDiv3 + iNext * 5;
-					freezeModel->_00[idx].unk04 = jointIdx[jointNum] + iNext * 5 + 4;
-					idx++;
+					freezeModel->_00[ii].unk00 = jointIdx[iJoint] + maxJoint * 5 + 4;
+					freezeModel->_00[ii].unk02 = iVtxStart + iNext * 5;
+					freezeModel->_00[ii].unk04 = jointIdx[iJoint] + iNext * 5 + 4;
+					ii++;
 				}
 				for(jj = 0; jj < 4; jj++) {
-					freezeModel->_00[idx].unk00 = idxDiv3 + ii * 5 + jj;
-					freezeModel->_00[idx].unk02 = idxDiv3 + ii * 5 + jj + 1;
-					freezeModel->_00[idx].unk04 = idxDiv3 + iNext * 5 + jj + 1;
-					idx++;
+					freezeModel->_00[ii].unk00 = iVtxStart + maxJoint * 5 + jj;
+					freezeModel->_00[ii].unk02 = iVtxStart + maxJoint * 5 + jj + 1;
+					freezeModel->_00[ii].unk04 = iVtxStart + iNext * 5 + jj + 1;
+					ii++;
 
-					freezeModel->_00[idx].unk00 = idxDiv3 + ii * 5 + jj;
-					freezeModel->_00[idx].unk02 = idxDiv3 + iNext * 5 + jj + 1;
-					freezeModel->_00[idx].unk04 = idxDiv3 + iNext * 5 + jj;
-					idx++;
+					freezeModel->_00[ii].unk00 = iVtxStart + maxJoint * 5 + jj;
+					freezeModel->_00[ii].unk02 = iVtxStart + iNext * 5 + jj + 1;
+					freezeModel->_00[ii].unk04 = iVtxStart + iNext * 5 + jj;
+					ii++;
 				}
-				if(jointIdx[jointNum] < 0) {
-					freezeModel->_00[idx].unk00 = idxDiv3 + ii * 5;
-					freezeModel->_00[idx].unk02 = idxDiv3 + iNext * 5;
-					freezeModel->_00[idx].unk04 = (u16)nJointsMinus1Div3;
-					idx++;
+				if(jointIdx[iJoint] < 0) {
+					freezeModel->_00[ii].unk00 = iVtxStart + maxJoint * 5;
+					freezeModel->_00[ii].unk02 = iVtxStart + iNext * 5;
+					freezeModel->_00[ii].unk04 = (u16)nVtxs;
+					ii++;
 				}
 			}
 		}
 	}
-	freezeModel->nJointsMinus1Times0x58 = idx;
+	freezeModel->nJointsMinus1Times0x58 = ii;
 	for(ii = 0; ii < freezeModel->nJointsMinus1Times0x58; ii++) {
 		field0 = freezeModel->_00 + ii;
 		jLength.x = (float)freezeModel->circleVtxs[field0->unk02*3] -
