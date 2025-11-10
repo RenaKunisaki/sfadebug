@@ -744,25 +744,31 @@ S16Vec *modelInstanceGetVtxPos(ModelInstance *modelInstance, int positionNum) { 
  */
 void modelApplyFrozenEffect(ModelInstance *modelInstance, Mtx *modelMatrix,
 bool param3) { // 8007F184
-	//this function is completely different from the final version...
+	//this function is completely different from the final version.
+	//that just applies a texture callback.
 	const f32 twopi = 6.283f;
 
-	int size3; //r16
 	int size1; //r17
 	int size2; //r18
-	int maxJoint; //r21
-	int iVtx; //r29
-	Bone *jHead; //r22
-	int iNext; //r23
-	int iVtxStart; //r24
-	Model *model; //r27
-	FreezeModelField00 *field0; //r29
-	int iJoint; //r26
+	int size3; //r16
+	int maxJoint; //r19
+	//r20: modelInstance
 	int ii; //r29
 	int jj; //r30
+	int kk;
+	int iNext; //r23
+	FreezeModelField00 *field0; //r29
 	FreezeModel *freezeModel; //r31
+	Bone *jHead; //r22
+	int iVtx; //r29
+	Model *model; //r27
+	int iJoint; //r26
+	int iVtxStart; //r24
 
-	//all stack offsets should be correct now
+	float jAngle; //f29 //used to decide axis to circle a joint with
+	float jLenQuarter; //f30 //jLength / 4.0f
+	float radi; //f31
+
 	Bone *jTail; //0x368 //bone tail
 	Mtx44 *jMtxHead; //0x364 //bone head matrix
 	Mtx44 *jMtxTail; //0x360 //bone tail matrix
@@ -779,9 +785,6 @@ bool param3) { // 8007F184
 	int nVtxs; //0x214
 	u8 unk[0xD4];
 	short jointIdx[MAX_JOINTS]; //0x14
-
-	float jAngle; //f29 //used to decide axis to circle a joint with
-	float radi; //f31
 
 	if(modelInstance->freezeModel) return;
 	model = modelInstance->mod;
@@ -806,8 +809,9 @@ bool param3) { // 8007F184
 	freezeModel->circleVtxs = (u16*)((u32)freezeModel->_00 + (
 		sizeof(FreezeModelField00) * size2 * maxJoint)); //sus
 	zero.x = 0.0f; zero.y = 0.0f; zero.z = 0.0f;
-	iVtx = 0;
 	maxJoint = 0;
+	iVtx = 0;
+	kk = 0;
 	for(ii = 0; ii < model->numJoints; ii++) { jointIdx[ii] = -1; }
 	MTXInverse(*modelMatrix, modelMatrixInv);
 	for(iJoint = model->numJoints-1; iJoint >= 0; iJoint--) {
@@ -850,10 +854,10 @@ bool param3) { // 8007F184
 			for(ii = 0; ii < 8; ii++) {
 				MTXRotAxisRad(mTmp, &jLength, ii * twopi / 8.0f);
 				for(jj = 0; jj < 5; jj++) {
-					jAngle = jj / 4.0f;
-					vTmp.x = jLength.x * jAngle;
-					vTmp.y = jLength.y * jAngle;
-					vTmp.z = jLength.z * jAngle;
+					jLenQuarter = jj / 4.0f;
+					vTmp.x = jLength.x * jLenQuarter;
+					vTmp.y = jLength.y * jLenQuarter;
+					vTmp.z = jLength.z * jLenQuarter;
 
 					radi = randInt(10, 60) * 0.01f + 1.0f;
 					if(model->radi) {
@@ -886,42 +890,42 @@ bool param3) { // 8007F184
 			}
 
 			//create some kind of mesh between the vertices.
-			for(maxJoint = 0; maxJoint < 8; maxJoint++) {
-				iNext = maxJoint + 1;
+			for(ii = 0; ii < 8; ii++) {
+				iNext = ii + 1;
 				if(iNext == 8) iNext = 0;
 
 				if(jointIdx[iJoint] >= 0) {
-					freezeModel->_00[ii].unk00 = jointIdx[iJoint] + maxJoint * 5 + 4;
-					freezeModel->_00[ii].unk02 = iVtxStart + maxJoint * 5;
-					freezeModel->_00[ii].unk04 = iVtxStart + iNext * 5;
-					ii++;
+					freezeModel->_00[kk].unk00 = jointIdx[iJoint] + ii * 5 + 4;
+					freezeModel->_00[kk].unk02 = iVtxStart + ii * 5;
+					freezeModel->_00[kk].unk04 = iVtxStart + iNext * 5;
+					kk++;
 
-					freezeModel->_00[ii].unk00 = jointIdx[iJoint] + maxJoint * 5 + 4;
-					freezeModel->_00[ii].unk02 = iVtxStart + iNext * 5;
-					freezeModel->_00[ii].unk04 = jointIdx[iJoint] + iNext * 5 + 4;
-					ii++;
+					freezeModel->_00[kk].unk00 = jointIdx[iJoint] + ii * 5 + 4;
+					freezeModel->_00[kk].unk02 = iVtxStart + iNext * 5;
+					freezeModel->_00[kk].unk04 = jointIdx[iJoint] + iNext * 5 + 4;
+					kk++;
 				}
 				for(jj = 0; jj < 4; jj++) {
-					freezeModel->_00[ii].unk00 = iVtxStart + maxJoint * 5 + jj;
-					freezeModel->_00[ii].unk02 = iVtxStart + maxJoint * 5 + jj + 1;
-					freezeModel->_00[ii].unk04 = iVtxStart + iNext * 5 + jj + 1;
-					ii++;
+					freezeModel->_00[kk].unk00 = iVtxStart + ii * 5 + jj;
+					freezeModel->_00[kk].unk02 = iVtxStart + ii * 5 + jj + 1;
+					freezeModel->_00[kk].unk04 = iVtxStart + iNext * 5 + jj + 1;
+					kk++;
 
-					freezeModel->_00[ii].unk00 = iVtxStart + maxJoint * 5 + jj;
-					freezeModel->_00[ii].unk02 = iVtxStart + iNext * 5 + jj + 1;
-					freezeModel->_00[ii].unk04 = iVtxStart + iNext * 5 + jj;
-					ii++;
+					freezeModel->_00[kk].unk00 = iVtxStart + ii * 5 + jj;
+					freezeModel->_00[kk].unk02 = iVtxStart + iNext * 5 + jj + 1;
+					freezeModel->_00[kk].unk04 = iVtxStart + iNext * 5 + jj;
+					kk++;
 				}
 				if(jointIdx[iJoint] < 0) {
-					freezeModel->_00[ii].unk00 = iVtxStart + maxJoint * 5;
-					freezeModel->_00[ii].unk02 = iVtxStart + iNext * 5;
-					freezeModel->_00[ii].unk04 = (u16)nVtxs;
-					ii++;
+					freezeModel->_00[kk].unk00 = iVtxStart + ii * 5;
+					freezeModel->_00[kk].unk02 = iVtxStart + iNext * 5;
+					freezeModel->_00[kk].unk04 = (u16)nVtxs;
+					kk++;
 				}
 			}
 		}
 	}
-	freezeModel->nJointsMinus1Times0x58 = ii;
+	freezeModel->nJointsMinus1Times0x58 = kk;
 	for(ii = 0; ii < freezeModel->nJointsMinus1Times0x58; ii++) {
 		field0 = freezeModel->_00 + ii;
 		jLength.x = (float)freezeModel->circleVtxs[field0->unk02*3] -
