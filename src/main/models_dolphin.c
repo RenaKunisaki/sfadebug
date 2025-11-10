@@ -809,7 +809,6 @@ bool param3) { // 8007F184
 	freezeModel->circleVtxs = (u16*)((u32)freezeModel->_00 + (
 		sizeof(FreezeModelField00) * size2 * maxJoint)); //sus
 	zero.x = 0.0f; zero.y = 0.0f; zero.z = 0.0f;
-	maxJoint = 0;
 	iVtx = 0;
 	kk = 0;
 	for(ii = 0; ii < model->numJoints; ii++) { jointIdx[ii] = -1; }
