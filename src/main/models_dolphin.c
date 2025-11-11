@@ -1349,9 +1349,11 @@ LAB_80080c74:
 	}
 }
 
+//presumably debug stuff that would be set differently
+//depending on compile flags?
 typedef struct { int val[3]; } int3_80080D04;
-extern int3_80080D04 DWORD_ARRAY_802cf000;
-extern int3_80080D04 DWORD_ARRAY_802cf00c;
+const int3_80080D04 DWORD_ARRAY_802cf000 = {0, 0, 0};
+const int3_80080D04 DWORD_ARRAY_802cf00c = {0, 0, 0};
 
 void copyVtxsToModelInstance(ModelInstance *modelInstance) { // 80080D04
 	short endPos;
