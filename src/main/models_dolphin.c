@@ -23,9 +23,9 @@
 int randInt(int min,int max);
 
 //x, y, z but not S16Vec or array
-s16 objAnimVar_8039872c_x;
-s16 objAnimVar_8039872c_y;
-s16 objAnimVar_8039872c_z;
+extern s16 objAnimVar_8039872c_x;
+extern s16 objAnimVar_8039872c_y;
+extern s16 objAnimVar_8039872c_z;
 
 int DAT_80398a10;
 int DWORD_80398a14;

@@ -504,7 +504,7 @@ config.libs = [
                     "-opt peephole"],
             ),
             Object(
-                NonMatching,
+                Matching,
                 "main/models_dolphin.c",
                 extra_cflags=[*cflags_base, "-O0,s", "-use_lmw_stmw on"],
             ),

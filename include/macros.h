@@ -48,9 +48,16 @@
 // li  r0,0x0
 // stb r0,0x0(0)
 // used as a "poor man's assert"
+// note that modern compilers will delete this.
+#ifdef __MWERKS__
 #define CRASH() do { \
 	*(u8 *)NULL = 0; \
 } while(0)
+#else
+#define CRASH() do { \
+    __builtin_trap(); \
+} while(0)
+#endif
 
 /* sometimes there are instances of:
 if(foo) {

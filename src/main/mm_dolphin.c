@@ -32,7 +32,7 @@
 /* 80398A10 */ int heapUsed0, heapUsed1, heapUsed2;
 /* 80398A1C */ int memUsedPct;
 
-/* 80398B78 */ TVParams *curTvParams; // probably doesn't belong here
+/* 80398B78 */ extern TVParams *curTvParams; // probably doesn't belong here
 
 void _mmHeapFree(void *ptr);
 void _mmAddToFreeList(void *ptr);

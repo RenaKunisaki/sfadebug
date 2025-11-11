@@ -47,30 +47,30 @@ extern char _defaultBits[];
 /* 80396E90 */ extern int unk_80396E90 ;//= 0x80000000;
 
 //.sbss (0x803988e0)
-/* 803988e0 */ extern N64Vertex *main_vtx[2];
-/* 803988e8 */ extern N64Vertex *cur_vtx;
-/* 803988ec */ extern Pol *main_pol[2];
-/* 803988f4 */ extern Pol *cur_pol;
-/* 803988f8 */ extern short main_gfx_count;
-/* 803988fa */ extern short main_mtx_count;
-/* 803988fc */ extern short main_vtx_count;
-/* 803988fe */ extern short main_pol_count;
-/* 80398900 */ extern short di_vtx_count;
-/* 80398902 */ extern short di_pol_count;
-/* 80398905 */ extern s8 anyQueuedLoads; //maybe "isMapChangePending"
-/* 80398906 */ extern u8 main_framebuf_idx;
-/* 80398907 */ extern s8 screenBlankFrameCount;
-/* 80398909 */ extern s8 e3MenuFrameCount_80398909; //probably not actually E3 related
-/* 8039890a */ extern u8 newGameCounter8039890a;
-/* 8039890b */ extern u8 newGameFlag8039890b;
-/* 8039890c */ extern s8 alSynFlag;
-/* 80398910 */ extern Pol *main_dipol[2];
-/* 80398918 */ extern Pol *cur_di_pol;
-/* 8039891c */ extern N64Vertex *main_divtx[2];
-/* 80398924 */ extern N64Vertex *cur_di_vtx;
-/* 80398928 */ extern u8 no_diprintf;
-/* 8039892c */ extern u32 piLockedFlags;
-/* 80398930 */ extern bool isProgressiveScan;
+/* 803988e0 */ N64Vertex *main_vtx[2];
+/* 803988e8 */ N64Vertex *cur_vtx;
+/* 803988ec */ Pol *main_pol[2];
+/* 803988f4 */ Pol *cur_pol;
+/* 803988f8 */ short main_gfx_count;
+/* 803988fa */ short main_mtx_count;
+/* 803988fc */ short main_vtx_count;
+/* 803988fe */ short main_pol_count;
+/* 80398900 */ short di_vtx_count;
+/* 80398902 */ short di_pol_count;
+/* 80398905 */ s8 anyQueuedLoads; //maybe "isMapChangePending"
+/* 80398906 */ u8 main_framebuf_idx;
+/* 80398907 */ s8 screenBlankFrameCount;
+/* 80398909 */ s8 e3MenuFrameCount_80398909; //probably not actually E3 related
+/* 8039890a */ u8 newGameCounter8039890a;
+/* 8039890b */ u8 newGameFlag8039890b;
+/* 8039890c */ s8 alSynFlag;
+/* 80398910 */ Pol *main_dipol[2];
+/* 80398918 */ Pol *cur_di_pol;
+/* 8039891c */ N64Vertex *main_divtx[2];
+/* 80398924 */ N64Vertex *cur_di_vtx;
+/* 80398928 */ u8 no_diprintf;
+/* 8039892c */ u32 piLockedFlags;
+/* 80398930 */ bool isProgressiveScan;
 /* 80398934 */ LoadedDLL *pDll_1A = NULL;
 /* 80398938 */ LoadedDLL *pDll_camcontrol = NULL;
 /* 8039893C */ LoadedDLL *pDll_anim = NULL;
@@ -314,8 +314,8 @@ extern GXRenderModeObj tvParamsNotProgScan;
 #endif
 
 extern u8 DAT_80352f30[0x7EF]; //80352f30, unk type
-extern GXRenderModeObj *curTvParams; //80398b78
-extern GXRenderModeObj *curTvParams; //80398b78
+GXRenderModeObj *curTvParams; //80398b78
+GXRenderModeObj *curTvParams; //80398b78
 extern s8 padSetupOk; // = -1; //80398908
 extern s8 debugMenuState; //80398904
 
