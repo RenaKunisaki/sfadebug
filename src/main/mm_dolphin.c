@@ -5,6 +5,7 @@
 #include "sys/alloc.h"
 #include "sys/n64.h"
 
+//.data
 /* clang-format off */
 /* 802eb0e0 */ u32 allocTagColorTbl[] = {
     ALLOC_TAG_ZERO,   ALLOC_TAG_LISTS,    ALLOC_TAG_SCREEN,
@@ -22,17 +23,21 @@
 };
 /* clang-format on */
 
+//.bss
 /* 803555F8 */ Heap heaps[MAX_HEAPS];
 /* 80355698 */ FreeListEntry freeList[MAX_FREELIST_SIZE];
-/* 80398B70 */ void *pFrameBuffer_80398b70;
-/* 80398B74 */ void *pFrameBuffer_80398b74;
+
+//.sbss
 /* 80398A08 */ u8 numHeaps;
 /* 80398A0A */ s16 freeListEntries;
 /* 80398A0C */ int mmDelay;
 /* 80398A10 */ int heapUsed0, heapUsed1, heapUsed2;
 /* 80398A1C */ int memUsedPct;
 
+/* 80398B70 */ void *pFrameBuffer_80398b70;
+/* 80398B74 */ void *pFrameBuffer_80398b74;
 /* 80398B78 */ extern TVParams *curTvParams; // probably doesn't belong here
+
 
 void _mmHeapFree(void *ptr);
 void _mmAddToFreeList(void *ptr);

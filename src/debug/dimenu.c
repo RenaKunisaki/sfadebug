@@ -33,8 +33,7 @@ Gfx_ **RSP_pipeSync(Gfx_ **cmd);
 /* 8039987C */ extern int diMenuStackDepth;
 /* 80399880 */ extern N64Button32 debugN64ButtonsPressed;
 /* 80399884 */ extern bool diMenuVisible;
-/* 80399885 */ extern bool
-    diMenuCanOpen; // true: do not allow Start/Z+Start to hide/show menu
+/* 80399885 */ extern bool diMenuCanOpen; // true: do not allow Start/Z+Start to hide/show menu
 /* 80399886 */ extern bool disableMenus;
 /* 80399888 */ extern DiMenuItem *diMenuPendingPush;
 /* 8039988C */ extern int diMenuSpace;

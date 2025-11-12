@@ -497,15 +497,11 @@ config.libs = [
             Object(Matching, "debug/dimenu.c"),
             Object(NonMatching, "debug/prof.c"),
             Object(Matching, "main/main.c"),
-            Object(
-                Matching,
-                "main/mm_dolphin.c",
+            Object(Matching, "main/mm_dolphin.c",
                 extra_cflags=["-O0,s", "-use_lmw_stmw on",
                     "-opt peephole"],
             ),
-            Object(
-                Matching,
-                "main/models_dolphin.c",
+            Object(Matching, "main/models_dolphin.c",
                 extra_cflags=[*cflags_base, "-O0,s", "-use_lmw_stmw on"],
             ),
             Object(NonMatching, "main/objects.c"),

@@ -125,12 +125,13 @@ main/pi.c:
 main/main.c:
 	.text       start:0x80077CA8 end:0x8007A284
 	.data       start:0x802EAE0C end:0x802EAE4C
-	.sbss       start:0x803988E0 end:0x80399A78
+	.sbss       start:0x803988E0 end:0x803989C4
 
 main/mm_dolphin.c:
 	.text       start:0x8007B3A4 end:0x8007C57C
 	.data       start:0x802EB0E0 end:0x802EB68C
 	.bss        start:0x80352CD8 end:0x80357698
+	.sbss       start:0x80398A08 end:0x80398B78
 
 main/models_dolphin.c:
 	.text       start:0x8007C57C end:0x800816B4
@@ -804,7 +805,9 @@ dll_4D.c:
 
 debug/prof.c:
 	.text       start:0x80179B60 end:0x8017A870
-	.bss        start:0x80390260 end:0x80390508
+	.bss        start:0x8038BA60 end:0x80390508
+	.sdata      start:0x80396E88 end:0x803973C8
+	.sbss       start:0x803997B8 end:0x80399858
 
 debug/dimenu.c:
 	.text       start:0x8017A870 end:0x8017BFFC

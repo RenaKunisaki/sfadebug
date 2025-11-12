@@ -9,6 +9,10 @@
 #include "debug/dimenu.h"
 
 //.bss
+/* 8038ba60 */ DiProfStruct DiProfStruct_8038ba60[512];
+/* 80390260 */ int DWORD_80390260[4];
+/* 80390270 */ int DWORD_80390270[4];
+
 /* 80390280 */ union {
 	struct {
 		int rspTotalTime;
@@ -19,9 +23,6 @@
 	int times[4];
 } rspTimes;
 
-/* 8038ba60 */ DiProfStruct DiProfStruct_8038ba60[512];
-/* 80390260 */ int DWORD_80390260[4];
-/* 80390270 */ int DWORD_80390270[4];
 /* 803904C0 */ u8 lbl_803904C0[0x18]; // unknown type/size
 /* 803904D8 */ int INT_803904d8;
 /* 803904f0 */ UNKTYPE *DWORD_803904f0;
@@ -29,7 +30,7 @@
 /* 80396e88 */ int DWORD_80396e88;
 /* 803973C0 */ int lbl_803973C0;
 /* 803973C4 */ int lbl_803973C4;
-/* 803989A4 */ LoadedDLL *pDll_SaveGame;
+/* 803989A4 */ extern LoadedDLL *pDll_SaveGame;
 /* 80398b70 */ void *pFrameBuffer_80398b70;
 /* 80398b74 */ void *pFrameBuffer_80398b74;
 /* 803997B8 */ int DWORD_803997b8;
