@@ -23,6 +23,8 @@
 #include <stddef.h>
 #include "placeholder.h"
 
+#define RCP_GX_FIFO_SIZE 0x10000
+
 void *rcpGxFifo; //80398b40;
 GXFifoObj *gxInitVal; //80398b44
 GXRenderModeObj *curTvParams; //80398b78
@@ -45,8 +47,7 @@ bool gxZUpdateEnable;
 float frameTime;
 float rcpBreakpointTime;
 float FLOAT_80398b68;
-Mtx44 projMtx_80382d00;
-void *rspSegmentBase[RSP_NUM_SEGMENTS];
+extern Mtx44 projMtx_80382d00;
 
 void rcpThreadMain(void) {
 	RcpQueueItem item;
@@ -57,134 +58,129 @@ void rcpThreadMain(void) {
 	} while(true);
 }
 
-void *videoThread_8009fb1c; //8009fb1c TODO should be a function
-void *rcpThreadFn_8009fc00; //TODO should be a function
-void *rcpGxBreakptHandler; //TODO should be a function
+
+void rcpQueueClear(RcpQueue *queue) {
+    queue->queue_top = 10;
+}
+
+
+undefined * setViIrqCallback(void(*cb)(void));
+
+void videoThread_8009fb1c(void) { //8009fb1c
+    //TODO
+}
+
+void rcpThreadFn_8009fc00() {
+    //TODO
+}
+
+void rcpGxBreakptHandler() {
+    //TODO
+}
 
 void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
-	uint uVar1;
-	double in_register_00004008;
-	double in_register_00004018;
-	double in_register_00004028;
-	GXColor local_70;
-	GXColor local_6c;
-	undefined4 local_68;
+	uint ii;
+    uint tvMode;
 	Mtx MStack_64;
-	undefined4 uStack_30;
-	uint efbHeight;
-	undefined4 uStack_28;
-	uint xfbHeight2;
-	undefined4 uStack_20;
-	uint xfbHeight;
-	undefined4 uStack_18;
-	uint fbWidth;
+	GXColor tevColor2;
 
-	rcpGxFifo = mmAlloc(
-	    0x10000, ALLOC_TAG_SHAD_COL, (volatile u32) "rcp_dolphin:GfxFifo");
-	DCInvalidateRange(rcpGxFifo, 0x10000);
-	gxInitVal = GXInit(rcpGxFifo, 0x10000);
-	VIConfigure(curTvParams);
-	fbWidth = (uint)curTvParams->fbWidth;
-	uStack_18 = 0x43300000;
-	xfbHeight = (uint)curTvParams->xfbHeight;
-	uStack_20 = 0x43300000;
-	GXSetViewport_(0.0, 0.0, (double)fbWidth, (double)xfbHeight, 0.0, 1.0);
+	rcpGxFifo = mmAlloc(RCP_GX_FIFO_SIZE, ALLOC_TAG_SHAD_COL,
+        (volatile u32) "rcp_dolphin:GfxFifo");
+	DCInvalidateRange(rcpGxFifo, RCP_GX_FIFO_SIZE);
+	gxInitVal = GXInit(rcpGxFifo, RCP_GX_FIFO_SIZE);
+
+    VIConfigure(curTvParams);
+	GXSetViewport(0, 0, curTvParams->fbWidth,
+        curTvParams->xfbHeight, 0, 1);
 	GXSetFieldMode(curTvParams->field_rendering,
-	    (uint)curTvParams->xfbHeight - (uint)curTvParams->viHeight >> 0x1f);
-	GXSetScissor(
-	    0, 0, (uint)curTvParams->fbWidth, (uint)curTvParams->efbHeight);
-	GXSetDispCopySrc(
-	    0, 0, (uint)curTvParams->fbWidth, (uint)curTvParams->efbHeight);
+	    ((uint)curTvParams->viHeight -
+        (uint)curTvParams->xfbHeight) >> 0x1f);
+	GXSetScissor(0, 0, curTvParams->fbWidth,
+        curTvParams->efbHeight);
+	GXSetDispCopySrc(0, 0, curTvParams->fbWidth,
+        curTvParams->efbHeight);
 	GXSetDispCopyDst(curTvParams->fbWidth,curTvParams->xfbHeight);
-	xfbHeight2 = (uint)curTvParams->xfbHeight;
-	uStack_28 = 0x43300000;
-	efbHeight = (uint)curTvParams->efbHeight;
-	uStack_30 = 0x43300000;
-	GXSetDispCopyYScale((double)((float)xfbHeight2 / (float)efbHeight));
-	if(bIsProgScan == 0) {
+    GXSetDispCopyYScale((float)curTvParams->xfbHeight /
+        (float)curTvParams->efbHeight);
+
+    if(bIsProgScan) {
+        GXSetCopyFilter(curTvParams->aa, curTvParams->sample_pattern,
+		    false, curTvParams->vfilter);
+	} else {
 		GXSetCopyFilter(curTvParams->aa, curTvParams->sample_pattern,
 		    true, curTvParams->vfilter);
-	} else {
-		GXSetCopyFilter(curTvParams->aa, curTvParams->sample_pattern,
-		    false, curTvParams->vfilter);
 	}
-	if(curTvParams->aa == 0) {
-		GXSetPixelFmt(0, 0);
-		GXSetDither(0);
+	if(curTvParams->aa) {
+		GXSetPixelFmt(GX_PF_RGB565_Z16,GX_ZC_LINEAR);
+		GXSetDither(true);
 	} else {
-		GXSetPixelFmt(2, 0);
-		GXSetDither(1);
+        GXSetPixelFmt(GX_PF_RGB8_Z24,GX_ZC_LINEAR);
+		GXSetDither(false);
 	}
 	FUN_80030240(0);
 	pCurFrameBuffer = pFrameBuffer_80398b74;
 	pFrameBuffer_80398b48 = pFrameBuffer_80398b70;
-	rcpQueueClear(&RcpQueue_8036bc80);
 	rcpQueueClear(&RcpQueue_8036bcfc);
+	rcpQueueClear(&RcpQueue_8036bc80);
 	OSInitThreadQueue(&rcpThreadQueue);
-	OSCreateThread((OSThread *)&rcpThread,
-	    rcpThreadMain,
-	    NULL,
-	    &stopwatchCpu,
-	    0x1000,
-	    0xe,
-	    1);
-	OSResumeThread((OSThread *)&rcpThread);
+	OSCreateThread(&rcpThread, rcpThreadMain, NULL, &stopwatchCpu, 0x1000, 0xe, 1);
+	OSResumeThread(&rcpThread);
 	setViIrqCallback(videoThread_8009fb1c);
 	set_viIrqCb_80398360(rcpThreadFn_8009fc00);
 	GXSetBreakpointHandler(rcpGxBreakptHandler);
 	GXSetDispCopyGamma(0);
 	viFn_80015ea8();
 	waitNextFrame();
-	if((curTvParams->viTVmode & 1) != 0) { waitNextFrame(); }
+    tvMode = curTvParams->viTVmode & 1;
+	if(tvMode) { waitNextFrame(); }
 	GXClearVtxDesc();
 	GXSetVtxDesc(GX_VA_PNMTXIDX, 1);
 	GXSetVtxDesc(GX_VA_POS, 1);
 	GXSetVtxDesc(GX_VA_CLR0, 1);
 	GXSetVtxDesc(GX_VA_TEX0, 1);
-    GXSetVtxAttrFmt(GX_VTXFMT0,GX_VA_POS,GX_CLR_RGBA,GX_RGBA4,0);
-    GXSetVtxAttrFmt(GX_VTXFMT0,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA8,0);
-    GXSetVtxAttrFmt(GX_VTXFMT0,GX_VA_TEX0,GX_CLR_RGBA,GX_RGBA4,7);
-    GXSetVtxAttrFmt(GX_VTXFMT1,GX_VA_POS,GX_CLR_RGBA,GX_RGBA4,2);
-    GXSetVtxAttrFmt(GX_VTXFMT1,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA8,0);
-    GXSetVtxAttrFmt(GX_VTXFMT1,GX_VA_TEX0,GX_CLR_RGBA,GX_F32,0);
-    GXSetVtxAttrFmt(GX_VTXFMT2,GX_VA_POS,GX_CLR_RGBA,GX_F32,0);
-    GXSetVtxAttrFmt(GX_VTXFMT2,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA8,0);
-    GXSetVtxAttrFmt(GX_VTXFMT2,GX_VA_TEX0,GX_CLR_RGBA,GX_F32,0);
-    GXSetVtxAttrFmt(GX_VTXFMT2,GX_VA_TEX1,GX_CLR_RGBA,GX_F32,0);
-    GXSetVtxAttrFmt(GX_VTXFMT3,GX_VA_POS,GX_CLR_RGBA,GX_RGBA4,8);
-    GXSetVtxAttrFmt(GX_VTXFMT3,GX_VA_NBT,GX_CLR_RGBA,GX_RGBA4,0);
-    GXSetVtxAttrFmt(GX_VTXFMT3,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA4,0);
+    GXSetVtxAttrFmt(GX_VTXFMT0,GX_VA_POS, GX_CLR_RGBA,GX_RGBA4, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0,GX_VA_TEX0,GX_CLR_RGBA,GX_RGBA4, 7);
+    GXSetVtxAttrFmt(GX_VTXFMT1,GX_VA_POS, GX_CLR_RGBA,GX_RGBA4, 2);
+    GXSetVtxAttrFmt(GX_VTXFMT1,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT1,GX_VA_TEX0,GX_CLR_RGBA,GX_F32,   0);
+    GXSetVtxAttrFmt(GX_VTXFMT2,GX_VA_POS, GX_CLR_RGBA,GX_F32,   0);
+    GXSetVtxAttrFmt(GX_VTXFMT2,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT2,GX_VA_TEX0,GX_CLR_RGBA,GX_F32,   0);
+    GXSetVtxAttrFmt(GX_VTXFMT2,GX_VA_TEX1,GX_CLR_RGBA,GX_F32,   0);
+    GXSetVtxAttrFmt(GX_VTXFMT3,GX_VA_POS, GX_CLR_RGBA,GX_RGBA4, 8);
+    GXSetVtxAttrFmt(GX_VTXFMT3,GX_VA_NBT, GX_CLR_RGBA,GX_RGBA4, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT3,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA4, 0);
     GXSetVtxAttrFmt(GX_VTXFMT3,GX_VA_TEX0,GX_CLR_RGBA,GX_RGBA4,10);
     GXSetVtxAttrFmt(GX_VTXFMT3,GX_VA_TEX1,GX_CLR_RGBA,GX_RGBA4,10);
     GXSetVtxAttrFmt(GX_VTXFMT3,GX_VA_TEX2,GX_CLR_RGBA,GX_RGBA4,10);
     GXSetVtxAttrFmt(GX_VTXFMT3,GX_VA_TEX3,GX_CLR_RGBA,GX_RGBA4,10);
-    GXSetVtxAttrFmt(GX_VTXFMT4,GX_VA_POS,GX_CLR_RGBA,GX_F32,0);
-    GXSetVtxAttrFmt(GX_VTXFMT4,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA8,0);
-    GXSetVtxAttrFmt(GX_VTXFMT4,GX_VA_TEX0,GX_CLR_RGBA,GX_RGBA4,7);
-    GXSetVtxAttrFmt(GX_VTXFMT5,GX_VA_POS,GX_CLR_RGBA,GX_RGBA4,0);
-    GXSetVtxAttrFmt(GX_VTXFMT5,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA4,0);
-    GXSetVtxAttrFmt(GX_VTXFMT5,GX_VA_TEX0,GX_CLR_RGBA,GX_RGBA4,8);
-    GXSetVtxAttrFmt(GX_VTXFMT5,GX_VA_TEX1,GX_CLR_RGBA,GX_RGBA4,8);
-    GXSetVtxAttrFmt(GX_VTXFMT5,GX_VA_TEX2,GX_CLR_RGBA,GX_RGBA4,8);
-    GXSetVtxAttrFmt(GX_VTXFMT5,GX_VA_TEX3,GX_CLR_RGBA,GX_RGBA4,8);
-    GXSetVtxAttrFmt(GX_VTXFMT6,GX_VA_POS,GX_CLR_RGBA,GX_RGBA4,8);
-    GXSetVtxAttrFmt(GX_VTXFMT6,GX_VA_NRM,GX_CLR_RGB,GX_RGBA4,0);
-    GXSetVtxAttrFmt(GX_VTXFMT6,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA4,0);
+    GXSetVtxAttrFmt(GX_VTXFMT4,GX_VA_POS, GX_CLR_RGBA,GX_F32,   0);
+    GXSetVtxAttrFmt(GX_VTXFMT4,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT4,GX_VA_TEX0,GX_CLR_RGBA,GX_RGBA4, 7);
+    GXSetVtxAttrFmt(GX_VTXFMT5,GX_VA_POS, GX_CLR_RGBA,GX_RGBA4, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT5,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA4, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT5,GX_VA_TEX0,GX_CLR_RGBA,GX_RGBA4, 8);
+    GXSetVtxAttrFmt(GX_VTXFMT5,GX_VA_TEX1,GX_CLR_RGBA,GX_RGBA4, 8);
+    GXSetVtxAttrFmt(GX_VTXFMT5,GX_VA_TEX2,GX_CLR_RGBA,GX_RGBA4, 8);
+    GXSetVtxAttrFmt(GX_VTXFMT5,GX_VA_TEX3,GX_CLR_RGBA,GX_RGBA4, 8);
+    GXSetVtxAttrFmt(GX_VTXFMT6,GX_VA_POS, GX_CLR_RGBA,GX_RGBA4, 8);
+    GXSetVtxAttrFmt(GX_VTXFMT6,GX_VA_NRM, GX_CLR_RGB, GX_RGBA4, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT6,GX_VA_CLR0,GX_CLR_RGBA,GX_RGBA4, 0);
     GXSetVtxAttrFmt(GX_VTXFMT6,GX_VA_TEX0,GX_CLR_RGBA,GX_RGBA4,10);
     GXSetVtxAttrFmt(GX_VTXFMT6,GX_VA_TEX1,GX_CLR_RGBA,GX_RGBA4,10);
     GXSetVtxAttrFmt(GX_VTXFMT6,GX_VA_TEX2,GX_CLR_RGBA,GX_RGBA4,10);
     GXSetVtxAttrFmt(GX_VTXFMT6,GX_VA_TEX3,GX_CLR_RGBA,GX_RGBA4,10);
 	DAT_80398b7c = 0;
-	GXSetCullMode(GX_CULL_NONE);
-	local_6c = DAT_80396de4;
-	GXSetCopyClear(local_6c, 0xffffff);
+	GXSetCullMode(DAT_80398b7c);
+	GXSetCopyClear(DAT_80396de4, 0xffffff);
 	GXSetBlendMode(0, 1, 0, 5);
 	GXSetNumChans(1);
 	GXSetChanCtrl(0, 0, 0, 1, 0, 0, 2);
-	gxZCompareEnable = 1;
-	gxZCompareFunc = 3;
-	gxZUpdateEnable = 1;
-	GXSetZMode(true, GX_LEQUAL, true);
+	gxZCompareEnable = true;
+	gxZCompareFunc = GX_LEQUAL;
+	gxZUpdateEnable = true;
+	GXSetZMode(gxZCompareEnable, gxZCompareFunc, gxZUpdateEnable);
 	GXSetZCompLoc(1);
 	MtxIdentity(&MStack_64);
 	GXLoadPosMtxImm(MStack_64, 0);
@@ -194,24 +190,16 @@ void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
 	OSInitStopwatch(&stopwatchCpu, "CPU");
 	OSInitStopwatch(&stopwatchGp, "GP");
 	OSInitStopwatch(&stopwatchFrame, "Frame");
-	frameTime = 0.0;
-	rcpBreakpointTime = 0.0;
-	FLOAT_80398b68 = 0.0;
-	C_MTXOrtho(in_register_00004008,
-	    0.0,
-	    in_register_00004018,
-	    480.0,
-	    in_register_00004028,
-	    0.0,
-	    &projMtx_80382d00);
-	for(uVar1 = 0; uVar1 < 0x10; uVar1++) {
-		rspSegmentBase[uVar1] = (void *)0x80000000;
+	frameTime = 0.0f;
+	rcpBreakpointTime = 0.0f;
+	FLOAT_80398b68 = 0.0f;
+	MTXOrtho(projMtx_80382d00, 0.0f, 480.0f, 0.0f, 640.0f, 1.0f, 100.0f);
+	for(ii = 0; ii < RSP_NUM_SEGMENTS; ii++) {
+		rspSegmentBase[ii] = (void *)0x80000000;
 	}
-	local_68 = 0xff0000ff;
-	local_70.r = 0xff;
-	local_70.g = 0;
-	local_70.b = 0;
-	local_70.a = 0xff;
-	GXSetTevColor(3, local_70);
-	return;
+	tevColor2.r = 0xff;
+	tevColor2.g = 0x00;
+	tevColor2.b = 0x00;
+	tevColor2.a = 0xff;
+	GXSetTevColor(GX_TEVREG2, tevColor2);
 }
