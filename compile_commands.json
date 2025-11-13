@@ -159,6 +159,31 @@
   },
   {
     "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/rcp_dolphin.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/rcp_dolphin.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "--language=c",
+      "--std=c99",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/main/rcp_dolphin.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/rcp_dolphin.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
     "file": "/home/rena/projects/sfa/decomp/sfadebug/src/debug/prof.c",
     "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/debug/prof.o",
     "arguments": [

@@ -315,7 +315,6 @@ extern GXRenderModeObj tvParamsNotProgScan;
 
 extern u8 DAT_80352f30[0x7EF]; //80352f30, unk type
 extern GXRenderModeObj *curTvParams; //80398b78
-extern GXRenderModeObj *curTvParams; //80398b78
 extern s8 padSetupOk; // = -1; //80398908
 extern s8 debugMenuState; //80398904
 

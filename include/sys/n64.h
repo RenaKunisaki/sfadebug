@@ -18,6 +18,22 @@
 typedef u32 N64Button32;
 typedef u16 N64Button;
 
+typedef struct {
+    /* 0x0 */ undefined4 unk00;
+    /* 0x4 */ undefined4 unk04;
+    /* 0x8 */ void *frameBuffer;
+} RcpQueueItem;
+
+#define RCP_QUEUE_MAX_ITEMS 10
+typedef struct {
+    /* 0x00 */ RcpQueueItem items[RCP_QUEUE_MAX_ITEMS];
+    /* 0x78 */ ushort queue_top;
+    /* 0x7a */ ushort count;
+} RcpQueue;
+
+#define RSP_NUM_SEGMENTS 16
+extern void *rspSegmentBase[RSP_NUM_SEGMENTS];
+
 extern u32 n64RamSize; //main.c
 #define N64_RAM_SIZE 0x800000
 
