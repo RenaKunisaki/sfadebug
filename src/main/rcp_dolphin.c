@@ -93,8 +93,8 @@ void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
 	GXSetViewport(0, 0, curTvParams->fbWidth,
         curTvParams->xfbHeight, 0, 1);
 	GXSetFieldMode(curTvParams->field_rendering,
-	    ((uint)curTvParams->viHeight -
-        (uint)curTvParams->xfbHeight) >> 0x1f);
+	    curTvParams->xfbHeight <
+        curTvParams->viHeight);
 	GXSetScissor(0, 0, curTvParams->fbWidth,
         curTvParams->efbHeight);
 	GXSetDispCopySrc(0, 0, curTvParams->fbWidth,
