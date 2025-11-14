@@ -47,7 +47,17 @@ bool gxZUpdateEnable;
 float frameTime;
 float rcpBreakpointTime;
 float FLOAT_80398b68;
+u16 peToken_80398b54;
+bool bNeedSetVerticalRegs;
+bool viVal_80398b52;
+int frameCountThisStep;
+
 extern Mtx44 projMtx_80382d00;
+
+u16 getPeToken(void);
+undefined* setViIrqCallback(void(*cb)(void));
+void setVerticalRegsFn_80016018(int param_1);
+void viFn_80015ea8(void);
 
 void rcpThreadMain(void) {
 	RcpQueueItem item;
@@ -58,16 +68,29 @@ void rcpThreadMain(void) {
 	} while(true);
 }
 
-
-void rcpQueueClear(RcpQueue *queue) {
+void rcpQueueClear(RcpQueue *queue) { //8009fc38
     queue->queue_top = 10;
 }
 
+void videoThread_8009fb1c(void) { // 8009fb1c
+	u16 token;
+    int dummy;
 
-undefined * setViIrqCallback(void(*cb)(void));
-
-void videoThread_8009fb1c(void) { //8009fb1c
-    //TODO
+	token = getPeToken();
+	if(token == (u16)(peToken_80398b54 + 1)) {
+		peToken_80398b54 = token;
+		pCurFrameBuffer = (pCurFrameBuffer == pFrameBuffer_80398b74) ?
+            pFrameBuffer_80398b70 : pFrameBuffer_80398b74;
+		VISetNextFrameBuffer(pCurFrameBuffer);
+		if(bNeedSetVerticalRegs) {
+			setVerticalRegsFn_80016018(0);
+			bNeedSetVerticalRegs = 0;
+		}
+		viFn_80015ea8();
+		viVal_80398b52 = 1;
+		frameCountThisStep = 0;
+	}
+	frameCountThisStep += 1;
 }
 
 void rcpThreadFn_8009fc00() {
