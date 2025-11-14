@@ -226,3 +226,6 @@ void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
 	tevColor2.a = 0xff;
 	GXSetTevColor(GX_TEVREG2, tevColor2);
 }
+
+void nop_8009FA00() {
+}
