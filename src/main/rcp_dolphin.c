@@ -49,6 +49,7 @@ float rcpBreakpointTime;
 float FLOAT_80398b68;
 u16 peToken_80398b54;
 bool bNeedSetVerticalRegs;
+bool rcpBreakptVal_80398b51;
 bool viVal_80398b52;
 int frameCountThisStep;
 
@@ -93,8 +94,12 @@ void videoThread_8009fb1c(void) { // 8009fb1c
 	frameCountThisStep += 1;
 }
 
-void rcpThreadFn_8009fc00() {
-    //TODO
+void rcpThreadFn_8009fcb8(void) {
+	if((rcpBreakptVal_80398b51 != 0) && (viVal_80398b52)) {
+		rcpBreakptFn_8009fb08();
+		rcpBreakptVal_80398b51 = 0;
+		viVal_80398b52 = false;
+	}
 }
 
 void rcpGxBreakptHandler() {
@@ -149,7 +154,7 @@ void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
 	OSCreateThread(&rcpThread, rcpThreadMain, NULL, &stopwatchCpu, 0x1000, 0xe, 1);
 	OSResumeThread(&rcpThread);
 	setViIrqCallback(videoThread_8009fb1c);
-	set_viIrqCb_80398360(rcpThreadFn_8009fc00);
+	set_viIrqCb_80398360(rcpThreadFn_8009fcb8);
 	GXSetBreakpointHandler(rcpGxBreakptHandler);
 	GXSetDispCopyGamma(0);
 	viFn_80015ea8();
@@ -229,3 +234,4 @@ void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
 
 void nop_8009FA00() {
 }
+
