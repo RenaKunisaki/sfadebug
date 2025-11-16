@@ -59,6 +59,16 @@ u16 getPeToken(void);
 undefined* setViIrqCallback(void(*cb)(void));
 void setVerticalRegsFn_80016018(int param_1);
 void viFn_80015ea8(void);
+void rcpScreenWrite(Gfx_ **gfx, Texture *texture, uint x, int y, uint width,
+    int height, int frameNo, int alpha, uint flags);
+
+
+void rcpScreenWriteFn8009f0fc(Gfx_ **gfx, Texture *texture, uint x, int y,
+undefined4 param_5, int frameNo, int alpha, uint flags) {
+    int h = texture->height;
+	rcpScreenWrite(gfx, texture, x, y, 0, h,
+        frameNo, alpha, flags);
+}
 
 void rcpThreadMain(void) {
 	RcpQueueItem item;
