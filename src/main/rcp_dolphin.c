@@ -245,3 +245,15 @@ void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
 void nop_8009FA00() {
 }
 
+void queue_top(RcpQueueItem *outItem, RcpQueue *queue) {
+	undefined4 uVar1;
+	RcpQueueItem *item;
+
+    ASSERTMSGLINE(1369, queue->queue_top != 10,
+        "queue_top: queue empty");
+	item = &queue->items[queue->count];
+	uVar1 = item->unk04;
+	outItem->unk00 = item->unk00;
+	outItem->unk04 = uVar1;
+	outItem->frameBuffer = item->frameBuffer;
+}
