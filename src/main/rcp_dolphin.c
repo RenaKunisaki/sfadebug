@@ -81,6 +81,7 @@ void rcpThreadFn_8009fcb8(void);
 void rcpThreadMain(void);
 void rcpQueueClear(RcpQueue *queue);
 void rcpQueueAdd(RcpQueue *queue, RcpQueueItem *item);
+void rcpQueueRemove(RcpQueueItem *out, RcpQueue *queue);
 void rcpGxBreakptHandler();
 void queue_top(RcpQueueItem *outItem, RcpQueue *queue);
 
@@ -302,7 +303,21 @@ void rcpQueueAdd(RcpQueue *queue, RcpQueueItem *item) { //8009fc44
 	*(queue->items + queue->queue_top) = *item;
 }
 
-//rcpQueueRemove
+void rcpQueueRemove(RcpQueueItem *outItem, RcpQueue *queue) {
+	ushort uVar1;
+
+	uVar1 = queue->count;
+	if(queue->queue_top == 10) {
+		OSPanic("rcp_dolphin.c", 0x546, "queue underflow");
+	}
+	if(queue->count == queue->queue_top) {
+		queue->queue_top = 10;
+	} else {
+		queue->count = (queue->count + 1) % 10;
+	}
+	*outItem = *(queue->items + uVar1);
+}
+
 
 void rcpGxBreakptHandler() { //XXX wrong place
     //TODO
