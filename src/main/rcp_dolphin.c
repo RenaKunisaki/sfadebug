@@ -80,6 +80,7 @@ void videoThread_8009fb1c(void);
 void rcpThreadFn_8009fcb8(void);
 void rcpThreadMain(void);
 void rcpQueueClear(RcpQueue *queue);
+void rcpQueueAdd(RcpQueue *queue, RcpQueueItem *item);
 void rcpGxBreakptHandler();
 void queue_top(RcpQueueItem *outItem, RcpQueue *queue);
 
@@ -289,7 +290,21 @@ void rcpQueueClear(RcpQueue *queue) { //8009fc38
     queue->queue_top = 10;
 }
 
-void rcpGxBreakptHandler() {
+void rcpQueueAdd(RcpQueue *queue, RcpQueueItem *item) { //8009fc44
+	if(queue->queue_top == 10) {
+		queue->queue_top = queue->count = 0;
+	} else {
+		queue->queue_top = (queue->queue_top + 1) % 10;
+		if(queue->queue_top == queue->count) {
+			OSPanic("rcp_dolphin.c", 1337, "queue overflow");
+		}
+	}
+	*(queue->items + queue->queue_top) = *item;
+}
+
+//rcpQueueRemove
+
+void rcpGxBreakptHandler() { //XXX wrong place
     //TODO
 }
 
