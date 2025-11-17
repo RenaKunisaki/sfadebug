@@ -61,6 +61,7 @@ u16 getPeToken(void);
 undefined* setViIrqCallback(void(*cb)(void));
 void setVerticalRegsFn_80016018(int param_1);
 void viFn_80015ea8(void);
+float u64ToFloat(u64);
 
 //unsure where these belong in this file
 bool rcpQueueIsEmpty(RcpQueue *queue);
@@ -74,14 +75,14 @@ void rcpScreenWriteFn8009f0fc(Gfx_ **gfx, Texture *texture, uint x, int y,
 void rcpScreenWrite(Gfx_ **gfx, Texture *texture, uint x, int y, uint width,
     int height, int frameNo, int alpha, uint flags);
 void nop_8009FA00();
-//fn_8009FA04
+void rcpGxBreakptHandler();
 void rcpBreakptFn_8009fa94(void);
 void videoThread_8009fb1c(void);
 void rcpThreadFn_8009fcb8(void);
 void rcpThreadMain(void);
 void rcpQueueClear(RcpQueue *queue);
 void rcpQueueAdd(RcpQueue *queue, RcpQueueItem *item);
-void rcpQueueRemove(RcpQueueItem *out, RcpQueue *queue);
+void rcpQueueRemove(RcpQueueItem *outItem, RcpQueue *queue);
 void rcpGxBreakptHandler();
 void queue_top(RcpQueueItem *outItem, RcpQueue *queue);
 
@@ -231,7 +232,23 @@ void nop_8009FA00() {
     //empty function
 }
 
-//fn_8009FA04
+void rcpGxBreakptHandler(void) {
+	float time;
+	OSTime time64;
+	RcpQueueItem item;
+
+	time64 = OSCheckStopwatch(&stopwatchGp);
+	rcpBreakpointTime = u64ToFloat(time64) / 40500.0f;
+	OSStopStopwatch(&stopwatchGp);
+	OSResetStopwatch(&stopwatchGp);
+	queue_top(&item, &RcpQueue_8036bc80);
+	if((undefined *)item.frameBuffer == pCurFrameBuffer) {
+		rcpBreakptVal_80398b51 = 1;
+	} else {
+		rcpBreakptFn_8009fa94();
+	}
+	return;
+}
 
 void rcpBreakptFn_8009fa94(void) { //8009fa94
 	RcpQueueItem item;
@@ -316,11 +333,6 @@ void rcpQueueRemove(RcpQueueItem *outItem, RcpQueue *queue) {
 		queue->count = (queue->count + 1) % 10;
 	}
 	*outItem = *(queue->items + uVar1);
-}
-
-
-void rcpGxBreakptHandler() { //XXX wrong place
-    //TODO
 }
 
 //probably reads the top item from the queue without removing it
