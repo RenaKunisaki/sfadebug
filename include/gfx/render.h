@@ -7,6 +7,8 @@
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 
+#define RCP_GX_FIFO_SIZE 0x10000
+
 typedef enum {
     IsNotSubmap = 1,
     EnableMapUpdate = 2,

@@ -23,117 +23,65 @@
 #include <stddef.h>
 #include "placeholder.h"
 
-#define RCP_GX_FIFO_SIZE 0x10000
-
-void *rcpGxFifo; //80398b40;
-GXFifoObj *gxInitVal; //80398b44
-GXRenderModeObj *curTvParams; //80398b78
-void *pCurFrameBuffer; //80398B4C
-void *pFrameBuffer_80398b70;
-void *pFrameBuffer_80398b74;
-void *pFrameBuffer_80398b48;
-RcpQueue RcpQueue_8036bc80;
-RcpQueue RcpQueue_8036bcfc;
-OSThreadQueue rcpThreadQueue; //80398B58
-OSThread rcpThread; //8036BD78
-struct OSStopwatch stopwatchCpu; //8036cfa8
-struct OSStopwatch stopwatchGp;
-struct OSStopwatch stopwatchFrame;
-int DAT_80398b7c;
-GXColor DAT_80396de4;
-bool gxZCompareEnable;
-int gxZCompareFunc;
-bool gxZUpdateEnable;
-float frameTime;
-float rcpBreakpointTime;
-float FLOAT_80398b68;
-u16 peToken_80398b54;
-bool bNeedSetVerticalRegs;
-bool rcpBreakptVal_80398b51;
-bool viVal_80398b52;
-int frameCountThisStep;
-bool gxBreakPtFlag_80398b50; //8009fa94
-
 extern Mtx44 projMtx_80382d00;
 
+RcpQueue RcpQueue_8036bc80; //8036bc80
+RcpQueue RcpQueue_8036bcfc; //8036bcfc
+OSThread rcpThread; //8036bd78
+struct OSStopwatch stopwatchCpu; //8036cfa8
+struct OSStopwatch stopwatchGp; //8036cfe0
+struct OSStopwatch stopwatchFrame; //8036d018
+
+bool bNeedSetVerticalRegs; //80396de0
+GXColor DAT_80396de4; //80396de4
+
+void *rcpGxFifo; //80398b40
+GXFifoObj *gxInitVal; //80398b44
+void *pFrameBuffer_80398b48; //80398b48
+void *pCurFrameBuffer; //80398b4c
+bool gxBreakPtFlag_80398b50; //80398b50
+bool rcpBreakptVal_80398b51; //80398b51
+bool viVal_80398b52; //80398b52
+u16 peToken_80398b54; //80398b54
+OSThreadQueue rcpThreadQueue; //80398b58
+float frameTime; //80398b60
+float rcpBreakpointTime; //80398b64
+float FLOAT_80398b68; //80398b68
+int frameCountThisStep; //80398b6c
+void *pFrameBuffer_80398b70; //80398b70
+void *pFrameBuffer_80398b74; //80398b74
+GXRenderModeObj *curTvParams; //80398b78
+int DAT_80398b7c; //80398b7c
+bool gxZUpdateEnable; //80398b80
+int gxZCompareFunc; //80398b84
+bool gxZCompareEnable; //80398b88
+
+//declarations for other files
 u16 getPeToken(void);
 undefined* setViIrqCallback(void(*cb)(void));
 void setVerticalRegsFn_80016018(int param_1);
 void viFn_80015ea8(void);
+
+//unsure where these belong in this file
+bool rcpQueueIsEmpty(RcpQueue *queue);
+
+//declarations for this file
+void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan);
+//fn_8009ED78
+void rcpScreenWriteFn8009f0fc(Gfx_ **gfx, Texture *texture, uint x, int y,
+    undefined4 param_5, int frameNo, int alpha, uint flags);
+//fn_8009F16C
 void rcpScreenWrite(Gfx_ **gfx, Texture *texture, uint x, int y, uint width,
     int height, int frameNo, int alpha, uint flags);
-bool rcpQueueIsEmpty(RcpQueue *queue);
+void nop_8009FA00();
+//fn_8009FA04
+void rcpBreakptFn_8009fa94(void);
+void videoThread_8009fb1c(void);
+void rcpThreadFn_8009fcb8(void);
+void rcpThreadMain(void);
+void rcpQueueClear(RcpQueue *queue);
+void rcpGxBreakptHandler();
 void queue_top(RcpQueueItem *outItem, RcpQueue *queue);
-
-
-void rcpScreenWriteFn8009f0fc(Gfx_ **gfx, Texture *texture, uint x, int y,
-undefined4 param_5, int frameNo, int alpha, uint flags) {
-    int h = texture->height;
-	rcpScreenWrite(gfx, texture, x, y, 0, h,
-        frameNo, alpha, flags);
-}
-
-void rcpThreadMain(void) {
-	RcpQueueItem item;
-    int dummy;
-	do {
-		OSSleepThread(&rcpThreadQueue);
-		rcpQueueRemoveFn_8009fcfc(&item, &RcpQueue_8036bcfc);
-	} while(true);
-}
-
-void rcpQueueClear(RcpQueue *queue) { //8009fc38
-    queue->queue_top = 10;
-}
-
-void rcpBreakptFn_8009fa94(void) { //8009fa94
-	RcpQueueItem item;
-
-	rcpQueueRemove(&item, &RcpQueue_8036bc80);
-	rcpQueueAdd(&RcpQueue_8036bcfc, &item);
-	OSWakeupThread(&rcpThreadQueue);
-	OSStartStopwatch(&stopwatchGp);
-	if(rcpQueueIsEmpty(&RcpQueue_8036bc80)) {
-		GXDisableBreakPt();
-		gxBreakPtFlag_80398b50 = 0;
-	} else {
-		queue_top(&item, &RcpQueue_8036bc80);
-		GXEnableBreakPt((void*)item.unk00);
-	}
-}
-
-void videoThread_8009fb1c(void) { // 8009fb1c
-	u16 token;
-    int dummy;
-
-	token = getPeToken();
-	if(token == (u16)(peToken_80398b54 + 1)) {
-		peToken_80398b54 = token;
-		pCurFrameBuffer = (pCurFrameBuffer == pFrameBuffer_80398b74) ?
-            pFrameBuffer_80398b70 : pFrameBuffer_80398b74;
-		VISetNextFrameBuffer(pCurFrameBuffer);
-		if(bNeedSetVerticalRegs) {
-			setVerticalRegsFn_80016018(0);
-			bNeedSetVerticalRegs = 0;
-		}
-		viFn_80015ea8();
-		viVal_80398b52 = 1;
-		frameCountThisStep = 0;
-	}
-	frameCountThisStep += 1;
-}
-
-void rcpThreadFn_8009fcb8(void) {
-	if((rcpBreakptVal_80398b51 != 0) && (viVal_80398b52)) {
-		rcpBreakptFn_8009fa94();
-		rcpBreakptVal_80398b51 = 0;
-		viVal_80398b52 = false;
-	}
-}
-
-void rcpGxBreakptHandler() {
-    //TODO
-}
 
 void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
 	uint ii;
@@ -261,7 +209,88 @@ void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
 	GXSetTevColor(GX_TEVREG2, tevColor2);
 }
 
+//fn_8009ED78
+
+void rcpScreenWriteFn8009f0fc(Gfx_ **gfx, Texture *texture, uint x, int y,
+undefined4 param_5, int frameNo, int alpha, uint flags) {
+    int h = texture->height;
+	rcpScreenWrite(gfx, texture, x, y, 0, h,
+        frameNo, alpha, flags);
+}
+
+//fn_8009F16C
+
+void rcpScreenWrite(Gfx_ **gfx, Texture *texture, uint x, int y, uint width,
+int height, int frameNo, int alpha, uint flags) {
+    //TODO
+}
+
 void nop_8009FA00() {
+    //empty function
+}
+
+//fn_8009FA04
+
+void rcpBreakptFn_8009fa94(void) { //8009fa94
+	RcpQueueItem item;
+
+	rcpQueueRemove(&item, &RcpQueue_8036bc80);
+	rcpQueueAdd(&RcpQueue_8036bcfc, &item);
+	OSWakeupThread(&rcpThreadQueue);
+	OSStartStopwatch(&stopwatchGp);
+	if(rcpQueueIsEmpty(&RcpQueue_8036bc80)) {
+		GXDisableBreakPt();
+		gxBreakPtFlag_80398b50 = 0;
+	} else {
+		queue_top(&item, &RcpQueue_8036bc80);
+		GXEnableBreakPt((void*)item.unk00);
+	}
+}
+
+void videoThread_8009fb1c(void) { // 8009fb1c
+	u16 token;
+    int dummy;
+
+	token = getPeToken();
+	if(token == (u16)(peToken_80398b54 + 1)) {
+		peToken_80398b54 = token;
+		pCurFrameBuffer = (pCurFrameBuffer == pFrameBuffer_80398b74) ?
+            pFrameBuffer_80398b70 : pFrameBuffer_80398b74;
+		VISetNextFrameBuffer(pCurFrameBuffer);
+		if(bNeedSetVerticalRegs) {
+			setVerticalRegsFn_80016018(0);
+			bNeedSetVerticalRegs = 0;
+		}
+		viFn_80015ea8();
+		viVal_80398b52 = 1;
+		frameCountThisStep = 0;
+	}
+	frameCountThisStep += 1;
+}
+
+void rcpThreadFn_8009fcb8(void) {
+	if((rcpBreakptVal_80398b51 != 0) && (viVal_80398b52)) {
+		rcpBreakptFn_8009fa94();
+		rcpBreakptVal_80398b51 = 0;
+		viVal_80398b52 = false;
+	}
+}
+
+void rcpThreadMain(void) {
+	RcpQueueItem item;
+    int dummy;
+	do {
+		OSSleepThread(&rcpThreadQueue);
+		rcpQueueRemove(&item, &RcpQueue_8036bcfc);
+	} while(true);
+}
+
+void rcpQueueClear(RcpQueue *queue) { //8009fc38
+    queue->queue_top = 10;
+}
+
+void rcpGxBreakptHandler() {
+    //TODO
 }
 
 //probably reads the top item from the queue without removing it
