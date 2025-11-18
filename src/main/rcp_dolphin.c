@@ -68,12 +68,12 @@ bool rcpQueueIsEmpty(RcpQueue *queue);
 
 //declarations for this file
 void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan);
-//fn_8009ED78
+//rspFn_8009f0c4
 void rcpScreenWriteFn8009f0fc(Gfx_ **gfx, Texture *texture, uint x, int y,
     undefined4 param_5, int frameNo, int alpha, uint flags);
-//fn_8009F16C
-void rcpScreenWrite(Gfx_ **gfx, Texture *texture, uint x, int y, uint width,
-    int height, int frameNo, int alpha, uint flags);
+//rcpScreenWriteFn_8009f16c
+void rcpScreenWrite(Gfx_ **gfx,Texture *texture,uint x,int y,
+	uint blkStart,int blkEnd,int frameNo,int alpha,uint flags);
 void nop_8009FA00();
 void rcpGxBreakptHandler();
 void rcpBreakptFn_8009fa94(void);
@@ -212,7 +212,7 @@ void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
 	GXSetTevColor(GX_TEVREG2, tevColor2);
 }
 
-//fn_8009ED78
+//rspFn_8009f0c4
 
 void rcpScreenWriteFn8009f0fc(Gfx_ **gfx, Texture *texture, uint x, int y,
 undefined4 param_5, int frameNo, int alpha, uint flags) {
@@ -221,10 +221,24 @@ undefined4 param_5, int frameNo, int alpha, uint flags) {
         frameNo, alpha, flags);
 }
 
-//fn_8009F16C
 
-void rcpScreenWrite(Gfx_ **gfx, Texture *texture, uint x, int y, uint width,
-int height, int frameNo, int alpha, uint flags) {
+void rcpScreenWriteFn_8009f16c(Gfx_ **gfx, Texture *texture, uint x, int y,
+int blkStart, int blkEnd, int alpha, uint flags) { // 8009f16c
+	int texH;
+
+	texH = texture->height;
+	blkStart -= y;
+	if(blkStart < 0) blkStart = 0;
+	blkEnd -= y;
+	if(blkEnd > texH) blkEnd = texH;
+	if(blkStart >= texH || blkEnd < 0) return;
+	rcpScreenWrite(gfx, texture, x, y, blkStart, blkEnd,
+		0, alpha, flags);
+}
+
+
+void rcpScreenWrite(Gfx_ **gfx,Texture *texture,uint x,int y,
+uint blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
     //TODO
 }
 
