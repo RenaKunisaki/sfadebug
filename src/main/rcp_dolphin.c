@@ -68,7 +68,7 @@ bool rcpQueueIsEmpty(RcpQueue *queue);
 
 //declarations for this file
 void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan);
-//rspFn_8009f0c4
+//rspFn_8009ed78
 void rcpScreenWriteFn8009f0fc(Gfx_ **gfx, Texture *texture, uint x, int y,
     undefined4 param_5, int frameNo, int alpha, uint flags);
 //rcpScreenWriteFn_8009f16c
@@ -212,7 +212,7 @@ void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
 	GXSetTevColor(GX_TEVREG2, tevColor2);
 }
 
-//rspFn_8009f0c4
+//rspFn_8009ed78
 
 void rcpScreenWriteFn8009f0fc(Gfx_ **gfx, Texture *texture, uint x, int y,
 undefined4 param_5, int frameNo, int alpha, uint flags) {
