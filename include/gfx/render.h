@@ -3,6 +3,7 @@
 #include "../dolphin/mtx.h"
 #include "dolphin/gx/GXStruct.h"
 #include "gfx/gbi.h"
+#include "gfx/textures.h"
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
@@ -103,6 +104,13 @@ typedef struct {
 typedef struct {
     GfxPacket pkt;
 } Gfx_; //official name is Gfx, but that's used by gbi.h
+
+typedef struct {
+    /* 0x0 */ Texture2 *items; //texture to use (NULL to end list)
+    /* 0x4 */ int frame; //frame number to use
+    /* 0x8 */ s16 x;
+    /* 0xa */ s16 y;
+} rspFn_8009ed78_struct;
 
 #define MAIN_GFX_SIZE 10000
 #define MAIN_MTX_SIZE 800

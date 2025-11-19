@@ -34,6 +34,7 @@ struct OSStopwatch stopwatchFrame; //8036d018
 
 bool bNeedSetVerticalRegs; //80396de0
 GXColor DAT_80396de4; //80396de4
+RSPState *RSP_pState; //80396e28
 
 void *rcpGxFifo; //80398b40
 GXFifoObj *gxInitVal; //80398b44
@@ -212,7 +213,76 @@ void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
 	GXSetTevColor(GX_TEVREG2, tevColor2);
 }
 
-//rspFn_8009ed78
+
+/* probably related to drawing debug text or sprites */
+void rspFn_8009ed78(Gfx_ **gfxIn, rspFn_8009ed78_struct *param_2,
+int x, int y, u8 r, u8 g, u8 b, u8 a) {
+	int jj;
+	int t1;
+	int s1;
+	int y2;
+	int x2;
+	Texture2 *tex;
+	int y1;
+	int x1;
+	int ii;
+	int iFrame;
+	int dummy;
+	Gfx_ *gfx;
+
+	ii = 0;
+	gfx = *gfxIn;
+	RSP_CMD_NOINC(&gfx, GX_SETCULLMODE, 0x00200404);
+	rcpHandleSetCullMode(&gfx);
+
+	RSP_CMD_NOINC(&gfx, (G_SETCOMBINE << 24) | 0x119623, 0xff2fffff);
+	RSP_pipeSync(&gfx);
+
+	RSP_CMD_NOINC(&gfx, (G_RDPSETOTHERMODE << 24) | 0x000c00, 0x00504240);
+	rspPipeSyncFn800a697c(&gfx);
+	x *= 4;
+	y *= 4;
+
+	for(; tex = param_2[ii].items, tex != NULL; ii++) {
+		x1 = x + param_2[ii].x * 4;
+		y1 = y + param_2[ii].y * 4;
+		x2 = x1 + tex->width * 4;
+		y2 = y1 + tex->height * 4;
+		if(x2 <= 0 || y2 <= 0) continue;
+
+		s1 = 0; t1 = 0;
+		if(x1 < 0) { s1 = x1 * -8; x1 = 0; }
+		if(y1 < 0) { t1 = y1 * -8; y1 = 0; }
+
+		//select correct frame
+		iFrame = param_2[ii].frame >> 8;
+		for(jj = 0; jj < iFrame && tex; tex = tex->next) { jj++; }
+
+		RSP_CMD(&gfx, (G_SETTIMG << 24) | 0x100000, tex);
+		gfx->pkt.param = (u32)tex; //bug?
+		RSP_CMD(&gfx, (G_SETTILE << 24) | 0x100000, 0x7000000);
+		RSP_CMD(&gfx, (G_LOADBLOCK << 24),
+			((MIN(tex->width * tex->height - 1, 0x7ff) & 0xfff) << 0xc) | 0x07000000);
+
+		//G_SETTILE but, ((G_SETTILE << 24) | 0x100000) doesn't match
+		RSP_CMD(&gfx, (((tex->width * 2 + 7) >> 3 & 0x1ffU) << 9) | 0xF5100000, 0);
+		RSP_CMD(&gfx, (G_SETTILESIZE << 24),
+			(((tex->width-1) * 0x4000) & 0xffc000) |
+			((tex->height-1) * 4 & 0xffc));
+		RSP_setTevColor2(&gfx, r, g, b, a);
+
+		//draw the tile
+		RSP_CMD(&gfx, GX_DRAW_IMG |
+			((y2 & 0xfff) << 0xc) | ((x2 * 0x1000) & 0xfff000),
+			((x1 & 0xfff) << 0xc) | (y1 & 0xfff));
+		RSP_CMD(&gfx, GX_DRAW_IMG_S1T1, (s1 << 0x10) | (t1 & 0xffff));
+		RSP_CMD(&gfx, GX_DRAW_IMG_S2T2, 0x04000400);
+		RSP_pState->bNeedPipeSync = true;
+	}
+	RSP_resetDp();
+	*gfxIn = gfx;
+}
+
 
 void rcpScreenWriteFn8009f0fc(Gfx_ **gfx, Texture *texture, uint x, int y,
 undefined4 param_5, int frameNo, int alpha, uint flags) {
