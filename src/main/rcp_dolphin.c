@@ -222,13 +222,13 @@ int x, int y, u8 r, u8 g, u8 b, u8 a) {
 	int frameNo;
 	Gfx_ *gfx;
 	int iFrame;
-	int ii;
+	int x2;
 	int y2;
+	int x1;
+	int y1;
 	int s1;
 	int t1;
-	int x1;
-	int x2;
-	int y1;
+	int ii;
 
 	iFrame = 0;
 	gfx = *gfxIn;
