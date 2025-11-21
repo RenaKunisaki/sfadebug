@@ -107,7 +107,7 @@ typedef struct Texture2 {
     /* 0x0a */ ushort width;
     /* 0x0c */ ushort height;
     /* 0x0e */ short refCount;
-    /* 0x10 */ short nFrames;
+    /* 0x10 */ ushort nFrames;
     /* 0x12 */ s8 unk12;
     /* 0x13 */ s8 unk13;
     /* 0x14 */ ushort unk14;

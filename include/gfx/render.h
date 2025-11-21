@@ -161,4 +161,34 @@ extern int diFlag_803997d0; */
 		gfx_->pkt.param = (u32)(prm); \
 	} while(0)
 
+#define RDP_SET_CIMG(gfx, op, prm) \
+    do { \
+        (gfx)->pkt.cmd = G_SETCIMG | (op); \
+        (gfx)->pkt.param = (u32)(prm); \
+        RSP_pipeSync(&gfx); \
+    } while(0)
+
+#define RDP_SET_OTHER_MODE(gfx, op, prm) \
+    do { \
+        (gfx)->pkt.cmd = G_RDPSETOTHERMODE | (op); \
+        (gfx)->pkt.param = (u32)(prm); \
+        rspPipeSyncFn800a697c(&gfx); \
+    } while(0)
+
+#define RDP_SET_COMBINE(gfx, op, prm) \
+    do { \
+        (gfx)->pkt.cmd = G_SETCOMBINE | (op); \
+        (gfx)->pkt.param = (u32)(prm); \
+        RSP_pipeSync(&gfx); \
+    } while(0)
+
+#define RDP_GX_DRAW_IMAGE(gfx, x1, y1, x2, y2, s1, t1, s2, t2) do { \
+	RSP_CMD((gfx), GX_DRAW_IMG | \
+		((x2) * 0x4000 & 0xffc000) | ((y2) * 4 & 0xffc), \
+		((x1) & 0x3ff) << 0xe | (y1) * 4 & 0xffc); \
+	RSP_CMD(gfx, GX_DRAW_IMG_S1T1, (((s1) & 0x7ff) << 5) | (t1)); \
+	RSP_CMD(gfx, GX_DRAW_IMG_S2T2, ((s2) << 16) | (t2)); \
+	RSP_pState->bNeedPipeSync = true; \
+} while(0)
+
 #endif //_GFX_RENDER_H_
