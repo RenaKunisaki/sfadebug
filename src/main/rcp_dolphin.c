@@ -70,10 +70,10 @@ bool rcpQueueIsEmpty(RcpQueue *queue);
 //declarations for this file
 void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan);
 //rspFn_8009ed78
-void rcpScreenWriteFn8009f0fc(Gfx_ **gfx, Texture2 *texture, uint x, int y,
+void rcpScreenWriteFn8009f0fc(Gfx **gfx, Texture2 *texture, uint x, int y,
     undefined4 param_5, int frameNo, int alpha, uint flags);
 //rcpScreenWriteFn_8009f16c
-void rcpScreenWrite(Gfx_ **gfx,Texture2 *texture,uint x,int y,
+void rcpScreenWrite(Gfx **gfx,Texture2 *texture,uint x,int y,
 	uint blkStart,int blkEnd,int frameNo,int alpha,uint flags);
 void nop_8009FA00();
 void rcpGxBreakptHandler();
@@ -214,25 +214,25 @@ void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
 }
 
 /* probably related to drawing debug text or sprites */
-void rspFn_8009ed78(Gfx_ **gfxIn, rspFn_8009ed78_struct *param_2,
+void rspFn_8009ed78(Gfx **gfxIn, rspFn_8009ed78_struct *param_2,
 int x, int y, u8 r, u8 g, u8 b, u8 a) {
 	Texture2 *texFrame;
 	Texture2 *texture;
 	int frameNo;
-	Gfx_ *gfx;
+	Gfx *gfx;
 	int iFrame;
 	int x2, y2, x1, y1, s1, t1;
 	int ii;
 
 	iFrame = 0;
 	gfx = *gfxIn;
-	RSP_CMD_NOINC(&gfx, GX_SETCULLMODE, 0x00200404);
+	gSetCullMode(gfx, 0x00200404); //TODO: un-magic numbers
 	rcpHandleSetCullMode(&gfx);
 
-	RSP_CMD_NOINC(&gfx, (G_SETCOMBINE << 24) | 0x119623, 0xff2fffff);
+	gDPSetCombine(gfx, 0x119623, 0xff2fffff);
 	RSP_pipeSync(&gfx);
 
-	RSP_CMD_NOINC(&gfx, (G_RDPSETOTHERMODE << 24) | 0x000c00, 0x00504240);
+	gDPSetOtherMode(gfx, 0x000c00, 0x00504240);
 	rspPipeSyncFn800a697c(&gfx);
 
 	x *= 4; y *= 4;
@@ -257,42 +257,74 @@ int x, int y, u8 r, u8 g, u8 b, u8 a) {
 		}
 
 		//load the texture
-		RSP_CMD(&gfx, (G_SETTIMG << 24) | 0x100000, texFrame);
-		gfx->pkt.param = (u32)texFrame; //@bug? redundant assignment
-		RSP_CMD(&gfx, (G_SETTILE << 24) | 0x100000, 0x7000000);
-		RSP_CMD(&gfx, (G_LOADBLOCK << 24), 0x07000000 |
-			((MIN(texFrame->width * texFrame->height - 1, 0x7ff) & 0xfff) << 0xc));
+		//likely one of the gDPLoadTextureBlock related macros
+		gDPSetTextureImage(gfx++, 0, 2, 1, texFrame);
+		gfx->words.w1 = (u32)texFrame; //@bug? redundant assignment
+		gDPSetTile(gfx++,
+			0, //fmt
+			G_IM_SIZ_16b, //siz
+			0, //line
+			0, //tmem
+			7, //tile
+			0, //palette
+			0, //cmt
+			0, //maskt
+			0, //shiftt
+			0, //cms
+			0, //masks
+			0); //shifts
+
+		gDPLoadBlock(gfx++,
+			7, //tile
+			0, //uls
+			0, //ult
+			texFrame->width * texFrame->height - 1, //lrs
+			0); //dxt
+
 		RSP_CMD(&gfx, (((texFrame->width * 2 + 7) >> 3 & 0x1ffU) << 9) |
 			((G_SETTILE << 24) | 0x100000), 0);
-		RSP_CMD(&gfx, (G_SETTILESIZE << 24),
-			(((texFrame->width-1) * 0x4000) & 0xffc000) |
-			((texFrame->height-1) * 4 & 0xffc));
+		//matches except one temp
+		/*gDPSetTile(gfx++,
+			0, //fmt
+			G_IM_SIZ_16b, //siz
+			((texFrame->width * 2) + 7) >> 3 & 0x1ffu, //line
+			0, //tmem
+			0, //tile
+			0, //palette
+			0, //cmt
+			0, //maskt
+			0, //shiftt
+			0, //cms
+			0, //masks
+			0); //shifts */
+
+		//RSP_CMD(&gfx, (G_SETTILESIZE << 24),
+		//	(((texFrame->width-1) * 0x4000) & 0xffc000) |
+		//	((texFrame->height-1) * 4 & 0xffc));
+		gDPSetTileSize(gfx++,
+			0, //t
+			0, //uls
+			0, //ult
+			(texFrame->width-1) * 4, //lrs
+			(texFrame->height-1) * 4); //lrt
+
 		RSP_setTevColor2(&gfx, r, g, b, a); //set the color
 
 		//draw the tile
-		//this is one of the game's custom commands.
-		//it expects the next two commands to follow it in this
-		//order. it doesn't actually check them, just reads
-		//the parameters.
-		RSP_CMD(&gfx, GX_DRAW_IMG |
-			((x2 & 0xfff) << 0xc) | (y2 & 0xfff),
-			((x1 & 0xfff) << 0xc) | (y1 & 0xfff));
-		RSP_CMD(&gfx, GX_DRAW_IMG_S1T1, (s1 << 0x10) | (t1 & 0xffff));
-		RSP_CMD(&gfx, GX_DRAW_IMG_S2T2, 0x04000400); //constant s2, t2
-		RSP_pState->bNeedPipeSync = true;
+		RDP_GX_DRAW_IMAGE(&gfx, x1, y1, x2, y2, s1, t1, 0x400, 0x400);
 	}
 	RSP_resetDp();
 	*gfxIn = gfx;
 }
 
-void rcpScreenWriteFn8009f0fc(Gfx_ **gfx, Texture2 *texture, uint x, int y,
+void rcpScreenWriteFn8009f0fc(Gfx **gfx, Texture2 *texture, uint x, int y,
 undefined4 param_5, int frameNo, int alpha, uint flags) {
     int h = texture->height;
 	rcpScreenWrite(gfx, texture, x, y, 0, h,
         frameNo, alpha, flags);
 }
 
-void rcpScreenWriteFn_8009f16c(Gfx_ **gfx, Texture2 *texture, uint x, int y,
+void rcpScreenWriteFn_8009f16c(Gfx **gfx, Texture2 *texture, uint x, int y,
 int blkStart, int blkEnd, int alpha, uint flags) { // 8009f16c
 	int texH;
 
@@ -306,9 +338,9 @@ int blkStart, int blkEnd, int alpha, uint flags) { // 8009f16c
 		0, alpha, flags);
 }
 
-void rcpScreenWrite(Gfx_ **gfxIn,Texture2 *texture,uint x,int y,
+void rcpScreenWrite(Gfx **gfxIn,Texture2 *texture,uint x,int y,
 uint blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
-	Gfx_ *pGVar1;
+	Gfx *pGVar1;
 	BOOL bWidescreen;
 	int uVar2;
 	uint uVar3;
@@ -316,7 +348,7 @@ uint blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 	Texture2 *frame;
 	int texSize;
 	int nBlocks;
-	Gfx_ *gfx;
+	Gfx *gfx;
 	s64 local_50;
 	undefined4 local_48;
 	uint uStack_44;
@@ -353,41 +385,72 @@ uint blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 		return;
 	}
 	if(flags & 2) {
-		RDP_SET_CIMG(gfx, 0xFFD000, 0xfffcf279);
-		RDP_SET_OTHER_MODE(gfx, 0x200cc0, 0);
+		//see gbi.h:3046
+		gDPSetCombine(gfx, 0xFFFFFF, 0xfffcf279);
+		RSP_pipeSync(&gfx);
+		gDPSetOtherMode(gfx, 0x200cc0, 0);
+		rspPipeSyncFn800a697c(&gfx);
 	} else if((alpha == 0xff) && (flags & 1)) {
-		RDP_SET_CIMG(gfx, 0xFFD000, 0xfffcf279);
-		RDP_SET_OTHER_MODE(gfx, 0x000cc0, 0xf0a4000);
+		gDPSetCombine(gfx, 0xFFFFFF, 0xfffcf279);
+		RSP_pipeSync(&gfx);
+		gDPSetOtherMode(gfx, 0x000cc0, 0xf0a4000);
+		rspPipeSyncFn800a697c(&gfx);
 	} else {
-		RDP_SET_COMBINE(gfx, 0xff97ff, 0xff2cfe7f);
-		RDP_SET_OTHER_MODE(gfx, 0x000cc0, 0x00504240);
+		gDPSetCombine(gfx, 0xFF97FF, 0xff2cfe7f);
+		RSP_pipeSync(&gfx);
+		gDPSetOtherMode(gfx, 0x000cc0, 0x00504240);
+		rspPipeSyncFn800a697c(&gfx);
 	}
-	RSP_setTevColor2(&gfx, 0xff, 0xff, 0xff, alpha);
+	RSP_setTevColor2(&gfx, 0xff, 0xff, 0xff, alpha & 0xff);
 	while(blkStart < blkEnd) {
 		if(blkEnd - blkStart < nBlocks) {
 			nBlocks = blkEnd - blkStart;
 		}
-		RSP_CMD(&gfx, G_SETTIMG << 24 | 0x100000, frame);
-		RSP_CMD(&gfx, G_SETTILE << 24 | 0x100000, 0x7080200);
-		RSP_CMD(&gfx, G_RDPLOADSYNC << 24, 0);
-		//this ternary seems to be evaluated after writing G_LOADBLOCK
-		//but before writing the parameter.
-		//this plus the strange duplicate-parameter-assignment bug in
-		//another function suggest they might have been using macros
-		//to individually assign the command, assign the parameter,
-		//and increment (or even command-specific macros) instead of
-		//this single macro.
-		RSP_CMD(&gfx, G_LOADBLOCK << 24,
-			((((int)(texSize * nBlocks + -1) < 0x7ff)
-			? texSize * nBlocks - 1
-			: 0x7ff) & 0xfff) << 0xc | 0x7000000
-		);
-		RSP_CMD(&gfx, G_RDPPIPESYNC << 24, 0);
-		RSP_CMD(&gfx, G_SETTILE << 24 | 0x100000 |
-			(((int)(texSize * 2 + 7) >> 3 & 0x1ffU) << 9),
-			0x00080200);
-		RSP_CMD(&gfx, G_SETTILESIZE << 24,
-			(texSize - 1) * 0x4000 & 0xffc000 | (nBlocks - 1) * 4 & 0xffc);
+		gDPSetTextureImage(gfx++,
+			0, //fmt
+			G_IM_SIZ_16b, //siz
+			1, //width
+			frame); //i
+		gDPSetTile(gfx++,
+			0, //fmt
+			G_IM_SIZ_16b, //siz
+			0, //line
+			0, //tmem
+			7, //tile
+			0, //palette
+			2, //cmt
+			0, //maskt
+			0, //shiftt
+			2, //cms
+			0, //masks
+			0); //shifts
+		gDPLoadSync(gfx++);
+		gDPLoadBlock(gfx++,
+			7, //tile
+			0, //uls
+			0, //ult
+			texSize * nBlocks - 1, //lrs
+			0); //dxt
+		gDPPipeSync(gfx++);
+		gDPSetTile(gfx++,
+			0, //fmt
+			G_IM_SIZ_16b, //siz
+			((size * 2) + 7) >> 3 & 0x1ffu, //line
+			0, //tmem
+			0, //tile
+			0, //palette
+			2, //cmt
+			0, //maskt
+			0, //shiftt
+			2, //cms
+			0, //masks
+			0); //shifts
+		gDPSetTileSize(gfx++,
+			texSize - 1, //tile
+			0, //uls
+			0, //ult
+			0, //lrs
+			(nBlocks - 1) * 4); //lrt
 
 		if((flags & 2)) {
 			RDP_GX_DRAW_IMAGE(&gfx,
@@ -395,13 +458,6 @@ uint blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 				x + texSize, y + blkStart + (nBlocks - 1),
 				blkStart, 0,
 				0x1000, 0x0400);
-			/*RSP_CMD(&gfx, GX_DRAW_IMG |
-				(x + texSize) * 0x4000 & 0xffc000 |
-				(y + blkStart + nBlocks + -1) * 4 & 0xffc,
-				(x & 0x3ff) << 0xe | (y + blkStart) * 4 & 0xffc);
-			RSP_CMD(&gfx, GX_DRAW_IMG_S1T1, (blkStart & 0x7ff) << 5);
-			RSP_CMD(&gfx, GX_DRAW_IMG_S2T2, 0x10000400);
-			RSP_pState->bNeedPipeSync = true;*/
 		}
 		else if(uVar2 && bWidescreen) {
 			RDP_GX_DRAW_IMAGE(&gfx,
@@ -409,13 +465,6 @@ uint blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 				x+size, y + blkStart + nBlocks,
 				blkStart, 0,
 				0x04FF, 0x04FF);
-			/*RSP_CMD(&gfx, GX_DRAW_IMG |
-				(x + size) * 0x4000 & 0xffc000
-				| (y + blkStart + nBlocks) * 4 & 0xffc,
-				(x & 0x3ff) << 0xe | (y + blkStart) * 4 & 0xffc);
-			RSP_CMD(&gfx, GX_DRAW_IMG_S1T1, (blkStart & 0x7ff) << 5);
-			RSP_CMD(&gfx, GX_DRAW_IMG_S2T2, 0x4ff04ff);
-			RSP_pState->bNeedPipeSync = true;*/
 		}
 		else if(bWidescreen) {
 			RDP_GX_DRAW_IMAGE(&gfx,
@@ -423,13 +472,6 @@ uint blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 				x + size, y + blkStart + nBlocks,
 				blkStart, 0,
 				0x04FF, 0x0400);
-			/*RSP_CMD(&gfx, GX_DRAW_IMG |
-				(x + size) * 0x4000 & 0xffc000
-				| (y + blkStart + nBlocks) * 4 & 0xffc,
-				(x & 0x3ff) << 0xe | (y + blkStart) * 4 & 0xffc);
-			RSP_CMD(&gfx, GX_DRAW_IMG_S1T1, (blkStart & 0x7ff) << 5);
-			RSP_CMD(&gfx, GX_DRAW_IMG_S2T2, 0x4ff0400);
-			RSP_pState->bNeedPipeSync = true;*/
 		}
 		else if(uVar2) {
 			RDP_GX_DRAW_IMAGE(&gfx,
@@ -437,27 +479,13 @@ uint blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 				x + size, y + blkStart + nBlocks,
 				blkStart, 0,
 				0x0400, 0x0400);
-			/*RSP_CMD(&gfx, GX_DRAW_IMG | (x + size) * 0x4000 & 0xffc000 |
-				(y + blkStart + nBlocks) * 4 & 0xffc,
-				(x & 0x3ff) << 0xe | (y + blkStart) * 4 & 0xffc);
-			RSP_CMD(&gfx, GX_DRAW_IMG_S1T1, (blkStart & 0x7ff) << 5);
-			RSP_CMD(&gfx, GX_DRAW_IMG_S2T2, 0x4000400);
-			RSP_pState->bNeedPipeSync = true;*/
 		}
 		else {
-			//set image parameters for custom command.
-			//x2 in high half, y2 in low half.
 			RDP_GX_DRAW_IMAGE(&gfx,
 				x, y + blkStart,
 				x + texSize, y + blkStart + nBlocks,
 				blkStart, 0,
 				0x0400, 0x0400);
-			/*RSP_CMD(&gfx, GX_DRAW_IMG | (x + texSize) * 0x4000 & 0xffc000 |
-				(y + blkStart + nBlocks) * 4 & 0xffc,
-				(x & 0x3ff) << 0xe | (y + blkStart) * 4 & 0xffc);
-			RSP_CMD(&gfx, GX_DRAW_IMG_S1T1, (blkStart & 0x7ff) << 5);
-			RSP_CMD(&gfx, GX_DRAW_IMG_S2T2, 0x4000400);
-			RSP_pState->bNeedPipeSync = true;*/
 		}
 		blkStart += nBlocks;
 	}

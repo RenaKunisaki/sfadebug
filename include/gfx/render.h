@@ -97,15 +97,6 @@ typedef struct {
 } Pol; //Polygon?
 
 typedef struct {
-    u32 /*F3DEXcommand*/ cmd;
-    u32	param;
-} GfxPacket;
-
-typedef struct {
-    GfxPacket pkt;
-} Gfx_; //official name is Gfx, but that's used by gbi.h
-
-typedef struct {
     /* 0x0 */ Texture2 *items; //texture to use (NULL to end list)
     /* 0x4 */ int frame; //frame number to use
     /* 0x8 */ s16 x;
@@ -149,45 +140,49 @@ extern int diFlag_803997d0; */
 
 #define RSP_CMD(gfx, op, prm)         \
 	do {                              \
-		Gfx_ *gfx_ = (*(gfx))++;      \
-		gfx_->pkt.cmd = (op);         \
-		gfx_->pkt.param = (u32)(prm); \
+		Gfx *gfx_ = (*(gfx))++;      \
+		gfx_->words.w0 = (op);         \
+		gfx_->words.w1 = (u32)(prm); \
 	} while(0)
 
 #define RSP_CMD_NOINC(gfx, op, prm)   \
 	do {                              \
-		Gfx_ *gfx_ = (*gfx);          \
-		gfx_->pkt.cmd = (op);         \
-		gfx_->pkt.param = (u32)(prm); \
+		Gfx *gfx_ = (*gfx);          \
+		gfx_->words.w0 = (op);         \
+		gfx_->words.w1 = (u32)(prm); \
 	} while(0)
 
 #define RDP_SET_CIMG(gfx, op, prm) \
     do { \
-        (gfx)->pkt.cmd = G_SETCIMG | (op); \
-        (gfx)->pkt.param = (u32)(prm); \
+        (gfx)->words.w0 = G_SETCIMG | (op); \
+        (gfx)->words.w1 = (u32)(prm); \
         RSP_pipeSync(&gfx); \
     } while(0)
 
 #define RDP_SET_OTHER_MODE(gfx, op, prm) \
     do { \
-        (gfx)->pkt.cmd = G_RDPSETOTHERMODE | (op); \
-        (gfx)->pkt.param = (u32)(prm); \
+        (gfx)->words.w0 = G_RDPSETOTHERMODE | (op); \
+        (gfx)->words.w1 = (u32)(prm); \
         rspPipeSyncFn800a697c(&gfx); \
     } while(0)
 
 #define RDP_SET_COMBINE(gfx, op, prm) \
     do { \
-        (gfx)->pkt.cmd = G_SETCOMBINE | (op); \
-        (gfx)->pkt.param = (u32)(prm); \
+        (gfx)->words.w0 = G_SETCOMBINE | (op); \
+        (gfx)->words.w1 = (u32)(prm); \
         RSP_pipeSync(&gfx); \
     } while(0)
 
+//this is one of the game's custom commands.
+//it expects the next two commands to follow it in this
+//order. it doesn't actually check them, just reads
+//the parameters.
 #define RDP_GX_DRAW_IMAGE(gfx, x1, y1, x2, y2, s1, t1, s2, t2) do { \
 	RSP_CMD((gfx), GX_DRAW_IMG | \
-		((x2) * 0x4000 & 0xffc000) | ((y2) * 4 & 0xffc), \
-		((x1) & 0x3ff) << 0xe | (y1) * 4 & 0xffc); \
-	RSP_CMD(gfx, GX_DRAW_IMG_S1T1, (((s1) & 0x7ff) << 5) | (t1)); \
-	RSP_CMD(gfx, GX_DRAW_IMG_S2T2, ((s2) << 16) | (t2)); \
+		((x2 & 0xfff) << 0xc) | (y2 & 0xfff), \
+        ((x1 & 0xfff) << 0xc) | (y1 & 0xfff)); \
+	RSP_CMD(gfx, GX_DRAW_IMG_S1T1, ((s1) << 0x10) | ((t1) & 0xffff)); \
+	RSP_CMD(gfx, GX_DRAW_IMG_S2T2, ((s2) << 0x10) | ((t2) & 0xffff)); \
 	RSP_pState->bNeedPipeSync = true; \
 } while(0)
 

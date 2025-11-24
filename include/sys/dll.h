@@ -29,7 +29,7 @@ typedef struct {
 
         struct {
             void (*init)(void);
-            void (*activate)(Gfx_ **gfx, Mtx44 **mtx, N64Vertex **vtx); //or render?
+            void (*activate)(Gfx **gfx, Mtx44 **mtx, N64Vertex **vtx); //or render?
             void (*setFlag)(int iFlag,s8 val);
             int (*getFlag)(int iFlag);
             void (*camCtrl)(double param_1,ObjInstance *param_2,uint param_3);
@@ -86,7 +86,7 @@ typedef struct {
             void (*setField110)(undefined4 param1);
             uint (*isFieldE4Negative)(void);
             void (*func17)(void);
-            void (*func18)(Gfx_ **gfx,Mtx44 **mtx,undefined4 *param3,undefined4 *param4);
+            void (*func18)(Gfx **gfx,Mtx44 **mtx,undefined4 *param3,undefined4 *param4);
             void (*func19)(int param1,BOOL param2);
             void (*func1A)(undefined4 param1,undefined4 param2);
             int (*func1B)(void);
@@ -105,14 +105,14 @@ typedef struct {
             undefined4 (*func09_ret1)(void);
             void (*func0A)(int param1,float *param2,char *param3);
             struct CheckpointStruct2* (*find)(int id,int *outIdx);
-            void (*func0C)(Gfx_ **gfx,N64Vertex **vtx,Pol **pol);
+            void (*func0C)(Gfx **gfx,N64Vertex **vtx,Pol **pol);
             void (*func0D)(undefined4 param1);
             undefined* (*func0E)(int *param1);
             int (*func0F)(undefined *param1);
             int (*func10)(int param1);
             void (*func11)(void);
-            void (*func12)(Gfx_ **gfx,N64Vertex **vtx,Pol **pol);
-            void (*func13)(Gfx_ **gfx,N64Vertex **vtx,Pol **pol, Mtx44 **mtx);
+            void (*func12)(Gfx **gfx,N64Vertex **vtx,Pol **pol);
+            void (*func13)(Gfx **gfx,N64Vertex **vtx,Pol **pol, Mtx44 **mtx);
         } Checkpoint;
 
         struct {
@@ -158,12 +158,12 @@ typedef struct {
             int (*func2A)(undefined *param1,int param2,int idx);
             int (*func2B)(ObjDef_RomCurve *curve,int id,int branch);
             undefined4 (*func2C)(Curve *curve,undefined4 param_2,uint id);
-            void (*func2D)(Gfx_ **gfx,N64Vertex **param_3,Pol **param3);
+            void (*func2D)(Gfx **gfx,N64Vertex **param_3,Pol **param3);
         } curve; //aka RomCurve
 
         struct {
             void(*func03)(u8,uint);
-            void(*func04)(Gfx_**, Mtx44**, N64Vertex **vtx);
+            void(*func04)(Gfx**, Mtx44**, N64Vertex **vtx);
             void(*func05)(uint, u8);
             void(*func06)(uint, u8);
             void(*func07)(float, uint, u8);
@@ -184,13 +184,13 @@ typedef struct {
         struct {
             undefined4 (*func03_ret0)(void);
             void (*func04_nop)(void);
-            void (*func05)(Gfx_ **gfx,undefined4 param2,undefined4 param3);
+            void (*func05)(Gfx **gfx,undefined4 param2,undefined4 param3);
         } Dll48;
 
         struct {
             int (*set_retM1)(void *param_1,undefined param_2,char *file,int line,char *code);
             void (*free_nop)(ObjInstance *param_1,undefined param_2,char *file,int line,char *code);
-            undefined4 (*func05_ret0)(Gfx_**);
+            undefined4 (*func05_ret0)(Gfx**);
             void (*func06_nop)(ObjInstance *param_1);
             void (*func07_nop)(void);
             void (*func08_nop)(int param_1,int param_2,int param_3,int param_4,int param_5);
@@ -243,7 +243,7 @@ typedef struct {
             void (*func06)(void);
             void (*ownerFree)(ObjInstance *obj);
             void (*ownerFree2)(ObjInstance *obj);
-            void (*draw)(ObjInstance *obj,Gfx_ **gfx,undefined4 param_3,undefined4 param_4,s8 param_5);
+            void (*draw)(ObjInstance *obj,Gfx **gfx,undefined4 param_3,undefined4 param_4,s8 param_5);
             void (*func0A_nop)(void);
             void (*func0B_nop)(void);
             void (*ownerFree3)(ObjInstance *obj);
@@ -260,7 +260,7 @@ typedef struct {
             void (*func09)(s8 *param1,int param2);
         } gametext;
         struct {
-            void(*func03_nop)(Gfx_**, Mtx44**, N64Vertex **vtx);
+            void(*func03_nop)(Gfx**, Mtx44**, N64Vertex **vtx);
             void(*newgame)(int);
             void(*func05)();
             void(*func06_nop)();
@@ -316,7 +316,7 @@ typedef struct {
             void(*func04_nop)();
             void(*func05)(ObjInstance*, undefined4, float*);
             void(*func06_nop)();
-            void(*func07)(Gfx_**, Mtx**, int*);
+            void(*func07)(Gfx**, Mtx**, int*);
             void(*func08_nop)();
         } modelfx;
 
@@ -327,7 +327,7 @@ typedef struct {
             void (*free)(void);
             void (*func07)(int param1);
             void (*func08)(int param1);
-            undefined4 (*func09)(Gfx_ **gfx,Mtx44 **mtx,N64Vertex **vtx,bool param4,int param5);
+            undefined4 (*func09)(Gfx **gfx,Mtx44 **mtx,N64Vertex **vtx,bool param4,int param5);
             void (*func0A)(short *param1);
             void (*func0B)(void);
             void (*func0C)(ObjInstance *obj,undefined param2);
@@ -347,17 +347,17 @@ typedef struct {
 
         struct {
             void(*update)(struct ObjInstance *object);
-            void(*render)(struct ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, bool shouldRender);
+            void(*render)(struct ObjInstance *object, Gfx **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, bool shouldRender);
             //void(*func04)(struct ObjInstance *object);
             void(*hitDetect)(struct ObjInstance *object);
-            void(*func06)(struct ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, bool shouldRender);
+            void(*func06)(struct ObjInstance *object, Gfx **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, bool shouldRender);
             void(*onFreeObjDef)(struct ObjInstance *object, undefined4);
             u32 (*getModelFlags)(struct ObjInstance *object); //in final, this is done inline
             int (*getExtraSize)(struct ObjInstance *object, void *state); //returns sizeof(this obj's State)
             UNKTYPE *setScale;
             UNKTYPE *unk24;
             void (*modelMtxFn_0x28)(struct ObjInstance *object, struct ObjInstance *obj2, Vec * );
-            void (*render2C)(struct ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx); //called for child of player object with ID 0x2d, 0x2f
+            void (*render2C)(struct ObjInstance *object, Gfx **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx); //called for child of player object with ID 0x2d, 0x2f
         } Object;
 
         struct {
@@ -381,7 +381,7 @@ typedef struct {
             void (*func06)(uint group);
             void (*free)(void);
             void (*func08)(void);
-            void (*func09)(Gfx_ **gfx,int delayMin);
+            void (*func09)(Gfx **gfx,int delayMin);
             int (*func0A)(int param1);
             bool (*func0B)(int param1,int param2);
             undefined4 (*func0C)(s8 param1);
@@ -410,7 +410,7 @@ typedef struct {
         struct {
             void (*func03)(int);
             void (*func04)(float param_1_00,undefined2 *param_2,uint param_3,undefined *param4,int param5);
-            void (*func05)(Gfx_ **gfx,float **param2);
+            void (*func05)(Gfx **gfx,float **param2);
             void (*func06)(float x,float y,float z,float param_4);
             void (*func07)(float param1,float param2,float param3,float param4,undefined2 param5,undefined2 param6);
             void (*func08)(double param1,double param2,double param3,double param4,undefined2 param5);
