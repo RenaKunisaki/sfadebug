@@ -177,12 +177,14 @@ extern int diFlag_803997d0; */
 //it expects the next two commands to follow it in this
 //order. it doesn't actually check them, just reads
 //the parameters.
+//N64 had something going on with quarter-pixel units
+//so that might explain the shift by 14
 #define RDP_GX_DRAW_IMAGE(gfx, x1, y1, x2, y2, s1, t1, s2, t2) do { \
 	RSP_CMD((gfx), GX_DRAW_IMG | \
-		((x2 & 0xfff) << 0xc) | (y2 & 0xfff), \
-        ((x1 & 0xfff) << 0xc) | (y1 & 0xfff)); \
-	RSP_CMD(gfx, GX_DRAW_IMG_S1T1, ((s1) << 0x10) | ((t1) & 0xffff)); \
-	RSP_CMD(gfx, GX_DRAW_IMG_S2T2, ((s2) << 0x10) | ((t2) & 0xffff)); \
+		(((x2) << 14) & 0xffc000) | ((y2) & 0xfff), \
+        (((x1) << 14) & 0xffc000) | ((y1) & 0xfff)); \
+	RSP_CMD((gfx), GX_DRAW_IMG_S1T1, ((s1) << 16) | ((t1) & 0xffff)); \
+	RSP_CMD((gfx), GX_DRAW_IMG_S2T2, ((s2) << 16) | ((t2) & 0xffff)); \
 	RSP_pState->bNeedPipeSync = true; \
 } while(0)
 

@@ -74,7 +74,7 @@ void rcpScreenWriteFn8009f0fc(Gfx **gfx, Texture2 *texture, uint x, int y,
     undefined4 param_5, int frameNo, int alpha, uint flags);
 //rcpScreenWriteFn_8009f16c
 void rcpScreenWrite(Gfx **gfx,Texture2 *texture,uint x,int y,
-	uint blkStart,int blkEnd,int frameNo,int alpha,uint flags);
+	int blkStart,int blkEnd,int frameNo,int alpha,uint flags);
 void nop_8009FA00();
 void rcpGxBreakptHandler();
 void rcpBreakptFn_8009fa94(void);
@@ -339,51 +339,53 @@ int blkStart, int blkEnd, int alpha, uint flags) { // 8009f16c
 }
 
 void rcpScreenWrite(Gfx **gfxIn,Texture2 *texture,uint x,int y,
-uint blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
+int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 	Gfx *pGVar1;
 	BOOL bWidescreen;
-	int uVar2;
+	BOOL bFlag10000;
 	uint uVar3;
 	int nFrames;
 	Texture2 *frame;
 	int texSize;
 	int nBlocks;
 	Gfx *gfx;
-	s64 local_50;
-	undefined4 local_48;
-	uint uStack_44;
+	u32 texData;
+	int texelSize;
 	int size;
 
 	bWidescreen = isWidescreen();
-	uVar2 = fn_800A706C();
+	bFlag10000 = getRenderFlag10000();
 	gfx = *gfxIn;
 	if(texture->nFrames) {
-		size = (int)(uint)(ushort)texture->nFrames >> 8;
+		size = texture->nFrames >> 8;
 	} else {
 		size = 0;
 	}
 	frame = texture;
-	if((size > 1) && (frameNo < (int)size)) {
-		nFrames = 0;
-		for(; nFrames < frameNo && frame; nFrames++) {
+	if((size > 1) && (frameNo < size)) {
+		for(nFrames = 0; nFrames < frameNo && frame; nFrames++) {
 			frame = frame->next;
 		}
 	}
 	RSP_CMD_NOINC(&gfx, GX_SETCULLMODE, 0);
-	rcpHandleSetCullMode(gfx);
+	rcpHandleSetCullMode(&gfx);
 
-	texSize = (uint)texture->width;
+	texSize = texture->width;
 	if(bWidescreen) {
-		size = (int)(float)texture->width;
+		size = texture->width * 1.0f; //@bug presumably wrong constant
 	}
 	else {
 		size = texSize;
+		texelSize = 2;
 	}
 	nBlocks = 0x4b000 / texSize;
 	if(!nBlocks) {
 		OSReport("rcpScreenWrite: Texture too big\n");
 		return;
 	}
+	//unused variable that affects codegen
+	texData = (u32)texture->data;
+	texData += blkStart * texelSize * texSize;
 	if(flags & 2) {
 		//see gbi.h:3046
 		gDPSetCombine(gfx, 0xFFFFFF, 0xfffcf279);
@@ -402,10 +404,9 @@ uint blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 		rspPipeSyncFn800a697c(&gfx);
 	}
 	RSP_setTevColor2(&gfx, 0xff, 0xff, 0xff, alpha & 0xff);
-	while(blkStart < blkEnd) {
-		if(blkEnd - blkStart < nBlocks) {
-			nBlocks = blkEnd - blkStart;
-		}
+	do {
+		if(nBlocks > blkEnd - blkStart) nBlocks = blkEnd;
+		else nBlocks = nBlocks; //not sure what variable this should be
 		gDPSetTextureImage(gfx++,
 			0, //fmt
 			G_IM_SIZ_16b, //siz
@@ -446,49 +447,50 @@ uint blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 			0, //masks
 			0); //shifts
 		gDPSetTileSize(gfx++,
-			texSize - 1, //tile
+			0, //tile
 			0, //uls
 			0, //ult
-			0, //lrs
-			(nBlocks - 1) * 4); //lrt
+			texSize - 1 << 2, //lrs
+			nBlocks - 1 << 2); //lrt
 
 		if((flags & 2)) {
 			RDP_GX_DRAW_IMAGE(&gfx,
-				x, y + blkStart,
-				x + texSize, y + blkStart + (nBlocks - 1),
-				blkStart, 0,
+				x, (y + blkStart) * 4,
+				x + texSize, (y + blkStart + (nBlocks - 1)) * 4,
+				0, (blkStart & 0x7FF) << 5,
 				0x1000, 0x0400);
 		}
-		else if(uVar2 && bWidescreen) {
+		else if(bFlag10000 && bWidescreen) {
 			RDP_GX_DRAW_IMAGE(&gfx,
-				x, y + blkStart,
-				x+size, y + blkStart + nBlocks,
-				blkStart, 0,
+				x, (y + blkStart) * 4,
+				x + texSize, (y + blkStart + nBlocks) * 4,
+				0, (blkStart & 0x7FF) << 5,
 				0x04FF, 0x04FF);
 		}
 		else if(bWidescreen) {
 			RDP_GX_DRAW_IMAGE(&gfx,
-				x, y + blkStart,
-				x + size, y + blkStart + nBlocks,
-				blkStart, 0,
+				x, (y + blkStart) * 4,
+				x + texSize, (y + blkStart + nBlocks) * 4,
+				0, (blkStart & 0x7FF) << 5,
 				0x04FF, 0x0400);
 		}
-		else if(uVar2) {
+		else if(bFlag10000) {
 			RDP_GX_DRAW_IMAGE(&gfx,
-				x, y + blkStart,
-				x + size, y + blkStart + nBlocks,
-				blkStart, 0,
+				x, (y + blkStart) * 4,
+				x + texSize, (y + blkStart + nBlocks) * 4,
+				0, (blkStart & 0x7FF) << 5,
 				0x0400, 0x0400);
 		}
 		else {
 			RDP_GX_DRAW_IMAGE(&gfx,
-				x, y + blkStart,
-				x + texSize, y + blkStart + nBlocks,
-				blkStart, 0,
+				x, (y + blkStart) * 4,
+				x + texSize, (y + blkStart + nBlocks) * 4,
+				0, (blkStart & 0x7FF) << 5,
 				0x0400, 0x0400);
 		}
+		texData += blkStart * texelSize * texSize;
 		blkStart += nBlocks;
-	}
+	} while(blkStart < blkEnd);
 	*gfxIn = gfx;
 }
 
