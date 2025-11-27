@@ -407,48 +407,25 @@ int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 			0, //fmt
 			G_IM_SIZ_16b, //siz
 			1, //width
-			frame); //i*/
-		RDP_SET_IMAGE(gfx++, 0, G_IM_SIZ_16b, 1, frame);
+			frame); //i */
+		RDP_SET_IMAGE(gfx++, 0, G_IM_SIZ_16b, 1, frame); //fmt, siz, width, i
 		gDPSetTile(gfx++,
-			0, //fmt
-			G_IM_SIZ_16b, //siz
-			0, //line
-			0, //tmem
-			7, //tile
-			0, //palette
-			2, //cmt
-			0, //maskt
-			0, //shiftt
-			2, //cms
-			0, //masks
-			0); //shifts
+			0, G_IM_SIZ_16b, 0, 0, //fmt, siz, line, tmem
+			7, 0, 2, 0, //tile, palette, cmt, maskt
+			0, 2, 0, 0); //shiftt, cms, masks, shifts
 		gDPLoadSync(gfx++);
 		gDPLoadBlock(gfx++,
-			7, //tile
-			0, //uls
-			0, //ult
-			texSize * nBlocks - 1, //lrs
-			0); //dxt
+			7, 0, 0, texSize * nBlocks - 1, 0); //tile, uls, ult, lrs, dxt
 		gDPPipeSync(gfx++);
 		gDPSetTile(gfx++,
-			0, //fmt
-			G_IM_SIZ_16b, //siz
+			0, G_IM_SIZ_16b, //fmt, siz
 			((size * 2) + 7) >> 3 & 0x1ffu, //line
-			0, //tmem
-			0, //tile
-			0, //palette
-			2, //cmt
-			0, //maskt
-			0, //shiftt
-			2, //cms
-			0, //masks
-			0); //shifts
+			0, 0, 0, 2, 0, //tmem, tile, palette, cmt, maskt
+			0, 2, 0, 0); //shiftt, cms, masks, shifts
 		gDPSetTileSize(gfx++,
-			0, //tile
-			0, //uls
-			0, //ult
-			texSize - 1 << 2, //lrs
-			nBlocks - 1 << 2); //lrt
+			0, 0, 0, //tile, uls, ult
+			(texSize - 1) << 2, //lrs
+			(nBlocks - 1) << 2); //lrt
 
 		if((flags & 2)) {
 			RDP_GX_DRAW_IMAGE(&gfx,
