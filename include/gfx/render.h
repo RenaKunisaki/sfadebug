@@ -138,6 +138,10 @@ extern short di_pol_count;
 extern RSPState *RSP_pState;
 extern int diFlag_803997d0; */
 
+Gfx* RSP_pipeSync(Gfx **gfx);
+Gfx* rspPipeSyncFn800a6900(Gfx **gfx);
+Gfx* RSP_setTevColor2(Gfx **gfx,u8 r,u8 g,u8 b,u8 a);
+
 #define RSP_CMD(gfx, op, prm)         \
 	do {                              \
 		Gfx *gfx_ = (*(gfx))++;      \
@@ -154,23 +158,35 @@ extern int diFlag_803997d0; */
 
 #define RDP_SET_CIMG(gfx, op, prm) \
     do { \
-        (gfx)->words.w0 = G_SETCIMG | (op); \
+        (gfx)->words.w0 = _SHIFTL(G_SETCIMG, 24, 8) | (op); \
         (gfx)->words.w1 = (u32)(prm); \
         RSP_pipeSync(&gfx); \
     } while(0)
 
 #define RDP_SET_OTHER_MODE(gfx, op, prm) \
     do { \
-        (gfx)->words.w0 = G_RDPSETOTHERMODE | (op); \
-        (gfx)->words.w1 = (u32)(prm); \
-        rspPipeSyncFn800a697c(&gfx); \
+        Gfx *gfx_ = (gfx); \
+        (gfx_)->words.w0 = _SHIFTL(G_RDPSETOTHERMODE, 24, 8) | (op); \
+        (gfx_)->words.w1 = (u32)(prm); \
+        rspPipeSyncFn800a6900(&gfx_); \
     } while(0)
 
 #define RDP_SET_COMBINE(gfx, op, prm) \
     do { \
-        (gfx)->words.w0 = G_SETCOMBINE | (op); \
-        (gfx)->words.w1 = (u32)(prm); \
-        RSP_pipeSync(&gfx); \
+        Gfx *gfx_ = (gfx); \
+        (gfx_)->words.w0 = _SHIFTL(G_SETCOMBINE, 24, 8) | (op); \
+        (gfx_)->words.w1 = (u32)(prm); \
+        RSP_pipeSync(&gfx_); \
+    } while(0)
+
+#define	RDP_SET_IMAGE(gfx, fmt, siz, width, i) \
+    do { \
+        Gfx *gfx_ = (gfx); \
+        (gfx_)->words.w0 = _SHIFTL(G_SETTIMG, 24, 8) | \
+            _SHIFTL(fmt, 21, 3) | \
+            _SHIFTL(siz, 19, 2) | \
+            _SHIFTL((width)-1, 0, 12); \
+        (gfx_)->words.w1 = (unsigned int)(i);				\
     } while(0)
 
 //this is one of the game's custom commands.

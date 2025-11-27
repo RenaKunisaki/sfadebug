@@ -233,7 +233,7 @@ int x, int y, u8 r, u8 g, u8 b, u8 a) {
 	RSP_pipeSync(&gfx);
 
 	gDPSetOtherMode(gfx, 0x000c00, 0x00504240);
-	rspPipeSyncFn800a697c(&gfx);
+	rspPipeSyncFn800a6900(&gfx);
 
 	x *= 4; y *= 4;
 	for(; (texture = param_2[iFrame].items); iFrame++) {
@@ -340,27 +340,26 @@ int blkStart, int blkEnd, int alpha, uint flags) { // 8009f16c
 
 void rcpScreenWrite(Gfx **gfxIn,Texture2 *texture,uint x,int y,
 int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
-	Gfx *pGVar1;
-	BOOL bWidescreen;
-	BOOL bFlag10000;
-	uint uVar3;
-	int nFrames;
-	Texture2 *frame;
-	int texSize;
-	int nBlocks;
 	Gfx *gfx;
+	Gfx *gfx2;
+	int nFrames;
+	int nBlocks;
 	u32 texData;
 	int texelSize;
 	int size;
+	int texSize;
+	Texture2 *frame;
+	BOOL bWidescreen;
+	BOOL bFlag10000;
+	BOOL bFlag10000_2;
 
 	bWidescreen = isWidescreen();
 	bFlag10000 = getRenderFlag10000();
+	bFlag10000_2 = bFlag10000;
 	gfx = *gfxIn;
-	if(texture->nFrames) {
-		size = texture->nFrames >> 8;
-	} else {
-		size = 0;
-	}
+	if(texture->nFrames) size = texture->nFrames >> 8;
+	else size = 0;
+
 	frame = texture;
 	if((size > 1) && (frameNo < size)) {
 		for(nFrames = 0; nFrames < frameNo && frame; nFrames++) {
@@ -388,30 +387,28 @@ int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 	texData += blkStart * texelSize * texSize;
 	if(flags & 2) {
 		//see gbi.h:3046
-		gDPSetCombine(gfx, 0xFFFFFF, 0xfffcf279);
-		RSP_pipeSync(&gfx);
-		gDPSetOtherMode(gfx, 0x200cc0, 0);
-		rspPipeSyncFn800a697c(&gfx);
+		RDP_SET_COMBINE(gfx, 0xFFFFFF, 0xfffcf279);
+		RDP_SET_OTHER_MODE(gfx, 0x200cc0, 0);
 	} else if((alpha == 0xff) && (flags & 1)) {
-		gDPSetCombine(gfx, 0xFFFFFF, 0xfffcf279);
-		RSP_pipeSync(&gfx);
-		gDPSetOtherMode(gfx, 0x000cc0, 0xf0a4000);
-		rspPipeSyncFn800a697c(&gfx);
+		RDP_SET_COMBINE(gfx, 0xFFFFFF, 0xfffcf279);
+		RDP_SET_OTHER_MODE(gfx, 0x000cc0, 0xf0a4000);
 	} else {
-		gDPSetCombine(gfx, 0xFF97FF, 0xff2cfe7f);
-		RSP_pipeSync(&gfx);
-		gDPSetOtherMode(gfx, 0x000cc0, 0x00504240);
-		rspPipeSyncFn800a697c(&gfx);
+		RDP_SET_COMBINE(gfx, 0xFF97FF, 0xff2cfe7f);
+		RDP_SET_OTHER_MODE(gfx, 0x000cc0, 0x00504240);
 	}
 	RSP_setTevColor2(&gfx, 0xff, 0xff, 0xff, alpha & 0xff);
 	do {
-		if(nBlocks > blkEnd - blkStart) nBlocks = blkEnd;
-		else nBlocks = nBlocks; //not sure what variable this should be
-		gDPSetTextureImage(gfx++,
+		if(nBlocks > blkEnd - blkStart) nBlocks = blkStart;
+		//this is very close to gDPLoadTextureBlock but not quite.
+		//it uses width and height differently.
+		//#define	gDPSetTextureImage(pkt, f, s, w, i)
+		// gSetImage(pkt, G_SETTIMG, f, s, w, i)
+		/*gDPSetTextureImage(gfx++,
 			0, //fmt
 			G_IM_SIZ_16b, //siz
 			1, //width
-			frame); //i
+			frame); //i*/
+		RDP_SET_IMAGE(gfx++, 0, G_IM_SIZ_16b, 1, frame);
 		gDPSetTile(gfx++,
 			0, //fmt
 			G_IM_SIZ_16b, //siz
@@ -460,7 +457,7 @@ int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 				0, (blkStart & 0x7FF) << 5,
 				0x1000, 0x0400);
 		}
-		else if(bFlag10000 && bWidescreen) {
+		else if(bFlag10000_2 && bWidescreen) {
 			RDP_GX_DRAW_IMAGE(&gfx,
 				x, (y + blkStart) * 4,
 				x + texSize, (y + blkStart + nBlocks) * 4,
@@ -474,7 +471,7 @@ int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 				0, (blkStart & 0x7FF) << 5,
 				0x04FF, 0x0400);
 		}
-		else if(bFlag10000) {
+		else if(bFlag10000_2) {
 			RDP_GX_DRAW_IMAGE(&gfx,
 				x, (y + blkStart) * 4,
 				x + texSize, (y + blkStart + nBlocks) * 4,
