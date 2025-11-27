@@ -341,10 +341,10 @@ int blkStart, int blkEnd, int alpha, uint flags) { // 8009f16c
 void rcpScreenWrite(Gfx **gfxIn,Texture2 *texture,uint x,int y,
 int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 	Gfx *gfx;
-	Gfx *gfx2;
 	int nFrames;
 	int nBlocks;
 	u32 texData;
+	int nLeft;
 	int texelSize;
 	int size;
 	int texSize;
@@ -384,7 +384,7 @@ int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 	}
 	//unused variable that affects codegen
 	texData = (u32)texture->data;
-	texData += blkStart * texelSize * texSize;
+	texData += texelSize * blkStart * texSize;
 	if(flags & 2) {
 		//see gbi.h:3046
 		RDP_SET_COMBINE(gfx, 0xFFFFFF, 0xfffcf279);
@@ -398,11 +398,10 @@ int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 	}
 	RSP_setTevColor2(&gfx, 0xff, 0xff, 0xff, alpha & 0xff);
 	do {
-		if(nBlocks > blkEnd - blkStart) nBlocks = blkStart;
+		nLeft = blkEnd - blkStart;
+		if(nBlocks > nLeft) nBlocks = nLeft;
 		//this is very close to gDPLoadTextureBlock but not quite.
 		//it uses width and height differently.
-		//#define	gDPSetTextureImage(pkt, f, s, w, i)
-		// gSetImage(pkt, G_SETTIMG, f, s, w, i)
 		/*gDPSetTextureImage(gfx++,
 			0, //fmt
 			G_IM_SIZ_16b, //siz
