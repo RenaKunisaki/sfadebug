@@ -63,6 +63,9 @@ undefined* setViIrqCallback(void(*cb)(void));
 void setVerticalRegsFn_80016018(int param_1);
 void viFn_80015ea8(void);
 float u64ToFloat(u64);
+void rcpHandleSetCullMode(Gfx **gfx);
+BOOL isWidescreen(void);
+BOOL getRenderFlag10000(void);
 
 //unsure where these belong in this file
 bool rcpQueueIsEmpty(RcpQueue *queue);
@@ -340,34 +343,34 @@ int blkStart, int blkEnd, int alpha, uint flags) { // 8009f16c
 
 void rcpScreenWrite(Gfx **gfxIn,Texture2 *texture,uint x,int y,
 int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
-	Gfx *gfx;
 	int nFrames;
-	int nBlocks;
 	u32 texData;
 	int nLeft;
-	int texelSize;
-	int size;
-	int texSize;
-	Texture2 *frame;
+	int endFrame;
 	BOOL bWidescreen;
+	int texelSize;
+	Texture2 *frame;
 	BOOL bFlag10000;
 	BOOL bFlag10000_2;
+	int nBlocks;
+	int texSize;
+	int size;
+	Gfx *gfx;
 
 	bWidescreen = isWidescreen();
 	bFlag10000 = getRenderFlag10000();
 	bFlag10000_2 = bFlag10000;
 	gfx = *gfxIn;
-	if(texture->nFrames) size = texture->nFrames >> 8;
-	else size = 0;
+	if(texture->nFrames) endFrame = texture->nFrames >> 8;
+	else endFrame = 0;
 
 	frame = texture;
-	if((size > 1) && (frameNo < size)) {
+	if((endFrame > 1) && (frameNo < endFrame)) {
 		for(nFrames = 0; nFrames < frameNo && frame; nFrames++) {
 			frame = frame->next;
 		}
 	}
-	RSP_CMD_NOINC(&gfx, GX_SETCULLMODE, 0);
-	rcpHandleSetCullMode(&gfx);
+	RDP_SET_CULL_MODE(&gfx, 0);
 
 	texSize = texture->width;
 	if(bWidescreen) {
@@ -375,26 +378,32 @@ int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 	}
 	else {
 		size = texSize;
-		texelSize = 2;
 	}
+	texelSize = 2;
 	nBlocks = 0x4b000 / texSize;
 	if(!nBlocks) {
 		OSReport("rcpScreenWrite: Texture too big\n");
 		return;
 	}
 	//unused variable that affects codegen
-	texData = (u32)texture->data;
-	texData += texelSize * blkStart * texSize;
+	texData = ((u32)texture->data);
+	texData += texSize * blkStart * texelSize;
 	if(flags & 2) {
 		//see gbi.h:3046
-		RDP_SET_COMBINE(gfx, 0xFFFFFF, 0xfffcf279);
+		RDP_SET_COMBINE(gfx, 0xffffff, 0xfffcf279);
+		RSP_pipeSync(&gfx);
 		RDP_SET_OTHER_MODE(gfx, 0x200cc0, 0);
+		rspPipeSyncFn800a6900(&gfx);
 	} else if((alpha == 0xff) && (flags & 1)) {
-		RDP_SET_COMBINE(gfx, 0xFFFFFF, 0xfffcf279);
+		RDP_SET_COMBINE(gfx, 0xffffff, 0xfffcf279);
+		RSP_pipeSync(&gfx);
 		RDP_SET_OTHER_MODE(gfx, 0x000cc0, 0xf0a4000);
+		rspPipeSyncFn800a6900(&gfx);
 	} else {
-		RDP_SET_COMBINE(gfx, 0xFF97FF, 0xff2cfe7f);
+		RDP_SET_COMBINE(gfx, 0xff97ff, 0xff2cfe7f);
+		RSP_pipeSync(&gfx);
 		RDP_SET_OTHER_MODE(gfx, 0x000cc0, 0x00504240);
+		rspPipeSyncFn800a6900(&gfx);
 	}
 	RSP_setTevColor2(&gfx, 0xff, 0xff, 0xff, alpha & 0xff);
 	do {
@@ -407,26 +416,40 @@ int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 			G_IM_SIZ_16b, //siz
 			1, //width
 			frame); //i */
-		RDP_SET_IMAGE(gfx++, 0, G_IM_SIZ_16b, 1, frame); //fmt, siz, width, i
-		gDPSetTile(gfx++,
-			0, G_IM_SIZ_16b, 0, 0, //fmt, siz, line, tmem
-			7, 0, 2, 0, //tile, palette, cmt, maskt
+		/*RDP_LOAD_TEXTURE_BLOCK(++gfx,
+			frame, //timg
+			0, //fmt
+			G_IM_SIZ_16b, //siz
+			texSize, //width
+			nBlocks, //height
+			0, //pal
+			2, //cms
+			2, //cmt
+			0, //masks
+			0, //maskt
+			0, //shifts
+			0); //shiftt*/
+		RDP_SET_IMAGE(++gfx, 0, G_IM_SIZ_16b, 1, frame); //fmt, siz, width, i
+		gDPSetTile(++gfx,
+			0, G_IM_SIZ_16b_LOAD_BLOCK, 0, 0, //fmt, siz, line, tmem
+			G_TX_LOADTILE, 0, 2, 0, //tile, palette, cmt, maskt
 			0, 2, 0, 0); //shiftt, cms, masks, shifts
-		gDPLoadSync(gfx++);
-		gDPLoadBlock(gfx++,
+		gDPLoadSync(++gfx);
+		gDPLoadBlock(++gfx,
 			7, 0, 0, texSize * nBlocks - 1, 0); //tile, uls, ult, lrs, dxt
-		gDPPipeSync(gfx++);
-		gDPSetTile(gfx++,
-			0, G_IM_SIZ_16b, //fmt, siz
+		gDPPipeSync(++gfx);
+		gDPSetTile(++gfx,
+			0, G_IM_SIZ_16b_LOAD_BLOCK, //fmt, siz
 			((size * 2) + 7) >> 3 & 0x1ffu, //line
-			0, 0, 0, 2, 0, //tmem, tile, palette, cmt, maskt
+			0, G_TX_RENDERTILE, 0, 2, 0, //tmem, tile, palette, cmt, maskt
 			0, 2, 0, 0); //shiftt, cms, masks, shifts
-		gDPSetTileSize(gfx++,
-			0, 0, 0, //tile, uls, ult
-			(texSize - 1) << 2, //lrs
-			(nBlocks - 1) << 2); //lrt
+		gDPSetTileSize(++gfx,
+			G_TX_RENDERTILE, 0, 0, //tile, uls, ult
+			(texSize - 1) << G_TEXTURE_IMAGE_FRAC, //lrs
+			(nBlocks - 1) << G_TEXTURE_IMAGE_FRAC); //lrt
 
 		if((flags & 2)) {
+			//I think texSize => size here
 			RDP_GX_DRAW_IMAGE(&gfx,
 				x, (y + blkStart) * 4,
 				x + texSize, (y + blkStart + (nBlocks - 1)) * 4,
