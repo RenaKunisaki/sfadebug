@@ -154,31 +154,15 @@ Gfx* RSP_setTevColor2(Gfx **gfx,u8 r,u8 g,u8 b,u8 a);
     gfx_->words.w1 = (u32)(prm); \
 } while(0)
 
+#define RSP_CMD_NODEREF(gfx, op, prm) do { \
+    Gfx *gfx_ = (Gfx*)(gfx); \
+    gfx_->words.w0 = (op); \
+    gfx_->words.w1 = (u32)(prm); \
+} while(0)
+
 #define RDP_SET_CIMG(gfx, op, prm) do { \
     (gfx)->words.w0 = _SHIFTL(G_SETCIMG, 24, 8) | (op); \
     (gfx)->words.w1 = (u32)(prm); \
-} while(0)
-
-#define RDP_SET_OTHER_MODE(gfx, op, prm) do { \
-    Gfx *gfx_ = (gfx); \
-    (gfx_)->words.w0 = _SHIFTL(G_RDPSETOTHERMODE, 24, 8) | \
-        (op); \
-    (gfx_)->words.w1 = (u32)(prm); \
-} while(0)
-
-#define RDP_SET_COMBINE(gfx, op, prm) do { \
-    Gfx *gfx_ = (gfx); \
-    (gfx_)->words.w0 = _SHIFTL(G_SETCOMBINE, 24, 8) | (op); \
-    (gfx_)->words.w1 = (u32)(prm); \
-} while(0)
-
-#define	RDP_SET_IMAGE(gfx, fmt, siz, width, i) do { \
-    Gfx *gfx_ = (gfx); \
-    (gfx_)->words.w0 = _SHIFTL(G_SETTIMG, 24, 8) | \
-        _SHIFTL(fmt, 21, 3) | \
-        _SHIFTL(siz, 19, 2) | \
-        _SHIFTL((width)-1, 0, 12); \
-    (gfx_)->words.w1 = (unsigned int)(i); \
 } while(0)
 
 #define RDP_SET_CULL_MODE(gfx, mode) do { \
@@ -192,12 +176,25 @@ Gfx* RSP_setTevColor2(Gfx **gfx,u8 r,u8 g,u8 b,u8 a);
 //the parameters.
 //N64 had something going on with quarter-pixel units
 //so that might explain the shift by 14
-#define RDP_GX_DRAW_IMAGE(gfx, x1, y1, x2, y2, s1, t1, s2, t2) do { \
-	RSP_CMD((gfx), GX_DRAW_IMG | \
-		(((x2) << 14) & 0xffc000) | ((y2) & 0xfff), \
+
+#define RDP_GX_DRAW_IMAGE_XY(gfx, x1, y1, x2, y2) do { \
+    RSP_CMD_NODEREF((gfx), GX_DRAW_IMG | \
+        (((x2) << 14) & 0xffc000) | ((y2) & 0xfff), \
         (((x1) << 14) & 0xffc000) | ((y1) & 0xfff)); \
-	RSP_CMD((gfx), GX_DRAW_IMG_S1T1, ((s1) << 16) | ((t1) & 0xffff)); \
-	RSP_CMD((gfx), GX_DRAW_IMG_S2T2, ((s2) << 16) | ((t2) & 0xffff)); \
+} while(0)
+
+#define RDP_GX_DRAW_IMAGE_ST1(gfx, s1, t1) do { \
+    RSP_CMD_NODEREF((gfx), GX_DRAW_IMG_S1T1, ((s1) << 16) | ((t1) & 0xffff)); \
+} while(0)
+
+#define RDP_GX_DRAW_IMAGE_ST2(gfx, s2, t2) do { \
+    RSP_CMD_NODEREF((gfx), GX_DRAW_IMG_S2T2, ((s2) << 16) | ((t2) & 0xffff)); \
+} while(0)
+
+#define RDP_GX_DRAW_IMAGE(gfx, x1, y1, x2, y2, s1, t1, s2, t2) do { \
+	RDP_GX_DRAW_IMAGE_XY((gfx), (x1), (y1), (x2), (y2)); \
+	RDP_GX_DRAW_IMAGE_ST1((gfx), (s1), (t1)); \
+	RDP_GX_DRAW_IMAGE_ST2((gfx), (s2), (t2)); \
 	RSP_pState->bNeedPipeSync = true; \
 } while(0)
 

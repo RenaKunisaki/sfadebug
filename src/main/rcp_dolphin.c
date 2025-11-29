@@ -76,7 +76,7 @@ void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan);
 void rcpScreenWriteFn8009f0fc(Gfx **gfx, Texture2 *texture, uint x, int y,
     undefined4 param_5, int frameNo, int alpha, uint flags);
 //rcpScreenWriteFn_8009f16c
-void rcpScreenWrite(Gfx **gfx,Texture2 *texture,uint x,int y,
+void rcpScreenWrite(Gfx **gfx,Texture2 *texture,int x,int y,
 	int blkStart,int blkEnd,int frameNo,int alpha,uint flags);
 void nop_8009FA00();
 void rcpGxBreakptHandler();
@@ -341,25 +341,23 @@ int blkStart, int blkEnd, int alpha, uint flags) { // 8009f16c
 		0, alpha, flags);
 }
 
-void rcpScreenWrite(Gfx **gfxIn,Texture2 *texture,uint x,int y,
+void rcpScreenWrite(Gfx **gfxIn,Texture2 *texture,int x,int y,
 int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
-	int nFrames;
-	u32 texData;
-	int nLeft;
-	int endFrame;
-	BOOL bWidescreen;
-	int texelSize;
 	Texture2 *frame;
-	BOOL bFlag10000;
-	BOOL bFlag10000_2;
+	int nFrames;
+	int endFrame;
 	int nBlocks;
 	int texSize;
+	u32 texData;
+	int nLeft;
+	int texelSize;
+	BOOL bWidescreen;
+	BOOL bFlag10000;
 	int size;
 	Gfx *gfx;
 
 	bWidescreen = isWidescreen();
 	bFlag10000 = getRenderFlag10000();
-	bFlag10000_2 = bFlag10000;
 	gfx = *gfxIn;
 	if(texture->nFrames) endFrame = texture->nFrames >> 8;
 	else endFrame = 0;
@@ -372,6 +370,7 @@ int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 	}
 	RDP_SET_CULL_MODE(&gfx, 0);
 
+	(void)bFlag10000;
 	texSize = texture->width;
 	if(bWidescreen) {
 		size = texture->width * 1.0f; //@bug presumably wrong constant
@@ -390,46 +389,28 @@ int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 	texData += texSize * blkStart * texelSize;
 	if(flags & 2) {
 		//see gbi.h:3046
-		RDP_SET_COMBINE(gfx, 0xffffff, 0xfffcf279);
+		gDPSetCombine(gfx, 0xffffff, 0xfffcf279);
 		RSP_pipeSync(&gfx);
-		RDP_SET_OTHER_MODE(gfx, 0x200cc0, 0);
+		gDPSetOtherMode(gfx, 0x200cc0, 0);
 		rspPipeSyncFn800a6900(&gfx);
 	} else if((alpha == 0xff) && (flags & 1)) {
-		RDP_SET_COMBINE(gfx, 0xffffff, 0xfffcf279);
+		gDPSetCombine(gfx, 0xffffff, 0xfffcf279);
 		RSP_pipeSync(&gfx);
-		RDP_SET_OTHER_MODE(gfx, 0x000cc0, 0xf0a4000);
+		gDPSetOtherMode(gfx, 0x000cc0, 0xf0a4000);
 		rspPipeSyncFn800a6900(&gfx);
 	} else {
-		RDP_SET_COMBINE(gfx, 0xff97ff, 0xff2cfe7f);
+		gDPSetCombine(gfx, 0xff97ff, 0xff2cfe7f);
 		RSP_pipeSync(&gfx);
-		RDP_SET_OTHER_MODE(gfx, 0x000cc0, 0x00504240);
+		gDPSetOtherMode(gfx, 0x000cc0, 0x00504240);
 		rspPipeSyncFn800a6900(&gfx);
 	}
-	RSP_setTevColor2(&gfx, 0xff, 0xff, 0xff, alpha & 0xff);
+	RSP_setTevColor2(&gfx, 0xff, 0xff, 0xff, alpha);
 	do {
 		nLeft = blkEnd - blkStart;
 		if(nBlocks > nLeft) nBlocks = nLeft;
 		//this is very close to gDPLoadTextureBlock but not quite.
 		//it uses width and height differently.
-		/*gDPSetTextureImage(gfx++,
-			0, //fmt
-			G_IM_SIZ_16b, //siz
-			1, //width
-			frame); //i */
-		/*RDP_LOAD_TEXTURE_BLOCK(++gfx,
-			frame, //timg
-			0, //fmt
-			G_IM_SIZ_16b, //siz
-			texSize, //width
-			nBlocks, //height
-			0, //pal
-			2, //cms
-			2, //cmt
-			0, //masks
-			0, //maskt
-			0, //shifts
-			0); //shiftt*/
-		RDP_SET_IMAGE(++gfx, 0, G_IM_SIZ_16b, 1, frame); //fmt, siz, width, i
+		gDPSetTextureImage(++gfx, 0, G_IM_SIZ_16b, 1, frame);
 		gDPSetTile(++gfx,
 			0, G_IM_SIZ_16b_LOAD_BLOCK, 0, 0, //fmt, siz, line, tmem
 			G_TX_LOADTILE, 0, 2, 0, //tile, palette, cmt, maskt
@@ -448,43 +429,42 @@ int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 			(texSize - 1) << G_TEXTURE_IMAGE_FRAC, //lrs
 			(nBlocks - 1) << G_TEXTURE_IMAGE_FRAC); //lrt
 
-		if((flags & 2)) {
-			//I think texSize => size here
-			RDP_GX_DRAW_IMAGE(&gfx,
-				x, (y + blkStart) * 4,
-				x + texSize, (y + blkStart + (nBlocks - 1)) * 4,
-				0, (blkStart & 0x7FF) << 5,
-				0x1000, 0x0400);
+		if(flags & 2) {
+			RDP_GX_DRAW_IMAGE_XY(++gfx, x, (y + blkStart) * 4,
+				x + texSize, (y + blkStart + (nBlocks - 1)) * 4);
+			RDP_GX_DRAW_IMAGE_ST1(++gfx, 0, (blkStart & 0x7FF) << 5);
+			RDP_GX_DRAW_IMAGE_ST2(++gfx, 0x1000, 0x0400);
+			RSP_pState->bNeedPipeSync = true;
 		}
-		else if(bFlag10000_2 && bWidescreen) {
-			RDP_GX_DRAW_IMAGE(&gfx,
-				x, (y + blkStart) * 4,
-				x + texSize, (y + blkStart + nBlocks) * 4,
-				0, (blkStart & 0x7FF) << 5,
-				0x04FF, 0x04FF);
+		else if(bFlag10000 && bWidescreen) {
+			RDP_GX_DRAW_IMAGE_XY(++gfx, x, (y + blkStart) * 4,
+				x + size, (y + blkStart + nBlocks) * 4);
+			RDP_GX_DRAW_IMAGE_ST1(++gfx, 0, (blkStart & 0x7FF) << 5);
+			RDP_GX_DRAW_IMAGE_ST2(++gfx, 0x04FF, 0x04FF);
+			RSP_pState->bNeedPipeSync = true;
 		}
 		else if(bWidescreen) {
-			RDP_GX_DRAW_IMAGE(&gfx,
-				x, (y + blkStart) * 4,
-				x + texSize, (y + blkStart + nBlocks) * 4,
-				0, (blkStart & 0x7FF) << 5,
-				0x04FF, 0x0400);
+			RDP_GX_DRAW_IMAGE_XY(++gfx, x, (y + blkStart) * 4,
+				x + size, (y + blkStart + nBlocks) * 4);
+			RDP_GX_DRAW_IMAGE_ST1(++gfx, 0, (blkStart & 0x7FF) << 5);
+			RDP_GX_DRAW_IMAGE_ST2(++gfx, 0x04FF, 0x0400);
+			RSP_pState->bNeedPipeSync = true;
 		}
-		else if(bFlag10000_2) {
-			RDP_GX_DRAW_IMAGE(&gfx,
-				x, (y + blkStart) * 4,
-				x + texSize, (y + blkStart + nBlocks) * 4,
-				0, (blkStart & 0x7FF) << 5,
-				0x0400, 0x0400);
+		else if(bFlag10000) {
+			RDP_GX_DRAW_IMAGE_XY(++gfx, x, (y + blkStart) * 4,
+				x + size, (y + blkStart + nBlocks) * 4);
+			RDP_GX_DRAW_IMAGE_ST1(++gfx, 0, (blkStart & 0x7FF) << 5);
+			RDP_GX_DRAW_IMAGE_ST2(++gfx, 0x0400, 0x0400);
+			RSP_pState->bNeedPipeSync = true;
 		}
 		else {
-			RDP_GX_DRAW_IMAGE(&gfx,
-				x, (y + blkStart) * 4,
-				x + texSize, (y + blkStart + nBlocks) * 4,
-				0, (blkStart & 0x7FF) << 5,
-				0x0400, 0x0400);
+			RDP_GX_DRAW_IMAGE_XY(++gfx, x, (y + blkStart) * 4,
+				x + texSize, (y + blkStart + nBlocks) * 4);
+			RDP_GX_DRAW_IMAGE_ST1(++gfx, 0, (blkStart & 0x7FF) << 5);
+			RDP_GX_DRAW_IMAGE_ST2(++gfx, 0x0400, 0x0400);
+			RSP_pState->bNeedPipeSync = true;
 		}
-		texData += blkStart * texelSize * texSize;
+		texData += texelSize * blkStart * texSize;
 		blkStart += nBlocks;
 	} while(blkStart < blkEnd);
 	*gfxIn = gfx;
