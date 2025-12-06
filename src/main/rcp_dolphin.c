@@ -359,7 +359,9 @@ int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 	bWidescreen = isWidescreen();
 	bFlag10000 = getRenderFlag10000();
 	gfx = *gfxIn;
-	endFrame = texture->nFrames ? texture->nFrames >> 8 : 0;
+	if((endFrame = texture->nFrames) != 0u) endFrame = texture->nFrames >> 8;
+	else endFrame = 0;
+
 	frame = texture;
 	if((endFrame > 1) && (frameNo < endFrame)) {
 		int i;
@@ -428,13 +430,12 @@ int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 			G_TX_NOMASK, G_TX_NOLOD, G_TX_NOMIRROR | G_TX_CLAMP,
 			G_TX_NOMASK, G_TX_NOLOD);
 		gDPLoadSync(gfx++);
-		//this can't be right.
-		gDPLoadBlock(++gfx, G_TX_LOADTILE, 0, 0, texWidth * height - 1, 0);
+		gDPLoadBlock(gfx++, G_TX_LOADTILE, 0, 0, texWidth * height - 1, 0);
 		gDPPipeSync(gfx++);
 		gDPSetTile(gfx++, G_IM_FMT_RGBA, G_IM_SIZ_16b,
 			//adding this `& 0x3fffffff` fixes the combined shifts
 			//but breaks the weird double-temp after getRenderFlag10000
-			((texWidth * 2 + 7) >> 3) /*& 0x3fffffff*/, G_TX_RENDERTILE, 0, 0,
+			((texWidth * 2 + 7) >> 3) & 0x3fffffff, G_TX_RENDERTILE, 0, 0,
 			G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOLOD,
 			G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOLOD);
 		gDPSetTileSize(gfx++, 0, 0, 0, (texWidth - 1) << 2, ((height - 1) << 2));
