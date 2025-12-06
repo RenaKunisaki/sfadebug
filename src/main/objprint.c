@@ -387,12 +387,12 @@ void fn_800953E8(Gfx_ **gfx, N64Vertex **diVtx, Pol **diPol) {
             }
             if(obj->objId == 9) { //@BUG: redundant check
                 jj = odef->iColor * 3;
-                RSP_setTevColor2(&pGfx,
+                rcpSetPrimColor(&pGfx,
                     Color_ARRAY_802ee4d8[jj+0],
                     Color_ARRAY_802ee4d8[jj+1],
                     Color_ARRAY_802ee4d8[jj+2], 0xff);
             } else {
-                RSP_setTevColor2(&pGfx, 0xff, 0, 0, 0xff);
+                rcpSetPrimColor(&pGfx, 0xff, 0, 0, 0xff);
             }
             RSP_CMD(&pGfx, 0x01008010, pVtx);
 
@@ -474,9 +474,9 @@ N64Vertex **vtx, ObjInstance *obj) {
         pos.pos.z = obj->pos.pos.z;
         mtxLoadFn8006a754(gfx, mtx, &pos, 1.0f, 0.0f, NULL);
         if(hits->flags & HitStateFlags58_AltColor) {
-            RSP_setTevColor2(gfx, 0, 0, 0xff, 0xff);
+            rcpSetPrimColor(gfx, 0, 0, 0xff, 0xff);
         } else {
-            RSP_setTevColor2(gfx, 0xff, 0, 0, 0xff);
+            rcpSetPrimColor(gfx, 0xff, 0, 0, 0xff);
         }
         rspCullFn800a5074(gfx, NULL, NULL, 6, 0, 0, 1);
         RSP_CMD(gfx, 0x0100c018, &BYTE_802ee2b8);
@@ -499,7 +499,7 @@ float x, float y, float z, float scale, u8 iColor) {
 	pos.pos.z = z;
 	LAB_8006a790(gfx, mtx, &pos, 1.0f, 0.0f, NULL);
 
-    RSP_setTevColor2(gfx,
+    rcpSetPrimColor(gfx,
         color[iColor*3+0],
         color[iColor*3+1],
         color[iColor*3+2],
@@ -518,7 +518,7 @@ ModelInstance *mInst, UNKTYPE *param_6) {
     unk[0x98] = (int)*vtx; //offset 0x280
     if(mInst->skeleton && (*(u8 *)((int)param_6 + 0xb7))) {
         fn_800BFBBC(*mtx);
-        RSP_CMD(gfx, GX_LOADMTXS | 0x380002, (*mtx)++);
+        RSP_CMD(gfx, G_MTX | 0x380002, (*mtx)++);
         ((Vec*)&unk[0x91])->x = //offset 0x26c
         ((Vec*)&unk[0x91])->y = //offset 0x268
         ((Vec*)&unk[0x91])->z = 65536.0f; //offset 0x264
@@ -610,9 +610,9 @@ Model *mod, ModelInstance *mInst) {
 			MTX44_Copy(&pos, *mtx);
             RSP_CMD(gfx, 0xda380002, (*mtx)++);
 			if(skel->unk18[iParent] == 0) {
-				RSP_setTevColor2(gfx, 0xff, 0xff, 0xff, 0xff);
+				rcpSetPrimColor(gfx, 0xff, 0xff, 0xff, 0xff);
 			} else {
-				RSP_setTevColor2(gfx, 0x00, 0x00, 0x00, 0xff);
+				rcpSetPrimColor(gfx, 0x00, 0x00, 0x00, 0xff);
 			}
 			if(jj == 0) {
                 RSP_CMD(gfx, 0x01004008, &DWORD_802edf10);

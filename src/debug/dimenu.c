@@ -401,7 +401,7 @@ void diMenuDrawCur(void) { // 8017b384
 	RSP_CMD_NOINC(diMenuGfx, 0xEF002C00, 0x00504240);
 	fn_800A6900(diMenuGfx);
 	RSP_setTevColor1(diMenuGfx, 0xFF, 0xFF, 0xFF, 0xFF);
-	RSP_setTevColor2(diMenuGfx, 0x1F, 0x1F, 0x1F, 0x90);
+	rcpSetPrimColor(diMenuGfx, 0x1F, 0x1F, 0x1F, 0x90);
 	RSP_CMD(diMenuGfx,
 	    (diMenuCur->minW & 0x3ff) << 0xe | 0xf6000000
 	        | (diMenuCur->minH & 0x3ffU) << 2,
@@ -431,7 +431,7 @@ void diMenuDrawCur(void) { // 8017b384
 			    yPos - 0xB);
 			dprintSetColor(0xFFU, 0xFF, 0xFF, 0xFF);
 			RSP_CMD(diMenuGfx, 0xE7000000, 0);
-			RSP_setTevColor2(diMenuGfx, 0x1F, 0x7F, 0x1F, 0x90);
+			rcpSetPrimColor(diMenuGfx, 0x1F, 0x7F, 0x1F, 0x90);
 			RSP_CMD(diMenuGfx,
 			    (((diMenuCur->minW * 0x4000) & 0xFFC000) | 0xF6000000
 			        | ((diMenuCur->maxH * 4) & 0xFFC)),
@@ -478,7 +478,7 @@ void diMenuDrawCur(void) { // 8017b384
 			dprintSetPos(xPos, yPos);
 			dprintSetColor(0xFFU, 0xFF, 0xFF, 0xFF);
 			RSP_CMD(diMenuGfx, 0xE7000000, 0);
-			RSP_setTevColor2(diMenuGfx, 0x1F, 0x7F, 0x1F, 0x90);
+			rcpSetPrimColor(diMenuGfx, 0x1F, 0x7F, 0x1F, 0x90);
 			RSP_CMD(diMenuGfx,
 			    (s32)(((diMenuCur->minW * 0x4000) & 0xFFC000) | 0xF6000000
 			        | (((diMenuCur->minH + 0xB) * 4) & 0xFFC)),

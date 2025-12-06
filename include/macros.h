@@ -76,6 +76,9 @@ and have just arbitrarily chosen x to be the statement.
 #define SHRT_MAX 32767
 #define PI 3.141593f
 
+//ceil(x/y) for integers
+#define CEILING_DIV(x, y) (((x) + (y) - 1) / (y))
+
 /**
  * @brief Given an object, convert `field`
  *  from an offset (relative to the object)

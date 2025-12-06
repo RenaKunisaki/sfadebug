@@ -3,19 +3,7 @@
 #define _SHIFTL(val, shift, mask) (((val) & ((1 << mask)-1)) << (shift))
 
 //game's custom commands
-#define GX_LOADVTXS      0x01000000
-#define GX_DRAWTRI       0x05000000
-#define GX_2TRI          0x06000000
-#define GX_UNKFLOAT      0x07000000
-#define GX_SETCULLMODE   0xd9000000
-#define GX_LOADMTXS      0xda000000
-#define GX_MW_MATRIX     0xdb000000
-#define GX_MTX_DB        0xdc000000
-#define GX_SYNC          0xdf000000
-#define GX_DRAW_IMG_S1T1 0xe1000000 //set S1, T1 for GX_DRAW_IMG
-#define GX_DRAW_IMG      0xe4000000 //followed by GX_DRAW_IMG_S1T1, GX_DRAW_IMG_S2T2
 #define GX_INIT_TEV      0xdeaffade
-#define GX_DRAW_IMG_S2T2 0xf1000000 //set S2, T2 for GX_DRAW_IMG
 #define GX_RESET_TEV     0xfeedface
 #define GX_SET_TEXMTX    0xdeadbeef
 #define G_MtxCmd4        0xbeefdead
@@ -4604,19 +4592,19 @@ typedef union {
 
 //XXX check which of these actually take params
 #define gMtxCmd4(pkt)            gDPNoParam(pkt, G_MtxCmd4)
-#define g2tri(pkt, tris)         _gxWord(pkt, GX_2TRI, tris)
-#define gDrawImg(pkt, img)       _gxWord(pkt, GX_DRAW_IMG, img)
-#define gDrawTri(pkt, tri)       _gxWord(pkt, GX_DRAWTRI, tri)
+#define g2tri(pkt, tris)         _gxWord(pkt, G_TRI2, tris)
+#define gDrawImg(pkt, img)       _gxWord(pkt, G_TEXRECT, img)
+#define gDrawTri(pkt, tri)       _gxWord(pkt, G_TRI1, tri)
 #define gInitTev(pkt, param)     _gxWord(pkt, GX_INIT_TEV, param)
-#define gLoadMtxs(pkt, param)    _gxWord(pkt, GX_LOADMTXS, param)
-#define gLoadVtxs(pkt, param)    _gxWord(pkt, GX_LOADVTXS, param)
-#define gMtxDb(pkt, param)       _gxWord(pkt, GX_MTX_DB, param)
-#define gMwMatrix(pkt, param)    _gxWord(pkt, GX_MW_MATRIX, param)
+#define gLoadMtxs(pkt, param)    _gxWord(pkt, G_MTX, param)
+#define gLoadVtxs(pkt, param)    _gxWord(pkt, G_VTX, param)
+#define gMtxDb(pkt, param)       _gxWord(pkt, G_MOVEMEM, param)
+#define gMwMatrix(pkt, param)    _gxWord(pkt, G_MOVEWORD, param)
 #define gResetTev(pkt, param)    _gxWord(pkt, GX_RESET_TEV, param)
 #define gSetTexMtx(pkt, param)   _gxWord(pkt, GX_SET_TEXMTX, param)
-#define gSetCullMode(pkt, param) _gxWord(pkt, GX_SETCULLMODE, param)
-#define gSync(pkt, param)        _gxWord(pkt, GX_SYNC, param)
-#define gUnkFloat(pkt, param)    _gxWord(pkt, GX_UNKFLOAT, param)
+#define gSetCullMode(pkt, param) _gxWord(pkt, G_GEOMETRYMODE, param)
+#define gSync(pkt, param)        _gxWord(pkt, G_ENDDL, param)
+#define gUnkFloat(pkt, param)    _gxWord(pkt, G_QUAD, param)
 #define gUseTexMtx(pkt, param)   _gxWord(pkt, GX_USE_TEXMTX, param)
 
 #endif /* _LANGUAGE_C */

@@ -236,7 +236,7 @@ int x, int y, u8 r, u8 g, u8 b, u8 a) {
 	RSP_pipeSync(&gfx);
 
 	gDPSetOtherMode(gfx, 0x000c00, 0x00504240);
-	rspPipeSyncFn800a6900(&gfx);
+	rcpApplyOtherMode(&gfx);
 
 	x *= 4; y *= 4;
 	for(; (texture = param_2[iFrame].items); iFrame++) {
@@ -311,10 +311,10 @@ int x, int y, u8 r, u8 g, u8 b, u8 a) {
 			(texFrame->width-1) * 4, //lrs
 			(texFrame->height-1) * 4); //lrt
 
-		RSP_setTevColor2(&gfx, r, g, b, a); //set the color
+		rcpSetPrimColor(&gfx, r, g, b, a); //set the color
 
 		//draw the tile
-		RDP_GX_DRAW_IMAGE(&gfx, x1, y1, x2, y2, s1, t1, 0x400, 0x400);
+		RDP_GX_DRAW_IMAGE(&gfx, x1*4, y1*4, x2, y2, s1, t1, 0x400, 0x400);
 	}
 	RSP_resetDp();
 	*gfxIn = gfx;
@@ -344,129 +344,174 @@ int blkStart, int blkEnd, int alpha, uint flags) { // 8009f16c
 void rcpScreenWrite(Gfx **gfxIn,Texture2 *texture,int x,int y,
 int blkStart,int blkEnd,int frameNo,int alpha,uint flags) {
 	Texture2 *frame;
-	int nFrames;
+	int width;
+	int height;
+	int texWidth;
 	int endFrame;
-	int nBlocks;
-	int texSize;
 	u32 texData;
 	int nLeft;
-	int texelSize;
 	BOOL bWidescreen;
+	int texelSize;
 	BOOL bFlag10000;
-	int size;
+	int iBlock;
 	Gfx *gfx;
 
 	bWidescreen = isWidescreen();
 	bFlag10000 = getRenderFlag10000();
 	gfx = *gfxIn;
-	if(texture->nFrames) endFrame = texture->nFrames >> 8;
-	else endFrame = 0;
-
+	endFrame = texture->nFrames ? texture->nFrames >> 8 : 0;
 	frame = texture;
 	if((endFrame > 1) && (frameNo < endFrame)) {
-		for(nFrames = 0; nFrames < frameNo && frame; nFrames++) {
+		int i;
+		for(i = 0; i < frameNo && frame; i++) {
 			frame = frame->next;
 		}
 	}
-	RDP_SET_CULL_MODE(&gfx, 0);
+	gSPGeometryModeDolphin(gfx, 0xFFFFFF, 0);
+	rcpHandleSetCullMode(&gfx);
 
-	(void)bFlag10000;
-	texSize = texture->width;
+	texWidth = texture->width;
 	if(bWidescreen) {
-		size = texture->width * 1.0f; //@bug presumably wrong constant
+		width = texture->width * 1.0f; //@bug presumably wrong constant
 	}
 	else {
-		size = texSize;
+		width = texWidth;
 	}
 	texelSize = 2;
-	nBlocks = 0x4b000 / texSize;
-	if(!nBlocks) {
+	height = 0x4b000 / texWidth;
+	if(!height) {
 		OSReport("rcpScreenWrite: Texture too big\n");
 		return;
 	}
-	//unused variable that affects codegen
-	texData = ((u32)texture->data);
-	texData += texSize * blkStart * texelSize;
+	texData = ((u32)frame->data);
+	texData += texWidth * blkStart * texelSize;
 	if(flags & 2) {
 		//see gbi.h:3046
-		gDPSetCombine(gfx, 0xffffff, 0xfffcf279);
+		gDPSetCombineMode(gfx, G_CC_DECALRGBA, G_CC_DECALRGBA);
 		RSP_pipeSync(&gfx);
-		gDPSetOtherMode(gfx, 0x200cc0, 0);
-		rspPipeSyncFn800a6900(&gfx);
+		gDPSetOtherMode(gfx,
+            G_AD_PATTERN | G_CD_DISABLE | G_CK_NONE | G_TC_FILT |
+			G_TF_POINT | G_TT_NONE | G_TL_TILE | G_TD_CLAMP |
+			G_TP_NONE | G_CYC_COPY | G_PM_NPRIMITIVE,
+            G_AC_NONE | G_ZS_PIXEL | G_RM_NOOP | G_RM_NOOP2);
+		rcpApplyOtherMode(&gfx);
 	} else if((alpha == 0xff) && (flags & 1)) {
-		gDPSetCombine(gfx, 0xffffff, 0xfffcf279);
+		gDPSetCombineMode(gfx, G_CC_DECALRGBA, G_CC_DECALRGBA);
 		RSP_pipeSync(&gfx);
-		gDPSetOtherMode(gfx, 0x000cc0, 0xf0a4000);
-		rspPipeSyncFn800a6900(&gfx);
+		gDPSetOtherMode(gfx,
+            G_AD_PATTERN | G_CD_DISABLE | G_CK_NONE | G_TC_FILT |
+			G_TF_POINT | G_TT_NONE | G_TL_TILE | G_TD_CLAMP |
+			G_TP_NONE | G_CYC_1CYCLE | G_PM_NPRIMITIVE,
+            G_AC_NONE | G_ZS_PIXEL | G_RM_OPA_SURF | G_RM_OPA_SURF2);
+		rcpApplyOtherMode(&gfx);
 	} else {
-		gDPSetCombine(gfx, 0xff97ff, 0xff2cfe7f);
+		gDPSetCombineLERP(gfx, 0, 0, 0, TEXEL0, TEXEL0, 0, PRIMITIVE,
+			0, 0, 0, 0, TEXEL0, TEXEL0, 0, PRIMITIVE, 0);
 		RSP_pipeSync(&gfx);
-		gDPSetOtherMode(gfx, 0x000cc0, 0x00504240);
-		rspPipeSyncFn800a6900(&gfx);
+		gDPSetOtherMode(gfx,
+            G_AD_PATTERN | G_CD_DISABLE | G_CK_NONE | G_TC_FILT |
+			G_TF_POINT | G_TT_NONE | G_TL_TILE | G_TD_CLAMP |
+			G_TP_NONE | G_CYC_1CYCLE | G_PM_NPRIMITIVE,
+            G_AC_NONE | G_ZS_PIXEL | G_RM_XLU_SURF | G_RM_XLU_SURF2);
+		rcpApplyOtherMode(&gfx);
 	}
-	RSP_setTevColor2(&gfx, 0xff, 0xff, 0xff, alpha);
+	rcpSetPrimColor(&gfx, 0xff, 0xff, 0xff, alpha);
+	iBlock = blkStart;
 	do {
-		nLeft = blkEnd - blkStart;
-		if(nBlocks > nLeft) nBlocks = nLeft;
+		nLeft = blkEnd - iBlock;
+		if(height > nLeft) height = nLeft;
 		//this is very close to gDPLoadTextureBlock but not quite.
 		//it uses width and height differently.
-		gDPSetTextureImage(++gfx, 0, G_IM_SIZ_16b, 1, frame);
-		gDPSetTile(++gfx,
-			0, G_IM_SIZ_16b_LOAD_BLOCK, 0, 0, //fmt, siz, line, tmem
-			G_TX_LOADTILE, 0, 2, 0, //tile, palette, cmt, maskt
-			0, 2, 0, 0); //shiftt, cms, masks, shifts
-		gDPLoadSync(++gfx);
-		gDPLoadBlock(++gfx,
-			7, 0, 0, texSize * nBlocks - 1, 0); //tile, uls, ult, lrs, dxt
-		gDPPipeSync(++gfx);
-		gDPSetTile(++gfx,
-			0, G_IM_SIZ_16b_LOAD_BLOCK, //fmt, siz
-			((size * 2) + 7) >> 3 & 0x1ffu, //line
-			0, G_TX_RENDERTILE, 0, 2, 0, //tmem, tile, palette, cmt, maskt
-			0, 2, 0, 0); //shiftt, cms, masks, shifts
-		gDPSetTileSize(++gfx,
-			G_TX_RENDERTILE, 0, 0, //tile, uls, ult
-			(texSize - 1) << G_TEXTURE_IMAGE_FRAC, //lrs
-			(nBlocks - 1) << G_TEXTURE_IMAGE_FRAC); //lrt
+		gDPSetTextureImage(gfx++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, frame);
+		gDPSetTile(gfx++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 0, 0,
+			G_TX_LOADTILE, 0, G_TX_NOMIRROR | G_TX_CLAMP,
+			G_TX_NOMASK, G_TX_NOLOD, G_TX_NOMIRROR | G_TX_CLAMP,
+			G_TX_NOMASK, G_TX_NOLOD);
+		gDPLoadSync(gfx++);
+		//this can't be right.
+		gDPLoadBlock(++gfx, G_TX_LOADTILE, 0, 0, texWidth * height - 1, 0);
+		gDPPipeSync(gfx++);
+		gDPSetTile(gfx++, G_IM_FMT_RGBA, G_IM_SIZ_16b,
+			//adding this `& 0x3fffffff` fixes the combined shifts
+			//but breaks the weird double-temp after getRenderFlag10000
+			((texWidth * 2 + 7) >> 3) /*& 0x3fffffff*/, G_TX_RENDERTILE, 0, 0,
+			G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOLOD,
+			G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOLOD);
+		gDPSetTileSize(gfx++, 0, 0, 0, (texWidth - 1) << 2, ((height - 1) << 2));
 
 		if(flags & 2) {
-			RDP_GX_DRAW_IMAGE_XY(++gfx, x, (y + blkStart) * 4,
-				x + texSize, (y + blkStart + (nBlocks - 1)) * 4);
-			RDP_GX_DRAW_IMAGE_ST1(++gfx, 0, (blkStart & 0x7FF) << 5);
-			RDP_GX_DRAW_IMAGE_ST2(++gfx, 0x1000, 0x0400);
+			gSPTextureRectangleDolphin(
+            /* pkt */ gfx++,
+            /* xl */ x * 4,
+            /* yl */ (y + iBlock) * 4,
+            /* xh */ (x + texWidth) * 4,
+            /* yh */ (y + iBlock + (height - 1)) * 4,
+            /* tile */ 0,
+            /* s */ 0,
+            /* t */ (iBlock & 0x7FF) << 5,
+            /* dsdx */ 0x1000,
+            /* dsdy */ 0x0400);
 			RSP_pState->bNeedPipeSync = true;
 		}
 		else if(bFlag10000 && bWidescreen) {
-			RDP_GX_DRAW_IMAGE_XY(++gfx, x, (y + blkStart) * 4,
-				x + size, (y + blkStart + nBlocks) * 4);
-			RDP_GX_DRAW_IMAGE_ST1(++gfx, 0, (blkStart & 0x7FF) << 5);
-			RDP_GX_DRAW_IMAGE_ST2(++gfx, 0x04FF, 0x04FF);
+			gSPTextureRectangle(
+				/* pkt */ gfx++,
+				/* xl */ x * 4,
+				/* yl */ (y + iBlock) * 4,
+				/* xh */ (x + width) * 4,
+				/* yh */ (y + iBlock + height) * 4,
+				/* tile */ 0,
+				/* s */ 0,
+				/* t */ (iBlock & 0x7FF) << 5,
+				/* dsdx */ 0x04FF,
+				/* dsdy */ 0x04FF);
 			RSP_pState->bNeedPipeSync = true;
 		}
 		else if(bWidescreen) {
-			RDP_GX_DRAW_IMAGE_XY(++gfx, x, (y + blkStart) * 4,
-				x + size, (y + blkStart + nBlocks) * 4);
-			RDP_GX_DRAW_IMAGE_ST1(++gfx, 0, (blkStart & 0x7FF) << 5);
-			RDP_GX_DRAW_IMAGE_ST2(++gfx, 0x04FF, 0x0400);
+			gSPTextureRectangle(
+				/* pkt */ gfx++,
+				/* xl */ x * 4,
+				/* yl */ (y + iBlock) * 4,
+				/* xh */ (x + width) * 4,
+				/* yh */ (y + iBlock + height) * 4,
+				/* tile */ 0,
+				/* s */ 0,
+				/* t */ (iBlock & 0x7FF) << 5,
+				/* dsdx */ 0x04FF,
+				/* dsdy */ 0x0400);
 			RSP_pState->bNeedPipeSync = true;
 		}
 		else if(bFlag10000) {
-			RDP_GX_DRAW_IMAGE_XY(++gfx, x, (y + blkStart) * 4,
-				x + size, (y + blkStart + nBlocks) * 4);
-			RDP_GX_DRAW_IMAGE_ST1(++gfx, 0, (blkStart & 0x7FF) << 5);
-			RDP_GX_DRAW_IMAGE_ST2(++gfx, 0x0400, 0x0400);
+			gSPTextureRectangle(
+				/* pkt */ gfx++,
+				/* xl */ x * 4,
+				/* yl */ (y + iBlock) * 4,
+				/* xh */ (x + width) * 4,
+				/* yh */ (y + iBlock + height) * 4,
+				/* tile */ 0,
+				/* s */ 0,
+				/* t */ (iBlock & 0x7FF) << 5,
+				/* dsdx */ 0x0400,
+				/* dsdy */ 0x0400);
 			RSP_pState->bNeedPipeSync = true;
 		}
 		else {
-			RDP_GX_DRAW_IMAGE_XY(++gfx, x, (y + blkStart) * 4,
-				x + texSize, (y + blkStart + nBlocks) * 4);
-			RDP_GX_DRAW_IMAGE_ST1(++gfx, 0, (blkStart & 0x7FF) << 5);
-			RDP_GX_DRAW_IMAGE_ST2(++gfx, 0x0400, 0x0400);
+			gSPTextureRectangle(
+				/* pkt */ gfx++,
+				/* xl */ x * 4,
+				/* yl */ (y + iBlock) * 4,
+				/* xh */ (x + texWidth) * 4,
+				/* yh */ (y + iBlock + height) * 4,
+				/* tile */ 0,
+				/* s */ 0,
+				/* t */ (iBlock & 0x7FF) << 5,
+				/* dsdx */ 0x0400,
+				/* dsdy */ 0x0400);
 			RSP_pState->bNeedPipeSync = true;
 		}
-		texData += texelSize * blkStart * texSize;
-		blkStart += nBlocks;
-	} while(blkStart < blkEnd);
+		texData += texWidth * height * texelSize;
+		iBlock += height;
+	} while(iBlock < blkEnd);
 	*gfxIn = gfx;
 }
 
