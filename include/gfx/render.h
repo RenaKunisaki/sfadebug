@@ -200,17 +200,4 @@ void rcpSetPrimColor(Gfx **gfx,u8 r,u8 g,u8 b,u8 a);
 	_g->words.w1 = (u32)(s); \
 } while(0)
 
-
-#define gSPTextureRectangleDolphin(pkt, xl, yl, xh, yh, tile, s, t, dsdx, dtdy) { \
-    Gfx *_g = (Gfx *)(pkt); \
-    _g->words.w0 = (_SHIFTL(G_TEXRECT, 24, 8) | \
-        _SHIFTL(xh, 12, 12) | \
-		_SHIFTL(yh, 0, 12)); \
-    _g->words.w1 = (_SHIFTL(tile, 24, 3) | \
-        _SHIFTL(xl, 12, 12) | \
-        _SHIFTL(yl, 0, 12)); \
-    gImmp1(pkt, G_RDPHALF_1, (_SHIFTL(s, 16, 16) | _SHIFTL(t, 0, 16)));	\
-    gImmp1(pkt, G_RDPHALF_2, (_SHIFTL(dsdx, 16, 16) | _SHIFTL(dtdy, 0, 16)));\
-}
-
 #endif //_GFX_RENDER_H_
