@@ -4,24 +4,13 @@
 #include "dolphin/os/OSCache.h"
 #include "dolphin/os/OSStopwatch.h"
 #include "dolphin/os/OSThread.h"
-#include "gfx/models/animation.h"
-#include "gfx/models/shaders.h"
 #include "gfx/textures.h"
 #include "macros.h"
 #include "types.h"
-#include "debug/debug.h"
 #include "sys/alloc.h"
 #include "sys/n64.h"
 #include "gfx/gbi.h"
 #include "gfx/render.h"
-#include "gfx/models/models.h"
-#include "sys/dll.h"
-#include "obj/Objects.h"
-#include "obj/ObjDef.h"
-#include "obj/ObjInstance.h"
-#include "sys/files.h"
-#include <stddef.h>
-#include "placeholder.h"
 
 extern Mtx44 projMtx_80382d00;
 
