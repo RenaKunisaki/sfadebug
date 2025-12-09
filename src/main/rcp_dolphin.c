@@ -229,7 +229,7 @@ int x, int y, u8 r, u8 g, u8 b, u8 a) {
 
 	iFrame = 0;
 	gfx = *gfxIn;
-	gSetCullMode(gfx, 0x00200404); //TODO: un-magic numbers
+	gSPGeometryMode(gfx, 0xffffff, 0x00200404); //TODO: un-magic numbers
 	rcpHandleSetCullMode(&gfx);
 
 	gDPSetCombine(gfx, 0x119623, 0xff2fffff);
@@ -287,12 +287,12 @@ int x, int y, u8 r, u8 g, u8 b, u8 a) {
 		RSP_CMD(&gfx, (((texFrame->width * 2 + 7) >> 3 & 0x1ffU) << 9) |
 			((G_SETTILE << 24) | 0x100000), 0);
 		//matches except one temp
-		/*gDPSetTile(gfx++,
+		/* gDPSetTile(gfx++,
 			0, //fmt
 			G_IM_SIZ_16b, //siz
 			((texFrame->width * 2) + 7) >> 3 & 0x1ffu, //line
 			0, //tmem
-			0, //tile
+			G_TX_RENDERTILE, //tile
 			0, //palette
 			0, //cmt
 			0, //maskt
@@ -301,20 +301,26 @@ int x, int y, u8 r, u8 g, u8 b, u8 a) {
 			0, //masks
 			0); //shifts */
 
-		//RSP_CMD(&gfx, (G_SETTILESIZE << 24),
-		//	(((texFrame->width-1) * 0x4000) & 0xffc000) |
-		//	((texFrame->height-1) * 4 & 0xffc));
 		gDPSetTileSize(gfx++,
-			0, //t
-			0, //uls
-			0, //ult
+			G_TX_RENDERTILE, 0, 0, //t, uls, ult
 			(texFrame->width-1) * 4, //lrs
 			(texFrame->height-1) * 4); //lrt
 
 		rcpSetPrimColor(&gfx, r, g, b, a); //set the color
 
 		//draw the tile
-		RDP_GX_DRAW_IMAGE(&gfx, x1*4, y1*4, x2, y2, s1, t1, 0x400, 0x400);
+		gSPTextureRectangle(
+            /* pkt */ gfx++,
+            /* xl */ x1,
+            /* yl */ y1,
+            /* xh */ x2,
+            /* yh */ y2,
+            /* tile */ G_TX_RENDERTILE,
+            /* s */ s1,
+            /* t */ t1,
+            /* dsdx */ (0x0000 << 16) | 0x0400,
+            /* dsdy */ (0x0000 << 16) | 0x0400);
+		RSP_pState->bNeedPipeSync = true;
 	}
 	RSP_resetDp();
 	*gfxIn = gfx;
