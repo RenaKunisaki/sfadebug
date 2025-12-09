@@ -507,6 +507,7 @@ config.libs = [
             Object(NonMatching, "main/objects.c"),
             Object(NonMatching, "main/objprint.c"),
             Object(Matching, "main/pi.c"),
+            Object(NonMatching, "main/pi_dolphin.c"),
             Object(NonMatching, "main/rcp_dolphin.c"),
         ],
     },

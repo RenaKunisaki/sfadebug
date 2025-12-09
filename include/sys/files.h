@@ -95,6 +95,7 @@ typedef enum {
     FILE_ENVFXACT_bin = 87,
     FILE_NULL = 88,
     FILE_NULL_59 = 89,
+    NUM_FILES = 100, //should be 90? but dataFilePtrs array has 100 entries
     FILE_NONE = 4294967295,
 } DataFileId32;
 
