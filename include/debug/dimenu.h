@@ -79,7 +79,7 @@ typedef struct {
     /* 0x02 */ u8 unk02;
     /* 0x03 */ u8 unk03;
     /* 0x04 */ char *str;
-    /* 0x08 */ Gfx_ **gfx;
+    /* 0x08 */ Gfx **gfx;
     /* 0x0c */ Mtx *mtx;
     /* 0x10 */ N64Vertex *vtx;
     /* 0x14 */ Pol *pol;
@@ -110,7 +110,7 @@ void dprintSetColor(u8 r,u8 g,u8 b,u8 a);
 /* 8017ad58 */ void diMenuPop(void);
 /* 8017ae58 */ void diMenuPopAll(void);
 /* 8017ae88 */ void diMenuUpdate(
-    Gfx_ **gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol, int framesTimes65536);
+    Gfx **gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol, int framesTimes65536);
 /* 8017afc4 */ BOOL diMenuIsVisible(void);
 /* 8017afcc */ void diMenuShow(void);
 /* 8017afd8 */ void diMenuHide(void);

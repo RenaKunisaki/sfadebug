@@ -11,8 +11,6 @@
 #define MAX_MENU_STRINGS     50
 #define MENU_ANALOG_DEADZONE 50
 
-Gfx_ **RSP_pipeSync(Gfx_ **cmd);
-
 /* 80396e28 */ extern RSPState *RSP_pState;
 
 /* 80306F20 */ extern DiMenuButtonCmds DiMenuButtonCmds_ARRAY_80306f20[4];
@@ -24,7 +22,7 @@ Gfx_ **RSP_pipeSync(Gfx_ **cmd);
 
 // 80398240: .sbss
 /* 80399860 */ extern s8 diMenuItemFlag_80399860;
-/* 80399864 */ extern Gfx_ **diMenuGfx;
+/* 80399864 */ extern Gfx **diMenuGfx;
 /* 80399868 */ extern Mtx *diMenuMtx;
 /* 8039986C */ extern N64Vertex *diMenuVtx;
 /* 80399870 */ extern Pol *diMenuPol;
@@ -214,7 +212,7 @@ void diMenuPopAll(void) { // 8017AE58
 	while(diMenuStackDepth != 0) { diMenuPop(); }
 }
 
-void diMenuUpdate(Gfx_ **gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol,
+void diMenuUpdate(Gfx **gfx, Mtx *mtx, N64Vertex *vtx, Pol *pol,
     int framesTimes65536) { // 8017AE88
 	N64Button bHeld;
 	uint ii;

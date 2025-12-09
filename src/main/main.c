@@ -118,9 +118,9 @@ extern char _defaultBits[];
 /* 803989E4 */ extern int frameCount_playerPosLog;
 /* 803989e8 */ extern Mtx44 *mtx;
 /* 803989ec */ extern Mtx44 *main_mtx[2];
-/* 803989f4 */ extern Gfx_ *cur_gfx;
-/* 803989f8 */ extern Gfx_ *gfx;
-/* 803989fc */ extern Gfx_ *main_gfx[2];
+/* 803989f4 */ extern Gfx *cur_gfx;
+/* 803989f8 */ extern Gfx *gfx;
+/* 803989fc */ extern Gfx *main_gfx[2];
 /* 80398e44 */ extern UNKTYPE *currentScreen;
 /* 80398e48 */ extern UNKTYPE *otherZbuf;
 /* 803997d0 */ extern int diFlag_803997d0;
@@ -131,7 +131,7 @@ ObjInstance* Object_objGetMain(void);
 BOOL videoBackendRun(void);
 bool checkSomeDebugFlags_8017c4f8(); //8017c4f8
 u16 getEnabledButtonsHeld(int pad);
-void nop_8009FA00(Gfx_ **buf);
+void nop_8009FA00(Gfx **buf);
 int getDebugMenuState(void);
 void objUpdateFn_80081f94(void);
 void objUpdateFn_80082238(void);
@@ -147,13 +147,13 @@ void trackIntersect(void);
 void playerUpdateFn_800ae404(void);
 void doPendingMapLoads(void);
 void updateObjMtxs(void);
-void Trackdraw(Gfx_ **rspCmdBuf,Mtx44 **mtxBuf,N64Vertex **vtxBuf,
+void Trackdraw(Gfx **rspCmdBuf,Mtx44 **mtxBuf,N64Vertex **vtxBuf,
     Pol **polBuf, N64Vertex **diVtx, Pol **diPol);
-void cameraFn_800698b4(Gfx_ **cmdBuf,Mtx44 **mtxBuf);
+void cameraFn_800698b4(Gfx **cmdBuf,Mtx44 **mtxBuf);
 void updateViewMatrix(void);
-void callGfxFuncPtr3(Gfx_ **cmdBuf,Mtx44 **mtxBuf,
+void callGfxFuncPtr3(Gfx **cmdBuf,Mtx44 **mtxBuf,
     N64Vertex **vtxBuf,Pol **param_4);
-void gxResetScissor(Gfx_ **cmdBuf);
+void gxResetScissor(Gfx **cmdBuf);
 void disableDebugObjSequencer(void);
 void cutsceneExit(void);
 undefined4 piRomFreeLevel(int map,uint flags);
@@ -170,20 +170,20 @@ void setFrameTime(OSTime);
 void diProfReset(void);
 void nop_8017a328(void);
 void beginFrame(void);
-void RSP_segSetBase(Gfx_**, int, void*);
-void freakFn_800a58d0(Gfx_**, int);
+void RSP_segSetBase(Gfx**, int, void*);
+void freakFn_800a58d0(Gfx**, int);
 void fn_8018F55C(void);
 void RSP_initSp(void);
 void RSP_initDp(void);
 int getRenderFlags(void);
 BOOL isCloudy(void);
-void nop_8009E5EC(Gfx_**, Mtx44**, u8);
+void nop_8009E5EC(Gfx**, Mtx44**, u8);
 BOOL isHeapDebugDisplayEnabled();
-void drawHeapInfo(Gfx_**, Mtx44**, N64Vertex**);
+void drawHeapInfo(Gfx**, Mtx44**, N64Vertex**);
 void perfFn_8018f5cc(void);
-int mainRender(Gfx_*, Mtx44*, int);
-Gfx_* rspFn_8017c278(void);
-void listCodeRender(Gfx_*);
+int mainRender(Gfx*, Mtx44*, int);
+Gfx* rspFn_8017c278(void);
+void listCodeRender(Gfx*);
 int finishFrame(void);
 void joyRead(void);
 void amAudioTick(void);
@@ -901,7 +901,7 @@ void cutsceneExit(void) { //800793A8
 }
 
 void allocFrameBuffers(void) { //800793B4
-    main_gfx[0] = (Gfx_ *)mmAlloc(160000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:gfx");
+    main_gfx[0] = (Gfx *)mmAlloc(160000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:gfx");
     main_gfx[1] = main_gfx[0] + 10000;
     main_mtx[0] = (Mtx44 *)mmAlloc(0x19000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:mtx");
     main_mtx[1] = main_mtx[0] + 800;

@@ -20,16 +20,16 @@ u8 Color_ARRAY_802ee504[8][3];
 u8 BYTE_802ee2b8[];
 u8 BYTE_802ee158;
 
-void playerRender(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, bool shouldRender);
+void playerRender(ObjInstance *object, Gfx **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, bool shouldRender);
 void objRenderCurrentModel(ObjInstance *obj);
-void objRenderCurrentModel2(ObjInstance *object, Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, float);
-void drawCircle(Gfx_ **gfx,Mtx44 **mtx,float x,float y,float z,float radius,float param_7,u8 r,u8 g, u8 b);
-void LAB_8006a790(Gfx_ **gfx,Mtx44 **mtx,ObjPos *pos,float x,float y,Mtx44 *mtx2);
-void objPrintFn_80095cd4(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, Model *mod, ModelInstance *mInst);
-void playerBoneFn_80095044(ObjInstance *player, ObjInstance *obj2, ModelInstance *mInst, Gfx_ **gfx, Mtx44 **mtx, Pol **pol);
+void objRenderCurrentModel2(ObjInstance *object, Gfx **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, float);
+void drawCircle(Gfx **gfx,Mtx44 **mtx,float x,float y,float z,float radius,float param_7,u8 r,u8 g, u8 b);
+void LAB_8006a790(Gfx **gfx,Mtx44 **mtx,ObjPos *pos,float x,float y,Mtx44 *mtx2);
+void objPrintFn_80095cd4(Gfx **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, Model *mod, ModelInstance *mInst);
+void playerBoneFn_80095044(ObjInstance *player, ObjInstance *obj2, ModelInstance *mInst, Gfx **gfx, Mtx44 **mtx, Pol **pol);
 Mtx44Ptr modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
-void debugRenderFn80095844(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, ObjInstance *obj);
-void mtxLoadFn8006a754(Gfx_ **gfx,Mtx44 **mtx,ObjPos *pos,float param_4,float param_5,Mtx44 *mtx2);
+void debugRenderFn80095844(Gfx **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, ObjInstance *obj);
+void mtxLoadFn8006a754(Gfx **gfx,Mtx44 **mtx,ObjPos *pos,float param_4,float param_5,Mtx44 *mtx2);
 u16 getAngle(float x,float y);
 void mtxSetFromObjPos(Mtx44Ptr mtx,ObjPos *pos);
 void Mtx44Mult(Mtx44Ptr ma,Mtx44Ptr mb,Mtx44Ptr out);
@@ -37,7 +37,7 @@ void Mtx44Mult(Mtx44Ptr ma,Mtx44Ptr mb,Mtx44Ptr out);
 s8 areModelsEnabled(); //maybe areModelsDisabled - not bool
 s8 isMainCharacterEnabled(); //maybe isMainCharacterDisabled
 
-void objRender(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx,
+void objRender(Gfx **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx,
 ObjInstance *obj, s8 shouldRender) {
 	ObjInstance *child;
 	ObjDef *odef;
@@ -120,11 +120,11 @@ void fn_80094B08(undefined4 param_1) {
     DAT_80398aec = param_1;
 }
 
-void objRenderCurrentModel2(ObjInstance *obj, Gfx_ **gfx, Mtx44 **mtx,
+void objRenderCurrentModel2(ObjInstance *obj, Gfx **gfx, Mtx44 **mtx,
 Pol **pol, N64Vertex **vtx, float param_6) {
 	ModelInstance *frame;
     Model *mod;
-	Gfx_ *gfx2;
+	Gfx *gfx2;
 	Mtx44 *mtx2;
 	Pol *pol2;
     N64Vertex *vtx2;
@@ -174,7 +174,7 @@ void objRenderCurrentModel(ObjInstance *obj) {
 
 Mtx44Ptr pMtx_80398ad8;
 
-ModelInstance* playerBoneFn_80094cbc(Gfx_ **gfx, Mtx44 **mtx, Pol **pol,
+ModelInstance* playerBoneFn_80094cbc(Gfx **gfx, Mtx44 **mtx, Pol **pol,
 N64Vertex **vtx, ObjInstance *obj, ModelInstance *mInst, Mtx44Ptr mtx2,
 undefined4 alwaysZero, ObjInstance *player, int iAttachPoint) {
     int dummy;
@@ -251,7 +251,7 @@ undefined4 alwaysZero, ObjInstance *player, int iAttachPoint) {
 }
 
 void playerBoneFn_80095044(ObjInstance *player, ObjInstance *obj2,
-ModelInstance *mInst, Gfx_ **gfx, Mtx44 **mtx, Pol **pol) {
+ModelInstance *mInst, Gfx **gfx, Mtx44 **mtx, Pol **pol) {
 	Vec v2c;
 	Vec v38;
     int dummy3;
@@ -344,7 +344,7 @@ u32 flags_80398af8; //always 0
 s8 BYTE_8039993c; //always 0
 
 //draws a sphere or something around an object if its ID is 9
-void fn_800953E8(Gfx_ **gfx, N64Vertex **diVtx, Pol **diPol) {
+void fn_800953E8(Gfx **gfx, N64Vertex **diVtx, Pol **diPol) {
 	float posX;
 	float posY;
 	float posZ;
@@ -354,7 +354,7 @@ void fn_800953E8(Gfx_ **gfx, N64Vertex **diVtx, Pol **diPol) {
 	int jj;
 	int iObj;
 	ObjDef_Id9 *odef;
-    Gfx_ *pGfx;
+    Gfx *pGfx;
 	N64Vertex *pVtx;
 	Pol *pPol;
 	float cosX;
@@ -437,7 +437,7 @@ void fn_800953E8(Gfx_ **gfx, N64Vertex **diVtx, Pol **diPol) {
 
 N64VertexIdxs N64VertexIdxs_ARRAY_802ee158[];
 
-void debugRenderFn80095844(Gfx_ **gfx, Mtx44 **mtx, Pol **pol,
+void debugRenderFn80095844(Gfx **gfx, Mtx44 **mtx, Pol **pol,
 N64Vertex **vtx, ObjInstance *obj) {
 	float fVar4, y, fVar2, fVar1;
 	int r, g, b;
@@ -484,7 +484,7 @@ N64Vertex **vtx, ObjInstance *obj) {
     }
 }
 
-void fn_80095AEC(Gfx_ **gfx, Mtx44 **mtx,
+void fn_80095AEC(Gfx **gfx, Mtx44 **mtx,
 float x, float y, float z, float scale, u8 iColor) {
 	ObjPos pos;
     u8 *color;
@@ -510,7 +510,7 @@ float x, float y, float z, float scale, u8 iColor) {
 	n64DrawTriangles(gfx, &BYTE_802ee158, 0x14);
 }
 
-void fn_80095cc0(Gfx_ **gfx,Mtx44 **mtx,Pol **pol,N64Vertex **vtx,
+void fn_80095cc0(Gfx **gfx,Mtx44 **mtx,Pol **pol,N64Vertex **vtx,
 ModelInstance *mInst, UNKTYPE *param_6) {
     int unk[0x9c]; //0x270 bytes
 
@@ -540,7 +540,7 @@ JointStruct2 DWORD_802edf10;
 N64VertexIdxs N64VertexIdxs_ARRAY_802edf50[10];
 N64VertexIdxs N64VertexIdxs_ARRAY_802edff0[8];
 
-void objPrintFn_80095cd4(Gfx_ **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx,
+void objPrintFn_80095cd4(Gfx **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx,
 Model *mod, ModelInstance *mInst) {
     Mtx44 mtxTmp; //470
     Vec pos; //464..470
