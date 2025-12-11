@@ -23,17 +23,19 @@
 #include <stddef.h>
 #include "placeholder.h"
 
-extern int lzoDecompress(void *src,int compLen,void *dest,int *outLen);
+int lzoDecompress(void *src,int compLen,void *dest,int *outLen);
 
 void *dataFilePtrs[NUM_FILES];
 
 #define SIG_UNCOMPRESSED_FILE 0xe0e0e0e0
 #define SIG_LZO_COMPRESSED_FILE 0xf0f0f0f0
 typedef struct {
-    int sig; //signature
-    int len;
-    int offset;
-    int compLen;
+    /* 0x00 */ int sig; //signature
+    /* 0x04 */ int len;
+    /* 0x08 */ int offset;
+    /* 0x0C */ int compLen;
+    /* 0x10 */ int unk10;
+    /* 0x14 */ int unk14;
 } DbMapsBinEntry;
 
 void piRomLoadSection(int id, void *dest) {
@@ -52,16 +54,30 @@ void piRomLoadSection(int id, void *dest) {
 	}
 	entry = (DbMapsBinEntry *)((int)dataFilePtrs[FILE_MAPS_bin] + id);
 	if(entry->sig == SIG_UNCOMPRESSED_FILE) {
+        /*
+        r31 = entry; //dataFilePtrs[FILE_MAPS_bin] + id;
+        r4  = mapsBin; //dataFilePtrs[FILE_MAPS_bin];
+        r0  = offset; //r31[8];
+        r29 = mapsBin - (offset + entry + 0x18);
+        r3  = mapsBin + r29;
+        r4  = dest;
+        r5  = entry->len;
+        */
 		memcpy_src_dst_len(
-		    (undefined *)((int)entry + entry->offset + 0x18),
-            dest, entry->len);
+            (void *)(
+                (int)dataFilePtrs[FILE_MAPS_bin] +
+                entry->offset +
+                (int)entry +
+                sizeof(DbMapsBinEntry)
+            ),
+            dest,entry->len);
 	} else if(entry->sig == SIG_LZO_COMPRESSED_FILE) { //LZO compressed file.
-		offset = (entry->offset + 0x28) - (int)dataFilePtrs[FILE_MAPS_bin];
+		offset = (entry->offset + 0x28) + (int)entry - (int)dataFilePtrs[FILE_MAPS_bin];
 		PPCMtmmcr1(0x7fc00000);
 		PPCMtmmcr0(0x42);
 
-        outLen = lzoDecompress((void *)((int)dataFilePtrs[FILE_MAPS_bin] +
-            (int)entry + offset),
+        outLen = lzoDecompress(
+            (void *)((int)dataFilePtrs[FILE_MAPS_bin] + offset),
             entry->compLen, dest, &len);
 
         PPCMtmmcr0(0);
