@@ -40,35 +40,25 @@ typedef struct {
 
 void piRomLoadSection(int id, void *dest) {
 	int offset;
+	DbMapsBinEntry *mapsBin;
 	DbMapsBinEntry *entry;
 	int len;
     int outLen;
-    int fmpc1;
-    int fmpc2;
-    int fmpc3;
-    int fmpc4;
 
 	if(!dataFilePtrs[FILE_MAPS_bin]) {
 		OSPanic("pi_dolphin.c", 1084,
             "piRomLoadSection(): DB_MAPS Bin Not Loaded");
 	}
-	entry = (DbMapsBinEntry *)((int)dataFilePtrs[FILE_MAPS_bin] + id);
+    mapsBin = dataFilePtrs[FILE_MAPS_bin];
+	entry = (DbMapsBinEntry *)((int)mapsBin + id);
 	if(entry->sig == SIG_UNCOMPRESSED_FILE) {
-        /*
-        r31 = entry; //dataFilePtrs[FILE_MAPS_bin] + id;
-        r4  = mapsBin; //dataFilePtrs[FILE_MAPS_bin];
-        r0  = offset; //r31[8];
-        r29 = mapsBin - (offset + entry + 0x18);
-        r3  = mapsBin + r29;
-        r4  = dest;
-        r5  = entry->len;
-        */
-		memcpy_src_dst_len(
+        memcpy_src_dst_len(
+            //what the hell is going on here
             (void *)(
-                (int)dataFilePtrs[FILE_MAPS_bin] +
-                entry->offset +
-                (int)entry +
-                sizeof(DbMapsBinEntry)
+                (uint)mapsBin + (
+                    (entry->offset + sizeof(DbMapsBinEntry) + (uint)entry) -
+                    (uint)dataFilePtrs[FILE_MAPS_bin]
+                ) + id
             ),
             dest,entry->len);
 	} else if(entry->sig == SIG_LZO_COMPRESSED_FILE) { //LZO compressed file.
@@ -82,11 +72,11 @@ void piRomLoadSection(int id, void *dest) {
 
         PPCMtmmcr0(0);
 		PPCMtmmcr1(0);
-        fmpc1 = PPCMfpmc1() * 0.001f;
-        fmpc2 = PPCMfpmc2() * 0.001f;
-        fmpc3 = PPCMfpmc3() * 0.001f;
-        fmpc4 = PPCMfpmc4() * 0.001f;
-        //probably some stubbed prints here
+        STUBBED_PRINTF("", //TODO: check for matching format strings
+            (int)(PPCMfpmc1() * 0.001f),
+            (int)(PPCMfpmc2() * 0.001f),
+            (int)(PPCMfpmc3() * 0.001f),
+            (int)(PPCMfpmc4() * 0.001f));
 		PPCMtpmc1(0);
 		PPCMtpmc2(0);
 		PPCMtpmc3(0);
