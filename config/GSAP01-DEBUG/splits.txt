@@ -167,7 +167,7 @@ main/objprint_dolphin.c:
 main/pi_dolphin.c:
 	.text       start:0x80099CEC end:0x8009D36C
 	.rodata     start:0x802CF460 end:0x802CF500
-	.data       start:0x802EF5C4 end:0x802F07C0
+	.data       start:0x802EECB0 end:0x802F07C0
 	.bss        start:0x8035C9A8 end:0x8035CC60
 
 main/rcp_dolphin.c:
