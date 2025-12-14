@@ -118,33 +118,34 @@ const char *mapDirNames[] = {
 void *dataFilePtrs[NUM_FILES];
 
 void piRomLoadSection(int id, void *dest) {
-	int offset;
 	DbMapsBinEntry *entry;
-    uint src;
-	int len;
+    int len;
+    int dummy;
+    int dummy2;
     int outLen;
-    u8 _pad[8];
 
 	if(!dataFilePtrs[FILE_MAPS_bin]) {
-		OSPanic("pi_dolphin.c", 1084,
+		OSPanic(__FILE__, 1084,
             "piRomLoadSection(): DB_MAPS Bin Not Loaded");
+        STUBBED_OP(id);
 	}
     entry = (DbMapsBinEntry *)((int)dataFilePtrs[FILE_MAPS_bin] + id);
 	if(entry->sig == SIG_UNCOMPRESSED_FILE) {
         //what the hell is going on here
-        src = (
-            (entry->offset + sizeof(DbMapsBinEntry) + (uint)id) -
+        id = (
+            (entry->offset + sizeof(DbMapsBinEntry) + (uint)entry) -
             (uint)dataFilePtrs[FILE_MAPS_bin]
         );
-        memcpy_src_dst_len((void*)((uint)src + (uint)dataFilePtrs[FILE_MAPS_bin]),
+        memcpy_src_dst_len((void*)(
+            (uint)dataFilePtrs[FILE_MAPS_bin] + (uint)id),
             dest,entry->len);
 	} else if(entry->sig == SIG_LZO_COMPRESSED_FILE) { //LZO compressed file.
-		offset = (entry->offset + 0x28) + (int)entry - (int)dataFilePtrs[FILE_MAPS_bin];
+		id = (entry->offset + 0x28) + (int)entry - (int)dataFilePtrs[FILE_MAPS_bin];
 		PPCMtmmcr1(0x7fc00000);
 		PPCMtmmcr0(0x42);
 
         outLen = lzoDecompress(
-            (void *)((int)dataFilePtrs[FILE_MAPS_bin] + offset),
+            (void *)((int)dataFilePtrs[FILE_MAPS_bin] + id),
             entry->compLen, dest, &len);
 
         PPCMtmmcr0(0);
