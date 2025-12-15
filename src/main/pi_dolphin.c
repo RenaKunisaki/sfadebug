@@ -20,6 +20,7 @@
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"
 #include "sys/files.h"
+#include "sys/compress.h"
 #include <stddef.h>
 #include "placeholder.h"
 
@@ -116,6 +117,52 @@ const char *mapDirNames[] = {
     "bosstrex"};
 
 void *dataFilePtrs[NUM_FILES];
+
+
+void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
+undefined4 *outCompSize, int size, void *dest, int doWhat) {
+	int iVar1;
+	u32 compLen;
+	ZlbHeader *buf2;
+	ZlbHeader *buf;
+	DataFileId32 fileIdx;
+	uint offs;
+    void *tex1tabA;
+    void *tex1tabB;
+
+	if(!(dataFilePtrs[FILE_TEX1_bin] || dataFilePtrs[FILE_TEX1_bin_4B])) return;
+    tex1tabA = dataFilePtrs[FILE_TEX1_tab];
+    tex1tabB = dataFilePtrs[FILE_TEX1_tab_4C];
+
+    if(offset & 0x80000000) fileIdx = FILE_TEX1_bin_4B;
+    else if(offset & 0x40000000) fileIdx = FILE_TEX1_bin;
+    else if(tex1tabA) fileIdx = FILE_TEX1_bin;
+    else if(tex1tabB) fileIdx = FILE_TEX1_bin_4B;
+
+    offs = offset & 0xffffff;
+    if((doWhat == 1) && dest) {
+        buf2 = (ZlbHeader *)((int)dataFilePtrs[fileIdx] + offs * 2
+            + *(int *)((int)dest + size * 4));
+        offs = buf2->decLen;
+        *outCompSize = buf2->compLen;
+        *outSize = offs;
+
+    } else if((doWhat == 2) && dest) {
+        memcpy_src_dst_len(
+            (void *)((int)dataFilePtrs[fileIdx] + offs * 2),
+            dest, (size + 1) * 4);
+
+    } else {
+        buf = (ZlbHeader *)((int)dataFilePtrs[fileIdx] + offs * 2);
+        compLen = buf->compLen;
+        *outSize = buf->decLen;
+        if(!strncmp("DIR", (char *)buf, 3)) {
+            *outCompSize = 0xffffffff;
+        } else {
+            *outCompSize = compLen;
+        }
+    }
+}
 
 void piRomLoadSection(int id, void *dest) {
 	DbMapsBinEntry *entry;
