@@ -35,6 +35,12 @@ typedef struct {
     /* 0x14 */ int unk14;
 } DbMapsBinEntry;
 
+enum {
+    TexGetMipmapOp_getSize = 0,
+    TexGetMipmapOp_getNext = 1, //unsure
+    TexGetMipmapOp_copy = 2,
+} TexGetMipmapOp;
+
 int lzoDecompress(void *src,int compLen,void *dest,int *outLen);
 
 const char *dataFileNames[] = { //802ef02c
@@ -121,9 +127,10 @@ void *dataFilePtrs[NUM_FILES];
 
 void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
 undefined4 *outCompSize, int size, void *dest, int doWhat) {
+    //doWhat: TexGetMipmapOp
 	int iVar1;
 	u32 compLen;
-	ZlbHeader *buf2;
+	int *buf2;
 	ZlbHeader *buf;
 	DataFileId32 fileIdx;
 	uint offs;
@@ -138,21 +145,26 @@ undefined4 *outCompSize, int size, void *dest, int doWhat) {
     else if(offset & 0x40000000) fileIdx = FILE_TEX1_bin;
     else if(tex1tabA) fileIdx = FILE_TEX1_bin;
     else if(tex1tabB) fileIdx = FILE_TEX1_bin_4B;
+    //else fileIdx is undefined. not sure if this is a bug,
+    //or something that should never be able to happen.
 
     offs = offset & 0xffffff;
-    if((doWhat == 1) && dest) {
-        buf2 = (ZlbHeader *)((int)dataFilePtrs[fileIdx] + offs * 2
-            + *(int *)((int)dest + size * 4));
-        offs = buf2->decLen;
-        *outCompSize = buf2->compLen;
+    if((doWhat == TexGetMipmapOp_getNext) && dest) {
+        //unsure what this is actually doing
+        iVar1 = (int)(*(int*)dataFilePtrs[fileIdx] + offs * 2 +
+            *(int *)((int)dest + size * 4));
+        buf2 = (int*)(iVar1)+1;
+        offs = buf2[1];
+        iVar1 = buf2[2];
+        *outCompSize = iVar1;
         *outSize = offs;
 
-    } else if((doWhat == 2) && dest) {
+    } else if((doWhat == TexGetMipmapOp_copy) && dest) {
         memcpy_src_dst_len(
             (void *)((int)dataFilePtrs[fileIdx] + offs * 2),
             dest, (size + 1) * 4);
 
-    } else {
+    } else { //TexGetMipmapOp_getSize
         buf = (ZlbHeader *)((int)dataFilePtrs[fileIdx] + offs * 2);
         compLen = buf->compLen;
         *outSize = buf->decLen;
