@@ -48,7 +48,7 @@ int lzoDecompress(void *src,int compLen,void *dest,int *outLen);
 //this file
 void initDataFiles(void);
 void *loadDataFile(DataFileId32 file, char *memName);
-void *loadDataFileToBuf(DataFileId32 fileNo, void *buf);
+int loadDataFileToBuf(DataFileId32 fileNo, void *buf);
 void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
     undefined4 *outCompSize, int size, void *dest, int doWhat);
 
@@ -207,7 +207,7 @@ void initDataFiles(void) {
 }
 
 /**
- * @brief Load file from disc.
+ * @brief Load file from disc and store it in newly allocated buffer.
  *
  *  @param fileNo Which file to load.
  *  @param memName (Unused) name of the memory block.
@@ -230,6 +230,33 @@ void *loadDataFile(DataFileId32 fileNo, char *memName) {
         dataFileSizes[fileNo], 0, 2);
     DVDClose(&file);
     return dataFilePtrs[fileNo];
+}
+
+/**
+ * @brief Load file from disc and store it to specified buffer.
+ *
+ *  @param fileNo Which file to load.
+ *  @param buf Buffer to store to.
+ *  @return int The file size.
+ *  @note If already loaded, copies existing instance.
+ *  @note Buffer must be large enough for the file!
+ */
+int loadDataFileToBuf(DataFileId32 fileNo, void *buf) {
+	DVDFileInfo file;
+
+	if(dataFilePtrs[fileNo]) {
+        memcpy_src_dst_len(dataFilePtrs[fileNo],
+            buf, dataFileSizes[fileNo]);
+		DCStoreRange(buf, dataFileSizes[fileNo]);
+		return dataFileSizes[fileNo];
+	} else {
+		DVDOpen(dataFileNames[fileNo], &file);
+		DCInvalidateRange(buf, (int)file.cb.callback);
+		DVDReadPrio(&file, buf,
+            (uint)file.cb.callback, 0, 2);
+		DVDClose(&file);
+        return (int)file.cb.callback;
+	}
 }
 
 void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
