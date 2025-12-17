@@ -41,8 +41,16 @@ enum {
     TexGetMipmapOp_copy = 2,
 } TexGetMipmapOp;
 
+//other files
 int mergeTableFiles(uint *table,DataFileId32 file1,DataFileId32 file2,int count);
 int lzoDecompress(void *src,int compLen,void *dest,int *outLen);
+
+//this file
+void initDataFiles(void);
+void *loadDataFile(DataFileId32 file, char *memName);
+void *loadDataFileToBuf(DataFileId32 fileNo, void *buf);
+void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
+    undefined4 *outCompSize, int size, void *dest, int doWhat);
 
 const char *dataFileNames[] = { //802ef02c
     "AUDIO.tab", "AUDIO.bin",
@@ -124,6 +132,7 @@ const char *mapDirNames[] = {
     "bosstrex"};
 
 //.bss
+int dataFileSizes[NUM_FILES]; //0x8036bb40
 s16 loadedFileMapIds[NUM_FILES];
 void *dataFilePtrs[NUM_FILES]; //0x8035CAD0
 u8 dataFileArray_8035cc10[NUM_FILES]; //8035cc10 - initDataFiles stores 0 here for each file
@@ -195,6 +204,32 @@ void initDataFiles(void) {
         FILE_TEX1_tab2, TEX1_TAB_SIZE);
     mergeTableFiles(BLOCKS_TAB, FILE_BLOCKS_tab,
         FILE_BLOCKS_tab2, BLOCKS_TAB_SIZE);
+}
+
+/**
+ * @brief Load file from disc.
+ *
+ *  @param fileNo Which file to load.
+ *  @param memName (Unused) name of the memory block.
+ *  @return void* The file content.
+ *  @note If already loaded, returns the existing instance.
+ */
+void *loadDataFile(DataFileId32 fileNo, char *memName) {
+	void *pvVar1;
+	DVDFileInfo file;
+
+	if(dataFilePtrs[fileNo]) return dataFilePtrs[fileNo];
+
+    DVDOpen(dataFileNames[fileNo], &file);
+    dataFileSizes[fileNo] = (int)file.cb.callback;
+    dataFilePtrs[fileNo] = mmAlloc(dataFileSizes[fileNo] + 0x20,
+        ALLOC_TAG_DVD_BUFFER,
+        (volatile u32)dataFileNames[fileNo]);
+    DCInvalidateRange(dataFilePtrs[fileNo], dataFileSizes[fileNo]);
+    DVDReadPrio(&file, dataFilePtrs[fileNo],
+        dataFileSizes[fileNo], 0, 2);
+    DVDClose(&file);
+    return dataFilePtrs[fileNo];
 }
 
 void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
