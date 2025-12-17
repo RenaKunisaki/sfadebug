@@ -4,7 +4,10 @@
 #include "../types.h"
 
 typedef uint DataFileLoadedFlags;
-typedef enum {
+typedef enum { //different from final!
+    //inconsistent suffix capitalization is
+    //just how the game names them
+    FILE_NONE = -1,
     FILE_AUDIO_tab = 0,
     FILE_AUDIO_bin = 1,
     FILE_SFX_tab = 2,
@@ -23,7 +26,7 @@ typedef enum {
     FILE_OBJSEQ2C_tab = 15,
     FILE_FONTS_bin = 16,
     FILE_CACHEFON_bin = 17,
-    FILE_CACHEFON_bin_12 = 18,
+    FILE_CACHEFON_bin2 = 18,
     FILE_GAMETEXT_bin = 19,
     FILE_GAMETEXT_tab = 20,
     FILE_globalma_bin = 21,
@@ -74,29 +77,26 @@ typedef enum {
     FILE_DLLS_bin = 66,
     FILE_DLLS_tab = 67,
     FILE_DLLSIMPO_bin = 68,
-    FILE_MODELS_tab_45 = 69,
-    FILE_MODELS_bin_46 = 70,
-    FILE_BLOCKS_bin_47 = 71,
-    FILE_BLOCKS_tab_48 = 72,
-    FILE_ANIM_TAB_49 = 73,
-    FILE_ANIM_BIN_4A = 74,
-    FILE_TEX1_bin_4B = 75,
-    FILE_TEX1_tab_4C = 76,
-    FILE_TEX0_bin_4D = 77,
-    FILE_TEX0_tab_4E = 78,
-    FILE_TEXPRE_bin = 79,
-    FILE_TEXPRE_tab = 80,
-    FILE_PREANIM_bin = 81,
-    FILE_PREANIM_tab = 82,
-    FILE_VOXMAP_tab_53 = 83,
-    FILE_VOXMAP_bin_54 = 84,
-    FILE_ANIMCURV_bin_55 = 85,
-    FILE_ANIMCURV_tab_56 = 86,
-    FILE_ENVFXACT_bin = 87,
-    FILE_NULL = 88,
-    FILE_NULL_59 = 89,
-    NUM_FILES = 100, //should be 90? but dataFilePtrs array has 100 entries
-    FILE_NONE = 4294967295,
+    FILE_MODELS_tab2 = 69,
+    FILE_MODELS_bin2 = 70,
+    FILE_BLOCKS_bin2 = 71,
+    FILE_BLOCKS_tab2 = 72,
+    FILE_ANIM_TAB2 = 73,
+    FILE_ANIM_BIN2 = 74,
+    FILE_TEX1_bin2 = 75,
+    FILE_TEX1_tab2 = 76,
+    FILE_TEX0_bin2 = 77,
+    FILE_TEX0_tab2 = 78,
+    FILE_ENVFXACT_bin = 79,
+    NUM_FILES = 80,
+    FILE_NULL = 80,
+    FILE_NULL2 = 81,
 } DataFileId32;
+
+#define MODELS_TAB_SIZE 0x800
+#define ANIM_TAB_SIZE 3000 //not 0x3000
+#define TEX0_TAB_SIZE 0x1000
+#define TEX1_TAB_SIZE 0x1000
+#define BLOCKS_TAB_SIZE 0x800
 
 #endif //_SYS_FILES_H_

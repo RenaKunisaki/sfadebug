@@ -41,6 +41,7 @@ enum {
     TexGetMipmapOp_copy = 2,
 } TexGetMipmapOp;
 
+int mergeTableFiles(uint *table,DataFileId32 file1,DataFileId32 file2,int count);
 int lzoDecompress(void *src,int compLen,void *dest,int *outLen);
 
 const char *dataFileNames[] = { //802ef02c
@@ -122,8 +123,79 @@ const char *mapDirNames[] = {
     "bossdrakor",
     "bosstrex"};
 
-void *dataFilePtrs[NUM_FILES];
+//.bss
+s16 loadedFileMapIds[NUM_FILES];
+void *dataFilePtrs[NUM_FILES]; //0x8035CAD0
+u8 dataFileArray_8035cc10[NUM_FILES]; //8035cc10 - initDataFiles stores 0 here for each file
+uint MODELS_TAB[MODELS_TAB_SIZE];
+uint ANIM_TAB[ANIM_TAB_SIZE]; //size might be 0x4e8?
+uint TEX0_TAB[TEX0_TAB_SIZE]; //size might be 0x6d0?
+uint TEX1_TAB[TEX1_TAB_SIZE];
+uint BLOCKS_TAB[BLOCKS_TAB_SIZE]; //size might be 0x1000?
 
+void initDataFiles(void) {
+	int file;
+	for(file=0; file<=FILE_ENVFXACT_bin; file++) {
+		switch(file) {
+            case FILE_AUDIO_tab:
+            case FILE_AUDIO_bin:
+            case FILE_SFX_tab:
+            case FILE_SFX_bin:
+            case FILE_AMBIENT_tab:
+            case FILE_AMBIENT_bin:
+            case FILE_MUSIC_tab:
+            case FILE_MUSIC_bin:
+            case FILE_MPEG_tab:
+            case FILE_MPEG_bin:
+            case FILE_MUSICACT_bin:
+            case FILE_ANIMCURV_bin:
+            case FILE_ANIMCURV_tab:
+            case FILE_CACHEFON_bin:
+            case FILE_CACHEFON_bin2:
+            case FILE_SCREENS_bin:
+            case FILE_VOXMAP_bin:
+            case FILE_TEX1_bin:
+            case FILE_BLOCKS_bin:
+            case FILE_BLOCKS_tab:
+            case FILE_MODELS_tab:
+            case FILE_MODELS_bin:
+            case FILE_ANIM_TAB:
+            case FILE_ANIM_BIN:
+            case FILE_VOXOBJ_bin:
+            case FILE_DLLS_bin:
+            case FILE_DLLS_tab:
+            case FILE_DLLSIMPO_bin:
+            case FILE_MODELS_tab2:
+            case FILE_MODELS_bin2:
+            case FILE_BLOCKS_bin2:
+            case FILE_BLOCKS_tab2:
+            case FILE_ANIM_TAB2:
+            case FILE_ANIM_BIN2:
+            case FILE_TEX1_bin2:
+            case FILE_TEX1_tab2:
+            case FILE_TEX0_bin2:
+            case FILE_TEX0_tab2:
+				dataFilePtrs[file] = NULL;
+				loadedFileMapIds[file] = -1;
+				break;
+			default:
+                loadDataFile(file, "pi:table");
+                loadedFileMapIds[file] = -1;
+		}
+        dataFileArray_8035cc10[file] = 0;
+	}
+
+    mergeTableFiles(MODELS_TAB, FILE_MODELS_tab,
+        FILE_MODELS_tab2, MODELS_TAB_SIZE);
+    mergeTableFiles(ANIM_TAB, FILE_ANIM_TAB,
+        FILE_ANIM_TAB2, ANIM_TAB_SIZE);
+    mergeTableFiles(TEX0_TAB, FILE_TEX0_tab,
+        FILE_TEX0_tab2, TEX0_TAB_SIZE);
+    mergeTableFiles(TEX1_TAB, FILE_TEX1_tab,
+        FILE_TEX1_tab2, TEX1_TAB_SIZE);
+    mergeTableFiles(BLOCKS_TAB, FILE_BLOCKS_tab,
+        FILE_BLOCKS_tab2, BLOCKS_TAB_SIZE);
+}
 
 void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
 undefined4 *outCompSize, int size, void *dest, int doWhat) {
@@ -137,23 +209,36 @@ undefined4 *outCompSize, int size, void *dest, int doWhat) {
     void *tex1tabA;
     void *tex1tabB;
 
-	if(!(dataFilePtrs[FILE_TEX1_bin] || dataFilePtrs[FILE_TEX1_bin_4B])) return;
+	if(!(dataFilePtrs[FILE_TEX1_bin] || dataFilePtrs[FILE_TEX1_bin2])) return;
     tex1tabA = dataFilePtrs[FILE_TEX1_tab];
-    tex1tabB = dataFilePtrs[FILE_TEX1_tab_4C];
+    tex1tabB = dataFilePtrs[FILE_TEX1_tab2];
 
-    if(offset & 0x80000000) fileIdx = FILE_TEX1_bin_4B;
+    if(offset & 0x80000000) fileIdx = FILE_TEX1_bin2;
     else if(offset & 0x40000000) fileIdx = FILE_TEX1_bin;
     else if(tex1tabA) fileIdx = FILE_TEX1_bin;
-    else if(tex1tabB) fileIdx = FILE_TEX1_bin_4B;
+    else if(tex1tabB) fileIdx = FILE_TEX1_bin2;
     //else fileIdx is undefined. not sure if this is a bug,
     //or something that should never be able to happen.
 
     offs = offset & 0xffffff;
     if((doWhat == TexGetMipmapOp_getNext) && dest) {
         //unsure what this is actually doing
-        iVar1 = (int)(*(int*)dataFilePtrs[fileIdx] + offs * 2 +
-            *(int *)((int)dest + size * 4));
-        buf2 = (int*)(iVar1)+1;
+        //r0  = r17 * 4
+        //r19 = r24 + r0
+        //r0  = r29 * 4
+        //r3  = r30 + r0 (8035c9a8)
+        //r4  = 0x128(r3)  (dataFilePtrs)
+        //  the +0x128 is a red herring, it's fromm the section being offset wrong
+        //r3  = r28 * 2
+        //r0  = 0(r19)
+        //r27 = r3  + r0
+        //r27 = r4  + r27
+        //r31 = r27 + 4
+        //I think the differences are mostly because of the section offset
+        buf2 = (int*)(
+            (int)(*(int*)((int)dataFilePtrs[fileIdx]) + offs * 2 +
+            ((int)dest + size * 4))
+        )+1;
         offs = buf2[1];
         iVar1 = buf2[2];
         *outCompSize = iVar1;
