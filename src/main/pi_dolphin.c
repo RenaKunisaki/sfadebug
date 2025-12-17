@@ -49,6 +49,8 @@ int lzoDecompress(void *src,int compLen,void *dest,int *outLen);
 void initDataFiles(void);
 void *loadDataFile(DataFileId32 file, char *memName);
 int loadDataFileToBuf(DataFileId32 fileNo, void *buf);
+u32 loadDataFileWithLength(DataFileId32 fileNo, void *dest,
+    uint offset, u32 len);
 void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
     undefined4 *outCompSize, int size, void *dest, int doWhat);
 
@@ -220,7 +222,7 @@ void *loadDataFile(DataFileId32 fileNo, char *memName) {
 
 	if(dataFilePtrs[fileNo]) return dataFilePtrs[fileNo];
 
-    DVDOpen(dataFileNames[fileNo], &file);
+    DVDOpen((char*)dataFileNames[fileNo], &file);
     dataFileSizes[fileNo] = (int)file.cb.callback;
     dataFilePtrs[fileNo] = mmAlloc(dataFileSizes[fileNo] + 0x20,
         ALLOC_TAG_DVD_BUFFER,
@@ -250,13 +252,42 @@ int loadDataFileToBuf(DataFileId32 fileNo, void *buf) {
 		DCStoreRange(buf, dataFileSizes[fileNo]);
 		return dataFileSizes[fileNo];
 	} else {
-		DVDOpen(dataFileNames[fileNo], &file);
+		DVDOpen((char*)dataFileNames[fileNo], &file);
 		DCInvalidateRange(buf, (int)file.cb.callback);
 		DVDReadPrio(&file, buf,
             (uint)file.cb.callback, 0, 2);
 		DVDClose(&file);
         return (int)file.cb.callback;
 	}
+}
+
+u32 loadDataFileWithLength(DataFileId32 fileNo, void *dest,
+uint offset, u32 len) {
+	void *tmpBuf;
+	DVDFileInfo file;
+
+	if(!len) return 0;
+	if(dataFilePtrs[fileNo]) {
+        memcpy_src_dst_len(
+		    (void *)((int)dataFilePtrs[fileNo] + offset), dest, len);
+    } else {
+		DVDOpen(dataFileNames[fileNo], &file);
+		if((((uint)dest & 0x1f) == 0) && ((len & 0x1f) == 0)) {
+			DCInvalidateRange(dest, len);
+			DVDReadPrio(&file, dest, len, offset, 2);
+		} else {
+			tmpBuf = mmAlloc(len + 0x1f & 0xffffffe0,
+			    ALLOC_TAG_DVD_BUFFER,
+			    (volatile u32)"temp dvd buffer");
+			DCInvalidateRange(tmpBuf, len + 0x1f & 0xffffffe0);
+			DVDReadPrio(&file, tmpBuf, len + 0x1f & 0xffffffe0, offset, 2);
+			memcpy_src_dst_len(tmpBuf, dest, len);
+			mmFree(tmpBuf);
+		}
+		DVDClose(&file);
+	}
+	DCStoreRange(dest, len);
+	return len;
 }
 
 void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
