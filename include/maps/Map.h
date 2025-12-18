@@ -1,6 +1,8 @@
 #ifndef _MAPS_MAP_H_
 #define _MAPS_MAP_H_
 
+#include "../types.h"
+
 typedef int mapId32;
 typedef enum {
     MapId_frontend = 0,
@@ -122,5 +124,57 @@ typedef enum {
     MapId_vfppushblock = 116,
     MapId_None = -1,
 } MapId;
+
+typedef struct {
+    /* 0x00 */ int sig; //SIG_UNCOMPRESSED_FILE or SIG_LZO_COMPRESSED_FILE
+    /* 0x04 */ int len;
+    /* 0x08 */ int offset;
+    /* 0x0C */ int compLen;
+    /* 0x10 */ int unk10;
+    /* 0x14 */ int unk14;
+} DbMapsBinEntry;
+
+typedef struct {
+    /* 0x00 */ undefined unk00;
+    /* 0x01 */ undefined unk01;
+    /* 0x02 */ undefined unk02;
+    /* 0x03 */ undefined unk03;
+    /* 0x04 */ undefined unk04;
+    /* 0x05 */ undefined unk05;
+    /* 0x06 */ undefined unk06;
+    /* 0x07 */ undefined unk07;
+    /* 0x08 */ undefined unk08;
+    /* 0x09 */ undefined unk09;
+    /* 0x0a */ undefined unk0a;
+    /* 0x0b */ undefined unk0b;
+    /* 0x0c */ undefined unk0c;
+    /* 0x0d */ undefined unk0d;
+    /* 0x0e */ undefined unk0e;
+    /* 0x0f */ undefined unk0f;
+    /* 0x10 */ undefined unk10;
+    /* 0x11 */ undefined unk11;
+    /* 0x12 */ undefined unk12;
+    /* 0x13 */ undefined unk13;
+    /* 0x14 */ undefined unk14;
+    /* 0x15 */ undefined unk15;
+    /* 0x16 */ undefined unk16;
+    /* 0x17 */ undefined unk17;
+    /* 0x18 */ undefined unk18;
+    /* 0x19 */ undefined unk19;
+    /* 0x1a */ undefined unk1a;
+    /* 0x1b */ undefined unk1b;
+    /* 0x1c */ s16 nBlocks;
+    /* 0x1e */ s16 unk1e;
+} MapsBinEntry0;
+
+typedef struct {
+    /* 0x0 */ undefined unk0;
+    /* 0x1 */ undefined unk1;
+    /* 0x2 */ undefined unk2;
+    /* 0x3 */ undefined unk3;
+    /* 0x4 */ int unk4;
+    /* 0x8 */ int unk8;
+    /* 0xc */ int unkc;
+} astruct_6;
 
 #endif //_MAPS_MAP_H_

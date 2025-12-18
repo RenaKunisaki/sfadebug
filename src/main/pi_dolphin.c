@@ -24,17 +24,6 @@
 #include <stddef.h>
 #include "placeholder.h"
 
-#define SIG_UNCOMPRESSED_FILE 0xe0e0e0e0
-#define SIG_LZO_COMPRESSED_FILE 0xf0f0f0f0
-typedef struct {
-    /* 0x00 */ int sig; //signature
-    /* 0x04 */ int len;
-    /* 0x08 */ int offset;
-    /* 0x0C */ int compLen;
-    /* 0x10 */ int unk10;
-    /* 0x14 */ int unk14;
-} DbMapsBinEntry;
-
 enum {
     TexGetMipmapOp_getSize = 0,
     TexGetMipmapOp_getNext = 1, //unsure
@@ -312,6 +301,29 @@ int getLoadedDataFileSize(DataFileId32 fileNo) {
 	CRASH();
 	return 0;
 }
+
+
+void mapsBinGetRomlist(int offset, int *outNBlocks,
+int *out1E, int *outRomListSize, int idx) {
+	MapsBinEntry0 *entry0;
+	int iVar2;
+    int *data;
+	MapsBinEntry0 *entry;
+	astruct_6 *iVar1;
+
+    if((dataFilePtrs[FILE_MAPS_bin] && dataFilePtrs[FILE_MAPS_tab])) {
+        entry0 = (MapsBinEntry0*)((u32)dataFilePtrs[FILE_MAPS_bin] + offset);
+        *outNBlocks = entry0->nBlocks;
+        *out1E = entry0->unk1e;
+        iVar2 = *(int *)((int)dataFilePtrs[FILE_MAPS_tab] + idx * 4 + 0x10);
+
+        data = (int*)((u32)dataFilePtrs[FILE_MAPS_bin] + iVar2);
+        *outRomListSize =
+            data[2] + sizeof(ObjDef) +
+            (data[1] - data[3]);
+    }
+}
+
 
 void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
 undefined4 *outCompSize, int size, void *dest, int doWhat) {
