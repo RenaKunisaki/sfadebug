@@ -290,6 +290,12 @@ uint offset, u32 len) {
 	return len;
 }
 
+int getLoadedDataFileSize(DataFileId32 fileNo) {
+	if(dataFilePtrs[fileNo]) { return dataFileSizes[fileNo]; }
+	CRASH();
+	return 0;
+}
+
 void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
 undefined4 *outCompSize, int size, void *dest, int doWhat) {
     //doWhat: TexGetMipmapOp
