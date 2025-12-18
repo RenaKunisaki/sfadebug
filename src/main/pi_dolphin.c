@@ -261,7 +261,17 @@ int loadDataFileToBuf(DataFileId32 fileNo, void *buf) {
 	}
 }
 
-u32 loadDataFileWithLength(DataFileId32 fileNo, void *dest,
+/**
+ * @brief Load portion of file from disc and store it
+ *  to specified buffer,
+ *
+ *  @param fileNo Which file to load.
+ *  @param buf Buffer to store to.
+ *  @param offset Offset within file to read from.
+ *  @param len Number of bytes to read.
+ *  @return u32 Number of bytes read.
+ */
+u32 loadDataFileWithLength(DataFileId32 fileNo, void *buf,
 uint offset, u32 len) {
 	void *tmpBuf;
 	DVDFileInfo file;
@@ -269,27 +279,34 @@ uint offset, u32 len) {
 	if(!len) return 0;
 	if(dataFilePtrs[fileNo]) {
         memcpy_src_dst_len(
-		    (void *)((int)dataFilePtrs[fileNo] + offset), dest, len);
+		    (void *)((int)dataFilePtrs[fileNo] + offset), buf, len);
     } else {
 		DVDOpen(dataFileNames[fileNo], &file);
-		if((((uint)dest & 0x1f) == 0) && ((len & 0x1f) == 0)) {
-			DCInvalidateRange(dest, len);
-			DVDReadPrio(&file, dest, len, offset, 2);
+		if((((uint)buf & 0x1f) == 0) && ((len & 0x1f) == 0)) {
+			DCInvalidateRange(buf, len);
+			DVDReadPrio(&file, buf, len, offset, 2);
 		} else {
 			tmpBuf = mmAlloc(len + 0x1f & 0xffffffe0,
 			    ALLOC_TAG_DVD_BUFFER,
 			    (volatile u32)"temp dvd buffer");
 			DCInvalidateRange(tmpBuf, len + 0x1f & 0xffffffe0);
 			DVDReadPrio(&file, tmpBuf, len + 0x1f & 0xffffffe0, offset, 2);
-			memcpy_src_dst_len(tmpBuf, dest, len);
+			memcpy_src_dst_len(tmpBuf, buf, len);
 			mmFree(tmpBuf);
 		}
 		DVDClose(&file);
 	}
-	DCStoreRange(dest, len);
+	DCStoreRange(buf, len);
 	return len;
 }
 
+/**
+ * @brief Get the length of a loaded file.
+ *
+ *  @param fileNo The file ID.
+ *  @return int The length in bytes.
+ *  @note Panics if the file isn't loaded.
+ */
 int getLoadedDataFileSize(DataFileId32 fileNo) {
 	if(dataFilePtrs[fileNo]) { return dataFileSizes[fileNo]; }
 	CRASH();
