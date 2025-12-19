@@ -307,7 +307,7 @@ void mapsBinGetRomlist(int offset, int *outNBlocks,
 int *out1E, int *outRomListSize, int idx) {
 	MapsBinEntry0 *entry0;
 	int iVar2;
-    int *data;
+	astruct_6 *data;
 	MapsBinEntry0 *entry;
 	astruct_6 *iVar1;
 
@@ -315,12 +315,9 @@ int *out1E, int *outRomListSize, int idx) {
         entry0 = (MapsBinEntry0*)((u32)dataFilePtrs[FILE_MAPS_bin] + offset);
         *outNBlocks = entry0->nBlocks;
         *out1E = entry0->unk1e;
-        iVar2 = *(int *)((int)dataFilePtrs[FILE_MAPS_tab] + idx * 4 + 0x10);
-
-        data = (int*)((u32)dataFilePtrs[FILE_MAPS_bin] + iVar2);
-        *outRomListSize =
-            data[2] + sizeof(ObjDef) +
-            (data[1] - data[3]);
+        iVar2 = *(int*)((int)dataFilePtrs[FILE_MAPS_tab] + idx * 4 + sizeof(astruct_6));
+        data = (astruct_6*)((u32)dataFilePtrs[FILE_MAPS_bin] + iVar2);
+        *outRomListSize = data->unk4 - (data->unkC + sizeof(ObjDef) + data->unk8);
     }
 }
 

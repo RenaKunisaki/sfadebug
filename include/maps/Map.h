@@ -174,7 +174,7 @@ typedef struct {
     /* 0x3 */ undefined unk3;
     /* 0x4 */ int unk4;
     /* 0x8 */ int unk8;
-    /* 0xc */ int unkc;
+    /* 0xc */ int unkC;
 } astruct_6;
 
 #endif //_MAPS_MAP_H_
