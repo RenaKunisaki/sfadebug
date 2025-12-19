@@ -9,6 +9,7 @@
 #include "gfx/models/shaders.h"
 #include "gfx/models/animation.h"
 #include "sys/SparseArray.h"
+#include "../sys/compress.h"
 #include "types.h"
 
 typedef u32 ModelFlags_loadCharacter;
@@ -57,6 +58,35 @@ typedef struct {
     u8 unknown[8];
     //might just be VertexPosition
 } GCPolygon;
+
+typedef struct {
+    /* 0x00 */ undefined4 noAmap; //if not 0, don't use AMAP.TAB; maybe local MODANIM.TAB offset?
+    /* 0x04 */ int nAnimations;
+    /* 0x08 */ int animCacheSize;
+    /* 0x0C */ ZlbHeader zlb;
+} ModelsBinEntry_Unk18;
+
+typedef struct {
+/* 0x00 */ u32 signature; //always 0xFACEFEED
+/* 0x04 */ u32 size;
+/* 0x08 */ undefined unk08;
+/* 0x09 */ undefined unk09;
+/* 0x0a */ undefined unk0A;
+/* 0x0b */ undefined unk0B;
+/* 0x0c */ undefined unk0C;
+/* 0x0d */ undefined unk0D;
+/* 0x0e */ undefined unk0E;
+/* 0x0f */ undefined unk0F;
+/* 0x10 */ undefined unk10;
+/* 0x11 */ undefined unk11;
+/* 0x12 */ undefined unk12;
+/* 0x13 */ undefined unk13;
+/* 0x14 */ undefined unk14;
+/* 0x15 */ undefined unk15;
+/* 0x16 */ undefined unk16;
+/* 0x17 */ undefined unk17;
+/* 0x18 */ ModelsBinEntry_Unk18 unk18;
+} ModelsBinEntry;
 
 typedef struct Model {
     /* 0x00 */ u8 usage; //ref count

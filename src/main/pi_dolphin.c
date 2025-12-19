@@ -322,6 +322,36 @@ int *out1E, int *outRomListSize, int idx) {
 }
 
 
+void loadModelsBin(uint offset, int *outNAnimations, uint *outAnimCacheSize,
+BOOL *outNoAmap, int *outSize, int id) {
+	ModelsBinEntry *entry;
+    ModelsBinEntry_Unk18 *unk18;
+	DataFileId32 fileIdx;
+    void *modelsTabA;
+    void *modelsTabB;
+    uint offs;
+
+	if(!(dataFilePtrs[FILE_MODELS_bin] || dataFilePtrs[FILE_MODELS_bin2])) return;
+    modelsTabA = dataFilePtrs[FILE_MODELS_tab];
+    modelsTabB = dataFilePtrs[FILE_MODELS_tab2];
+
+    if(offset & 0x20000000) fileIdx = FILE_MODELS_bin2;
+    else if(offset & 0x10000000) fileIdx = FILE_MODELS_bin;
+    else if(modelsTabA) fileIdx = FILE_MODELS_bin;
+    else if(modelsTabB) fileIdx = FILE_MODELS_bin2;
+    else {
+        STUBBED_PRINTF("models_dolphin.c");
+    }
+
+    offs = (offset & 0xfffffff);
+    entry = (ModelsBinEntry *)((uint)dataFilePtrs[fileIdx] + offs);
+    unk18 = &entry->unk18;
+    *outNoAmap = unk18->noAmap;
+    *outNAnimations = unk18 ->nAnimations;
+    *outAnimCacheSize = unk18 ->animCacheSize;
+    *outSize = entry->size;
+}
+
 void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
 undefined4 *outCompSize, int size, void *dest, int doWhat) {
     //doWhat: TexGetMipmapOp
