@@ -352,13 +352,56 @@ BOOL *outNoAmap, int *outSize, int id) {
     *outSize = entry->size;
 }
 
+void tex0GetMipmap(uint offset, uint mipIdx, uint *outSize,
+undefined4 *outCompSize, int nFrames, void *dest, int doWhat) {
+    //doWhat: TexGetMipmapOp
+	u32 uVar1;
+	uint *entry;
+	ZlbHeader *zlb;
+	DataFileId32 fileIdx;
+	uint offs;
+    void *tex0tabA;
+    void *tex0tabB;
+
+    if(!(dataFilePtrs[FILE_TEX0_bin] || dataFilePtrs[FILE_TEX0_bin2])) return;
+    tex0tabA = dataFilePtrs[FILE_TEX0_tab];
+    tex0tabB = dataFilePtrs[FILE_TEX0_tab2];
+
+    if(offset & 0x80000000) fileIdx = FILE_TEX0_bin2;
+    else if(offset & 0x40000000) fileIdx = FILE_TEX0_bin;
+    else if(tex0tabA) fileIdx = FILE_TEX0_bin;
+    else if(tex0tabB) fileIdx = FILE_TEX0_bin2;
+
+    offs = offset & 0xffffff;
+    if((doWhat == TexGetMipmapOp_getNext) && dest) {
+        entry = (uint *)((int)dataFilePtrs[fileIdx] + offs * 2
+            + *(int *)((int)dest + nFrames * 4));
+        /* in final this is entry[2], entry[1]
+            but that's because entry has 4 added */
+        offs = entry[3];
+        *outSize = entry[2];
+        *outCompSize = offs;
+    } else if((doWhat == TexGetMipmapOp_copy) && dest) {
+        memcpy_src_dst_len(
+            (void *)((int)dataFilePtrs[fileIdx] + offs * 2),
+            dest, (nFrames + 1) * 4);
+
+    } else { //TexGetMipmapOp_getSize
+        //unlike for tex1, DIR is not supported.
+        zlb = (ZlbHeader *)((int)dataFilePtrs[fileIdx] + offs * 2);
+        uVar1 = zlb->compLen;
+        *outSize = zlb->decLen;
+        *outCompSize = uVar1;
+    }
+}
+
 void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
-undefined4 *outCompSize, int size, void *dest, int doWhat) {
+undefined4 *outCompSize, int nFrames, void *dest, int doWhat) {
     //doWhat: TexGetMipmapOp
 	int iVar1;
 	u32 compLen;
-	int *buf2;
-	ZlbHeader *buf;
+	int *entry;
+	ZlbHeader *zlb;
 	DataFileId32 fileIdx;
 	uint offs;
     void *tex1tabA;
@@ -390,25 +433,25 @@ undefined4 *outCompSize, int size, void *dest, int doWhat) {
         //r27 = r4  + r27
         //r31 = r27 + 4
         //I think the differences are mostly because of the section offset
-        buf2 = (int*)(
+        entry = (int*)(
             (int)(*(int*)((int)dataFilePtrs[fileIdx]) + offs * 2 +
-            ((int)dest + size * 4))
+            ((int)dest + nFrames * 4))
         )+1;
-        offs = buf2[1];
-        iVar1 = buf2[2];
+        offs = entry[1];
+        iVar1 = entry[2];
         *outCompSize = iVar1;
         *outSize = offs;
 
     } else if((doWhat == TexGetMipmapOp_copy) && dest) {
         memcpy_src_dst_len(
             (void *)((int)dataFilePtrs[fileIdx] + offs * 2),
-            dest, (size + 1) * 4);
+            dest, (nFrames + 1) * 4);
 
     } else { //TexGetMipmapOp_getSize
-        buf = (ZlbHeader *)((int)dataFilePtrs[fileIdx] + offs * 2);
-        compLen = buf->compLen;
-        *outSize = buf->decLen;
-        if(!strncmp("DIR", (char *)buf, 3)) {
+        zlb = (ZlbHeader *)((int)dataFilePtrs[fileIdx] + offs * 2);
+        compLen = zlb->compLen;
+        *outSize = zlb->decLen;
+        if(!strncmp("DIR", (char *)zlb, 3)) {
             *outCompSize = 0xffffffff;
         } else {
             *outCompSize = compLen;
