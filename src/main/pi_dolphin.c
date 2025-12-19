@@ -459,6 +459,10 @@ undefined4 *outCompSize, int nFrames, void *dest, int doWhat) {
     }
 }
 
+void loadTableFiles_(void) {
+  loadTableFiles();
+}
+
 void piRomLoadSection(int id, void *dest) {
 	DbMapsBinEntry *entry;
     int len;
