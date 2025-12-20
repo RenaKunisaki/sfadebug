@@ -8,6 +8,7 @@
 #include "gfx/models/shaders.h"
 #include "gfx/textures.h"
 #include "macros.h"
+#include "maps/Map.h"
 #include "types.h"
 #include "debug/debug.h"
 #include "sys/alloc.h"
@@ -121,6 +122,69 @@ const char *mapDirNames[] = {
     "cloudrace",
     "bossdrakor",
     "bosstrex"};
+
+const MapDirIdx32 mapIdXltnTbl[] = { //0x802ef38c
+    MapDir_animtest_05,
+    MapDir_animtest_05,
+    MapDir_dragrock,
+    MapDir_animtest_05,
+    MapDir_volcano,
+    MapDir_animtest_05,
+    MapDir_animtest_05,
+    MapDir_swaphol,
+    MapDir_swapholbot,
+    MapDir_animtest_05,
+    MapDir_nwastes,
+    MapDir_warlock,
+    MapDir_crfort,
+    MapDir_wallcity,
+    MapDir_lightfoot,
+    MapDir_cloudtreasure,
+    MapDir_clouddungeon,
+    MapDir_animtest_05,
+    MapDir_mmpass,
+    MapDir_darkicemines,
+    MapDir_animtest_05,
+    MapDir_desert,
+    MapDir_animtest_05,
+    MapDir_icemountain,
+    MapDir_animtest_1F,
+    MapDir_animtest_20,
+    MapDir_animtest_05,
+    MapDir_darkicemines2,
+    MapDir_bossgaldon,
+    MapDir_capeclaw,
+    MapDir_insidegal,
+    MapDir_dfshrine,
+    MapDir_mmshrine,
+    MapDir_ecshrine,
+    MapDir_gpshrine,
+    MapDir_dbay,
+    MapDir_animtest_05,
+    MapDir_animtest_05,
+    MapDir_arwing,
+    MapDir_dbshrine,
+    MapDir_nwshrine,
+    MapDir_worldmap,
+    MapDir_animtest_05,
+    MapDir_cloudrace,
+    MapDir_bossdrakor,
+    MapDir_animtest_05,
+    MapDir_animtest_05,
+    MapDir_animtest_05,
+    MapDir_bosstrex,
+    MapDir_animtest_05,
+    MapDir_dfptop,
+    MapDir_shop,
+    MapDir_dragrockbot,
+    MapDir_animtest_05,
+    MapDir_magiccave,
+    MapDir_animtest_05,
+    MapDir_animtest_05,
+    MapDir_animtest_05,
+    MapDir_animtest_05,
+    MapDir_animtest_05,
+};
 
 //.bss
 int dataFileSizes[NUM_FILES]; //0x8036bb40
@@ -460,8 +524,14 @@ undefined4 *outCompSize, int nFrames, void *dest, int doWhat) {
 }
 
 void loadTableFiles_(void) {
-  loadTableFiles();
+    loadTableFiles();
 }
+
+MapDirIdx32 mapGetDirIdx(mapId32 map) {
+	if((int)map >= NUM_MAP_DIRS) return 0;
+	return mapIdXltnTbl[map];
+}
+
 
 void piRomLoadSection(int id, void *dest) {
 	DbMapsBinEntry *entry;
