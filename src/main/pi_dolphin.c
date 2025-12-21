@@ -523,15 +523,6 @@ undefined4 *outCompSize, int nFrames, void *dest, int doWhat) {
     }
 }
 
-void loadTableFiles_(void) {
-    loadTableFiles();
-}
-
-MapDirIdx32 mapGetDirIdx(mapId32 map) {
-	if((int)map >= NUM_MAP_DIRS) return 0;
-	return mapIdXltnTbl[map];
-}
-
 void piRomLoadSection(int id, void *dest) {
 	DbMapsBinEntry *entry;
     int len;
@@ -579,9 +570,14 @@ void piRomLoadSection(int id, void *dest) {
 	}
 }
 
-//loadTableFiles_
+void loadTableFiles_(void) {
+    loadTableFiles();
+}
 
-//mapGetDirIdx
+MapDirIdx32 mapGetDirIdx(mapId32 map) {
+	if((int)map >= NUM_MAP_DIRS) return 0;
+	return mapIdXltnTbl[map];
+}
 
 //loadAndDecompressDataFile
 
