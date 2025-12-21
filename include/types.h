@@ -7,6 +7,7 @@
 extern "C" {
 #endif
 
+#include "versions.h"
 #include <dolphin/types.h>
 
 typedef unsigned char bool;
