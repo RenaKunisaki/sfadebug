@@ -532,7 +532,6 @@ MapDirIdx32 mapGetDirIdx(mapId32 map) {
 	return mapIdXltnTbl[map];
 }
 
-
 void piRomLoadSection(int id, void *dest) {
 	DbMapsBinEntry *entry;
     int len;
@@ -579,3 +578,21 @@ void piRomLoadSection(int id, void *dest) {
 		DCStoreRange(dest, len);
 	}
 }
+
+//loadTableFiles_
+
+//mapGetDirIdx
+
+//loadAndDecompressDataFile
+
+//mapLoadDataFile
+
+int mapCheckCurBlocks(MapDirIdx32 map) {
+	if(loadedFileMapIds[FILE_BLOCKS_bin ] == map - 1) return 0;
+	if(loadedFileMapIds[FILE_BLOCKS_bin2] == map - 1) return 1;
+	return -1;
+}
+
+//mergeTableFiles
+
+//piRomFreeLevel
