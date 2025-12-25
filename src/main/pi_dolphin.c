@@ -366,7 +366,6 @@ int getLoadedDataFileSize(DataFileId32 fileNo) {
 	return 0;
 }
 
-
 void mapsBinGetRomlist(int offset, int *outNBlocks,
 int *out1E, int *outRomListSize, int idx) {
 	MapsBinEntry0 *entry0;
@@ -384,7 +383,6 @@ int *out1E, int *outRomListSize, int idx) {
         *outRomListSize = data->unk4 - (data->unkC + sizeof(ObjDef) + data->unk8);
     }
 }
-
 
 void loadModelsBin(uint offset, int *outNAnimations, uint *outAnimCacheSize,
 BOOL *outNoAmap, int *outSize, int id) {
@@ -591,4 +589,84 @@ int mapCheckCurBlocks(MapDirIdx32 map) {
 
 //mergeTableFiles
 
-//piRomFreeLevel
+#define FLIST_SIZE 20
+#define piRomFreeLevel_flag_freeForCurMap 0x80000000
+#define piRomFreeLevel_flag_freeForOtherMap 0x10000000
+
+typedef struct {
+    int fileNo;
+    int mapNo;
+} PiFreeListItem;
+typedef struct {
+    PiFreeListItem item[FLIST_SIZE];
+} PiFreeList;
+PiFreeList freeList;
+
+int piRomFreeLevel(int map, uint flags) {
+	int iList;
+	PiFreeList localFreeList;
+
+	localFreeList = freeList;
+	//freeList.item[0].mapNo = map;
+
+    for(iList = 0; iList < FLIST_SIZE; iList++) {
+        /* this check works out to:
+        - file is not NULL and either:
+            - it belongs to the current map and we're freeing the current map,
+                and a nonsensical bitfield check, OR
+            - it belongs to the other map and we're freeing the other map
+        */
+		if(dataFilePtrs[localFreeList.item[iList].fileNo] && (
+            flags & piRomFreeLevel_flag_freeForCurMap || (
+                (flags & localFreeList.item[iList].fileNo + 1U) && //@bug this makes no sense (decomp error?)
+                map == loadedFileMapIds[localFreeList.item[iList].fileNo]
+            ) || (
+                flags & piRomFreeLevel_flag_freeForOtherMap && (
+                    map != loadedFileMapIds[localFreeList.item[iList].fileNo]
+                )
+        ))) {
+            //free the file and clear the pointer and owner-map-ID
+			mmFree(dataFilePtrs[localFreeList.item[iList].fileNo]);
+			dataFilePtrs[localFreeList.item[iList].fileNo] = NULL;
+			loadedFileMapIds[localFreeList.item[iList].fileNo] = -1;
+
+            //if we freed a table file, rebuild the table
+            switch(localFreeList.item[iList].fileNo) {
+                case FILE_TEX1_tab: case FILE_TEX1_tab2:
+                    mergeTableFiles(TEX1_TAB,
+                        FILE_TEX1_tab, FILE_TEX1_tab2,
+                        TEX1_TAB_SIZE);
+                    break;
+
+                case FILE_TEX0_tab: case FILE_TEX0_tab2:
+                    mergeTableFiles(TEX0_TAB,
+                        FILE_TEX0_tab, FILE_TEX0_tab2,
+                        TEX0_TAB_SIZE);
+                    break;
+
+                case FILE_BLOCKS_tab: case FILE_BLOCKS_tab2:
+                    mergeTableFiles(BLOCKS_TAB,
+                        FILE_BLOCKS_tab, FILE_BLOCKS_tab2,
+                        BLOCKS_TAB_SIZE);
+                    break;
+
+                case FILE_MODELS_tab: case FILE_MODELS_tab2:
+                    mergeTableFiles(MODELS_TAB,
+                        FILE_MODELS_tab, FILE_MODELS_tab2,
+                        MODELS_TAB_SIZE);
+                    break;
+
+                case FILE_ANIM_TAB: case FILE_ANIM_TAB2:
+                    mergeTableFiles(ANIM_TAB,
+                        FILE_ANIM_TAB, FILE_ANIM_TAB2,
+                        ANIM_TAB_SIZE);
+                    break;
+            }
+		}
+		if(iList >= FLIST_SIZE) {
+			OSPanic("pi_dolphin.c", 3549,
+			    "piRomFreeLevel(): flist array overflow");
+		}
+	}
+	return 1;
+}
