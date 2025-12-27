@@ -587,7 +587,107 @@ int mapCheckCurBlocks(MapDirIdx32 map) {
 	return -1;
 }
 
-//mergeTableFiles
+int mergeTableFiles(uint *table, DataFileId32 file1, DataFileId32 file2, int count) {
+	BOOL noTab1;
+	BOOL noTab2;
+	int tblSize;
+	int *tbl1;
+	int *tbl2;
+	int ii;
+	int local_24;
+
+	ii = 0;
+	noTab1 = false;
+	noTab2 = false;
+	tblSize = 0;
+    if(!dataFilePtrs[file1] || !dataFilePtrs[file2]) {
+        if(!dataFilePtrs[file1]) noTab1 = true;
+        if(!dataFilePtrs[file2]) noTab2 = true;
+    }
+	tbl1 = (int *)dataFilePtrs[file1];
+	tbl2 = (int *)dataFilePtrs[file2];
+	if     (table == MODELS_TAB) tblSize = MODELS_TAB_SIZE;
+	else if(table == ANIM_TAB)   tblSize = ANIM_TAB_SIZE;
+	else if(table == TEX0_TAB)   tblSize = TEX0_TAB_SIZE;
+	else if(table == TEX1_TAB)   tblSize = TEX1_TAB_SIZE;
+	else if(table == BLOCKS_TAB) tblSize = BLOCKS_TAB_SIZE;
+
+	if(table == TEX0_TAB || table == TEX1_TAB) {
+		for(; ii < tblSize; ii++) {
+			if(!(noTab1 || tbl1[ii] == -1 || !(tbl1[ii] & 0x80000000u))) {
+                table[ii] = tbl1[ii] & 0x7fffffff;
+                table[ii] = table[ii] | 0x40000000;
+            } else if(!(noTab2 || tbl2[ii] == -1 || !(tbl2[ii] & 0x80000000u))) {
+                if(!tbl1[ii]) {
+                    if(tbl2[ii]) table[ii] = tbl2[ii];
+                }
+            } else table[ii] = tbl1[ii];
+		}
+	} else if(table == BLOCKS_TAB) {
+		for(; ii < tblSize; ii++) {
+			if(noTab1 || (tbl1[ii] != -1)) {
+				if((noTab2) || (tbl2[ii] != -1)) {
+					if((noTab1) || (tbl1[ii] == -1)
+					    || ((tbl1[ii] & 0x10000000U) == 0)) {
+						if((noTab2) || (tbl2[ii] == -1)
+						    || ((tbl2[ii] & 0x10000000U) == 0)) {
+							if((noTab1) || (tbl1[ii] == 0)) {
+								if((noTab2) || (tbl2[ii] == 0)) {
+									BLOCKS_TAB[ii] = 0;
+								} else {
+									BLOCKS_TAB[ii] = tbl2[ii];
+								}
+							} else {
+								BLOCKS_TAB[ii] = tbl1[ii];
+							}
+						} else {
+							BLOCKS_TAB[ii]
+							    = tbl2[ii] & 0xffffffU | 0x20000000;
+						}
+					} else {
+						BLOCKS_TAB[ii] = tbl1[ii];
+					}
+				} else {
+					BLOCKS_TAB[ii] = 0;
+					noTab2 = true;
+				}
+			} else {
+				BLOCKS_TAB[ii] = 0;
+				noTab1 = true;
+			}
+		}
+	} else {
+		for(; ii < tblSize; ii++) {
+			if((noTab1) || (tbl1[ii] == -1)
+			    || ((tbl1[ii] & 0x10000000U) == 0)) {
+				if((noTab2) || (tbl2[ii] == -1)
+				    || ((tbl2[ii] & 0x10000000U) == 0)) {
+					if((noTab1) || (tbl1[ii] == 0)) {
+						if((!noTab2) && (tbl2[ii] != 0)) {
+							table[ii] = tbl2[ii];
+						}
+					} else {
+						table[ii] = tbl1[ii];
+					}
+				} else {
+					*(uint *)((int)table + ii * 4)
+					    = tbl2[ii] & 0xffffffU | 0x20000000;
+				}
+			} else {
+				table[ii] = tbl1[ii];
+			}
+		}
+	}
+	*(undefined4 *)((int)table + (ii + -1) * 4) = 0xffffffff;
+	if((false) && (table == TEX1_TAB)) {
+		local_24 = 0;
+		do {
+			noTab1 = local_24 < ii + -1;
+			local_24 += 1;
+		} while(noTab1);
+	}
+	return 1;
+}
 
 #define FLIST_SIZE 20
 #define piRomFreeLevel_flag_freeForCurMap 0x80000000
