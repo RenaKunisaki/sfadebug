@@ -587,7 +587,8 @@ int mapCheckCurBlocks(MapDirIdx32 map) {
 	return -1;
 }
 
-int mergeTableFiles(uint *table, DataFileId32 file1, DataFileId32 file2, int count) {
+int mergeTableFiles(uint *table, DataFileId32 fileNo1, DataFileId32 fileNo2,
+int count) {
 	BOOL noTab1;
 	BOOL noTab2;
 	int tblSize;
@@ -595,17 +596,19 @@ int mergeTableFiles(uint *table, DataFileId32 file1, DataFileId32 file2, int cou
 	int *tbl2;
 	int ii;
 	int local_24;
+    int dummy;
 
 	ii = 0;
 	noTab1 = false;
 	noTab2 = false;
 	tblSize = 0;
-    if(!dataFilePtrs[file1] || !dataFilePtrs[file2]) {
-        if(!dataFilePtrs[file1]) noTab1 = true;
-        if(!dataFilePtrs[file2]) noTab2 = true;
+    local_24 = 0;
+    if(!dataFilePtrs[fileNo1] || !dataFilePtrs[fileNo2]) {
+        if(!dataFilePtrs[fileNo1]) noTab1 = true;
+        if(!dataFilePtrs[fileNo2]) noTab2 = true;
     }
-	tbl1 = (int *)dataFilePtrs[file1];
-	tbl2 = (int *)dataFilePtrs[file2];
+	tbl1 = (int *)dataFilePtrs[fileNo1];
+	tbl2 = (int *)dataFilePtrs[fileNo2];
 	if     (table == MODELS_TAB) tblSize = MODELS_TAB_SIZE;
 	else if(table == ANIM_TAB)   tblSize = ANIM_TAB_SIZE;
 	else if(table == TEX0_TAB)   tblSize = TEX0_TAB_SIZE;
@@ -617,74 +620,61 @@ int mergeTableFiles(uint *table, DataFileId32 file1, DataFileId32 file2, int cou
 			if(!(noTab1 || tbl1[ii] == -1 || !(tbl1[ii] & 0x80000000u))) {
                 table[ii] = tbl1[ii] & 0x7fffffff;
                 table[ii] = table[ii] | 0x40000000;
-            } else if(!(noTab2 || tbl2[ii] == -1 || !(tbl2[ii] & 0x80000000u))) {
-                if(!tbl1[ii]) {
+            } else if(!(noTab2 || tbl2[ii] == -1)) {
+                //XXX these checks are weird, might be wrong
+                if(tbl2[ii] & 0x80000000u) table[ii] = tbl1[ii];
+                else if(!noTab1) {
                     if(tbl2[ii]) table[ii] = tbl2[ii];
                 }
-            } else table[ii] = tbl1[ii];
+                else if(!noTab2) {
+                    if(tbl1[ii]) table[ii] = tbl1[ii];
+                }
+            }
 		}
 	} else if(table == BLOCKS_TAB) {
 		for(; ii < tblSize; ii++) {
-			if(noTab1 || (tbl1[ii] != -1)) {
-				if((noTab2) || (tbl2[ii] != -1)) {
-					if((noTab1) || (tbl1[ii] == -1)
-					    || ((tbl1[ii] & 0x10000000U) == 0)) {
-						if((noTab2) || (tbl2[ii] == -1)
-						    || ((tbl2[ii] & 0x10000000U) == 0)) {
-							if((noTab1) || (tbl1[ii] == 0)) {
-								if((noTab2) || (tbl2[ii] == 0)) {
-									BLOCKS_TAB[ii] = 0;
-								} else {
-									BLOCKS_TAB[ii] = tbl2[ii];
-								}
-							} else {
-								BLOCKS_TAB[ii] = tbl1[ii];
-							}
-						} else {
-							BLOCKS_TAB[ii]
-							    = tbl2[ii] & 0xffffffU | 0x20000000;
-						}
-					} else {
-						BLOCKS_TAB[ii] = tbl1[ii];
-					}
-				} else {
-					BLOCKS_TAB[ii] = 0;
-					noTab2 = true;
-				}
-			} else {
+			if(!(noTab1 || (tbl1[ii] != -1))) {
 				BLOCKS_TAB[ii] = 0;
 				noTab1 = true;
-			}
+			} else if(!((noTab2) || (tbl2[ii] != -1))) {
+                BLOCKS_TAB[ii] = 0;
+                noTab2 = true;
+            } else if(!((noTab1) || (tbl1[ii] == -1) || ((tbl1[ii] & 0x10000000U) == 0))) {
+                BLOCKS_TAB[ii] = tbl1[ii];
+            } else if(!((noTab2) || (tbl2[ii] == -1) || ((tbl2[ii] & 0x10000000U) == 0))) {
+                BLOCKS_TAB[ii] = tbl2[ii] & 0xffffffU | 0x20000000;
+            } else if(!((noTab1) || (tbl1[ii] == 0))) {
+                BLOCKS_TAB[ii] = tbl1[ii];
+            } else if(!((noTab2) || (tbl2[ii] == 0))) {
+                BLOCKS_TAB[ii] = tbl2[ii];
+            } else {
+                BLOCKS_TAB[ii] = 0;
+            }
 		}
 	} else {
 		for(; ii < tblSize; ii++) {
-			if((noTab1) || (tbl1[ii] == -1)
-			    || ((tbl1[ii] & 0x10000000U) == 0)) {
-				if((noTab2) || (tbl2[ii] == -1)
-				    || ((tbl2[ii] & 0x10000000U) == 0)) {
-					if((noTab1) || (tbl1[ii] == 0)) {
-						if((!noTab2) && (tbl2[ii] != 0)) {
-							table[ii] = tbl2[ii];
-						}
-					} else {
-						table[ii] = tbl1[ii];
-					}
-				} else {
-					*(uint *)((int)table + ii * 4)
-					    = tbl2[ii] & 0xffffffU | 0x20000000;
-				}
-			} else {
+			if(!((noTab1) || (tbl1[ii] == -1) || ((tbl1[ii] & 0x10000000U) == 0))) {
 				table[ii] = tbl1[ii];
-			}
+			} else if(!((noTab2) || (tbl2[ii] == -1) || ((tbl2[ii] & 0x10000000U) == 0))) {
+                *(uint *)((int)table + ii * 4) = tbl2[ii] & 0xffffffU | 0x20000000;
+            } else if(!((noTab1) || (tbl1[ii] == 0))) {
+                table[ii] = tbl1[ii];
+            } else if((!noTab2) && (tbl2[ii] != 0)) {
+                table[ii] = tbl2[ii];
+            }
 		}
 	}
 	*(undefined4 *)((int)table + (ii + -1) * 4) = 0xffffffff;
-	if((false) && (table == TEX1_TAB)) {
-		local_24 = 0;
-		do {
-			noTab1 = local_24 < ii + -1;
-			local_24 += 1;
-		} while(noTab1);
+    //@bug? unreachable (local_24 is always 0)
+	if(local_24 && table == TEX1_TAB) {
+		for(local_24 = 0; local_24 < ii; local_24++) {
+            if(!(local_24 - ((local_24 >> 3) * 8))) {
+                noTab1 = true;
+            }
+            if(tbl1) { STUBBED_OP(tbl1); }
+            if(tbl2) { STUBBED_OP(tbl2); }
+            if(noTab1) { STUBBED_OP(noTab1); }
+		}
 	}
 	return 1;
 }
