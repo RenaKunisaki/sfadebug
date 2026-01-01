@@ -339,11 +339,11 @@ uint offset, u32 len) {
 			DCInvalidateRange(buf, len);
 			DVDReadPrio(&file, buf, len, offset, 2);
 		} else {
-			tmpBuf = mmAlloc(len + 0x1f & 0xffffffe0,
+			tmpBuf = mmAlloc(len + 0x1f & 0x00ffffffe0,
 			    ALLOC_TAG_DVD_BUFFER,
 			    (volatile u32)"temp dvd buffer");
-			DCInvalidateRange(tmpBuf, len + 0x1f & 0xffffffe0);
-			DVDReadPrio(&file, tmpBuf, len + 0x1f & 0xffffffe0, offset, 2);
+			DCInvalidateRange(tmpBuf, len + 0x1f & 0x00ffffffe0);
+			DVDReadPrio(&file, tmpBuf, len + 0x1f & 0x00ffffffe0, offset, 2);
 			memcpy_src_dst_len(tmpBuf, buf, len);
 			mmFree(tmpBuf);
 		}
@@ -577,19 +577,19 @@ MapDirIdx32 mapGetDirIdx(mapId32 map) {
 	return mapIdXltnTbl[map];
 }
 
-int loadAndDecompressDataFile(DataFileId32 fileNo, void *dest, uint offset,
+int loadAndDecompressDataFile(DataFileId32 fileNo, void *dest, int offset,
 size_t length, uint *outSize, int index, u8 flags) {
-	uint start;
+	int start;
 	u32 loadFlags;
 	char *sig;
 	int *header;
-	uint *tab2;
-	uint *tab1;
+	int *tab2;
+	int *tab1;
 	int ii;
 	int local_8c;
 	void *tmpBuf;
 	DVDFileInfo file;
-    uint **files;
+    int **files;
 
     files = dataFilePtrs;
 	tab1 = NULL;
@@ -604,74 +604,74 @@ size_t length, uint *outSize, int index, u8 flags) {
                     start = tab2[index] & 0x00ffffff;
                     ii = 0;
                     if(!start) {
-                        while((tab2[ii++] & 0xffffff) <= start);
-                        *outSize = tab2[ii-1] & 0xffffff;
+                        while((tab2[ii++] & 0x00ffffff) <= start);
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - start;
                     } else if(start < (tab2[index - 1] & 0x00ffffff)) {
                         ii = 0;
-                        while(start != (tab2[ii++] & 0xffffff));
-                        while((tab2[ii++] & 0xffffff) <= start);
-                        *outSize = (tab2[ii-1] & 0xffffff) - start;
+                        while(start != (tab2[ii++] & 0x00ffffff));
+                        while((tab2[ii++] & 0x00ffffff) <= start);
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - start;
                     } else {
                         ii = index;
-                        while((tab2[ii++] & 0xffffff) <= start);
-                        *outSize = (tab2[ii-1] & 0xffffff) - start;
+                        while((tab2[ii++] & 0x00ffffff) <= start);
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - start;
                     }
                 }
             } else if(offset & 0x10000000) {
                 fileNo = FILE_MODELS_bin;
                 if(outSize) {
-                    start = tab1[index] & 0xffffff;
+                    start = tab1[index] & 0x00ffffff;
                     ii = 0;
                     if(start == 0) {
-                        while((tab1[ii++] & 0xffffff) <= start);
-                        *outSize = tab1[ii-1] & 0xffffff;
+                        while((tab1[ii++] & 0x00ffffff) <= start);
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - start;
                     } else if(start < (tab1[index - 1] & 0x00ffffff)) {
                         ii = 0;
-                        while(start != (tab1[ii++] & 0xffffff));
-                        while((tab1[ii++] & 0xffffff) <= start);
-                        *outSize = (tab1[ii-1] & 0xffffff) - start;
+                        while(start != (tab1[ii++] & 0x00ffffff));
+                        while((tab1[ii++] & 0x00ffffff) <= start);
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - start;
                     } else {
                         ii = index;
-                        while((tab1[ii++] & 0xffffff) <= start);
-                        *outSize = (tab1[ii-1] & 0xffffff) - start;
+                        while((tab1[ii++] & 0x00ffffff) <= start);
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - start;
                     }
                 }
-            } else if(files[FILE_MODELS_tab]) {
+            } else if(tab1) {
                 fileNo = FILE_MODELS_bin;
                 if(outSize) {
-                    start = tab1[index] & 0xffffff;
+                    start = tab1[index] & 0x00ffffff;
                     ii = 0;
                     if(start == 0) {
-                        while((tab1[ii++] & 0xffffff) <= start);
-                        *outSize = tab1[ii-1] & 0xffffff;
-                    } else if(start < (tab1[index - 1] & 0xffffff)) {
+                        while((tab1[ii++] & 0x00ffffff) <= start);
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - start;
+                    } else if(start < (tab1[index - 1] & 0x00ffffff)) {
                         ii = 0;
-                        while(start != (tab1[ii++] & 0xffffff));
-                        while((tab1[ii++] & 0xffffff) <= start);
-                        *outSize = (tab1[ii-1] & 0xffffff) - start;
+                        while(start != (tab1[ii++] & 0x00ffffff));
+                        while((tab1[ii++] & 0x00ffffff) <= start);
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - start;
                     } else {
                         ii = index;
-                        while((tab1[ii++] & 0xffffff) <= start);
-                        *outSize = (tab1[ii-1] & 0xffffff) - start;
+                        while((tab1[ii++] & 0x00ffffff) <= start);
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - start;
                     }
                 }
-            } else if(files[FILE_MODELS_tab2]) {
+            } else if(tab2) {
                 fileNo = FILE_MODELS_bin2;
                 if(outSize) {
-                    start = tab2[index] & 0xffffff;
+                    start = tab2[index] & 0x00ffffff;
                     ii = 0;
                     if(start == 0) {
-                        while((tab2[ii++] & 0xffffff) <= start);
-                        *outSize = tab2[ii-1] & 0xffffff;
+                        while((tab2[ii++] & 0x00ffffff) <= start);
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - start;
                     } else if((start < (tab2[index -1] & 0x00ffffff))) {
                         ii = 0;
-                        while(start != (tab2[ii++] & 0xffffff));
-                        while((tab2[ii++] & 0xffffff) <= start);
-                        *outSize = (tab2[ii-1] & 0xffffff) - start;
+                        while(start != (tab2[ii++] & 0x00ffffff));
+                        while((tab2[ii++] & 0x00ffffff) <= start);
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - start;
                     } else {
                         ii = index;
-                        while((tab2[ii++] & 0xffffff) <= start);
-                        *outSize = (tab2[ii-1] & 0xffffff) - start;
+                        while((tab2[ii++] & 0x00ffffff) <= start);
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - start;
                     }
                 }
             }
@@ -684,22 +684,22 @@ size_t length, uint *outSize, int index, u8 flags) {
             if(offset & 0x20000000) {
                 fileNo = FILE_ANIM_BIN2;
                 if(outSize) {
-                    *outSize = (tab2[index + 1] & 0x0fffffff) - (tab2[index] & 0xffffff);
+                    *outSize = (tab2[index + 1] & 0x0fffffff) - (tab2[index] & 0x00ffffff);
                 }
             } else if(offset & 0x10000000) {
                 fileNo = FILE_ANIM_BIN;
                 if(outSize) {
-                    *outSize = (tab1[index + 1] & 0x0fffffff) - (tab1[index] & 0xffffff);
+                    *outSize = (tab1[index + 1] & 0x0fffffff) - (tab1[index] & 0x00ffffff);
                 }
-            } else if(files[FILE_ANIM_TAB]) {
+            } else if(tab1) {
                 fileNo = FILE_ANIM_BIN;
                 if(outSize) {
-                    *outSize = (tab1[index + 1] & 0x0fffffff) - (tab1[index] & 0xffffff);
+                    *outSize = (tab1[index + 1] & 0x0fffffff) - (tab1[index] & 0x00ffffff);
                 }
-            } else if(files[FILE_ANIM_TAB2]) {
+            } else if(tab2) {
                 fileNo = FILE_ANIM_BIN2;
                 if(outSize) {
-                    *outSize = (tab2[index + 1] & 0x0fffffff) - (tab2[index] & 0xffffff);
+                    *outSize = (tab2[index + 1] & 0x0fffffff) - (tab2[index] & 0x00ffffff);
                 }
             }
             offset &= 0x0fffffff;
@@ -711,94 +711,91 @@ size_t length, uint *outSize, int index, u8 flags) {
             if(offset & 0x20000000) {
                 fileNo = FILE_BLOCKS_bin2;
                 if(outSize) {
-                    *outSize = (tab2[index + 1] & 0x0fffffff) - (tab2[index] & 0xffffff);
+                    *outSize = (tab2[index + 1] & 0x0fffffff) - (tab2[index] & 0x00ffffff);
                 }
             } else if(offset & 0x10000000) {
                 fileNo = FILE_BLOCKS_bin;
                 if(outSize) {
-                    *outSize = (tab1[index + 1] & 0x0fffffff) - (tab1[index] & 0xffffff);
+                    *outSize = (tab1[index + 1] & 0x0fffffff) - (tab1[index] & 0x00ffffff);
                 }
-            } else if(files[FILE_BLOCKS_tab]) {
+            } else if(tab1) {
                 fileNo = FILE_BLOCKS_bin;
                 if(outSize) {
-                    *outSize = (tab1[index + 1] & 0x0fffffff) - (tab1[index] & 0xffffff);
+                    *outSize = (tab1[index + 1] & 0x0fffffff) - (tab1[index] & 0x00ffffff);
                 }
-            } else if(files[FILE_BLOCKS_tab2]) {
+            } else if(tab2) {
                 fileNo = FILE_BLOCKS_bin2;
                 if(outSize) {
-                    *outSize = (tab2[index + 1] & 0x0fffffff) - (tab2[index] & 0xffffff);
+                    *outSize = (tab2[index + 1] & 0x0fffffff) - (tab2[index] & 0x00ffffff);
                 }
             }
             offset &= 0x0fffffff;
             break;
 
         case FILE_TEX0_bin:
-            loadFlags = getLoadedFileFlags();
+            loadFlags = getLoadedFileFlags(0);
             if(((loadFlags & 0x400) == 0) && ((loadFlags & 0x100) == 0)) {
-                tab1 = (uint *)files[FILE_TEX0_tab];
+                tab1 = files[FILE_TEX0_tab];
             }
             if(((loadFlags & 0x800) == 0) && ((loadFlags & 0x200) == 0)) {
-                tab2 = (uint *)files[FILE_TEX0_tab2];
+                tab2 = files[FILE_TEX0_tab2];
             }
-            if((tab2 == NULL) || ((TEX0_TAB[index] & 0x80000000) == 0)) {
-                if((tab1 == NULL)
-                    || ((TEX0_TAB[index] & 0x40000000) == 0)) {
-                    if(tab2 == NULL) {
-                        if((tab1)
-                            && (fileNo = FILE_TEX0_bin, outSize)) {
-                            offset = tab1[index] & 0x00ffffff;
-                            if(offset == 0) {
-                                ii = 0;
-                                while((tab1[++ii] & 0x00ffffff) == 0);
-                                *outSize = tab1[ii] & 0x00ffffff;
-                            } else {
-                                ii = index;
-                                while((tab1[++ii] & 0x00ffffff) <= offset);
-                                *outSize = (tab1[ii] & 0x00ffffff) - offset;
-                            }
-                        }
-                    } else {
-                        fileNo = FILE_TEX0_bin2;
-                        if(outSize) {
-                            offset = tab2[index] & 0x00ffffff;
-                            if(offset == 0) {
-                                ii = 0;
-                                while((tab2[++ii] & 0x00ffffff) == 0);
-                                *outSize = tab2[ii] & 0x00ffffff;
-                            } else {
-                                ii = index;
-                                while((tab2[++ii] & 0x00ffffff) <= offset);
-                                *outSize = (tab2[ii] & 0x00ffffff) - offset;
-                            }
-                        }
-                    }
-                } else {
-                    fileNo = FILE_TEX0_bin;
-                    if(outSize) {
-                        offset = tab1[index] & 0x00ffffff;
-                        if(offset == 0) {
-                            ii = 0;
-                            while((tab1[++ii] & 0x00ffffff) == 0);
-                            *outSize = tab1[ii] & 0x00ffffff;
-                        } else {
-                            ii = index;
-                            while((tab1[++ii] & 0x00ffffff) <= offset);
-                            *outSize = (tab1[ii] & 0x00ffffff) - offset;
-                        }
-                    }
-                }
-            } else {
+            if(tab2 && TEX0_TAB[index] & 0x80000000) {
                 fileNo = FILE_TEX0_bin2;
                 if(outSize) {
                     offset = tab2[index] & 0x00ffffff;
                     if(offset == 0) {
                         ii = 0;
-                        while((tab2[++ii] & 0x00ffffff) == 0);
-                        *outSize = tab2[ii] & 0x00ffffff;
+                        while((tab2[ii++] & 0x00ffffff) <= offset);
+                        *outSize = tab2[ii-1] & 0x00ffffff;
                     } else {
                         ii = index;
-                        while((tab2[++ii] & 0x00ffffff) <= offset);
-                        *outSize = (tab2[ii] & 0x00ffffff) - offset;
+                        while((tab2[ii++] & 0x00ffffff) <= offset);
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - offset;
+                    }
+                }
+            }
+            else if(tab1 && TEX0_TAB[index] & 0x40000000) {
+                fileNo = FILE_TEX0_bin;
+                if(outSize) {
+                    offset = tab1[index] & 0x00ffffff;
+                    if(offset == 0) {
+                        ii = 0;
+                        while((tab1[ii++] & 0x00ffffff) <= offset);
+                        *outSize = tab1[ii-1] & 0x00ffffff;
+                    } else {
+                        ii = index;
+                        while((tab1[ii++] & 0x00ffffff) <= offset);
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - offset;
+                    }
+                }
+            }
+            else if(tab2) {
+                fileNo = FILE_TEX0_bin2;
+                if(outSize) {
+                    offset = tab2[index] & 0x00ffffff;
+                    if(offset == 0) {
+                        ii = 0;
+                        while((tab2[ii++] & 0x00ffffff) <= offset);
+                        *outSize = tab2[ii-1] & 0x00ffffff;
+                    } else {
+                        ii = index;
+                        while((tab2[ii++] & 0x00ffffff) <= offset);
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - offset;
+                    }
+                }
+            } else if(tab1) {
+                fileNo = FILE_TEX0_bin;
+                if(outSize) {
+                    offset = tab1[index] & 0x00ffffff;
+                    if(offset == 0) {
+                        ii = 0;
+                        while((tab1[ii++] & 0x00ffffff) <= offset);
+                        *outSize = tab1[ii-1] & 0x00ffffff;
+                    } else {
+                        ii = index;
+                        while((tab1[ii++] & 0x00ffffff) <= offset);
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - offset;
                     }
                 }
             }
@@ -808,70 +805,67 @@ size_t length, uint *outSize, int index, u8 flags) {
         case FILE_TEX1_bin:
             loadFlags = getLoadedFileFlags();
             if(((loadFlags & 0x4000) == 0) && ((loadFlags & 0x1000) == 0)) {
-                tab1 = (uint *)files[FILE_TEX1_tab];
+                tab1 = files[FILE_TEX1_tab];
             }
             if(((loadFlags & 0x8000) == 0) && ((loadFlags & 0x2000) == 0)) {
-                tab2 = (uint *)files[FILE_TEX1_tab2];
+                tab2 = files[FILE_TEX1_tab2];
             }
-            if((tab2 == NULL) || ((TEX1_TAB[index] & 0x80000000) == 0)) {
-                if((tab1 == NULL)
-                    || ((TEX1_TAB[index] & 0x40000000) == 0)) {
-                    if(tab2 == NULL) {
-                        if((tab1)
-                            && (fileNo = FILE_TEX1_bin, outSize)) {
-                            offset = tab1[index] & 0x00ffffff;
-                            if(offset == 0) {
-                                ii = 0;
-                                while((tab1[++ii] & 0x00ffffff) == 0);
-                                *outSize = tab1[ii] & 0x00ffffff;
-                            } else {
-                                ii = index;
-                                while((tab1[++ii] & 0x00ffffff) <= offset);
-                                *outSize = (tab1[ii] & 0x00ffffff) - offset;
-                            }
-                        }
-                    } else {
-                        fileNo = FILE_TEX1_bin2;
-                        if(outSize) {
-                            offset = tab2[index] & 0x00ffffff;
-                            if(offset == 0) {
-                                ii = 0;
-                                while((tab2[++ii] & 0x00ffffff) == 0);
-                                *outSize = tab2[ii] & 0x00ffffff;
-                            } else {
-                                ii = index;
-                                while((tab2[++ii] & 0x00ffffff) <= offset);
-                                *outSize = (tab2[ii] & 0x00ffffff) - offset;
-                            }
-                        }
-                    }
-                } else {
-                    fileNo = FILE_TEX1_bin;
-                    if(outSize) {
-                        offset = tab1[index] & 0x00ffffff;
-                        if(offset == 0) {
-                            ii = 0;
-                            while((tab1[++ii] & 0x00ffffff) == 0);
-                            *outSize = tab1[ii] & 0x00ffffff;
-                        } else {
-                            ii = index;
-                            while((tab1[++ii] & 0x00ffffff) <= offset);
-                            *outSize = (tab1[ii] & 0x00ffffff) - offset;
-                        }
-                    }
-                }
-            } else {
+            if(tab2 && TEX1_TAB[index] & 0x80000000) {
                 fileNo = FILE_TEX1_bin2;
                 if(outSize) {
                     offset = tab2[index] & 0x00ffffff;
                     if(offset == 0) {
                         ii = 0;
-                        while((tab2[++ii] & 0x00ffffff) == 0);
-                        *outSize = tab2[ii] & 0x00ffffff;
+                        while((tab2[ii++] & 0x00ffffff) <= offset);
+                        *outSize = tab2[ii-1] & 0x00ffffff;
                     } else {
                         ii = index;
-                        while((tab2[++ii] & 0x00ffffff) <= offset);
-                        *outSize = (tab2[ii] & 0x00ffffff) - offset;
+                        while((tab2[ii++] & 0x00ffffff) <= offset);
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - offset;
+                    }
+                }
+            }
+            else if(tab1 && TEX1_TAB[index] & 0x40000000) {
+                fileNo = FILE_TEX1_bin;
+                if(outSize) {
+                    offset = tab1[index] & 0x00ffffff;
+                    if(offset == 0) {
+                        ii = 0;
+                        while((tab1[ii++] & 0x00ffffff) <= offset);
+                        *outSize = tab1[ii-1] & 0x00ffffff;
+                    } else {
+                        ii = index;
+                        while((tab1[ii++] & 0x00ffffff) <= offset);
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - offset;
+                    }
+                }
+            }
+            else if(tab2) {
+                fileNo = FILE_TEX1_bin2;
+                if(outSize) {
+                    offset = tab2[index] & 0x00ffffff;
+                    if(offset == 0) {
+                        ii = 0;
+                        while((tab2[ii++] & 0x00ffffff) <= offset);
+                        *outSize = tab2[ii-1] & 0x00ffffff;
+                    } else {
+                        ii = index;
+                        while((tab2[ii++] & 0x00ffffff) <= offset);
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - offset;
+                    }
+                }
+            } else if(tab1) {
+                fileNo = FILE_TEX1_bin;
+                if(outSize) {
+                    offset = tab1[index] & 0x00ffffff;
+                    if(offset == 0) {
+                        ii = 0;
+                        while((tab1[ii++] & 0x00ffffff) <= offset);
+                        *outSize = tab1[ii-1] & 0x00ffffff;
+                    } else {
+                        ii = index;
+                        while((tab1[ii++] & 0x00ffffff) <= offset);
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - offset;
                     }
                 }
             }
@@ -886,10 +880,10 @@ size_t length, uint *outSize, int index, u8 flags) {
 			if((((uint)dest & 0x1f) == 0) && ((length & 0x1f) == 0)) {
 				DVDReadPrio(&file, dest, length, offset, 2);
 			} else {
-				tmpBuf = mmAlloc(length + 0x1f & 0xffffffe0,
+				tmpBuf = mmAlloc(length + 0x1f & 0x00ffffffe0,
 				    ALLOC_TAG_DVD_BUFFER, (volatile u32)"temp dvd buffer");
 				DVDReadPrio(&file, tmpBuf,
-				    length + 0x1f & 0xffffffe0, offset, 2);
+				    length + 0x1f & 0x00ffffffe0, offset, 2);
 				memcpy_src_dst_len(tmpBuf, dest, length);
 				mmFree(tmpBuf);
 			}
@@ -995,7 +989,7 @@ int count) {
             } else if(!((noTab1) || (tbl1[ii] == -1) || ((tbl1[ii] & 0x10000000U) == 0))) {
                 BLOCKS_TAB[ii] = tbl1[ii];
             } else if(!((noTab2) || (tbl2[ii] == -1) || ((tbl2[ii] & 0x10000000U) == 0))) {
-                BLOCKS_TAB[ii] = tbl2[ii] & 0xffffffU | 0x20000000;
+                BLOCKS_TAB[ii] = tbl2[ii] & 0x00ffffffU | 0x20000000;
             } else if(!((noTab1) || (tbl1[ii] == 0))) {
                 BLOCKS_TAB[ii] = tbl1[ii];
             } else if(!((noTab2) || (tbl2[ii] == 0))) {
@@ -1009,7 +1003,7 @@ int count) {
 			if(!((noTab1) || (tbl1[ii] == -1) || ((tbl1[ii] & 0x10000000U) == 0))) {
 				table[ii] = tbl1[ii];
 			} else if(!((noTab2) || (tbl2[ii] == -1) || ((tbl2[ii] & 0x10000000U) == 0))) {
-                *(uint *)((int)table + ii * 4) = tbl2[ii] & 0xffffffU | 0x20000000;
+                *(uint *)((int)table + ii * 4) = tbl2[ii] & 0x00ffffffU | 0x20000000;
             } else if(!((noTab1) || (tbl1[ii] == 0))) {
                 table[ii] = tbl1[ii];
             } else if((!noTab2) && (tbl2[ii] != 0)) {
