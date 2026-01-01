@@ -605,16 +605,16 @@ size_t length, uint *outSize, int index, u8 flags) {
                     ii = 0;
                     if(!start) {
                         while((tab2[ii++] & 0xffffff) <= start);
-                        *outSize = tab2[ii] & 0xffffff;
-                    } else if(start < (GET_TAB_ENTRY(FILE_MODELS_tab2, index - 1) & 0x00ffffff)) {
+                        *outSize = tab2[ii-1] & 0xffffff;
+                    } else if(start < (tab2[index - 1] & 0x00ffffff)) {
                         ii = 0;
                         while(start != (tab2[ii++] & 0xffffff));
                         while((tab2[ii++] & 0xffffff) <= start);
-                        *outSize = (tab2[ii] & 0xffffff) - start;
+                        *outSize = (tab2[ii-1] & 0xffffff) - start;
                     } else {
                         ii = index;
                         while((tab2[ii++] & 0xffffff) <= start);
-                        *outSize = (tab2[ii] & 0xffffff) - start;
+                        *outSize = (tab2[ii-1] & 0xffffff) - start;
                     }
                 }
             } else if(offset & 0x10000000) {
@@ -624,16 +624,16 @@ size_t length, uint *outSize, int index, u8 flags) {
                     ii = 0;
                     if(start == 0) {
                         while((tab1[ii++] & 0xffffff) <= start);
-                        *outSize = tab1[ii] & 0xffffff;
-                    } else if(start < (GET_TAB_ENTRY(FILE_MODELS_tab, index - 1) & 0x00ffffff)) {
+                        *outSize = tab1[ii-1] & 0xffffff;
+                    } else if(start < (tab1[index - 1] & 0x00ffffff)) {
                         ii = 0;
                         while(start != (tab1[ii++] & 0xffffff));
                         while((tab1[ii++] & 0xffffff) <= start);
-                        *outSize = (tab1[ii] & 0xffffff) - start;
+                        *outSize = (tab1[ii-1] & 0xffffff) - start;
                     } else {
                         ii = index;
                         while((tab1[ii++] & 0xffffff) <= start);
-                        *outSize = (tab1[ii] & 0xffffff) - start;
+                        *outSize = (tab1[ii-1] & 0xffffff) - start;
                     }
                 }
             } else if(files[FILE_MODELS_tab]) {
@@ -643,107 +643,90 @@ size_t length, uint *outSize, int index, u8 flags) {
                     ii = 0;
                     if(start == 0) {
                         while((tab1[ii++] & 0xffffff) <= start);
-                        *outSize = tab1[ii] & 0xffffff;
+                        *outSize = tab1[ii-1] & 0xffffff;
                     } else if(start < (tab1[index - 1] & 0xffffff)) {
                         ii = 0;
                         while(start != (tab1[ii++] & 0xffffff));
                         while((tab1[ii++] & 0xffffff) <= start);
-                        *outSize = (tab1[ii] & 0xffffff) - start;
+                        *outSize = (tab1[ii-1] & 0xffffff) - start;
                     } else {
                         ii = index;
                         while((tab1[ii++] & 0xffffff) <= start);
-                        *outSize = (tab1[ii] & 0xffffff) - start;
+                        *outSize = (tab1[ii-1] & 0xffffff) - start;
                     }
                 }
-            } else {
-                if((files[FILE_MODELS_tab2]) && (fileNo = FILE_MODELS_bin2, outSize)) {
+            } else if(files[FILE_MODELS_tab2]) {
+                fileNo = FILE_MODELS_bin2;
+                if(outSize) {
                     start = tab2[index] & 0xffffff;
                     ii = 0;
                     if(start == 0) {
                         while((tab2[ii++] & 0xffffff) <= start);
-                        *outSize = tab2[ii] & 0xffffff;
-                    } else if((start < (GET_TAB_ENTRY(FILE_MODELS_tab2, index -1) & 0x00ffffff))) {
+                        *outSize = tab2[ii-1] & 0xffffff;
+                    } else if((start < (tab2[index -1] & 0x00ffffff))) {
+                        ii = 0;
                         while(start != (tab2[ii++] & 0xffffff));
                         while((tab2[ii++] & 0xffffff) <= start);
-                        *outSize = (tab2[ii] & 0xffffff) - start;
+                        *outSize = (tab2[ii-1] & 0xffffff) - start;
                     } else {
                         ii = index;
                         while((tab2[ii++] & 0xffffff) <= start);
-                        *outSize = (tab2[ii] & 0xffffff) - start;
+                        *outSize = (tab2[ii-1] & 0xffffff) - start;
                     }
                 }
             }
             offset &= 0x0fffffff;
             break;
 
-        case FILE_TEX1_bin:
-            loadFlags = getLoadedFileFlags();
-            if(((loadFlags & 0x4000) == 0) && ((loadFlags & 0x1000) == 0)) {
-                tab1 = (uint *)files[FILE_TEX1_tab];
-            }
-            if(((loadFlags & 0x8000) == 0) && ((loadFlags & 0x2000) == 0)) {
-                tab2 = (uint *)files[FILE_TEX1_tab2];
-            }
-            if((tab2 == NULL) || ((TEX1_TAB[index] & 0x80000000) == 0)) {
-                if((tab1 == NULL)
-                    || ((TEX1_TAB[index] & 0x40000000) == 0)) {
-                    if(tab2 == NULL) {
-                        if((tab1)
-                            && (fileNo = FILE_TEX1_bin, outSize)) {
-                            offset = tab1[index] & 0x00ffffff;
-                            if(offset == 0) {
-                                ii = 0;
-                                while((tab1[++ii] & 0x00ffffff) == 0);
-                                *outSize = tab1[ii] & 0x00ffffff;
-                            } else {
-                                ii = index;
-                                while((tab1[++ii] & 0x00ffffff) <= offset);
-                                *outSize = (tab1[ii] & 0x00ffffff) - offset;
-                            }
-                        }
-                    } else {
-                        fileNo = FILE_TEX1_bin2;
-                        if(outSize) {
-                            offset = tab2[index] & 0x00ffffff;
-                            if(offset == 0) {
-                                ii = 0;
-                                while((tab2[++ii] & 0x00ffffff) == 0);
-                                *outSize = tab2[ii] & 0x00ffffff;
-                            } else {
-                                ii = index;
-                                while((tab2[++ii] & 0x00ffffff) <= offset);
-                                *outSize = (tab2[ii] & 0x00ffffff) - offset;
-                            }
-                        }
-                    }
-                } else {
-                    fileNo = FILE_TEX1_bin;
-                    if(outSize) {
-                        offset = tab1[index] & 0x00ffffff;
-                        if(offset == 0) {
-                            ii = 0;
-                            while((tab1[++ii] & 0x00ffffff) == 0);
-                            *outSize = tab1[ii] & 0x00ffffff;
-                        } else {
-                            ii = index;
-                            while((tab1[++ii] & 0x00ffffff) <= offset);
-                            *outSize = (tab1[ii] & 0x00ffffff) - offset;
-                        }
-                    }
-                }
-            } else {
-                fileNo = FILE_TEX1_bin2;
+        case FILE_ANIM_BIN:
+            tab1 = files[FILE_ANIM_TAB];
+            tab2 = files[FILE_ANIM_TAB2];
+            if(offset & 0x20000000) {
+                fileNo = FILE_ANIM_BIN2;
                 if(outSize) {
-                    offset = tab2[index] & 0x00ffffff;
-                    if(offset == 0) {
-                        ii = 0;
-                        while((tab2[++ii] & 0x00ffffff) == 0);
-                        *outSize = tab2[ii] & 0x00ffffff;
-                    } else {
-                        ii = index;
-                        while((tab2[++ii] & 0x00ffffff) <= offset);
-                        *outSize = (tab2[ii] & 0x00ffffff) - offset;
-                    }
+                    *outSize = (tab2[index + 1] & 0x0fffffff) - (tab2[index] & 0xffffff);
+                }
+            } else if(offset & 0x10000000) {
+                fileNo = FILE_ANIM_BIN;
+                if(outSize) {
+                    *outSize = (tab1[index + 1] & 0x0fffffff) - (tab1[index] & 0xffffff);
+                }
+            } else if(files[FILE_ANIM_TAB]) {
+                fileNo = FILE_ANIM_BIN;
+                if(outSize) {
+                    *outSize = (tab1[index + 1] & 0x0fffffff) - (tab1[index] & 0xffffff);
+                }
+            } else if(files[FILE_ANIM_TAB2]) {
+                fileNo = FILE_ANIM_BIN2;
+                if(outSize) {
+                    *outSize = (tab2[index + 1] & 0x0fffffff) - (tab2[index] & 0xffffff);
+                }
+            }
+            offset &= 0x0fffffff;
+            break;
+
+        case FILE_BLOCKS_bin:
+            tab1 = files[FILE_BLOCKS_tab];
+            tab2 = files[FILE_BLOCKS_tab2];
+            if(offset & 0x20000000) {
+                fileNo = FILE_BLOCKS_bin2;
+                if(outSize) {
+                    *outSize = (tab2[index + 1] & 0x0fffffff) - (tab2[index] & 0xffffff);
+                }
+            } else if(offset & 0x10000000) {
+                fileNo = FILE_BLOCKS_bin;
+                if(outSize) {
+                    *outSize = (tab1[index + 1] & 0x0fffffff) - (tab1[index] & 0xffffff);
+                }
+            } else if(files[FILE_BLOCKS_tab]) {
+                fileNo = FILE_BLOCKS_bin;
+                if(outSize) {
+                    *outSize = (tab1[index + 1] & 0x0fffffff) - (tab1[index] & 0xffffff);
+                }
+            } else if(files[FILE_BLOCKS_tab2]) {
+                fileNo = FILE_BLOCKS_bin2;
+                if(outSize) {
+                    *outSize = (tab2[index + 1] & 0x0fffffff) - (tab2[index] & 0xffffff);
                 }
             }
             offset &= 0x0fffffff;
@@ -822,66 +805,74 @@ size_t length, uint *outSize, int index, u8 flags) {
             offset &= 0x0fffffff;
             break;
 
-        case FILE_BLOCKS_bin:
-            if((offset & 0x20000000) == 0) {
-                if((offset & 0x10000000) == 0) {
-                    if(files[FILE_BLOCKS_tab] == NULL) {
-                        if((files[FILE_BLOCKS_tab2])
-                            && (fileNo = FILE_BLOCKS_bin2, outSize)) {
-                                *outSize = (GET_TAB_ENTRY(FILE_BLOCKS_tab2, index + 1) & 0x0fffffff) -
-                                    (tab2[index] & 0xffffff);
-                        }
-                    } else {
-                        fileNo = FILE_BLOCKS_bin;
-                        if(outSize) {
-                            *outSize = (GET_TAB_ENTRY(FILE_BLOCKS_tab, index + 1) & 0x0fffffff) -
-                                (tab1[index] & 0xffffff);
-                        }
-                    }
-                } else {
-                    fileNo = FILE_BLOCKS_bin;
-                    if(outSize) {
-                        *outSize = (GET_TAB_ENTRY(FILE_BLOCKS_tab, index + 1) & 0x0fffffff) -
-                            (tab1[index] & 0xffffff);
-                    }
-                }
-            } else {
-                fileNo = FILE_BLOCKS_bin2;
-                if(outSize) {
-                    *outSize = (GET_TAB_ENTRY(FILE_BLOCKS_tab2, index + 1) & 0x0fffffff) -
-                        (tab2[index] & 0xffffff);
-                }
+        case FILE_TEX1_bin:
+            loadFlags = getLoadedFileFlags();
+            if(((loadFlags & 0x4000) == 0) && ((loadFlags & 0x1000) == 0)) {
+                tab1 = (uint *)files[FILE_TEX1_tab];
             }
-            offset &= 0x0fffffff;
-            break;
-
-        case FILE_ANIM_BIN:
-            if((offset & 0x20000000) == 0) {
-                if((offset & 0x10000000) == 0) {
-                    if(files[FILE_ANIM_TAB] == NULL) {
-                        if((files[FILE_ANIM_TAB2]) && (fileNo = FILE_ANIM_BIN2, outSize)) {
-                            *outSize = (GET_TAB_ENTRY(FILE_ANIM_TAB2, index + 1) & 0x0fffffff) -
-                                (tab2[index] & 0xffffff);
+            if(((loadFlags & 0x8000) == 0) && ((loadFlags & 0x2000) == 0)) {
+                tab2 = (uint *)files[FILE_TEX1_tab2];
+            }
+            if((tab2 == NULL) || ((TEX1_TAB[index] & 0x80000000) == 0)) {
+                if((tab1 == NULL)
+                    || ((TEX1_TAB[index] & 0x40000000) == 0)) {
+                    if(tab2 == NULL) {
+                        if((tab1)
+                            && (fileNo = FILE_TEX1_bin, outSize)) {
+                            offset = tab1[index] & 0x00ffffff;
+                            if(offset == 0) {
+                                ii = 0;
+                                while((tab1[++ii] & 0x00ffffff) == 0);
+                                *outSize = tab1[ii] & 0x00ffffff;
+                            } else {
+                                ii = index;
+                                while((tab1[++ii] & 0x00ffffff) <= offset);
+                                *outSize = (tab1[ii] & 0x00ffffff) - offset;
+                            }
                         }
                     } else {
-                        fileNo = FILE_ANIM_BIN;
+                        fileNo = FILE_TEX1_bin2;
                         if(outSize) {
-                            *outSize = (GET_TAB_ENTRY(FILE_ANIM_TAB, index + 1) & 0x0fffffff) -
-                                (tab1[index] & 0xffffff);
+                            offset = tab2[index] & 0x00ffffff;
+                            if(offset == 0) {
+                                ii = 0;
+                                while((tab2[++ii] & 0x00ffffff) == 0);
+                                *outSize = tab2[ii] & 0x00ffffff;
+                            } else {
+                                ii = index;
+                                while((tab2[++ii] & 0x00ffffff) <= offset);
+                                *outSize = (tab2[ii] & 0x00ffffff) - offset;
+                            }
                         }
                     }
                 } else {
-                    fileNo = FILE_ANIM_BIN;
+                    fileNo = FILE_TEX1_bin;
                     if(outSize) {
-                        *outSize = (GET_TAB_ENTRY(FILE_ANIM_TAB, index + 1) & 0x0fffffff) -
-                            (tab1[index] & 0xffffff);
+                        offset = tab1[index] & 0x00ffffff;
+                        if(offset == 0) {
+                            ii = 0;
+                            while((tab1[++ii] & 0x00ffffff) == 0);
+                            *outSize = tab1[ii] & 0x00ffffff;
+                        } else {
+                            ii = index;
+                            while((tab1[++ii] & 0x00ffffff) <= offset);
+                            *outSize = (tab1[ii] & 0x00ffffff) - offset;
+                        }
                     }
                 }
             } else {
-                fileNo = FILE_ANIM_BIN2;
+                fileNo = FILE_TEX1_bin2;
                 if(outSize) {
-                    *outSize = (GET_TAB_ENTRY(FILE_ANIM_TAB2, index + 1) & 0x0fffffff) -
-                        (tab2[index] & 0xffffff);
+                    offset = tab2[index] & 0x00ffffff;
+                    if(offset == 0) {
+                        ii = 0;
+                        while((tab2[++ii] & 0x00ffffff) == 0);
+                        *outSize = tab2[ii] & 0x00ffffff;
+                    } else {
+                        ii = index;
+                        while((tab2[++ii] & 0x00ffffff) <= offset);
+                        *outSize = (tab2[ii] & 0x00ffffff) - offset;
+                    }
                 }
             }
             offset &= 0x0fffffff;
