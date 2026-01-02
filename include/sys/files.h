@@ -99,7 +99,4 @@ typedef enum { //different from final!
 #define TEX1_TAB_SIZE 0x1000
 #define BLOCKS_TAB_SIZE 0x800
 
-#define GET_TAB_ENTRY(tab, idx) (*(uint *)((int)dataFilePtrs[tab] + (idx) * 4))
-#define GET_TAB_OFFSET(tab, idx) (GET_TAB_ENTRY(tab, idx) & 0xffffff)
-
 #endif //_SYS_FILES_H_

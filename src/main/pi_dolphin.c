@@ -586,10 +586,11 @@ size_t length, uint *outSize, int index, u8 flags) {
 	int *tab2;
 	int *tab1;
 	int ii;
-	int local_8c;
+	int readLen;
 	void *tmpBuf;
 	DVDFileInfo file;
     int **files;
+    ZlbHeader zlb;
 
     files = dataFilePtrs;
 	tab1 = NULL;
@@ -747,7 +748,7 @@ size_t length, uint *outSize, int index, u8 flags) {
                     if(offset == 0) {
                         ii = 0;
                         while((tab2[ii++] & 0x00ffffff) <= offset);
-                        *outSize = tab2[ii-1] & 0x00ffffff;
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - offset;
                     } else {
                         ii = index;
                         while((tab2[ii++] & 0x00ffffff) <= offset);
@@ -762,7 +763,7 @@ size_t length, uint *outSize, int index, u8 flags) {
                     if(offset == 0) {
                         ii = 0;
                         while((tab1[ii++] & 0x00ffffff) <= offset);
-                        *outSize = tab1[ii-1] & 0x00ffffff;
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - offset;
                     } else {
                         ii = index;
                         while((tab1[ii++] & 0x00ffffff) <= offset);
@@ -777,7 +778,7 @@ size_t length, uint *outSize, int index, u8 flags) {
                     if(offset == 0) {
                         ii = 0;
                         while((tab2[ii++] & 0x00ffffff) <= offset);
-                        *outSize = tab2[ii-1] & 0x00ffffff;
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - offset;
                     } else {
                         ii = index;
                         while((tab2[ii++] & 0x00ffffff) <= offset);
@@ -791,7 +792,7 @@ size_t length, uint *outSize, int index, u8 flags) {
                     if(offset == 0) {
                         ii = 0;
                         while((tab1[ii++] & 0x00ffffff) <= offset);
-                        *outSize = tab1[ii-1] & 0x00ffffff;
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - offset;
                     } else {
                         ii = index;
                         while((tab1[ii++] & 0x00ffffff) <= offset);
@@ -803,7 +804,7 @@ size_t length, uint *outSize, int index, u8 flags) {
             break;
 
         case FILE_TEX1_bin:
-            loadFlags = getLoadedFileFlags();
+            loadFlags = getLoadedFileFlags(0);
             if(((loadFlags & 0x4000) == 0) && ((loadFlags & 0x1000) == 0)) {
                 tab1 = files[FILE_TEX1_tab];
             }
@@ -817,7 +818,7 @@ size_t length, uint *outSize, int index, u8 flags) {
                     if(offset == 0) {
                         ii = 0;
                         while((tab2[ii++] & 0x00ffffff) <= offset);
-                        *outSize = tab2[ii-1] & 0x00ffffff;
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - offset;
                     } else {
                         ii = index;
                         while((tab2[ii++] & 0x00ffffff) <= offset);
@@ -832,7 +833,7 @@ size_t length, uint *outSize, int index, u8 flags) {
                     if(offset == 0) {
                         ii = 0;
                         while((tab1[ii++] & 0x00ffffff) <= offset);
-                        *outSize = tab1[ii-1] & 0x00ffffff;
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - offset;
                     } else {
                         ii = index;
                         while((tab1[ii++] & 0x00ffffff) <= offset);
@@ -847,7 +848,7 @@ size_t length, uint *outSize, int index, u8 flags) {
                     if(offset == 0) {
                         ii = 0;
                         while((tab2[ii++] & 0x00ffffff) <= offset);
-                        *outSize = tab2[ii-1] & 0x00ffffff;
+                        *outSize = (tab2[ii-1] & 0x00ffffff) - offset;
                     } else {
                         ii = index;
                         while((tab2[ii++] & 0x00ffffff) <= offset);
@@ -861,7 +862,7 @@ size_t length, uint *outSize, int index, u8 flags) {
                     if(offset == 0) {
                         ii = 0;
                         while((tab1[ii++] & 0x00ffffff) <= offset);
-                        *outSize = tab1[ii-1] & 0x00ffffff;
+                        *outSize = (tab1[ii-1] & 0x00ffffff) - offset;
                     } else {
                         ii = index;
                         while((tab1[ii++] & 0x00ffffff) <= offset);
@@ -874,55 +875,70 @@ size_t length, uint *outSize, int index, u8 flags) {
 
         default: break;
     }
-	if((flags & 1) == 0) { //decode the file
-		if(files[fileNo] == NULL) {
-			DVDOpen((char*)dataFileNames[fileNo], &file);
-			if((((uint)dest & 0x1f) == 0) && ((length & 0x1f) == 0)) {
-				DVDReadPrio(&file, dest, length, offset, 2);
-			} else {
-				tmpBuf = mmAlloc(length + 0x1f & 0x00ffffffe0,
-				    ALLOC_TAG_DVD_BUFFER, (volatile u32)"temp dvd buffer");
-				DVDReadPrio(&file, tmpBuf,
-				    length + 0x1f & 0x00ffffffe0, offset, 2);
-				memcpy_src_dst_len(tmpBuf, dest, length);
-				mmFree(tmpBuf);
-			}
-			DCStoreRange(dest, length);
-			DVDClose(&file);
-		} else if((fileNo == FILE_MODELS_bin) || (fileNo == FILE_MODELS_bin2)) {
-			header = (int *)((int)files[fileNo] + offset);
-			if(*header == SIG_UNCOMPRESSED_FILE) {
-				memcpy_src_dst_len((void *)((int)header + (int)files[fileNo] +
-                    ((header[2] + 0x18) - (int)files[fileNo])),
-				    dest, header[1]);
-			} else if(*header == SIG_LZO_COMPRESSED_FILE) {
-				lzoDecompress((void *)((int)header + (int)files[fileNo] +
-                    ((header[2] + 0x28) - (int)files[fileNo])),
-				    header[3] + -0x10, dest, &local_8c);
-				DCStoreRange(dest, local_8c);
-			}
-		} else if((fileNo == FILE_TEX0_bin) || (fileNo == FILE_TEX0_bin2)) {
-			lzoDecompress((void *)((int)files[fileNo] + (offset & 0x00ffffff) + 0x10),
-			    *(int *)((int)files[fileNo] + (offset & 0x00ffffff) + 0xc),
-			    dest, &local_8c);
-			DCStoreRange(dest, local_8c);
-		} else if((fileNo == FILE_TEX1_bin) || (fileNo == FILE_TEX1_bin2)) {
-			start = offset & 0x00ffffff;
-			sig = (char *)((int)files[fileNo] + start);
-			if(!strncmp("DIR", sig, 3)) {
-                return (int)files[fileNo] + start + 0x20;
-            }
-			if(!strncmp(sig, "LZO", 3)) {
-				lzoDecompress(
-				    (void *)((int)files[fileNo] + start + 0x10),
-				    *(int *)(sig + 0xc), dest, &local_8c);
-				DCStoreRange(dest, local_8c);
-			}
-		} else {
-			memcpy_src_dst_len((void *)((int)files[fileNo] + offset),
-                dest, length);
-		}
-	}
+    if(flags & 1) return 0;
+
+    //decode the file
+    if(!files[fileNo]) {
+        //some debug assert?
+        //this check makes no sense, since we check for it again later.
+    }
+    else if((fileNo == FILE_MODELS_bin) || (fileNo == FILE_MODELS_bin2)) {
+        header = (int *)((int)files[fileNo] + offset);
+        if(*header == SIG_UNCOMPRESSED_FILE) {
+            memcpy_src_dst_len((void *)((int)header + (int)files[fileNo] +
+                ((header[2] + 0x18) - (int)files[fileNo])),
+                dest, header[1]);
+        } else if(*header == SIG_LZO_COMPRESSED_FILE) {
+            lzoDecompress((void *)((int)header + (int)files[fileNo] +
+                ((header[2] + 0x28) - (int)files[fileNo])),
+                header[3] + -0x10, dest, &readLen);
+            DCStoreRange(dest, readLen);
+        }
+    }
+    else if((fileNo == FILE_TEX0_bin) || (fileNo == FILE_TEX0_bin2)) {
+        start = offset & 0x00ffffff;
+        zlb = *(ZlbHeader*)(files[fileNo] + start);
+        lzoDecompress((void *)((int)files[fileNo] + start + sizeof(ZlbHeader)),
+            zlb.compLen,
+            dest, &readLen);
+        DCStoreRange(dest, readLen);
+    }
+    else if((fileNo == FILE_TEX1_bin) || (fileNo == FILE_TEX1_bin2)) {
+        start = offset & 0x00ffffff;
+        sig = (char *)((int)files[fileNo] + start);
+        if(!strncmp("DIR", sig, 3)) {
+            return (int)files[fileNo] + start + 0x20;
+        }
+        if(!strncmp(sig, "LZO", 3)) {
+            lzoDecompress(
+                (void *)((int)files[fileNo] + start + 0x10),
+                *(int *)(sig + 0xc), dest, &readLen);
+            DCStoreRange(dest, readLen);
+        }
+    }
+    else if(files[fileNo]) {
+        //default case, file is already loaded, just copy from it
+        memcpy_src_dst_len((void *)((int)files[fileNo] + offset),
+            dest, length);
+    }
+    else {
+        //default case but file isn't loaded; read a chunk from it
+        DVDOpen((char*)dataFileNames[fileNo], &file);
+        if(((uint)dest & 0x1f) || (length & 0x1f)) {
+            //not aligned; need to read aligned chunk into temp buffer.
+            //probably could have used a stack buffer instead of alloc...
+            tmpBuf = mmAlloc(length + 0x1f & 0x00ffffffe0,
+                ALLOC_TAG_DVD_BUFFER, (volatile u32)"temp dvd buffer");
+            DVDReadPrio(&file, tmpBuf,
+                length + 0x1f & 0x00ffffffe0, offset, 2);
+            memcpy_src_dst_len(tmpBuf, dest, length);
+            mmFree(tmpBuf);
+        } else { //range is aligned; we can read right into the destination buffer
+            DVDReadPrio(&file, dest, length, offset, 2);
+        }
+        DCStoreRange(dest, length);
+        DVDClose(&file);
+    }
 	return 0;
 }
 
