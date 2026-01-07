@@ -591,6 +591,7 @@ size_t length, uint *outSize, int index, u8 flags) {
 	DVDFileInfo file;
     int **files;
     ZlbHeader zlb;
+    int decompressResult; //set but not used
 
     files = dataFilePtrs;
 	tab1 = NULL;
@@ -889,7 +890,7 @@ size_t length, uint *outSize, int index, u8 flags) {
                 ((header[2] + 0x18) - (int)files[fileNo])),
                 dest, header[1]);
         } else if(*header == SIG_LZO_COMPRESSED_FILE) {
-            lzoDecompress((void *)((int)header + (int)files[fileNo] +
+            decompressResult = lzoDecompress((void *)((int)header + (int)files[fileNo] +
                 ((header[2] + 0x28) - (int)files[fileNo])),
                 header[3] + -0x10, dest, &readLen);
             DCStoreRange(dest, readLen);
@@ -898,7 +899,7 @@ size_t length, uint *outSize, int index, u8 flags) {
     else if((fileNo == FILE_TEX0_bin) || (fileNo == FILE_TEX0_bin2)) {
         start = offset & 0x00ffffff;
         zlb = *(ZlbHeader*)(files[fileNo] + start);
-        lzoDecompress((void *)((int)files[fileNo] + start + sizeof(ZlbHeader)),
+        decompressResult = lzoDecompress((void *)((int)files[fileNo] + start + sizeof(ZlbHeader)),
             zlb.compLen,
             dest, &readLen);
         DCStoreRange(dest, readLen);
@@ -910,10 +911,10 @@ size_t length, uint *outSize, int index, u8 flags) {
             return (int)files[fileNo] + start + 0x20;
         }
         if(!strncmp(sig, "LZO", 3)) {
-            lzoDecompress(
+            decompressResult = lzoDecompress(
                 (void *)((int)files[fileNo] + start + 0x10),
                 *(int *)(sig + 0xc), dest, &readLen);
-            DCStoreRange(dest, readLen);
+            DCStoreRange(dest, decompressResult);
         }
     }
     else if(files[fileNo]) {
