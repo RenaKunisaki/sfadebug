@@ -1021,8 +1021,7 @@ size_t length, uint *outSize, int index, u8 flags) {
 void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
 	bool bLoadImmediately;
 	DVDFileInfo *pFile;
-	BOOL BVar2;
-	int iVar3;
+	int whichFile;
 	DataFileId32 texFileId;
 	char path[64];
 	BOOL bSync;
@@ -1032,252 +1031,39 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
 	bSync = FALSE;
 	bLoadImmediately = false;
     switch(fileNo) {
-        case FILE_MODELS_tab:
-            if((!dataFilePtrs[FILE_MODELS_tab ])
-            || (!dataFilePtrs[FILE_MODELS_tab2])) {
-                bLoadImmediately = true;
-            }
+        case FILE_VOXMAP_tab: //0x1A
+        case FILE_VOXMAP_bin: { //0x1B
+            if((dataFilePtrs[fileNo] == NULL)
+                || (mapNo != loadedFileMapIds[fileNo])) {
+                if(dataFilePtrs[fileNo] != NULL) {
+                    mmFree(dataFilePtrs[fileNo]);
+                    dataFilePtrs[fileNo] = NULL;
+                }
+                sprintf(
+                    path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+                if(!DVDOpen(path, pFile)) return NULL;
 
-            if(dataFilePtrs[FILE_MODELS_tab]
-            && loadedFileMapIds[FILE_MODELS_tab] == mapNo) {
-                return dataFilePtrs[FILE_MODELS_tab];
-            }
-            else if(dataFilePtrs[FILE_MODELS_tab2]
-            && loadedFileMapIds[FILE_MODELS_tab2] == mapNo) {
-                return dataFilePtrs[FILE_MODELS_tab2];
-            }
-            else if(loadedFileMapIds[FILE_MODELS_tab] == -1) {
-                iVar3 = FILE_MODELS_tab;
-            }
-            else if(loadedFileMapIds[FILE_MODELS_tab2] == -1) {
-                iVar3 = FILE_MODELS_tab2;
-            }
-            else return NULL;
-
-            if(dataFilePtrs[iVar3]) { //loaded for another map, free it
-                mmFree(dataFilePtrs[iVar3]);
-                dataFilePtrs[iVar3] = NULL;
-            }
-            sprintf(path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
-            pFile = (DVDFileInfo *)mmAlloc(
-                sizeof(DVDFileInfo), ALLOC_TAG_DVD_BUFFER,
-                (volatile u32)dataFileNames[iVar3]);
-            if(!DVDOpen(path, pFile)) return NULL;
-
-            dataFileSizes[iVar3] = (int)(pFile->cb).callback;
-            data = mmAlloc(dataFileSizes[iVar3], ALLOC_TAG_DVD_BUFFER,
-                (volatile u32)dataFileNames[iVar3]);
-            dataFilePtrs[iVar3] = data;
-            DCInvalidateRange(dataFilePtrs[iVar3], dataFileSizes[iVar3]);
-            if(bLoadImmediately) {
-                DVDReadPrio(pFile, dataFilePtrs[iVar3],
-                    dataFileSizes[iVar3], 0, 2);
-                DVDClose(pFile);
-                mmFree(pFile);
-                mergeTableFiles(MODELS_TAB, FILE_MODELS_tab,
-                    FILE_MODELS_tab2, 0x800);
+                dataFileSizes[fileNo] = (int)file.cb.callback;
+                data = mmAlloc(dataFileSizes[fileNo],
+                    ALLOC_TAG_DVD_BUFFER,
+                    (volatile u32)"VOXMAPS");
+                dataFilePtrs[fileNo] = data;
+                DVDReadPrio(&file,
+                    dataFilePtrs[fileNo],
+                    dataFileSizes[fileNo],
+                    0,
+                    2);
+                DVDClose(&file);
+                loadedFileMapIds[fileNo] = mapNo;
+                return dataFilePtrs[fileNo];
             } else {
-                if(iVar3 == FILE_MODELS_tab) {
-                    loadedFiles |= 4;
-                } else {
-                    loadedFiles |= 8;
-                }
-                DVDReadAsync(pFile, dataFilePtrs[iVar3], dataFileSizes[iVar3],
-                    0, piDVDCallbackModelstab);
-            }
-            loadedFileMapIds[iVar3] = mapNo;
-            data = dataFilePtrs[iVar3];
-            break;
-        case FILE_MODELS_bin:
-            if((dataFilePtrs[FILE_MODELS_bin] == NULL)
-            && (dataFilePtrs[FILE_MODELS_bin2] == NULL)) {
-                bLoadImmediately = true;
-            }
-            if(((dataFilePtrs[FILE_MODELS_bin] == NULL)
-                    || (data = dataFilePtrs[FILE_MODELS_bin],
-                        loadedFileMapIds[FILE_MODELS_bin] != mapNo))
-                && (dataFilePtrs[FILE_MODELS_bin2] == NULL
-                    || (data = dataFilePtrs[FILE_MODELS_bin2],
-                        loadedFileMapIds[FILE_MODELS_bin2] != mapNo))) {
-                if(loadedFileMapIds[FILE_MODELS_bin] == -1) {
-                    iVar3 = FILE_MODELS_bin;
-                } else {
-                    if(loadedFileMapIds[FILE_MODELS_bin2] != -1) { return NULL; }
-                    iVar3 = FILE_MODELS_bin2;
-                }
-                if(dataFilePtrs[iVar3] != NULL) {
-                    mmFree(dataFilePtrs[iVar3]);
-                    dataFilePtrs[iVar3] = NULL;
-                }
-                sprintf(
-                    path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
-                pFile = (DVDFileInfo *)mmAlloc(
-                    sizeof(DVDFileInfo), ALLOC_TAG_DVD_BUFFER,
-                    (volatile u32)dataFileNames[iVar3]);
-                BVar2 = DVDOpen(path, pFile);
-                if(BVar2 == FALSE) {
-                    data = NULL;
-                } else {
-                    dataFileSizes[iVar3] = (int)(pFile->cb).callback;
-                    data = mmAlloc(dataFileSizes[iVar3],
-                        ALLOC_TAG_DVD_BUFFER,
-                        (volatile u32)dataFileNames[iVar3]);
-                    dataFilePtrs[iVar3] = data;
-                    DCInvalidateRange(
-                        dataFilePtrs[iVar3], dataFileSizes[iVar3]);
-                    if(bLoadImmediately) {
-                        DVDReadPrio(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            2);
-                        DVDClose(pFile);
-                        mmFree(pFile);
-                    } else {
-                        if(iVar3 == FILE_MODELS_bin) {
-                            loadedFiles |= 1;
-                        } else {
-                            loadedFiles |= 2;
-                        }
-                        DVDReadAsync(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            piDVDCallbackModelsbin);
-                    }
-                    loadedFileMapIds[iVar3] = mapNo;
-                    data = dataFilePtrs[iVar3];
-                }
+                return dataFilePtrs[fileNo];
             }
             break;
-        case FILE_ANIM_TAB:
-            if((dataFilePtrs[FILE_ANIM_TAB] == NULL)
-            && (dataFilePtrs[FILE_ANIM_TAB2] == NULL)) {
-                bLoadImmediately = true;
-            }
-            if(((dataFilePtrs[FILE_ANIM_TAB] == NULL)
-                    || (data = dataFilePtrs[FILE_ANIM_TAB],
-                        loadedFileMapIds[FILE_ANIM_TAB] != mapNo))
-                && (dataFilePtrs[FILE_ANIM_TAB2] == NULL
-                    || (data = dataFilePtrs[FILE_ANIM_TAB2],
-                        loadedFileMapIds[FILE_ANIM_TAB2] != mapNo))) {
-                if(loadedFileMapIds[FILE_ANIM_TAB] == -1) {
-                    iVar3 = FILE_ANIM_TAB;
-                } else {
-                    if(loadedFileMapIds[FILE_ANIM_TAB2] != -1) { return NULL; }
-                    iVar3 = FILE_ANIM_TAB2;
-                }
-                if(dataFilePtrs[iVar3] != NULL) {
-                    mmFree(dataFilePtrs[iVar3]);
-                    dataFilePtrs[iVar3] = NULL;
-                }
-                sprintf(
-                    path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
-                pFile = (DVDFileInfo *)mmAlloc(
-                    sizeof(DVDFileInfo), ALLOC_TAG_DVD_BUFFER,
-                    (volatile u32)dataFileNames[iVar3]);
-                BVar2 = DVDOpen(path, pFile);
-                if(BVar2 == FALSE) {
-                    data = NULL;
-                } else {
-                    dataFileSizes[iVar3] = (int)(pFile->cb).callback;
-                    data = mmAlloc(dataFileSizes[iVar3],
-                        ALLOC_TAG_DVD_BUFFER,
-                        (volatile u32)dataFileNames[iVar3]);
-                    dataFilePtrs[iVar3] = data;
-                    DCInvalidateRange(
-                        dataFilePtrs[iVar3], dataFileSizes[iVar3]);
-                    if(bLoadImmediately) {
-                        DVDReadPrio(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            2);
-                        DVDClose(pFile);
-                        mmFree(pFile);
-                        mergeTableFiles(
-                            ANIM_TAB, FILE_ANIM_TAB, FILE_ANIM_TAB2, 3000);
-                    } else {
-                        if(iVar3 == FILE_ANIM_TAB) {
-                            loadedFiles |= 0x40;
-                        } else {
-                            loadedFiles |= 0x80;
-                        }
-                        DVDReadAsync(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            piDVDCallbackAnimtab);
-                    }
-                    loadedFileMapIds[iVar3] = mapNo;
-                    data = dataFilePtrs[iVar3];
-                }
-            }
-            break;
-        case FILE_ANIM_BIN:
-            if((dataFilePtrs[FILE_ANIM_BIN] == NULL)
-            && (dataFilePtrs[FILE_ANIM_BIN2] == NULL)) {
-                bLoadImmediately = true;
-            }
-            if(((dataFilePtrs[FILE_ANIM_BIN] == NULL)
-                    || (data = dataFilePtrs[FILE_ANIM_BIN],
-                        loadedFileMapIds[FILE_ANIM_BIN] != mapNo))
-                && (dataFilePtrs[FILE_ANIM_BIN2] == NULL
-                    || (data = dataFilePtrs[FILE_ANIM_BIN2],
-                        loadedFileMapIds[FILE_ANIM_BIN2] != mapNo))) {
-                if(loadedFileMapIds[FILE_ANIM_BIN] == -1) {
-                    iVar3 = FILE_ANIM_BIN;
-                } else {
-                    if(loadedFileMapIds[FILE_ANIM_BIN2] != -1) { return NULL; }
-                    iVar3 = FILE_ANIM_BIN2;
-                }
-                if(dataFilePtrs[iVar3] != NULL) {
-                    mmFree(dataFilePtrs[iVar3]);
-                    dataFilePtrs[iVar3] = NULL;
-                }
-                sprintf(
-                    path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
-                pFile = (DVDFileInfo *)mmAlloc(
-                    sizeof(DVDFileInfo), ALLOC_TAG_DVD_BUFFER,
-                    (volatile u32)dataFileNames[iVar3]);
-                BVar2 = DVDOpen(path, pFile);
-                if(BVar2 == FALSE) {
-                    data = NULL;
-                } else {
-                    dataFileSizes[iVar3] = (int)(pFile->cb).callback;
-                    data = mmAlloc(dataFileSizes[iVar3],
-                        ALLOC_TAG_DVD_BUFFER,
-                        (volatile u32)dataFileNames[iVar3]);
-                    dataFilePtrs[iVar3] = data;
-                    DCInvalidateRange(
-                        dataFilePtrs[iVar3], dataFileSizes[iVar3]);
-                    if(bLoadImmediately) {
-                        DVDReadPrio(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            2);
-                        DVDClose(pFile);
-                        mmFree(pFile);
-                    } else {
-                        if(iVar3 == FILE_ANIM_BIN) {
-                            loadedFiles |= 0x10;
-                        } else {
-                            loadedFiles |= FILE_TEX1_bin;
-                        }
-                        DVDReadAsync(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            piDVDCallbackAnimbin);
-                    }
-                    loadedFileMapIds[iVar3] = mapNo;
-                    data = dataFilePtrs[iVar3];
-                }
-            }
+        }
 
-        case FILE_ANIMCURV_bin:
-        case FILE_ANIMCURV_tab:
+        case FILE_ANIMCURV_bin: //0x0D
+        case FILE_ANIMCURV_tab: { //0x0E
             if(dataFilePtrs[fileNo] && mapNo == loadedFileMapIds[fileNo]) {
                 //already loaded, just return it
                 return dataFilePtrs[fileNo];
@@ -1316,8 +1102,9 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             }
             loadedFileMapIds[fileNo] = mapNo;
             return dataFilePtrs[fileNo];
+        }
 
-        case FILE_BLOCKS_bin:
+        case FILE_BLOCKS_bin: { //0x25
             if((dataFilePtrs[FILE_BLOCKS_bin] == NULL)
                 && (dataFilePtrs[FILE_BLOCKS_bin2] == NULL)) {
                 bLoadImmediately = true;
@@ -1329,14 +1116,14 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                     || (data = dataFilePtrs[FILE_BLOCKS_bin2],
                         loadedFileMapIds[FILE_BLOCKS_bin2] != mapNo))) {
                 if(loadedFileMapIds[FILE_BLOCKS_bin] == -1) {
-                    iVar3 = FILE_BLOCKS_bin;
+                    whichFile = FILE_BLOCKS_bin;
                 } else {
                     if(loadedFileMapIds[FILE_BLOCKS_bin2] != -1) { return NULL; }
-                    iVar3 = FILE_BLOCKS_bin2;
+                    whichFile = FILE_BLOCKS_bin2;
                 }
-                if(dataFilePtrs[iVar3] != NULL) {
-                    mmFree(dataFilePtrs[iVar3]);
-                    dataFilePtrs[iVar3] = NULL;
+                if(dataFilePtrs[whichFile] != NULL) {
+                    mmFree(dataFilePtrs[whichFile]);
+                    dataFilePtrs[whichFile] = NULL;
                 }
                 if(mapNo < 5) {
                     sprintf(path, "%s/mod%d.bin", mapNames[mapNo], mapNo);
@@ -1346,43 +1133,42 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 }
                 pFile = (DVDFileInfo *)mmAlloc(
                     0x3c, ALLOC_TAG_DVD_BUFFER, (volatile u32)"BLOCKS");
-                BVar2 = DVDOpen(path, pFile);
-                if(BVar2 == FALSE) {
-                    data = NULL;
+                if(!DVDOpen(path, pFile)) return NULL;
+
+                dataFileSizes[whichFile] = (int)(pFile->cb).callback;
+                data = mmAlloc(dataFileSizes[whichFile],
+                    ALLOC_TAG_DVD_BUFFER,
+                    (volatile u32)"BLOCKS");
+                dataFilePtrs[whichFile] = data;
+                DCInvalidateRange(
+                    dataFilePtrs[whichFile], dataFileSizes[whichFile]);
+                if(bLoadImmediately) {
+                    DVDReadPrio(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        2);
+                    DVDClose(pFile);
+                    mmFree(pFile);
                 } else {
-                    dataFileSizes[iVar3] = (int)(pFile->cb).callback;
-                    data = mmAlloc(dataFileSizes[iVar3],
-                        ALLOC_TAG_DVD_BUFFER,
-                        (volatile u32)"BLOCKS");
-                    dataFilePtrs[iVar3] = data;
-                    DCInvalidateRange(
-                        dataFilePtrs[iVar3], dataFileSizes[iVar3]);
-                    if(bLoadImmediately) {
-                        DVDReadPrio(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            2);
-                        DVDClose(pFile);
-                        mmFree(pFile);
+                    if(whichFile == FILE_BLOCKS_bin) {
+                        loadedFiles |= 0x10000;
                     } else {
-                        if(iVar3 == FILE_BLOCKS_bin) {
-                            loadedFiles |= 0x10000;
-                        } else {
-                            loadedFiles |= 0x40000;
-                        }
-                        DVDReadAsync(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            piDVDCallbackBlockbin);
+                        loadedFiles |= 0x40000;
                     }
-                    loadedFileMapIds[iVar3] = mapNo;
-                    data = dataFilePtrs[iVar3];
+                    DVDReadAsync(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        piDVDCallbackBlockbin);
                 }
+                loadedFileMapIds[whichFile] = mapNo;
+                return dataFilePtrs[whichFile];
             }
             break;
-        case FILE_BLOCKS_tab:
+        }
+
+        case FILE_BLOCKS_tab: { //0x26
             if((dataFilePtrs[FILE_BLOCKS_tab] == NULL)
                 && (dataFilePtrs[FILE_BLOCKS_tab2] == NULL)) {
                 bLoadImmediately = true;
@@ -1394,14 +1180,14 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                     || (data = dataFilePtrs[FILE_BLOCKS_tab2],
                         loadedFileMapIds[FILE_BLOCKS_tab2] != mapNo))) {
                 if(loadedFileMapIds[FILE_BLOCKS_tab] == -1) {
-                    iVar3 = FILE_BLOCKS_tab;
+                    whichFile = FILE_BLOCKS_tab;
                 } else {
                     if(loadedFileMapIds[FILE_BLOCKS_tab2] != -1) { return NULL; }
-                    iVar3 = FILE_BLOCKS_tab2;
+                    whichFile = FILE_BLOCKS_tab2;
                 }
-                if(dataFilePtrs[iVar3] != NULL) {
-                    mmFree(dataFilePtrs[iVar3]);
-                    dataFilePtrs[iVar3] = NULL;
+                if(dataFilePtrs[whichFile] != NULL) {
+                    mmFree(dataFilePtrs[whichFile]);
+                    dataFilePtrs[whichFile] = NULL;
                 }
                 if(mapNo < 5) {
                     sprintf(path, "%s/mod%d.tab", mapNames[mapNo], mapNo);
@@ -1411,81 +1197,287 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 }
                 pFile = (DVDFileInfo *)mmAlloc(
                     0x3c, ALLOC_TAG_DVD_BUFFER, (volatile u32)"BLOCKSTAB");
-                BVar2 = DVDOpen(path, pFile);
-                if(BVar2 == FALSE) {
-                    data = NULL;
+                if(!DVDOpen(path, pFile)) return NULL;
+                dataFileSizes[whichFile] = (int)(pFile->cb).callback;
+                data = mmAlloc(dataFileSizes[whichFile],
+                    ALLOC_TAG_DVD_BUFFER,
+                    (volatile u32)dataFileNames[whichFile]);
+                dataFilePtrs[whichFile] = data;
+                DCInvalidateRange(
+                    dataFilePtrs[whichFile], dataFileSizes[whichFile]);
+                if(bLoadImmediately) {
+                    DVDReadPrio(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        2);
+                    DVDClose(pFile);
+                    mmFree(pFile);
+                    mergeTableFiles(BLOCKS_TAB,
+                        FILE_BLOCKS_tab,
+                        FILE_BLOCKS_tab2,
+                        0x800);
                 } else {
-                    dataFileSizes[iVar3] = (int)(pFile->cb).callback;
-                    data = mmAlloc(dataFileSizes[iVar3],
-                        ALLOC_TAG_DVD_BUFFER,
-                        (volatile u32)dataFileNames[iVar3]);
-                    dataFilePtrs[iVar3] = data;
-                    DCInvalidateRange(
-                        dataFilePtrs[iVar3], dataFileSizes[iVar3]);
-                    if(bLoadImmediately) {
-                        DVDReadPrio(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            2);
-                        DVDClose(pFile);
-                        mmFree(pFile);
-                        mergeTableFiles(BLOCKS_TAB,
-                            FILE_BLOCKS_tab,
-                            FILE_BLOCKS_tab2,
-                            0x800);
+                    if(whichFile == FILE_BLOCKS_tab) {
+                        loadedFiles |= 0x20000;
                     } else {
-                        if(iVar3 == FILE_BLOCKS_tab) {
-                            loadedFiles |= 0x20000;
-                        } else {
-                            loadedFiles |= 0x80000;
-                        }
-                        DVDReadAsync(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            piDVDCallbackBlockstab);
+                        loadedFiles |= 0x80000;
                     }
-                    loadedFileMapIds[iVar3] = mapNo;
-                    data = dataFilePtrs[iVar3];
+                    DVDReadAsync(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        piDVDCallbackBlockstab);
                 }
+                loadedFileMapIds[whichFile] = mapNo;
+                return dataFilePtrs[whichFile];
             }
             break;
+        }
 
-        case FILE_VOXMAP_tab:
-        case FILE_VOXMAP_bin:
-            if((dataFilePtrs[fileNo] == NULL)
-                || (mapNo != loadedFileMapIds[fileNo])) {
-                if(dataFilePtrs[fileNo] != NULL) {
-                    mmFree(dataFilePtrs[fileNo]);
-                    dataFilePtrs[fileNo] = NULL;
+        case FILE_MODELS_bin: { //0x2B
+            if((dataFilePtrs[FILE_MODELS_bin] == NULL)
+            && (dataFilePtrs[FILE_MODELS_bin2] == NULL)) {
+                bLoadImmediately = true;
+            }
+            if(((dataFilePtrs[FILE_MODELS_bin] == NULL)
+                    || (data = dataFilePtrs[FILE_MODELS_bin],
+                        loadedFileMapIds[FILE_MODELS_bin] != mapNo))
+                && (dataFilePtrs[FILE_MODELS_bin2] == NULL
+                    || (data = dataFilePtrs[FILE_MODELS_bin2],
+                        loadedFileMapIds[FILE_MODELS_bin2] != mapNo))) {
+                if(loadedFileMapIds[FILE_MODELS_bin] == -1) {
+                    whichFile = FILE_MODELS_bin;
+                } else {
+                    if(loadedFileMapIds[FILE_MODELS_bin2] != -1) { return NULL; }
+                    whichFile = FILE_MODELS_bin2;
+                }
+                if(dataFilePtrs[whichFile] != NULL) {
+                    mmFree(dataFilePtrs[whichFile]);
+                    dataFilePtrs[whichFile] = NULL;
                 }
                 sprintf(
                     path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
-                BVar2 = DVDOpen(path, &file);
-                if(BVar2 == FALSE) {
-                    data = NULL;
-                } else {
-                    dataFileSizes[fileNo] = (int)file.cb.callback;
-                    data = mmAlloc(dataFileSizes[fileNo],
-                        ALLOC_TAG_DVD_BUFFER,
-                        (volatile u32)"VOXMAPS");
-                    dataFilePtrs[fileNo] = data;
-                    DVDReadPrio(&file,
-                        dataFilePtrs[fileNo],
-                        dataFileSizes[fileNo],
+                pFile = (DVDFileInfo *)mmAlloc(
+                    sizeof(DVDFileInfo), ALLOC_TAG_DVD_BUFFER,
+                    (volatile u32)dataFileNames[whichFile]);
+                if(!DVDOpen(path, pFile)) return NULL;
+
+                dataFileSizes[whichFile] = (int)(pFile->cb).callback;
+                data = mmAlloc(dataFileSizes[whichFile],
+                    ALLOC_TAG_DVD_BUFFER,
+                    (volatile u32)dataFileNames[whichFile]);
+                dataFilePtrs[whichFile] = data;
+                DCInvalidateRange(
+                    dataFilePtrs[whichFile], dataFileSizes[whichFile]);
+                if(bLoadImmediately) {
+                    DVDReadPrio(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
                         0,
                         2);
-                    DVDClose(&file);
-                    loadedFileMapIds[fileNo] = mapNo;
-                    data = dataFilePtrs[fileNo];
+                    DVDClose(pFile);
+                    mmFree(pFile);
+                } else {
+                    if(whichFile == FILE_MODELS_bin) {
+                        loadedFiles |= 1;
+                    } else {
+                        loadedFiles |= 2;
+                    }
+                    DVDReadAsync(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        piDVDCallbackModelsbin);
                 }
-            } else {
-                data = dataFilePtrs[fileNo];
+                loadedFileMapIds[whichFile] = mapNo;
+                return dataFilePtrs[whichFile];
             }
             break;
+        }
 
-        case FILE_TEX0_bin:
+        case FILE_MODELS_tab: { //0x2A
+            if((!dataFilePtrs[FILE_MODELS_tab ])
+            || (!dataFilePtrs[FILE_MODELS_tab2])) {
+                bLoadImmediately = true;
+            }
+
+            if(dataFilePtrs[FILE_MODELS_tab]
+            && loadedFileMapIds[FILE_MODELS_tab] == mapNo) {
+                return dataFilePtrs[FILE_MODELS_tab];
+            }
+            else if(dataFilePtrs[FILE_MODELS_tab2]
+            && loadedFileMapIds[FILE_MODELS_tab2] == mapNo) {
+                return dataFilePtrs[FILE_MODELS_tab2];
+            }
+            else if(loadedFileMapIds[FILE_MODELS_tab] == -1) {
+                whichFile = FILE_MODELS_tab;
+            }
+            else if(loadedFileMapIds[FILE_MODELS_tab2] == -1) {
+                whichFile = FILE_MODELS_tab2;
+            }
+            else return NULL;
+
+            if(dataFilePtrs[whichFile]) { //loaded for another map, free it
+                mmFree(dataFilePtrs[whichFile]);
+                dataFilePtrs[whichFile] = NULL;
+            }
+            sprintf(path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+            pFile = (DVDFileInfo *)mmAlloc(
+                sizeof(DVDFileInfo), ALLOC_TAG_DVD_BUFFER,
+                (volatile u32)dataFileNames[whichFile]);
+            if(!DVDOpen(path, pFile)) return NULL;
+
+            dataFileSizes[whichFile] = (int)(pFile->cb).callback;
+            data = mmAlloc(dataFileSizes[whichFile], ALLOC_TAG_DVD_BUFFER,
+                (volatile u32)dataFileNames[whichFile]);
+            dataFilePtrs[whichFile] = data;
+            DCInvalidateRange(dataFilePtrs[whichFile], dataFileSizes[whichFile]);
+            if(bLoadImmediately) {
+                DVDReadPrio(pFile, dataFilePtrs[whichFile],
+                    dataFileSizes[whichFile], 0, 2);
+                DVDClose(pFile);
+                mmFree(pFile);
+                mergeTableFiles(MODELS_TAB, FILE_MODELS_tab,
+                    FILE_MODELS_tab2, 0x800);
+            } else {
+                if(whichFile == FILE_MODELS_tab) {
+                    loadedFiles |= 4;
+                } else {
+                    loadedFiles |= 8;
+                }
+                DVDReadAsync(pFile, dataFilePtrs[whichFile], dataFileSizes[whichFile],
+                    0, piDVDCallbackModelstab);
+            }
+            loadedFileMapIds[whichFile] = mapNo;
+            return dataFilePtrs[whichFile];
+        }
+
+        case FILE_ANIM_BIN: { //0x30
+            if((dataFilePtrs[FILE_ANIM_BIN] == NULL)
+            && (dataFilePtrs[FILE_ANIM_BIN2] == NULL)) {
+                bLoadImmediately = true;
+            }
+            if(((dataFilePtrs[FILE_ANIM_BIN] == NULL)
+                    || (data = dataFilePtrs[FILE_ANIM_BIN],
+                        loadedFileMapIds[FILE_ANIM_BIN] != mapNo))
+                && (dataFilePtrs[FILE_ANIM_BIN2] == NULL
+                    || (data = dataFilePtrs[FILE_ANIM_BIN2],
+                        loadedFileMapIds[FILE_ANIM_BIN2] != mapNo))) {
+                if(loadedFileMapIds[FILE_ANIM_BIN] == -1) {
+                    whichFile = FILE_ANIM_BIN;
+                } else {
+                    if(loadedFileMapIds[FILE_ANIM_BIN2] != -1) { return NULL; }
+                    whichFile = FILE_ANIM_BIN2;
+                }
+                if(dataFilePtrs[whichFile] != NULL) {
+                    mmFree(dataFilePtrs[whichFile]);
+                    dataFilePtrs[whichFile] = NULL;
+                }
+                sprintf(
+                    path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+                pFile = (DVDFileInfo *)mmAlloc(
+                    sizeof(DVDFileInfo), ALLOC_TAG_DVD_BUFFER,
+                    (volatile u32)dataFileNames[whichFile]);
+                if(!DVDOpen(path, pFile)) return NULL;
+
+                dataFileSizes[whichFile] = (int)(pFile->cb).callback;
+                data = mmAlloc(dataFileSizes[whichFile],
+                    ALLOC_TAG_DVD_BUFFER,
+                    (volatile u32)dataFileNames[whichFile]);
+                dataFilePtrs[whichFile] = data;
+                DCInvalidateRange(
+                    dataFilePtrs[whichFile], dataFileSizes[whichFile]);
+                if(bLoadImmediately) {
+                    DVDReadPrio(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        2);
+                    DVDClose(pFile);
+                    mmFree(pFile);
+                } else {
+                    if(whichFile == FILE_ANIM_BIN) {
+                        loadedFiles |= 0x10;
+                    } else {
+                        loadedFiles |= 0x20;
+                    }
+                    DVDReadAsync(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        piDVDCallbackAnimbin);
+                }
+                loadedFileMapIds[whichFile] = mapNo;
+                return dataFilePtrs[whichFile];
+            }
+            break;
+        }
+
+        case FILE_ANIM_TAB: { //0x2F
+            if((dataFilePtrs[FILE_ANIM_TAB] == NULL)
+            && (dataFilePtrs[FILE_ANIM_TAB2] == NULL)) {
+                bLoadImmediately = true;
+            }
+            if(((dataFilePtrs[FILE_ANIM_TAB] == NULL)
+                    || (data = dataFilePtrs[FILE_ANIM_TAB],
+                        loadedFileMapIds[FILE_ANIM_TAB] != mapNo))
+                && (dataFilePtrs[FILE_ANIM_TAB2] == NULL
+                    || (data = dataFilePtrs[FILE_ANIM_TAB2],
+                        loadedFileMapIds[FILE_ANIM_TAB2] != mapNo))) {
+                if(loadedFileMapIds[FILE_ANIM_TAB] == -1) {
+                    whichFile = FILE_ANIM_TAB;
+                } else {
+                    if(loadedFileMapIds[FILE_ANIM_TAB2] != -1) { return NULL; }
+                    whichFile = FILE_ANIM_TAB2;
+                }
+                if(dataFilePtrs[whichFile] != NULL) {
+                    mmFree(dataFilePtrs[whichFile]);
+                    dataFilePtrs[whichFile] = NULL;
+                }
+                sprintf(
+                    path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+                pFile = (DVDFileInfo *)mmAlloc(
+                    sizeof(DVDFileInfo), ALLOC_TAG_DVD_BUFFER,
+                    (volatile u32)dataFileNames[whichFile]);
+                if(!DVDOpen(path, pFile)) return NULL;
+
+                dataFileSizes[whichFile] = (int)(pFile->cb).callback;
+                data = mmAlloc(dataFileSizes[whichFile],
+                    ALLOC_TAG_DVD_BUFFER,
+                    (volatile u32)dataFileNames[whichFile]);
+                dataFilePtrs[whichFile] = data;
+                DCInvalidateRange(
+                    dataFilePtrs[whichFile], dataFileSizes[whichFile]);
+                if(bLoadImmediately) {
+                    DVDReadPrio(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        2);
+                    DVDClose(pFile);
+                    mmFree(pFile);
+                    mergeTableFiles(
+                        ANIM_TAB, FILE_ANIM_TAB, FILE_ANIM_TAB2, 3000);
+                } else {
+                    if(whichFile == FILE_ANIM_TAB) {
+                        loadedFiles |= 0x40;
+                    } else {
+                        loadedFiles |= 0x80;
+                    }
+                    DVDReadAsync(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        piDVDCallbackAnimtab);
+                }
+                loadedFileMapIds[whichFile] = mapNo;
+                return dataFilePtrs[whichFile];
+            }
+            break;
+        }
+
+        case FILE_TEX0_bin: { //0x23
             if((dataFilePtrs[FILE_TEX0_bin] == NULL)
                 && (dataFilePtrs[FILE_TEX0_bin2] == NULL)) {
                 bLoadImmediately = true;
@@ -1497,57 +1489,56 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                     || (data = dataFilePtrs[FILE_TEX0_bin2],
                         loadedFileMapIds[FILE_TEX0_bin2] != mapNo))) {
                 if(loadedFileMapIds[FILE_TEX0_bin] == -1) {
-                    iVar3 = FILE_TEX0_bin;
+                    whichFile = FILE_TEX0_bin;
                 } else {
                     if(loadedFileMapIds[FILE_TEX0_bin2] != -1) { return NULL; }
-                    iVar3 = FILE_TEX0_bin2;
+                    whichFile = FILE_TEX0_bin2;
                 }
-                if(dataFilePtrs[iVar3] != NULL) {
-                    mmFree(dataFilePtrs[iVar3]);
-                    dataFilePtrs[iVar3] = NULL;
+                if(dataFilePtrs[whichFile] != NULL) {
+                    mmFree(dataFilePtrs[whichFile]);
+                    dataFilePtrs[whichFile] = NULL;
                 }
                 sprintf(
                     path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
                 pFile = (DVDFileInfo *)mmAlloc(
                     0x3c, ALLOC_TAG_DVD_BUFFER,
-                    (volatile u32)dataFileNames[iVar3]);
-                BVar2 = DVDOpen(path, pFile);
-                if(BVar2 == FALSE) {
-                    data = NULL;
+                    (volatile u32)dataFileNames[whichFile]);
+                if(!DVDOpen(path, pFile)) return NULL;
+
+                dataFileSizes[whichFile] = (int)(pFile->cb).callback;
+                data = mmAlloc(dataFileSizes[whichFile] + FILE_TEX1_bin,
+                    ALLOC_TAG_DVD_BUFFER,
+                    (volatile u32)dataFileNames[whichFile]);
+                dataFilePtrs[whichFile] = data;
+                DCInvalidateRange(
+                    dataFilePtrs[whichFile], dataFileSizes[whichFile]);
+                if(bLoadImmediately) {
+                    DVDReadPrio(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        2);
+                    DVDClose(pFile);
+                    mmFree(pFile);
                 } else {
-                    dataFileSizes[iVar3] = (int)(pFile->cb).callback;
-                    data = mmAlloc(dataFileSizes[iVar3] + FILE_TEX1_bin,
-                        ALLOC_TAG_DVD_BUFFER,
-                        (volatile u32)dataFileNames[iVar3]);
-                    dataFilePtrs[iVar3] = data;
-                    DCInvalidateRange(
-                        dataFilePtrs[iVar3], dataFileSizes[iVar3]);
-                    if(bLoadImmediately) {
-                        DVDReadPrio(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            2);
-                        DVDClose(pFile);
-                        mmFree(pFile);
+                    if(whichFile == FILE_TEX0_bin) {
+                        loadedFiles |= 0x100;
                     } else {
-                        if(iVar3 == FILE_TEX0_bin) {
-                            loadedFiles |= 0x100;
-                        } else {
-                            loadedFiles |= 0x200;
-                        }
-                        DVDReadAsync(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            piDVDCallbackTexbin2);
+                        loadedFiles |= 0x200;
                     }
-                    loadedFileMapIds[iVar3] = mapNo;
-                    data = dataFilePtrs[iVar3];
+                    DVDReadAsync(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        piDVDCallbackTexbin2);
                 }
+                loadedFileMapIds[whichFile] = mapNo;
+                return dataFilePtrs[whichFile];
             }
             break;
-        case FILE_TEX0_tab:
+        }
+
+        case FILE_TEX0_tab: { //0x24
             if((dataFilePtrs[FILE_TEX0_tab] == NULL)
                 && (dataFilePtrs[FILE_TEX0_tab2] == NULL)) {
                 bLoadImmediately = true;
@@ -1559,65 +1550,63 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                     || (data = dataFilePtrs[FILE_TEX0_tab2],
                         loadedFileMapIds[FILE_TEX0_tab2] != mapNo))) {
                 if(loadedFileMapIds[FILE_TEX0_tab] == -1) {
-                    iVar3 = FILE_TEX0_tab;
+                    whichFile = FILE_TEX0_tab;
                 } else {
                     if(loadedFileMapIds[FILE_TEX0_tab2] != -1) { return NULL; }
-                    iVar3 = FILE_TEX0_tab2;
+                    whichFile = FILE_TEX0_tab2;
                 }
-                if(dataFilePtrs[iVar3] != NULL) {
-                    mmFree(dataFilePtrs[iVar3]);
-                    dataFilePtrs[iVar3] = NULL;
+                if(dataFilePtrs[whichFile] != NULL) {
+                    mmFree(dataFilePtrs[whichFile]);
+                    dataFilePtrs[whichFile] = NULL;
                 }
                 sprintf(
                     path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
                 pFile = (DVDFileInfo *)mmAlloc(
                     0x3c, ALLOC_TAG_DVD_BUFFER,
-                    (volatile u32)dataFileNames[iVar3]);
-                BVar2 = DVDOpen(path, pFile);
-                if(BVar2 == FALSE) {
-                    data = NULL;
+                    (volatile u32)dataFileNames[whichFile]);
+                if(!DVDOpen(path, pFile)) return NULL;
+
+                dataFileSizes[whichFile] = (int)(pFile->cb).callback;
+                data = mmAlloc(dataFileSizes[whichFile] + 0x20,
+                    ALLOC_TAG_DVD_BUFFER,
+                    (volatile u32)dataFileNames[whichFile]);
+                dataFilePtrs[whichFile] = data;
+                DCInvalidateRange(
+                    dataFilePtrs[whichFile], dataFileSizes[whichFile]);
+                if(bLoadImmediately) {
+                    DVDReadPrio(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        2);
+                    DVDClose(pFile);
+                    mmFree(pFile);
+                    mergeTableFiles(TEX0_TAB,
+                        FILE_TEX0_tab,
+                        FILE_TEX0_tab2,
+                        0x1000);
+                } else if(whichFile == FILE_TEX0_tab) {
+                    loadedFiles |= 0x400;
+                    DVDReadAsync(pFile,
+                        dataFilePtrs[FILE_TEX0_tab],
+                        dataFileSizes[FILE_TEX0_tab],
+                        0,
+                        piDvdCallbacktex2tab36);
                 } else {
-                    dataFileSizes[iVar3] = (int)(pFile->cb).callback;
-                    data = mmAlloc(dataFileSizes[iVar3] + FILE_TEX1_bin,
-                        ALLOC_TAG_DVD_BUFFER,
-                        (volatile u32)dataFileNames[iVar3]);
-                    dataFilePtrs[iVar3] = data;
-                    DCInvalidateRange(
-                        dataFilePtrs[iVar3], dataFileSizes[iVar3]);
-                    if(bLoadImmediately) {
-                        DVDReadPrio(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            2);
-                        DVDClose(pFile);
-                        mmFree(pFile);
-                        mergeTableFiles(TEX0_TAB,
-                            FILE_TEX0_tab,
-                            FILE_TEX0_tab2,
-                            0x1000);
-                    } else if(iVar3 == FILE_TEX0_tab) {
-                        loadedFiles |= 0x400;
-                        DVDReadAsync(pFile,
-                            dataFilePtrs[FILE_TEX0_tab],
-                            dataFileSizes[FILE_TEX0_tab],
-                            0,
-                            piDvdCallbacktex2tab36);
-                    } else {
-                        loadedFiles |= 0x800;
-                        DVDReadAsync(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            piDVDCallbackTextab33);
-                    }
-                    loadedFileMapIds[iVar3] = mapNo;
-                    data = dataFilePtrs[iVar3];
+                    loadedFiles |= 0x800;
+                    DVDReadAsync(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        piDVDCallbackTextab33);
                 }
+                loadedFileMapIds[whichFile] = mapNo;
+                return dataFilePtrs[whichFile];
             }
             break;
+        }
 
-        case FILE_TEX1_bin:
+        case FILE_TEX1_bin: { //0x20
             if((dataFilePtrs[FILE_TEX1_bin] == NULL)
                 && (dataFilePtrs[FILE_TEX1_bin2] == NULL)) {
                 bLoadImmediately = true;
@@ -1643,43 +1632,42 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 pFile = (DVDFileInfo *)mmAlloc(
                     0x3c, ALLOC_TAG_DVD_BUFFER,
                     (volatile u32)dataFileNames[fileNo]);
-                BVar2 = DVDOpen(path, pFile);
-                if(BVar2 == FALSE) {
-                    data = NULL;
+                if(!DVDOpen(path, pFile)) return NULL;
+
+                dataFileSizes[texFileId] = (int)(pFile->cb).callback;
+                data = mmAlloc(dataFileSizes[texFileId] + FILE_TEX1_bin,
+                    ALLOC_TAG_DVD_BUFFER,
+                    (volatile u32)dataFileNames[fileNo]);
+                dataFilePtrs[texFileId] = data;
+                DCInvalidateRange(
+                    dataFilePtrs[texFileId], dataFileSizes[texFileId]);
+                if(bLoadImmediately) {
+                    DVDReadPrio(pFile,
+                        dataFilePtrs[texFileId],
+                        dataFileSizes[texFileId],
+                        0,
+                        2);
+                    DVDClose(pFile);
+                    mmFree(pFile);
                 } else {
-                    dataFileSizes[texFileId] = (int)(pFile->cb).callback;
-                    data = mmAlloc(dataFileSizes[texFileId] + FILE_TEX1_bin,
-                        ALLOC_TAG_DVD_BUFFER,
-                        (volatile u32)dataFileNames[fileNo]);
-                    dataFilePtrs[texFileId] = data;
-                    DCInvalidateRange(
-                        dataFilePtrs[texFileId], dataFileSizes[texFileId]);
-                    if(bLoadImmediately) {
-                        DVDReadPrio(pFile,
-                            dataFilePtrs[texFileId],
-                            dataFileSizes[texFileId],
-                            0,
-                            2);
-                        DVDClose(pFile);
-                        mmFree(pFile);
+                    if(texFileId == FILE_TEX1_bin) {
+                        loadedFiles |= 0x1000;
                     } else {
-                        if(texFileId == FILE_TEX1_bin) {
-                            loadedFiles |= 0x1000;
-                        } else {
-                            loadedFiles |= 0x2000;
-                        }
-                        DVDReadAsync(pFile,
-                            dataFilePtrs[texFileId],
-                            dataFileSizes[texFileId],
-                            0,
-                            piDVDCallbackTexbin);
+                        loadedFiles |= 0x2000;
                     }
-                    loadedFileMapIds[texFileId] = mapNo;
-                    data = dataFilePtrs[texFileId];
+                    DVDReadAsync(pFile,
+                        dataFilePtrs[texFileId],
+                        dataFileSizes[texFileId],
+                        0,
+                        piDVDCallbackTexbin);
                 }
+                loadedFileMapIds[texFileId] = mapNo;
+                return dataFilePtrs[texFileId];
             }
             break;
-        case FILE_TEX1_tab:
+        }
+
+        case FILE_TEX1_tab: { //0x21
             if((dataFilePtrs[FILE_TEX1_tab] == NULL)
                 && (dataFilePtrs[FILE_TEX1_tab2] == NULL)) {
                 bLoadImmediately = true;
@@ -1691,63 +1679,61 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                     || (data = dataFilePtrs[FILE_TEX1_tab2],
                         loadedFileMapIds[FILE_TEX1_tab2] != mapNo))) {
                 if(loadedFileMapIds[FILE_TEX1_tab] == -1) {
-                    iVar3 = FILE_TEX1_tab;
+                    whichFile = FILE_TEX1_tab;
                 } else {
                     if(loadedFileMapIds[FILE_TEX1_tab2] != -1) { return NULL; }
-                    iVar3 = FILE_TEX1_tab2;
+                    whichFile = FILE_TEX1_tab2;
                 }
-                if(dataFilePtrs[iVar3] != NULL) {
-                    mmFree(dataFilePtrs[iVar3]);
-                    dataFilePtrs[iVar3] = NULL;
+                if(dataFilePtrs[whichFile] != NULL) {
+                    mmFree(dataFilePtrs[whichFile]);
+                    dataFilePtrs[whichFile] = NULL;
                 }
                 sprintf(
                     path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
                 pFile = (DVDFileInfo *)mmAlloc(
                     0x3c, ALLOC_TAG_DVD_BUFFER,
-                    (volatile u32)dataFileNames[iVar3]);
-                BVar2 = DVDOpen(path, pFile);
-                if(BVar2 == FALSE) {
-                    data = NULL;
+                    (volatile u32)dataFileNames[whichFile]);
+                if(!DVDOpen(path, pFile)) return NULL;
+
+                dataFileSizes[whichFile] = (int)(pFile->cb).callback;
+                data = mmAlloc(dataFileSizes[whichFile],
+                    ALLOC_TAG_DVD_BUFFER,
+                    (volatile u32)dataFileNames[fileNo]);
+                dataFilePtrs[whichFile] = data;
+                DCInvalidateRange(
+                    dataFilePtrs[whichFile], dataFileSizes[whichFile]);
+                if(bLoadImmediately) {
+                    DVDReadPrio(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        2);
+                    DVDClose(pFile);
+                    mmFree(pFile);
+                    mergeTableFiles(TEX1_TAB,
+                        FILE_TEX1_tab,
+                        FILE_TEX1_tab2,
+                        0x1000);
+                } else if(whichFile == FILE_TEX1_tab) {
+                    loadedFiles |= 0x4000;
+                    DVDReadAsync(pFile,
+                        dataFilePtrs[FILE_TEX1_tab],
+                        dataFileSizes[FILE_TEX1_tab],
+                        0,
+                        piDVDCallbackTextab33);
                 } else {
-                    dataFileSizes[iVar3] = (int)(pFile->cb).callback;
-                    data = mmAlloc(dataFileSizes[iVar3],
-                        ALLOC_TAG_DVD_BUFFER,
-                        (volatile u32)dataFileNames[fileNo]);
-                    dataFilePtrs[iVar3] = data;
-                    DCInvalidateRange(
-                        dataFilePtrs[iVar3], dataFileSizes[iVar3]);
-                    if(bLoadImmediately) {
-                        DVDReadPrio(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            2);
-                        DVDClose(pFile);
-                        mmFree(pFile);
-                        mergeTableFiles(TEX1_TAB,
-                            FILE_TEX1_tab,
-                            FILE_TEX1_tab2,
-                            0x1000);
-                    } else if(iVar3 == FILE_TEX1_tab) {
-                        loadedFiles |= 0x4000;
-                        DVDReadAsync(pFile,
-                            dataFilePtrs[FILE_TEX1_tab],
-                            dataFileSizes[FILE_TEX1_tab],
-                            0,
-                            piDVDCallbackTextab33);
-                    } else {
-                        loadedFiles |= 0x8000;
-                        DVDReadAsync(pFile,
-                            dataFilePtrs[iVar3],
-                            dataFileSizes[iVar3],
-                            0,
-                            piDVDCallbackTextab33);
-                    }
-                    loadedFileMapIds[iVar3] = mapNo;
-                    data = dataFilePtrs[iVar3];
+                    loadedFiles |= 0x8000;
+                    DVDReadAsync(pFile,
+                        dataFilePtrs[whichFile],
+                        dataFileSizes[whichFile],
+                        0,
+                        piDVDCallbackTextab33);
                 }
+                loadedFileMapIds[whichFile] = mapNo;
+                return dataFilePtrs[whichFile];
             }
             break;
+        }
 
         default: return NULL;
     }
