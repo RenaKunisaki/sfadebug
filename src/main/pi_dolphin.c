@@ -33,7 +33,7 @@ enum {
 } TexGetMipmapOp;
 
 //other files
-int mergeTableFiles(uint *table,DataFileId32 file1,DataFileId32 file2,int count);
+int piMergeIndex(uint *table,DataFileId32 file1,DataFileId32 file2,int count);
 int lzoDecompress(void *src,int compLen,void *dest,int *outLen);
 
 //unknown
@@ -324,15 +324,15 @@ void initDataFiles(void) {
         dataFileArray_8035cc10[file] = 0;
 	}
 
-    mergeTableFiles(MODELS_TAB, FILE_MODELS_tab,
+    piMergeIndex(MODELS_TAB, FILE_MODELS_tab,
         FILE_MODELS_tab2, MODELS_TAB_SIZE);
-    mergeTableFiles(ANIM_TAB, FILE_ANIM_TAB,
+    piMergeIndex(ANIM_TAB, FILE_ANIM_TAB,
         FILE_ANIM_TAB2, ANIM_TAB_SIZE);
-    mergeTableFiles(TEX0_TAB, FILE_TEX0_tab,
+    piMergeIndex(TEX0_TAB, FILE_TEX0_tab,
         FILE_TEX0_tab2, TEX0_TAB_SIZE);
-    mergeTableFiles(TEX1_TAB, FILE_TEX1_tab,
+    piMergeIndex(TEX1_TAB, FILE_TEX1_tab,
         FILE_TEX1_tab2, TEX1_TAB_SIZE);
-    mergeTableFiles(BLOCKS_TAB, FILE_BLOCKS_tab,
+    piMergeIndex(BLOCKS_TAB, FILE_BLOCKS_tab,
         FILE_BLOCKS_tab2, BLOCKS_TAB_SIZE);
 }
 
@@ -1216,7 +1216,7 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
                 mmFree(pFile);
-                mergeTableFiles(BLOCKS_TAB, FILE_BLOCKS_tab,
+                piMergeIndex(BLOCKS_TAB, FILE_BLOCKS_tab,
                     FILE_BLOCKS_tab2, 0x800);
             } else {
                 if(slot == FILE_BLOCKS_tab) loadingFiles |= LOADING_BLOCKS_tab;
@@ -1325,7 +1325,7 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
                 mmFree(pFile);
-                mergeTableFiles(MODELS_TAB, FILE_MODELS_tab,
+                piMergeIndex(MODELS_TAB, FILE_MODELS_tab,
                     FILE_MODELS_tab2, 0x800);
             } else {
                 if(slot == FILE_MODELS_tab) loadingFiles |= LOADING_MODELS_tab;
@@ -1433,7 +1433,7 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
                 mmFree(pFile);
-                mergeTableFiles(ANIM_TAB,
+                piMergeIndex(ANIM_TAB,
                     FILE_ANIM_TAB, FILE_ANIM_TAB2, 3000);
             } else {
                 if(slot == FILE_ANIM_TAB) loadingFiles |= LOADING_ANIM_TAB;
@@ -1541,7 +1541,7 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
                 mmFree(pFile);
-                mergeTableFiles(TEX0_TAB, FILE_TEX0_tab,
+                piMergeIndex(TEX0_TAB, FILE_TEX0_tab,
                     FILE_TEX0_tab2, 0x1000);
             } else if(slot == FILE_TEX0_tab) {
                 loadingFiles |= LOADING_TEX0_tab;
@@ -1652,7 +1652,7 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
                 mmFree(pFile);
-                mergeTableFiles(TEX1_TAB, FILE_TEX1_tab,
+                piMergeIndex(TEX1_TAB, FILE_TEX1_tab,
                     FILE_TEX1_tab2, 0x1000);
             } else if(slot == FILE_TEX1_tab) {
                 loadingFiles |= LOADING_TEX1_tab;
@@ -1677,7 +1677,7 @@ int mapCheckCurBlocks(MapDirIdx32 map) {
 	return -1;
 }
 
-int mergeTableFiles(uint *table, DataFileId32 fileNo1, DataFileId32 fileNo2,
+int piMergeIndex(uint *table, DataFileId32 fileNo1, DataFileId32 fileNo2,
 int count) {
 	BOOL noTab1;
 	BOOL noTab2;
@@ -1815,31 +1815,31 @@ int piRomFreeLevel(int map, uint flags) {
             //if we freed a table file, rebuild the table
             switch(localFreeList.item[iList].fileNo) {
                 case FILE_TEX1_tab: case FILE_TEX1_tab2:
-                    mergeTableFiles(TEX1_TAB,
+                    piMergeIndex(TEX1_TAB,
                         FILE_TEX1_tab, FILE_TEX1_tab2,
                         TEX1_TAB_SIZE);
                     break;
 
                 case FILE_TEX0_tab: case FILE_TEX0_tab2:
-                    mergeTableFiles(TEX0_TAB,
+                    piMergeIndex(TEX0_TAB,
                         FILE_TEX0_tab, FILE_TEX0_tab2,
                         TEX0_TAB_SIZE);
                     break;
 
                 case FILE_BLOCKS_tab: case FILE_BLOCKS_tab2:
-                    mergeTableFiles(BLOCKS_TAB,
+                    piMergeIndex(BLOCKS_TAB,
                         FILE_BLOCKS_tab, FILE_BLOCKS_tab2,
                         BLOCKS_TAB_SIZE);
                     break;
 
                 case FILE_MODELS_tab: case FILE_MODELS_tab2:
-                    mergeTableFiles(MODELS_TAB,
+                    piMergeIndex(MODELS_TAB,
                         FILE_MODELS_tab, FILE_MODELS_tab2,
                         MODELS_TAB_SIZE);
                     break;
 
                 case FILE_ANIM_TAB: case FILE_ANIM_TAB2:
-                    mergeTableFiles(ANIM_TAB,
+                    piMergeIndex(ANIM_TAB,
                         FILE_ANIM_TAB, FILE_ANIM_TAB2,
                         ANIM_TAB_SIZE);
                     break;
