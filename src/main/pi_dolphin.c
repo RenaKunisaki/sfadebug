@@ -1694,7 +1694,6 @@ int count) {
 	tblSize = 0;
     local_24 = 0;
     if(!dataFilePtrs[fileNo1] || !dataFilePtrs[fileNo2]) {
-        //"piMergeIndex  one or other tabfiles is not loaded %x %x\n"
         if(!dataFilePtrs[fileNo1]) noTab1 = true;
         if(!dataFilePtrs[fileNo2]) noTab2 = true;
     }
@@ -1760,11 +1759,13 @@ int count) {
 	if(local_24 && table == TEX1_TAB) {
 		for(local_24 = 0; local_24 < ii; local_24++) {
             if(!(local_24 - ((local_24 >> 3) * 8))) {
-                noTab1 = true;
+                STUBBED_OP(noTab1);
+                if(tbl1) { STUBBED_OP(tbl1); }
+                if(tbl2) { STUBBED_OP(tbl2); }
+                if(noTab1) { STUBBED_OP(noTab1); }
+                //not sure where this goes
+                //STUBBED_PRINTF("piMergeIndex  one or other tabfiles is not loaded %x %x\n", fileNo1, fileNo2);
             }
-            if(tbl1) { STUBBED_OP(tbl1); }
-            if(tbl2) { STUBBED_OP(tbl2); }
-            if(noTab1) { STUBBED_OP(noTab1); }
 		}
 	}
 	return 1;
