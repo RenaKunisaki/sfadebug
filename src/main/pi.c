@@ -27,7 +27,6 @@ enum AssetTypeEnum {
 
 void* loadDataFile(DataFileId32 file, int);
 u32 loadDataFileToBuf(DataFileId32 file,void *buf);
-void * loadDataFileWithLength(DataFileId32 file,void *dest,uint offset,u32 len);
 Texture* textureLoad(int id, int);
 ObjInstance* Object_objSetupObjectActual(ObjDef *objDef,
     objSetupObjectActual_flags flags,

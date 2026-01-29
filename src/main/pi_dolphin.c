@@ -56,8 +56,6 @@ void piDVDCallbackAnimbin(long param_1,DVDFileInfo *param_2);
 void initDataFiles(void);
 void *loadDataFile(DataFileId32 file, char *memName);
 int loadDataFileToBuf(DataFileId32 fileNo, void *buf);
-u32 loadDataFileWithLength(DataFileId32 fileNo, void *dest,
-    uint offset, u32 len);
 void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
     undefined4 *outCompSize, int size, void *dest, int doWhat);
 
@@ -399,30 +397,40 @@ int loadDataFileToBuf(DataFileId32 fileNo, void *buf) {
  *  @param buf Buffer to store to.
  *  @param offset Offset within file to read from.
  *  @param len Number of bytes to read.
- *  @return u32 Number of bytes read.
+ *  @return Number of bytes read.
  */
-u32 loadDataFileWithLength(DataFileId32 fileNo, void *buf,
-uint offset, u32 len) {
+int loadDataFileWithLength(DataFileId32 fileNo, void *buf,
+uint offset, int len) {
 	void *tmpBuf;
 	DVDFileInfo file;
+    int dummy1;
+    int dummy2;
 
+    dummy1 = 0;
+    dummy2 = 0;
 	if(!len) return 0;
 	if(dataFilePtrs[fileNo]) {
+        //file is already loaded, just copy from there
         memcpy_src_dst_len(
-		    (void *)((int)dataFilePtrs[fileNo] + offset), buf, len);
+		    (void *)((int)dataFilePtrs[fileNo] + offset),
+            buf, len);
     } else {
 		DVDOpen((char*)dataFileNames[fileNo], &file);
-		if((((uint)buf & 0x1f) == 0) && ((len & 0x1f) == 0)) {
-			DCInvalidateRange(buf, len);
-			DVDReadPrio(&file, buf, len, offset, 2);
-		} else {
-			tmpBuf = mmAlloc(len + 0x1f & 0x00ffffffe0,
+        if((uint)buf & 0x1f || len & 0x1f) {
+            //buffer and/or length aren't aligned.
+            //have to read into a temp buffer and copy.
+            //@bug missing checks for failures here
+            tmpBuf = mmAlloc(len + 0x1f & ~0x1f,
 			    ALLOC_TAG_DVD_BUFFER,
 			    (volatile u32)"temp dvd buffer");
-			DCInvalidateRange(tmpBuf, len + 0x1f & 0x00ffffffe0);
-			DVDReadPrio(&file, tmpBuf, len + 0x1f & 0x00ffffffe0, offset, 2);
+			DCInvalidateRange(tmpBuf, len + 0x1f & ~0x1f);
+			DVDReadPrio(&file, tmpBuf, len + 0x1f & ~0x1f, offset, 2);
 			memcpy_src_dst_len(tmpBuf, buf, len);
 			mmFree(tmpBuf);
+        } else {
+            //buffer and length are aligned; can read directly into it.
+			DCInvalidateRange(buf, len);
+			DVDReadPrio(&file, buf, len, offset, 2);
 		}
 		DVDClose(&file);
 	}

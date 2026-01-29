@@ -51,7 +51,6 @@ void loadModelsBin(uint offset,int *outNAnimations,uint *outAnimCacheSize,
 	BOOL *outNoAmap,int *outSize,int id);
 void FUN_80065ff8(Mtx44 **pjMtx,Mtx44Ptr modelMatrix,AnimInstance *animInstance,Bone *joints,int numJoints,undefined2 *tiltList,int param_7,u32 flags);
 Animation * loadModelAnimation(Model *model,short id,short id2,void *dest);
-void * loadDataFileWithLength(DataFileId32 file,void *dest,uint offset,u32 len);
 int loadAndDecompressDataFile(DataFileId32 file,void *dest,uint offset,size_t length,int *outSize,int index,s8 flags);
 
 ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
