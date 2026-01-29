@@ -34,6 +34,122 @@ enum {
 
 PiFreeList piFreeList;
 
+//strings that belong somewhere in this file probably
+// * prefix for ones we've placed
+//   "preloaded ... %s tablesize=%d table=%x\n";
+//   "LOAD FROM DISK... %s size %d\n";
+//   " Size %i \n";
+//   "ADDR ROMLOAD file=%s\n";
+//   "LOAD FROM DISK... %s\n";
+//   "######## DVDLOAD piRomLoadAddr() ----- file=%s  #################\n";
+//   "temp dvd buffer";
+//   "PIFREE buffer  addr 0x%x";
+//   "piGetMapInfo() ----- table DB_MAPS or DB_MAPINDEX not loaded\n";
+//   "piGetModelInfo() ----- table DB_MODELS not loaded\n";
+//   "piGetTExtureInfo() ----- table DB_TEXTURES not loaded\n";
+//   "piGetTEXTUREInfo() ----- table DB_TEXTURES not loaded\n";
+// * "pi_dolphin.c";
+// * "piRomLoadSection(): DB_MAPS Bin Not Loaded";
+// * "<Cyc %d | Instr %d | L1misscyc %d | DCmiss %d>\n";
+//   "piRomGetGamNumber() ----- mapNumber <%d> too high";
+//   "######## DVDLOAD piRomLoadSectionL() ----- file=%s  #################\n";
+//   "PIFREE buffer  addr 0x%x\n";
+//   "ROMLOAD gamno=%d  level %s  fileno %d\n";
+//   "PIFREE pitable[%d]  addr %d";
+//   "FILENAME %s\n";
+//   "LOAD FROM DISK... %s %s/%s %d size %d\n";
+//   "######## DVDLOAD piRomLoadLevel() ---- file=%s  #################\n";
+//   "PIFREE pitable[%d]ANIMCURVE/TAB  addr %d";
+//   "INANIMCURVE LOCK %x\n";
+//   "INANIMCURVETAB LOCK %x\n";
+//   "ALL BASES FULL DB_BLOCKS\n";
+//   "PIFREE pitable[%d]BLOCKS  addr %d";
+//   "%s/mod%d.bin";
+//   "INBLOCKS LOCK %x\n";
+//   "ALL BASES FULL DB_BLOCKSTAB\n";
+//   "PIFREE pitable[%d]BLOCKSTAB  addr %d";
+//   "%s/mod%d.tab";
+//   "BLOCKSTAB";
+//   "INBLOCKTAB LOCK %x\n";
+//   "GOT TO MODELS\n";
+//   "forceload\n";
+//   "allloaded 1\n";
+//   "allloaded 2\n";
+//   "ALL BASES FULL DB_MODELS\n";
+//   "PIFREE pitable[%d]MODELS  addr %d";
+//   "INMODELS LOCK %x\n";
+//   "ALL BASES FULL DB_MODTAB\n";
+//   "PIFREE pitable[%d]MODTAB  addr %d";
+//   "INMODTABLOCK %x\n";
+//   "ALL BASES FULL DB_ANIM\n";
+//   "PIFREE pitable[%d]ANIM  addr %d";
+//   "INANIM LOCK %x\n";
+//   "ALL BASES FULL DB_ANIMTAB\n";
+//   "PIFREE pitable[%d]ANIMTAB  addr %d";
+//   "INANIMTAB LOCK %x\n";
+//   "ALL BASES FULL DB_TEXTURES2\n";
+//   "PIFREE pitable[%d]TEXTURES2  addr %d";
+//   "######## DVDLOAD piRomLoadLevel() ---- file=%s  piTable 0x%x #################\n";
+//   "INTEX2 LOCK %x\n";
+//   "ALL BASES FULL DB_TEXTAB2\n";
+//   "PIFREE pitable[%d]TEXTAB2  addr %d";
+//   "######## DVDLOAD piRomLoadLevel() ----- file=%s  #################\n";
+//   "INTEXTAB2 LOCK %x\n";
+//   "ALL BASES FULL DB_TEXTURES\n";
+//   "PIFREE pitable[%d]TEXTURES  addr %d";
+//   "INTEX LOCK %x\n";
+//   "ALL BASES FULL DB_TEXTAB\n";
+//   "PIFREE pitable[%d]TEXTAB  addr %d";
+//   "INTEXTAB LOCK %x\n";
+//   "INTEXTABB LOCK %x\n";
+//   "ERROR in piRomLoadLevel file %d\n";
+//   "piMergeIndex  one or other tabfiles is not loaded %x %x\n";
+//   "MODTAB %4d 0x%x ";
+//   "T1 0x%x ";
+//   "T2 0x%x ";
+//   "PIFREE pitable[%d]  addr 0x%x  --- gamno %d size %d the file GAMNO %d\n";
+// * "Warning in piRomFreeLevel file || %s || not found !\n";
+// * "piRomFreeLevel(): flist array overflow";
+//   "ROMLOADTAB file=%s\n";
+//   "piDVDCallbackModtab  error on MODTAB\n";
+//   "\n\n\npiDVDCallbackModtab  %x\n\n\n";
+//   "piDVDCallbackAnimtab  error on ANIMTAB\n";
+//   "piDVDCallbackAnimtab %x\n";
+//   "piDVDCallbackModbin  error on MODBIN\n";
+//   "piDVDCallbackModtab %x\n";
+//   "piDVDCallbackAnimbin  error on ANIMBIN\n";
+//   "piDVDCallbackAnim %x\n";
+//   "piDVDCallbackTex2bin  error on TEX2BIN\n";
+//   "piDVDCallbackTEXTURES %x\n";
+//   "piDVDCallbackTextab  error on TEX2TAB\n";
+//   "piDVDCallbacktex2tab36 %x\n";
+//   "piDVDCallbackTex2tab36 ------ CHECKSUM  0x%x  REALSUM 0x%x\n";
+//   "piDVDCallbackTex2tab36 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n";
+//   "piDVDCallbackTex2tab36 ------ RE-READING\n";
+//   "piDVDCallbacktex2tab78 %x\n";
+//   "piDVDCallbackTex2tab78 ------ CHECKSUM  0x%x  REALSUM 0x%x\n";
+//   "piDVDCallbackTex2tab78 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n";
+//   "piDVDCallbackTex2tab78 ------ RE-READING\n";
+//   "piDVDCallbackTexbin  error on TEXBIN\n";
+//   "piDVDCallbacktexbin %x\n";
+//   "piDVDCallbackTextab  error on TEXTAB\n";
+//   "piDVDCallbacktextab33 %x\n";
+//   "piDVDCallbackTextab33 ------ CHECKSUM  0x%x  REALSUM 0x%x\n";
+//   "piDVDCallbackTex2tab33 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n";
+//   "piDVDCallbackTex2tab33 ------ RE-READING\n";
+//   "piDVDCallbacktextab76 %x\n";
+//   "piDVDCallbackTextab76 ------ CHECKSUM  0x%x  REALSUM 0x%x\n";
+//   "piDVDCallbackTextab76 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n";
+//   "piDVDCallbackTextab76 ------ RE-READING\n";
+//   "piDVDCallbackBlockbin  error on BLOCKBIN\n";
+//   "piDVDCallbackblockbin %x\n";
+//   "piDVDCallbackBlockstab  error on BLOCKSTAB\n";
+//   "piDVDCallbackblocktab %x\n";
+//   "piDVDCallbackAnimCurveb  error on AnimCurve\n";
+//   "piDVDCallbackAnimCurve %x\n";
+//   "piDVDCallbackAnimCurveTab  error on AnimCurveTab\n";
+//   "piDVDCallbackAnimCurveTab %x\n";
+
 //other files
 int piMergeIndex(uint *table,DataFileId32 file1,DataFileId32 file2,int count);
 int lzoDecompress(void *src,int compLen,void *dest,int *outLen);
@@ -1843,6 +1959,9 @@ int piRomFreeLevel(int map, uint flags) {
                         FILE_ANIM_TAB, FILE_ANIM_TAB2,
                         ANIM_TAB_SIZE);
                     break;
+                default:
+                    STUBBED_PRINTF("Warning in piRomFreeLevel file || %s || not found !\n",
+                        dataFileNames[localFreeList.item[iList].fileNo]);
             }
 		}
 		if(iList >= PI_FLIST_SIZE) {
