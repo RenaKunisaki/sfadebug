@@ -7,7 +7,7 @@ typedef int ObjDefEnum;
 
 #include "dolphin/mtx.h"
 #include "sys/dll.h"
-#include "sys/files.h"
+#include "sys/pi.h"
 #include "maps/Map.h"
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"

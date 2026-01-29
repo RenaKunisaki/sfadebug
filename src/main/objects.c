@@ -5,7 +5,7 @@
 #include "types.h"
 #include "global.h"
 #include "sys/n64.h"
-#include "sys/files.h"
+#include "sys/pi.h"
 #include "gfx/gbi.h"
 #include "gfx/render.h"
 #include "sys/alloc.h"

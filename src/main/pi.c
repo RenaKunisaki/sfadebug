@@ -12,7 +12,7 @@
 #include "maps/Map.h"
 #include "save/GameBits.h"
 #include "save/SaveGame.h"
-#include "sys/files.h"
+#include "sys/pi.h"
 
 enum AssetTypeEnum {
     ASSET_TYPE_FILE = 0,

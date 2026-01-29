@@ -1,7 +1,20 @@
-#ifndef _SYS_FILES_H_
-#define _SYS_FILES_H_
+#ifndef _SYS_PI_H_
+#define _SYS_PI_H_
 
 #include "../types.h"
+
+#define PI_FLIST_SIZE 20
+#define piRomFreeLevel_flag_freeForCurMap 0x80000000
+#define piRomFreeLevel_flag_freeForOtherMap 0x10000000
+
+typedef struct {
+    int fileNo;
+    int mapNo;
+} PiFreeListItem;
+typedef struct {
+    PiFreeListItem item[PI_FLIST_SIZE];
+} PiFreeList;
+extern PiFreeList piFreeList;
 
 typedef uint DataFileLoadedFlags;
 typedef enum { //different from final!
@@ -125,4 +138,4 @@ typedef enum {
 #define TEX1_TAB_SIZE 0x1000
 #define BLOCKS_TAB_SIZE 0x800
 
-#endif //_SYS_FILES_H_
+#endif //_SYS_PI_H_

@@ -21,7 +21,7 @@
 #include "obj/Objects.h"
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"
-#include "sys/files.h"
+#include "sys/pi.h"
 #include "sys/compress.h"
 #include <stddef.h>
 #include "placeholder.h"
@@ -31,6 +31,8 @@ enum {
     TexGetMipmapOp_getNext = 1, //unsure
     TexGetMipmapOp_copy = 2,
 } TexGetMipmapOp;
+
+PiFreeList piFreeList;
 
 //other files
 int piMergeIndex(uint *table,DataFileId32 file1,DataFileId32 file2,int count);
@@ -1712,7 +1714,9 @@ int count) {
                 table[ii] = table[ii] | 0x40000000;
             } else if(!(noTab2 || tbl2[ii] == -1)) {
                 //XXX these checks are weird, might be wrong
-                if(tbl2[ii] & 0x80000000u) table[ii] = tbl1[ii];
+                if(tbl2[ii] & 0x80000000u) {
+                    table[ii] = tbl1[ii];
+                }
                 else if(!noTab1) {
                     if(tbl2[ii]) table[ii] = tbl2[ii];
                 }
@@ -1763,7 +1767,8 @@ int count) {
                 if(tbl1) { STUBBED_OP(tbl1); }
                 if(tbl2) { STUBBED_OP(tbl2); }
                 if(noTab1) { STUBBED_OP(noTab1); }
-                //not sure where this goes
+                //not sure where this goes. possibly not even this function
+                //(I just assumed the name from this message)
                 //STUBBED_PRINTF("piMergeIndex  one or other tabfiles is not loaded %x %x\n", fileNo1, fileNo2);
             }
 		}
@@ -1771,27 +1776,14 @@ int count) {
 	return 1;
 }
 
-#define FLIST_SIZE 20
-#define piRomFreeLevel_flag_freeForCurMap 0x80000000
-#define piRomFreeLevel_flag_freeForOtherMap 0x10000000
-
-typedef struct {
-    int fileNo;
-    int mapNo;
-} PiFreeListItem;
-typedef struct {
-    PiFreeListItem item[FLIST_SIZE];
-} PiFreeList;
-PiFreeList freeList;
-
 int piRomFreeLevel(int map, uint flags) {
 	int iList;
 	PiFreeList localFreeList;
 
-	localFreeList = freeList;
+	localFreeList = piFreeList;
 	//freeList.item[0].mapNo = map;
 
-    for(iList = 0; iList < FLIST_SIZE; iList++) {
+    for(iList = 0; iList < PI_FLIST_SIZE; iList++) {
         /* this check works out to:
         - file is not NULL and either:
             - it belongs to the current map and we're freeing the current map,
@@ -1845,7 +1837,7 @@ int piRomFreeLevel(int map, uint flags) {
                     break;
             }
 		}
-		if(iList >= FLIST_SIZE) {
+		if(iList >= PI_FLIST_SIZE) {
 			OSPanic("pi_dolphin.c", 3549,
 			    "piRomFreeLevel(): flist array overflow");
 		}
