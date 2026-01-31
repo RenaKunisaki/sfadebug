@@ -49,7 +49,7 @@ f32 getCameraDepth(f32, f32, f32); /* extern */
 void *getCurCamera(); /* extern */
 s32 getCurMapType(void); /* extern */
 int getLoadedDataFileSize(DataFileId32 param1); /* extern */
-DataFileLoadedFlags getPiLockedFlags(void); /* extern */
+PiLockFlags getPiLockedFlags(void); /* extern */
 void intersectModLineBuild(ObjData *data); /* extern */
 BOOL isModelAnimDisabled(void); /* extern */
 void krystalFree(ObjInstance *obj, int unused); /* extern */

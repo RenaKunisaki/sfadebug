@@ -1186,7 +1186,7 @@ s8 fn_80079D80(void) { //80079D80
     return newGameFlag8039890b;
 }
 
-DataFileLoadedFlags getPiLockedFlags(void) { //80079D88
+PiLockFlags getPiLockedFlags(void) { //80079D88
     return piLockedFlags;
 }
 

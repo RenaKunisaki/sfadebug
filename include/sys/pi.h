@@ -16,7 +16,6 @@ typedef struct {
 } PiFreeList;
 extern PiFreeList piFreeList;
 
-typedef uint DataFileLoadedFlags;
 typedef enum { //different from final!
     //inconsistent suffix capitalization is
     //just how the game names them
@@ -106,7 +105,7 @@ typedef enum { //different from final!
     FILE_NULL2         = 81, //0x51
 } DataFileId32;
 
-//for loadingFiles
+//for piLockFlags
 typedef enum {
     LOADING_MODELS_bin   = (1 << 0),
     LOADING_MODELS_bin2  = (1 << 1),
@@ -130,7 +129,7 @@ typedef enum {
     LOADING_BLOCKS_tab2  = (1 << 19),
     LOADING_ANIMCURV_bin = (1 << 20),
     LOADING_ANIMCURV_tab = (1 << 21),
-} LoadingFileFlags;
+} PiLockFlags;
 
 #define MODELS_TAB_SIZE 0x800
 #define ANIM_TAB_SIZE 3000 //not 0x3000

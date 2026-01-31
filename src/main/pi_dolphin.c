@@ -34,121 +34,124 @@ enum {
 
 PiFreeList piFreeList;
 
-//strings that belong somewhere in this file probably
+//strings that belong somewhere in this file probably.
+//where they go, and what args, are mostly huge guesses.
+//no guarantee they're in the right functions.
 // * prefix for ones we've placed
-//   "preloaded ... %s tablesize=%d table=%x\n";
-//   "LOAD FROM DISK... %s size %d\n";
-//   " Size %i \n";
-//   "ADDR ROMLOAD file=%s\n";
-//   "LOAD FROM DISK... %s\n";
-//   "######## DVDLOAD piRomLoadAddr() ----- file=%s  #################\n";
-//   "temp dvd buffer";
-//   "PIFREE buffer  addr 0x%x";
-//   "piGetMapInfo() ----- table DB_MAPS or DB_MAPINDEX not loaded\n";
-//   "piGetModelInfo() ----- table DB_MODELS not loaded\n";
-//   "piGetTExtureInfo() ----- table DB_TEXTURES not loaded\n";
-//   "piGetTEXTUREInfo() ----- table DB_TEXTURES not loaded\n";
-// * "pi_dolphin.c";
-// * "piRomLoadSection(): DB_MAPS Bin Not Loaded";
-// * "<Cyc %d | Instr %d | L1misscyc %d | DCmiss %d>\n";
-//   "piRomGetGamNumber() ----- mapNumber <%d> too high";
-//   "######## DVDLOAD piRomLoadSectionL() ----- file=%s  #################\n";
-//   "PIFREE buffer  addr 0x%x\n";
-//   "ROMLOAD gamno=%d  level %s  fileno %d\n";
-//   "PIFREE pitable[%d]  addr %d";
-//   "FILENAME %s\n";
-//   "LOAD FROM DISK... %s %s/%s %d size %d\n";
-//   "######## DVDLOAD piRomLoadLevel() ---- file=%s  #################\n";
-//   "PIFREE pitable[%d]ANIMCURVE/TAB  addr %d";
-//   "INANIMCURVE LOCK %x\n";
-//   "INANIMCURVETAB LOCK %x\n";
-//   "ALL BASES FULL DB_BLOCKS\n";
-//   "PIFREE pitable[%d]BLOCKS  addr %d";
-//   "%s/mod%d.bin";
-//   "INBLOCKS LOCK %x\n";
-//   "ALL BASES FULL DB_BLOCKSTAB\n";
-//   "PIFREE pitable[%d]BLOCKSTAB  addr %d";
-//   "%s/mod%d.tab";
-//   "BLOCKSTAB";
-//   "INBLOCKTAB LOCK %x\n";
-//   "GOT TO MODELS\n";
-//   "forceload\n";
-//   "allloaded 1\n";
-//   "allloaded 2\n";
-//   "ALL BASES FULL DB_MODELS\n";
-//   "PIFREE pitable[%d]MODELS  addr %d";
-//   "INMODELS LOCK %x\n";
-//   "ALL BASES FULL DB_MODTAB\n";
-//   "PIFREE pitable[%d]MODTAB  addr %d";
-//   "INMODTABLOCK %x\n";
-//   "ALL BASES FULL DB_ANIM\n";
-//   "PIFREE pitable[%d]ANIM  addr %d";
-//   "INANIM LOCK %x\n";
-//   "ALL BASES FULL DB_ANIMTAB\n";
-//   "PIFREE pitable[%d]ANIMTAB  addr %d";
-//   "INANIMTAB LOCK %x\n";
-//   "ALL BASES FULL DB_TEXTURES2\n";
-//   "PIFREE pitable[%d]TEXTURES2  addr %d";
-//   "######## DVDLOAD piRomLoadLevel() ---- file=%s  piTable 0x%x #################\n";
-//   "INTEX2 LOCK %x\n";
-//   "ALL BASES FULL DB_TEXTAB2\n";
-//   "PIFREE pitable[%d]TEXTAB2  addr %d";
-//   "######## DVDLOAD piRomLoadLevel() ----- file=%s  #################\n";
-//   "INTEXTAB2 LOCK %x\n";
-//   "ALL BASES FULL DB_TEXTURES\n";
-//   "PIFREE pitable[%d]TEXTURES  addr %d";
-//   "INTEX LOCK %x\n";
-//   "ALL BASES FULL DB_TEXTAB\n";
-//   "PIFREE pitable[%d]TEXTAB  addr %d";
-//   "INTEXTAB LOCK %x\n";
-//   "INTEXTABB LOCK %x\n";
-//   "ERROR in piRomLoadLevel file %d\n";
-//   "piMergeIndex  one or other tabfiles is not loaded %x %x\n";
-//   "MODTAB %4d 0x%x ";
-//   "T1 0x%x ";
-//   "T2 0x%x ";
-//   "PIFREE pitable[%d]  addr 0x%x  --- gamno %d size %d the file GAMNO %d\n";
-// * "Warning in piRomFreeLevel file || %s || not found !\n";
-// * "piRomFreeLevel(): flist array overflow";
-//   "ROMLOADTAB file=%s\n";
-//   "piDVDCallbackModtab  error on MODTAB\n";
-//   "\n\n\npiDVDCallbackModtab  %x\n\n\n";
-//   "piDVDCallbackAnimtab  error on ANIMTAB\n";
-//   "piDVDCallbackAnimtab %x\n";
-//   "piDVDCallbackModbin  error on MODBIN\n";
-//   "piDVDCallbackModtab %x\n";
-//   "piDVDCallbackAnimbin  error on ANIMBIN\n";
-//   "piDVDCallbackAnim %x\n";
-//   "piDVDCallbackTex2bin  error on TEX2BIN\n";
-//   "piDVDCallbackTEXTURES %x\n";
-//   "piDVDCallbackTextab  error on TEX2TAB\n";
-//   "piDVDCallbacktex2tab36 %x\n";
-//   "piDVDCallbackTex2tab36 ------ CHECKSUM  0x%x  REALSUM 0x%x\n";
-//   "piDVDCallbackTex2tab36 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n";
-//   "piDVDCallbackTex2tab36 ------ RE-READING\n";
-//   "piDVDCallbacktex2tab78 %x\n";
-//   "piDVDCallbackTex2tab78 ------ CHECKSUM  0x%x  REALSUM 0x%x\n";
-//   "piDVDCallbackTex2tab78 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n";
-//   "piDVDCallbackTex2tab78 ------ RE-READING\n";
-//   "piDVDCallbackTexbin  error on TEXBIN\n";
-//   "piDVDCallbacktexbin %x\n";
-//   "piDVDCallbackTextab  error on TEXTAB\n";
-//   "piDVDCallbacktextab33 %x\n";
-//   "piDVDCallbackTextab33 ------ CHECKSUM  0x%x  REALSUM 0x%x\n";
-//   "piDVDCallbackTex2tab33 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n";
-//   "piDVDCallbackTex2tab33 ------ RE-READING\n";
-//   "piDVDCallbacktextab76 %x\n";
-//   "piDVDCallbackTextab76 ------ CHECKSUM  0x%x  REALSUM 0x%x\n";
-//   "piDVDCallbackTextab76 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n";
-//   "piDVDCallbackTextab76 ------ RE-READING\n";
-//   "piDVDCallbackBlockbin  error on BLOCKBIN\n";
-//   "piDVDCallbackblockbin %x\n";
-//   "piDVDCallbackBlockstab  error on BLOCKSTAB\n";
-//   "piDVDCallbackblocktab %x\n";
-//   "piDVDCallbackAnimCurveb  error on AnimCurve\n";
-//   "piDVDCallbackAnimCurve %x\n";
-//   "piDVDCallbackAnimCurveTab  error on AnimCurveTab\n";
-//   "piDVDCallbackAnimCurveTab %x\n";
+// * "pi:table"
+// * "preloaded ... %s tablesize=%d table=%x\n"
+// * "LOAD FROM DISK... %s size %d\n"
+// * " Size %i \n"
+// * "ADDR ROMLOAD file=%s\n"
+// * "LOAD FROM DISK... %s\n"
+//   "######## DVDLOAD piRomLoadAddr() ----- file=%s  #################\n"
+// * "temp dvd buffer"
+// * "PIFREE buffer  addr 0x%x"
+//   "piGetMapInfo() ----- table DB_MAPS or DB_MAPINDEX not loaded\n"
+//   "piGetModelInfo() ----- table DB_MODELS not loaded\n"
+//   "piGetTExtureInfo() ----- table DB_TEXTURES not loaded\n"
+//   "piGetTEXTUREInfo() ----- table DB_TEXTURES not loaded\n"
+// * "pi_dolphin.c"
+// * "piRomLoadSection(): DB_MAPS Bin Not Loaded"
+// * "<Cyc %d | Instr %d | L1misscyc %d | DCmiss %d>\n"
+//   "piRomGetGamNumber() ----- mapNumber <%d> too high"
+//   "######## DVDLOAD piRomLoadSectionL() ----- file=%s  #################\n"
+//   "PIFREE buffer  addr 0x%x\n"
+// * "ROMLOAD gamno=%d  level %s  fileno %d\n"
+// * "PIFREE pitable[%d]  addr %d"
+//   "FILENAME %s\n"
+//   "LOAD FROM DISK... %s %s/%s %d size %d\n"
+// * "######## DVDLOAD piRomLoadLevel() ---- file=%s  #################\n"
+// * "PIFREE pitable[%d]ANIMCURVE/TAB  addr %d"
+// * "INANIMCURVE LOCK %x\n"
+// * "INANIMCURVETAB LOCK %x\n"
+// * "ALL BASES FULL DB_BLOCKS\n"
+// * "PIFREE pitable[%d]BLOCKS  addr %d"
+// * "%s/mod%d.bin"
+// * "INBLOCKS LOCK %x\n"
+// * "ALL BASES FULL DB_BLOCKSTAB\n"
+// * "PIFREE pitable[%d]BLOCKSTAB  addr %d"
+// * "%s/mod%d.tab"
+// * "BLOCKSTAB"
+// * "INBLOCKTAB LOCK %x\n"
+// * "GOT TO MODELS\n"
+// * "forceload\n"
+// * "allloaded 1\n"
+// * "allloaded 2\n"
+// * "ALL BASES FULL DB_MODELS\n"
+// * "PIFREE pitable[%d]MODELS  addr %d"
+// * "INMODELS LOCK %x\n"
+// * "ALL BASES FULL DB_MODTAB\n"
+// * "PIFREE pitable[%d]MODTAB  addr %d"
+// * "INMODTABLOCK %x\n"
+// * "ALL BASES FULL DB_ANIM\n"
+// * "PIFREE pitable[%d]ANIM  addr %d"
+// * "INANIM LOCK %x\n"
+// * "ALL BASES FULL DB_ANIMTAB\n"
+// * "PIFREE pitable[%d]ANIMTAB  addr %d"
+// * "INANIMTAB LOCK %x\n"
+// * "ALL BASES FULL DB_TEXTURES2\n"
+// * "PIFREE pitable[%d]TEXTURES2  addr %d"
+// * "######## DVDLOAD piRomLoadLevel() ---- file=%s  piTable 0x%x #################\n"
+// * "INTEX2 LOCK %x\n"
+// * "ALL BASES FULL DB_TEXTAB2\n"
+// * "PIFREE pitable[%d]TEXTAB2  addr %d"
+// * "######## DVDLOAD piRomLoadLevel() ----- file=%s  #################\n"
+// * "INTEXTAB2 LOCK %x\n"
+// * "ALL BASES FULL DB_TEXTURES\n"
+// * "PIFREE pitable[%d]TEXTURES  addr %d"
+// * "INTEX LOCK %x\n"
+// * "ALL BASES FULL DB_TEXTAB\n"
+// * "PIFREE pitable[%d]TEXTAB  addr %d"
+// * "INTEXTAB LOCK %x\n"
+// * "INTEXTABB LOCK %x\n"
+// * "ERROR in piRomLoadLevel file %d\n"
+//   "piMergeIndex  one or other tabfiles is not loaded %x %x\n"
+//   "MODTAB %4d 0x%x "
+//   "T1 0x%x "
+//   "T2 0x%x "
+//   "PIFREE pitable[%d]  addr 0x%x  --- gamno %d size %d the file GAMNO %d\n"
+// * "Warning in piRomFreeLevel file || %s || not found !\n"
+// * "piRomFreeLevel(): flist array overflow"
+//   "ROMLOADTAB file=%s\n"
+//   "piDVDCallbackModtab  error on MODTAB\n"
+//   "\n\n\npiDVDCallbackModtab  %x\n\n\n"
+//   "piDVDCallbackAnimtab  error on ANIMTAB\n"
+//   "piDVDCallbackAnimtab %x\n"
+//   "piDVDCallbackModbin  error on MODBIN\n"
+//   "piDVDCallbackModtab %x\n"
+//   "piDVDCallbackAnimbin  error on ANIMBIN\n"
+//   "piDVDCallbackAnim %x\n"
+//   "piDVDCallbackTex2bin  error on TEX2BIN\n"
+//   "piDVDCallbackTEXTURES %x\n"
+//   "piDVDCallbackTextab  error on TEX2TAB\n"
+//   "piDVDCallbacktex2tab36 %x\n"
+//   "piDVDCallbackTex2tab36 ------ CHECKSUM  0x%x  REALSUM 0x%x\n"
+//   "piDVDCallbackTex2tab36 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n"
+//   "piDVDCallbackTex2tab36 ------ RE-READING\n"
+//   "piDVDCallbacktex2tab78 %x\n"
+//   "piDVDCallbackTex2tab78 ------ CHECKSUM  0x%x  REALSUM 0x%x\n"
+//   "piDVDCallbackTex2tab78 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n"
+//   "piDVDCallbackTex2tab78 ------ RE-READING\n"
+//   "piDVDCallbackTexbin  error on TEXBIN\n"
+//   "piDVDCallbacktexbin %x\n"
+//   "piDVDCallbackTextab  error on TEXTAB\n"
+//   "piDVDCallbacktextab33 %x\n"
+//   "piDVDCallbackTextab33 ------ CHECKSUM  0x%x  REALSUM 0x%x\n"
+//   "piDVDCallbackTex2tab33 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n"
+//   "piDVDCallbackTex2tab33 ------ RE-READING\n"
+//   "piDVDCallbacktextab76 %x\n"
+//   "piDVDCallbackTextab76 ------ CHECKSUM  0x%x  REALSUM 0x%x\n"
+//   "piDVDCallbackTextab76 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n"
+//   "piDVDCallbackTextab76 ------ RE-READING\n"
+//   "piDVDCallbackBlockbin  error on BLOCKBIN\n"
+//   "piDVDCallbackblockbin %x\n"
+//   "piDVDCallbackBlockstab  error on BLOCKSTAB\n"
+//   "piDVDCallbackblocktab %x\n"
+//   "piDVDCallbackAnimCurveb  error on AnimCurve\n"
+//   "piDVDCallbackAnimCurve %x\n"
+//   "piDVDCallbackAnimCurveTab  error on AnimCurveTab\n"
+//   "piDVDCallbackAnimCurveTab %x\n"
 
 //other files
 int piMergeIndex(uint *table,DataFileId32 file1,DataFileId32 file2,int count);
@@ -386,7 +389,13 @@ uint TEX1_TAB[TEX1_TAB_SIZE];
 uint BLOCKS_TAB[BLOCKS_TAB_SIZE]; //size might be 0x1000?
 
 //.sbss
-u32 loadingFiles; //0x80398B30 - LoadingFileFlags, which are being loaded in background
+u32 piLockFlags; //0x80398B30 - LoadingFileFlags, which are being loaded in background
+
+#define PIFREE(slot, name) if(dataFilePtrs[slot] != NULL) { \
+    STUBBED_PRINTF("PIFREE pitable[%d]" #name "  addr %d", slot, dataFilePtrs[slot]); \
+    mmFree(dataFilePtrs[slot]); \
+    dataFilePtrs[slot] = NULL; \
+}
 
 void initDataFiles(void) {
 	int file;
@@ -461,13 +470,20 @@ void initDataFiles(void) {
  *  @note If already loaded, returns the existing instance.
  */
 void *loadDataFile(DataFileId32 fileNo, char *memName) {
-	void *pvVar1;
 	DVDFileInfo file;
+	void *pvVar1;
 
-	if(dataFilePtrs[fileNo]) return dataFilePtrs[fileNo];
+	if(dataFilePtrs[fileNo]) {
+        STUBBED_PRINTF("preloaded ... %s tablesize=%d table=%x\n",
+            dataFileNames[fileNo], dataFileSizes[fileNo],
+            dataFilePtrs[fileNo]);
+        return dataFilePtrs[fileNo];
+    }
 
     DVDOpen((char*)dataFileNames[fileNo], &file);
-    dataFileSizes[fileNo] = (int)file.cb.callback;
+    dataFileSizes[fileNo] = file.length;
+    STUBBED_PRINTF("LOAD FROM DISK... %s size %d\n",
+        dataFileNames[fileNo], dataFileSizes[fileNo]);
     dataFilePtrs[fileNo] = mmAlloc(dataFileSizes[fileNo] + 0x20,
         ALLOC_TAG_DVD_BUFFER,
         (volatile u32)dataFileNames[fileNo]);
@@ -491,17 +507,20 @@ int loadDataFileToBuf(DataFileId32 fileNo, void *buf) {
 	DVDFileInfo file;
 
 	if(dataFilePtrs[fileNo]) {
+        STUBBED_PRINTF(" Size %i \n", dataFileSizes[fileNo]);
         memcpy_src_dst_len(dataFilePtrs[fileNo],
             buf, dataFileSizes[fileNo]);
 		DCStoreRange(buf, dataFileSizes[fileNo]);
 		return dataFileSizes[fileNo];
 	} else {
+        STUBBED_PRINTF("ADDR ROMLOAD file=%s\n", dataFileNames[fileNo]);
 		DVDOpen((char*)dataFileNames[fileNo], &file);
-		DCInvalidateRange(buf, (int)file.cb.callback);
+        STUBBED_PRINTF("LOAD FROM DISK... %s\n", dataFileNames[fileNo]);
+		DCInvalidateRange(buf, file.length);
 		DVDReadPrio(&file, buf,
             (uint)file.cb.callback, 0, 2);
 		DVDClose(&file);
-        return (int)file.cb.callback;
+        return file.length;
 	}
 }
 
@@ -531,6 +550,8 @@ uint offset, int len) {
 		    (void *)((int)dataFilePtrs[fileNo] + offset),
             buf, len);
     } else {
+        STUBBED_PRINTF("######## DVDLOAD piRomLoadAddr() "
+            "----- file=%s  #################\n", dataFileNames[fileNo]);
 		DVDOpen((char*)dataFileNames[fileNo], &file);
         if((uint)buf & 0x1f || len & 0x1f) {
             //buffer and/or length aren't aligned.
@@ -1147,15 +1168,15 @@ size_t length, uint *outSize, int index, u8 flags) {
 /**
  * @brief Load the specified file for the specified map.
  *
- *  @param mapNo Map number to load for.
+ *  @param gamno Map number to load for.
  *  @param fileNo File to load.
  *  @return The file data.
  *  @note May return NULL if the file is being loaded in the
  *    background, or there's no free slot to load it to.
- *    check @see{loadingFiles} to know if it's being loaded.
+ *    check @see{piLockFlags} to know if it's being loaded.
  */
-void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
-	bool bLoadImmediately;
+void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
+	bool bForceLoad;
 	DVDFileInfo *pFile;
 	int slot;
 	char path[64];
@@ -1163,23 +1184,28 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
 
     //@bug several missing null checks for mmAlloc
 
-	bLoadImmediately = false;
+    STUBBED_PRINTF("ROMLOAD gamno=%d  level %s  fileno %d\n", gamno,
+        mapNames[gamno], fileNo);
+
+    STUBBED_PRINTF("FILENAME %s\n", dataFileNames[fileNo]);
+
+    STUBBED_PRINTF("######## DVDLOAD piRomLoadLevel() ---- "
+        "file=%s  #################\n", dataFileNames[fileNo]);
+
+	bForceLoad = false;
     switch(fileNo) {
         case FILE_VOXMAP_tab: //0x1A
         case FILE_VOXMAP_bin: { //0x1B
-            if(dataFilePtrs[fileNo] && mapNo == loadedFileMapIds[fileNo]) {
+            if(dataFilePtrs[fileNo] && gamno == loadedFileMapIds[fileNo]) {
                 //already loaded, return it
                 return dataFilePtrs[fileNo];
             }
-            if(dataFilePtrs[fileNo]) { //loaded for another map, free it
-                mmFree(dataFilePtrs[fileNo]);
-                dataFilePtrs[fileNo] = NULL;
-            }
+            PIFREE(fileNo, "");
 
             //open it
             //this one case uses a local variable for file instead of pFile,
             //probably because it never uses a callback.
-            sprintf(path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+            sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             if(!DVDOpen(path, &file)) return NULL;
 
             //get the size and alloc the buffer
@@ -1191,20 +1217,17 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             DVDReadPrio(&file, dataFilePtrs[fileNo],
                 dataFileSizes[fileNo], 0, 2);
             DVDClose(&file);
-            loadedFileMapIds[fileNo] = mapNo;
+            loadedFileMapIds[fileNo] = gamno;
             return dataFilePtrs[fileNo];
         }
 
         case FILE_ANIMCURV_bin: //0x0D
         case FILE_ANIMCURV_tab: { //0x0E
-            if(dataFilePtrs[fileNo] && mapNo == loadedFileMapIds[fileNo]) {
+            if(dataFilePtrs[fileNo] && gamno == loadedFileMapIds[fileNo]) {
                 return dataFilePtrs[fileNo];
             }
-            if(dataFilePtrs[fileNo]) {
-                mmFree(dataFilePtrs[fileNo]);
-                dataFilePtrs[fileNo] = NULL;
-            }
-            sprintf(path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+            PIFREE(fileNo, "ANIMCURVE/TAB");
+            sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[fileNo]);
             if(!DVDOpen(path, pFile)) {
@@ -1215,38 +1238,40 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             dataFileSizes[fileNo] = pFile->length;
             dataFilePtrs[fileNo] = mmAlloc(dataFileSizes[fileNo],
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[fileNo]);
-            if(bLoadImmediately) {
+            if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[fileNo],
                     dataFileSizes[fileNo], 0, 2);
                 DVDClose(pFile);
                 mmFree(pFile);
             } else if(fileNo == FILE_ANIMCURV_bin) {
                 //callback will free pFile (XXX verify)
-                loadingFiles |= LOADING_ANIMCURV_bin;
+                piLockFlags |= LOADING_ANIMCURV_bin;
+                STUBBED_PRINTF("INANIMCURVE LOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[fileNo],
                     dataFileSizes[fileNo], 0, piDVDCallbackAnimCurve);
             } else {
                 //callback will free pFile
-                loadingFiles |= LOADING_ANIMCURV_tab;
+                piLockFlags |= LOADING_ANIMCURV_tab;
+                STUBBED_PRINTF("INANIMCURVETAB LOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[fileNo],
                     dataFileSizes[fileNo], 0, piDVDCallbackAnimCurveTab);
             }
-            loadedFileMapIds[fileNo] = mapNo;
+            loadedFileMapIds[fileNo] = gamno;
             return dataFilePtrs[fileNo];
         }
 
         case FILE_BLOCKS_bin: { //0x25
             if(!(dataFilePtrs[FILE_BLOCKS_bin] || dataFilePtrs[FILE_BLOCKS_bin2])) {
-                bLoadImmediately = true;
+                bForceLoad = true;
             }
 
             if(dataFilePtrs[FILE_BLOCKS_bin]
-            && loadedFileMapIds[FILE_BLOCKS_bin] == mapNo) {
+            && loadedFileMapIds[FILE_BLOCKS_bin] == gamno) {
                 //already loaded in slot 1
                 return dataFilePtrs[FILE_BLOCKS_bin];
             }
             else if(dataFilePtrs[FILE_BLOCKS_bin2]
-            && loadedFileMapIds[FILE_BLOCKS_bin2] == mapNo) {
+            && loadedFileMapIds[FILE_BLOCKS_bin2] == gamno) {
                 //already loaded in slot 2
                 return dataFilePtrs[FILE_BLOCKS_bin2];
             }
@@ -1258,16 +1283,16 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 //slot 2 is empty, use it
                 slot = FILE_BLOCKS_bin2;
             }
-            else return NULL; //no free slot to load to
-
-            if(dataFilePtrs[slot] != NULL) {
-                mmFree(dataFilePtrs[slot]);
-                dataFilePtrs[slot] = NULL;
+            else { //no free slot to load to
+                STUBBED_PRINTF("ALL BASES FULL DB_BLOCKS\n");
+                return NULL;
             }
-            if(mapNo > 4) {
-                sprintf(path, "%s/mod%d.bin", mapNames[mapNo], mapNo + 1);
+
+            PIFREE(slot, "BLOCKS");
+            if(gamno > 4) {
+                sprintf(path, "%s/mod%d.bin", mapNames[gamno], gamno + 1);
             } else {
-                sprintf(path, "%s/mod%d.bin", mapNames[mapNo], mapNo);
+                sprintf(path, "%s/mod%d.bin", mapNames[gamno], gamno);
             }
 
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
@@ -1280,32 +1305,33 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot],
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)"BLOCKS");
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
-            if(bLoadImmediately) {
+            if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
                 mmFree(pFile);
             } else {
                 //callback will free pFile
-                if(slot == FILE_BLOCKS_bin) loadingFiles |= LOADING_BLOCKS_bin;
-                else loadingFiles |= LOADING_BLOCKS_bin2;
+                if(slot == FILE_BLOCKS_bin) piLockFlags |= LOADING_BLOCKS_bin;
+                else piLockFlags |= LOADING_BLOCKS_bin2;
+                STUBBED_PRINTF("INBLOCKS LOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackBlockbin);
             }
-            loadedFileMapIds[slot] = mapNo;
+            loadedFileMapIds[slot] = gamno;
             return dataFilePtrs[slot];
         }
 
         case FILE_BLOCKS_tab: { //0x26
             if(!(dataFilePtrs[FILE_BLOCKS_tab] || dataFilePtrs[FILE_BLOCKS_tab2])) {
-                bLoadImmediately = true;
+                bForceLoad = true;
             }
             if(dataFilePtrs[FILE_BLOCKS_tab]
-            && loadedFileMapIds[FILE_BLOCKS_tab] == mapNo) {
+            && loadedFileMapIds[FILE_BLOCKS_tab] == gamno) {
                 return dataFilePtrs[FILE_BLOCKS_tab];
             }
             else if(dataFilePtrs[FILE_BLOCKS_tab2]
-            && loadedFileMapIds[FILE_BLOCKS_tab2] == mapNo) {
+            && loadedFileMapIds[FILE_BLOCKS_tab2] == gamno) {
                 return dataFilePtrs[FILE_BLOCKS_tab2];
             }
             else if(loadedFileMapIds[FILE_BLOCKS_tab] == -1) {
@@ -1314,16 +1340,16 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             else if(loadedFileMapIds[FILE_BLOCKS_tab2] == -1) {
                 slot = FILE_BLOCKS_tab2;
             }
-            else return NULL;
-
-            if(dataFilePtrs[slot] != NULL) {
-                mmFree(dataFilePtrs[slot]);
-                dataFilePtrs[slot] = NULL;
+            else {
+                STUBBED_PRINTF("ALL BASES FULL DB_BLOCKSTAB\n");
+                return NULL;
             }
-            if(mapNo > 4) {
-                sprintf(path, "%s/mod%d.tab", mapNames[mapNo], mapNo + 1);
+
+            PIFREE(slot, "BLOCKSTAB");
+            if(gamno > 4) {
+                sprintf(path, "%s/mod%d.tab", mapNames[gamno], gamno + 1);
             } else {
-                sprintf(path, "%s/mod%d.tab", mapNames[mapNo], mapNo);
+                sprintf(path, "%s/mod%d.tab", mapNames[gamno], gamno);
             }
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)"BLOCKSTAB");
@@ -1337,7 +1363,7 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
-            if(bLoadImmediately) {
+            if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
@@ -1345,25 +1371,30 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 piMergeIndex(BLOCKS_TAB, FILE_BLOCKS_tab,
                     FILE_BLOCKS_tab2, 0x800);
             } else {
-                if(slot == FILE_BLOCKS_tab) loadingFiles |= LOADING_BLOCKS_tab;
-                else loadingFiles |= LOADING_BLOCKS_tab2;
+                if(slot == FILE_BLOCKS_tab) piLockFlags |= LOADING_BLOCKS_tab;
+                else piLockFlags |= LOADING_BLOCKS_tab2;
+                STUBBED_PRINTF("INBLOCKTAB LOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackBlockstab);
             }
-            loadedFileMapIds[slot] = mapNo;
+            loadedFileMapIds[slot] = gamno;
             return dataFilePtrs[slot];
         }
 
         case FILE_MODELS_bin: { //0x2B
+            STUBBED_PRINTF("GOT TO MODELS\n");
             if(!(dataFilePtrs[FILE_MODELS_bin] || dataFilePtrs[FILE_MODELS_bin2])) {
-                bLoadImmediately = true;
+                bForceLoad = true;
+                STUBBED_PRINTF("forceload\n");
             }
             if(dataFilePtrs[FILE_MODELS_bin]
-            && loadedFileMapIds[FILE_MODELS_bin] == mapNo) {
+            && loadedFileMapIds[FILE_MODELS_bin] == gamno) {
+                STUBBED_PRINTF("allloaded 1\n");
                 return dataFilePtrs[FILE_MODELS_bin];
             }
             else if(dataFilePtrs[FILE_MODELS_bin2]
-            && loadedFileMapIds[FILE_MODELS_bin2] == mapNo) {
+            && loadedFileMapIds[FILE_MODELS_bin2] == gamno) {
+                STUBBED_PRINTF("allloaded 2\n");
                 return dataFilePtrs[FILE_MODELS_bin2];
             }
             else if(loadedFileMapIds[FILE_MODELS_bin] == -1) {
@@ -1372,13 +1403,13 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             else if(loadedFileMapIds[FILE_MODELS_bin2] == -1) {
                 slot = FILE_MODELS_bin2;
             }
-            else return NULL;
-
-            if(dataFilePtrs[slot] != NULL) {
-                mmFree(dataFilePtrs[slot]);
-                dataFilePtrs[slot] = NULL;
+            else {
+                STUBBED_PRINTF("ALL BASES FULL DB_MODELS\n");
+                return NULL;
             }
-            sprintf(path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+
+            PIFREE(slot, "MODELS");
+            sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
@@ -1392,32 +1423,34 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
-            if(bLoadImmediately) {
+            if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
                 mmFree(pFile);
             } else {
-                if(slot == FILE_MODELS_bin) loadingFiles |= LOADING_MODELS_bin;
-                else loadingFiles |= LOADING_MODELS_bin2;
+                if(slot == FILE_MODELS_bin) piLockFlags |= LOADING_MODELS_bin;
+                else piLockFlags |= LOADING_MODELS_bin2;
+                STUBBED_PRINTF("INMODELS LOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackModelsbin);
             }
-            loadedFileMapIds[slot] = mapNo;
+            loadedFileMapIds[slot] = gamno;
             return dataFilePtrs[slot];
         }
 
         case FILE_MODELS_tab: { //0x2A
             if(!(dataFilePtrs[FILE_MODELS_tab] || dataFilePtrs[FILE_MODELS_tab2])) {
-                bLoadImmediately = true;
+                bForceLoad = true;
+                STUBBED_PRINTF("forceload\n");
             }
 
             if(dataFilePtrs[FILE_MODELS_tab]
-            && loadedFileMapIds[FILE_MODELS_tab] == mapNo) {
+            && loadedFileMapIds[FILE_MODELS_tab] == gamno) {
                 return dataFilePtrs[FILE_MODELS_tab];
             }
             else if(dataFilePtrs[FILE_MODELS_tab2]
-            && loadedFileMapIds[FILE_MODELS_tab2] == mapNo) {
+            && loadedFileMapIds[FILE_MODELS_tab2] == gamno) {
                 return dataFilePtrs[FILE_MODELS_tab2];
             }
             else if(loadedFileMapIds[FILE_MODELS_tab] == -1) {
@@ -1426,13 +1459,13 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             else if(loadedFileMapIds[FILE_MODELS_tab2] == -1) {
                 slot = FILE_MODELS_tab2;
             }
-            else return NULL;
-
-            if(dataFilePtrs[slot]) {
-                mmFree(dataFilePtrs[slot]);
-                dataFilePtrs[slot] = NULL;
+            else {
+                STUBBED_PRINTF("ALL BASES FULL DB_MODTAB\n");
+                return NULL;
             }
-            sprintf(path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+
+            PIFREE(slot, "MODTAB");
+            sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
@@ -1446,7 +1479,7 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
-            if(bLoadImmediately) {
+            if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
@@ -1454,25 +1487,26 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 piMergeIndex(MODELS_TAB, FILE_MODELS_tab,
                     FILE_MODELS_tab2, 0x800);
             } else {
-                if(slot == FILE_MODELS_tab) loadingFiles |= LOADING_MODELS_tab;
-                else loadingFiles |= LOADING_MODELS_tab2;
+                if(slot == FILE_MODELS_tab) piLockFlags |= LOADING_MODELS_tab;
+                else piLockFlags |= LOADING_MODELS_tab2;
+                STUBBED_PRINTF("INMODTABLOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[slot], dataFileSizes[slot],
                     0, piDVDCallbackModelstab);
             }
-            loadedFileMapIds[slot] = mapNo;
+            loadedFileMapIds[slot] = gamno;
             return dataFilePtrs[slot];
         }
 
         case FILE_ANIM_BIN: { //0x30
             if(!(dataFilePtrs[FILE_ANIM_BIN] || dataFilePtrs[FILE_ANIM_BIN2])) {
-                bLoadImmediately = true;
+                bForceLoad = true;
             }
             if(dataFilePtrs[FILE_ANIM_BIN]
-            && loadedFileMapIds[FILE_ANIM_BIN] == mapNo) {
+            && loadedFileMapIds[FILE_ANIM_BIN] == gamno) {
                 return dataFilePtrs[FILE_ANIM_BIN];
             }
             else if(dataFilePtrs[FILE_ANIM_BIN2]
-            && loadedFileMapIds[FILE_ANIM_BIN2] == mapNo) {
+            && loadedFileMapIds[FILE_ANIM_BIN2] == gamno) {
                 return dataFilePtrs[FILE_ANIM_BIN2];
             }
             else if(loadedFileMapIds[FILE_ANIM_BIN] == -1) {
@@ -1481,13 +1515,13 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             else if(loadedFileMapIds[FILE_ANIM_BIN2] == -1) {
                 slot = FILE_ANIM_BIN2;
             }
-            else return NULL;
-
-            if(dataFilePtrs[slot] != NULL) {
-                mmFree(dataFilePtrs[slot]);
-                dataFilePtrs[slot] = NULL;
+            else {
+                STUBBED_PRINTF("ALL BASES FULL DB_ANIM\n");
+                return NULL;
             }
-            sprintf(path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+
+            PIFREE(slot, "ANIM");
+            sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
@@ -1501,31 +1535,32 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
-            if(bLoadImmediately) {
+            if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
                 mmFree(pFile);
             } else {
-                if(slot == FILE_ANIM_BIN) loadingFiles |= LOADING_ANIM_BIN;
-                else loadingFiles |= LOADING_ANIM_BIN2;
+                if(slot == FILE_ANIM_BIN) piLockFlags |= LOADING_ANIM_BIN;
+                else piLockFlags |= LOADING_ANIM_BIN2;
+                STUBBED_PRINTF("INANIM LOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackAnimbin);
             }
-            loadedFileMapIds[slot] = mapNo;
+            loadedFileMapIds[slot] = gamno;
             return dataFilePtrs[slot];
         }
 
         case FILE_ANIM_TAB: { //0x2F
             if(!(dataFilePtrs[FILE_ANIM_TAB] || dataFilePtrs[FILE_ANIM_TAB2])) {
-                bLoadImmediately = true;
+                bForceLoad = true;
             }
             if(dataFilePtrs[FILE_ANIM_TAB]
-            && loadedFileMapIds[FILE_ANIM_TAB] == mapNo) {
+            && loadedFileMapIds[FILE_ANIM_TAB] == gamno) {
                 return dataFilePtrs[FILE_ANIM_TAB];
             }
             else if(dataFilePtrs[FILE_ANIM_TAB2]
-            && loadedFileMapIds[FILE_ANIM_TAB2] == mapNo) {
+            && loadedFileMapIds[FILE_ANIM_TAB2] == gamno) {
                 return dataFilePtrs[FILE_ANIM_TAB2];
             }
             else if(loadedFileMapIds[FILE_ANIM_TAB] == -1) {
@@ -1534,13 +1569,13 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             else if(loadedFileMapIds[FILE_ANIM_TAB2] == -1) {
                 slot = FILE_ANIM_TAB2;
             }
-            else return NULL;
-
-            if(dataFilePtrs[slot] != NULL) {
-                mmFree(dataFilePtrs[slot]);
-                dataFilePtrs[slot] = NULL;
+            else {
+                STUBBED_PRINTF("ALL BASES FULL DB_ANIMTAB\n");
+                return NULL;
             }
-            sprintf(path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+
+            PIFREE(slot, "ANIMTAB");
+            sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
@@ -1554,7 +1589,7 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
-            if(bLoadImmediately) {
+            if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
@@ -1562,25 +1597,26 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 piMergeIndex(ANIM_TAB,
                     FILE_ANIM_TAB, FILE_ANIM_TAB2, 3000);
             } else {
-                if(slot == FILE_ANIM_TAB) loadingFiles |= LOADING_ANIM_TAB;
-                else loadingFiles |= LOADING_ANIM_TAB2;
+                if(slot == FILE_ANIM_TAB) piLockFlags |= LOADING_ANIM_TAB;
+                else piLockFlags |= LOADING_ANIM_TAB2;
+                STUBBED_PRINTF("INANIMTAB LOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackAnimtab);
             }
-            loadedFileMapIds[slot] = mapNo;
+            loadedFileMapIds[slot] = gamno;
             return dataFilePtrs[slot];
         }
 
         case FILE_TEX0_bin: { //0x23
             if(!(dataFilePtrs[FILE_TEX0_bin] || dataFilePtrs[FILE_TEX0_bin2])) {
-                bLoadImmediately = true;
+                bForceLoad = true;
             }
             if(dataFilePtrs[FILE_TEX0_bin]
-            && loadedFileMapIds[FILE_TEX0_bin] == mapNo) {
+            && loadedFileMapIds[FILE_TEX0_bin] == gamno) {
                 return dataFilePtrs[FILE_TEX0_bin];
             }
             else if(dataFilePtrs[FILE_TEX0_bin2]
-            && loadedFileMapIds[FILE_TEX0_bin2] == mapNo) {
+            && loadedFileMapIds[FILE_TEX0_bin2] == gamno) {
                 return dataFilePtrs[FILE_TEX0_bin2];
             }
             else if(loadedFileMapIds[FILE_TEX0_bin] == -1) {
@@ -1589,13 +1625,13 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             else if(loadedFileMapIds[FILE_TEX0_bin2] == -1) {
                 slot = FILE_TEX0_bin2;
             }
-            else return NULL;
-
-            if(dataFilePtrs[slot] != NULL) {
-                mmFree(dataFilePtrs[slot]);
-                dataFilePtrs[slot] = NULL;
+            else {
+                STUBBED_PRINTF("ALL BASES FULL DB_TEXTURES2\n");
+                return NULL;
             }
-            sprintf(path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+
+            PIFREE(slot, "TEXTURES2");
+            sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
@@ -1608,32 +1644,37 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot] + 0x20,
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
+            STUBBED_PRINTF("######## DVDLOAD piRomLoadLevel() ---- "
+                "file=%s  piTable 0x%x #################\n",
+                dataFileNames[fileNo], dataFilePtrs[slot]);
+
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
-            if(bLoadImmediately) {
+            if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
                 mmFree(pFile);
             } else {
-                if(slot == FILE_TEX0_bin) loadingFiles |= LOADING_TEX0_bin;
-                else loadingFiles |= LOADING_TEX0_bin2;
+                if(slot == FILE_TEX0_bin) piLockFlags |= LOADING_TEX0_bin;
+                else piLockFlags |= LOADING_TEX0_bin2;
+                STUBBED_PRINTF("INTEX2 LOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackTexbin2);
             }
-            loadedFileMapIds[slot] = mapNo;
+            loadedFileMapIds[slot] = gamno;
             return dataFilePtrs[slot];
         }
 
         case FILE_TEX0_tab: { //0x24
             if(!(dataFilePtrs[FILE_TEX0_tab] || dataFilePtrs[FILE_TEX0_tab2])) {
-                bLoadImmediately = true;
+                bForceLoad = true;
             }
             if(dataFilePtrs[FILE_TEX0_tab]
-            && loadedFileMapIds[FILE_TEX0_tab] == mapNo) {
+            && loadedFileMapIds[FILE_TEX0_tab] == gamno) {
                 return dataFilePtrs[FILE_TEX0_tab];
             }
             else if(dataFilePtrs[FILE_TEX0_tab2]
-            && loadedFileMapIds[FILE_TEX0_tab2] == mapNo) {
+            && loadedFileMapIds[FILE_TEX0_tab2] == gamno) {
                 return dataFilePtrs[FILE_TEX0_tab2];
             }
             else if(loadedFileMapIds[FILE_TEX0_tab] == -1) {
@@ -1642,13 +1683,13 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             else if(loadedFileMapIds[FILE_TEX0_tab2] == -1) {
                 slot = FILE_TEX0_tab2;
             }
-            else return NULL;
-
-            if(dataFilePtrs[slot] != NULL) {
-                mmFree(dataFilePtrs[slot]);
-                dataFilePtrs[slot] = NULL;
+            else {
+                STUBBED_PRINTF("ALL BASES FULL DB_TEXTAB2\n");
+                return NULL;
             }
-            sprintf(path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+
+            PIFREE(slot, "TEXTAB2");
+            sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
@@ -1661,8 +1702,12 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot] + 0x20,
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
+            STUBBED_PRINTF("######## DVDLOAD piRomLoadLevel() ----- "
+                "file=%s  #################\n",
+                dataFileNames[fileNo]);
+
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
-            if(bLoadImmediately) {
+            if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
@@ -1670,29 +1715,31 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 piMergeIndex(TEX0_TAB, FILE_TEX0_tab,
                     FILE_TEX0_tab2, 0x1000);
             } else if(slot == FILE_TEX0_tab) {
-                loadingFiles |= LOADING_TEX0_tab;
+                piLockFlags |= LOADING_TEX0_tab;
+                STUBBED_PRINTF("INTEX2TAB LOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDvdCallbacktex2tab36);
             } else {
-                loadingFiles |= LOADING_TEX0_tab2;
+                piLockFlags |= LOADING_TEX0_tab2;
+                STUBBED_PRINTF("INTEX2TAB LOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackTextab33);
             }
-            loadedFileMapIds[slot] = mapNo;
+            loadedFileMapIds[slot] = gamno;
             return dataFilePtrs[slot];
         }
 
         case FILE_TEX1_bin: { //0x20
             if(!(dataFilePtrs[FILE_TEX1_bin] || dataFilePtrs[FILE_TEX1_bin2])) {
-                bLoadImmediately = true;
+                bForceLoad = true;
             }
 
             if(dataFilePtrs[FILE_TEX1_bin]
-            && loadedFileMapIds[FILE_TEX1_bin] == mapNo) {
+            && loadedFileMapIds[FILE_TEX1_bin] == gamno) {
                 return dataFilePtrs[FILE_TEX1_bin];
             }
             else if(dataFilePtrs[FILE_TEX1_bin2]
-            && loadedFileMapIds[FILE_TEX1_bin2] == mapNo) {
+            && loadedFileMapIds[FILE_TEX1_bin2] == gamno) {
                 return dataFilePtrs[FILE_TEX1_bin2];
             }
             else if(loadedFileMapIds[FILE_TEX1_bin] == -1) {
@@ -1701,13 +1748,13 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             else if(loadedFileMapIds[FILE_TEX1_bin2] == -1) {
                 slot = FILE_TEX1_bin2;
             }
-            else return NULL;
-
-            if(dataFilePtrs[slot] != NULL) {
-                mmFree(dataFilePtrs[slot]);
-                dataFilePtrs[slot] = NULL;
+            else {
+                STUBBED_PRINTF("ALL BASES FULL DB_TEXTURES\n");
+                return NULL;
             }
-            sprintf(path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+
+            PIFREE(slot, "TEXTURES");
+            sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[fileNo]);
 
@@ -1720,32 +1767,33 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot] + 0x20,
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[fileNo]);
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
-            if(bLoadImmediately) {
+            if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
                 mmFree(pFile);
             } else {
-                if(slot == FILE_TEX1_bin) loadingFiles |= LOADING_TEX1_bin;
-                else loadingFiles |= LOADING_TEX1_bin2;
+                if(slot == FILE_TEX1_bin) piLockFlags |= LOADING_TEX1_bin;
+                else piLockFlags |= LOADING_TEX1_bin2;
+                STUBBED_PRINTF("INTEX LOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackTexbin);
             }
-            loadedFileMapIds[slot] = mapNo;
+            loadedFileMapIds[slot] = gamno;
             return dataFilePtrs[slot];
         }
 
         case FILE_TEX1_tab: { //0x21
             if(!(dataFilePtrs[FILE_TEX1_tab] || dataFilePtrs[FILE_TEX1_tab2])) {
-                bLoadImmediately = true;
+                bForceLoad = true;
             }
 
             if(dataFilePtrs[FILE_TEX1_tab]
-            && loadedFileMapIds[FILE_TEX1_tab] == mapNo) {
+            && loadedFileMapIds[FILE_TEX1_tab] == gamno) {
                 return dataFilePtrs[FILE_TEX1_tab];
             }
             else if(dataFilePtrs[FILE_TEX1_tab2]
-            && loadedFileMapIds[FILE_TEX1_tab2] == mapNo) {
+            && loadedFileMapIds[FILE_TEX1_tab2] == gamno) {
                 return dataFilePtrs[FILE_TEX1_tab2];
             }
             else if(loadedFileMapIds[FILE_TEX1_tab] == -1) {
@@ -1754,13 +1802,13 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             else if(loadedFileMapIds[FILE_TEX1_tab2] == -1) {
                 slot = FILE_TEX1_tab2;
             }
-            else return NULL;
-
-            if(dataFilePtrs[slot] != NULL) {
-                mmFree(dataFilePtrs[slot]);
-                dataFilePtrs[slot] = NULL;
+            else {
+                STUBBED_PRINTF("ALL BASES FULL DB_TEXTAB\n");
+                return NULL;
             }
-            sprintf(path, "%s/%s", mapNames[mapNo], dataFileNames[fileNo]);
+
+            PIFREE(slot, "TEXTAB");
+            sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
 
@@ -1773,7 +1821,7 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot],
                 ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[fileNo]);
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
-            if(bLoadImmediately) {
+            if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, 2);
                 DVDClose(pFile);
@@ -1781,19 +1829,24 @@ void *mapLoadDataFile(int mapNo, DataFileId32 fileNo) {
                 piMergeIndex(TEX1_TAB, FILE_TEX1_tab,
                     FILE_TEX1_tab2, 0x1000);
             } else if(slot == FILE_TEX1_tab) {
-                loadingFiles |= LOADING_TEX1_tab;
+                piLockFlags |= LOADING_TEX1_tab;
+                STUBBED_PRINTF("INTEXTAB LOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackTextab33);
             } else {
-                loadingFiles |= LOADING_TEX1_tab2;
+                piLockFlags |= LOADING_TEX1_tab2;
+                STUBBED_PRINTF("INTEXTABB LOCK %x\n", piLockFlags);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackTextab33);
             }
-            loadedFileMapIds[slot] = mapNo;
+            loadedFileMapIds[slot] = gamno;
             return dataFilePtrs[slot];
         }
 
-        default: return NULL;
+        default: {
+            STUBBED_PRINTF("ERROR in piRomLoadLevel file %d\n", fileNo);
+            return NULL;
+        }
     }
 }
 
