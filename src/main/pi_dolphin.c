@@ -157,18 +157,18 @@ int piMergeIndex(uint *table,DataFileId32 file1,DataFileId32 file2,int count);
 int lzoDecompress(void *src,int compLen,void *dest,int *outLen);
 
 //unknown
-void piDVDCallbackAnimCurve(long param_1,DVDFileInfo *param_2);
-void piDVDCallbackAnimCurveTab(long param_1,DVDFileInfo *param_2);
-void piDVDCallbackTexbin(long param_1,DVDFileInfo *param_2);
-void piDVDCallbackTextab33(long param_1,DVDFileInfo *param_2);
-void piDVDCallbackTexbin2(long param_1,DVDFileInfo *param_2);
-void piDvdCallbacktex2tab36(long param_1,DVDFileInfo *param_2);
-void piDVDCallbackBlockbin(long param_1,DVDFileInfo *param_2);
-void piDVDCallbackBlockstab(long param_1,DVDFileInfo *param_2);
-void piDVDCallbackModelstab(long param_1,DVDFileInfo *param_2);
-void piDVDCallbackModelsbin(long param_1,DVDFileInfo *param_2);
-void piDVDCallbackAnimtab(long param_1,DVDFileInfo *param_2);
-void piDVDCallbackAnimbin(long param_1,DVDFileInfo *param_2);
+void piDVDCallbackAnimCurve(long stat, DVDFileInfo *file);
+void piDVDCallbackAnimCurveTab(long stat, DVDFileInfo *file);
+void piDVDCallbackTexbin(long stat, DVDFileInfo *file);
+void piDVDCallbackTextab33(long stat, DVDFileInfo *file);
+void piDVDCallbackTexbin2(long stat, DVDFileInfo *file);
+void piDvdCallbacktex2tab36(long stat, DVDFileInfo *file);
+void piDVDCallbackBlockbin(long stat, DVDFileInfo *file);
+void piDVDCallbackBlockstab(long stat, DVDFileInfo *file);
+void piDVDCallbackModelstab(long stat,  DVDFileInfo *file);
+void piDVDCallbackModelsbin(long stat, DVDFileInfo *file);
+void piDVDCallbackAnimtab(long stat, DVDFileInfo *file);
+void piDVDCallbackAnimbin(long stat, DVDFileInfo *file);
 
 //this file
 void initDataFiles(void);
@@ -390,8 +390,8 @@ uint TEX1_TAB[TEX1_TAB_SIZE];
 uint BLOCKS_TAB[BLOCKS_TAB_SIZE]; //size might be 0x1000?
 
 //.sbss
-u32 loadingFiles; //0x80398B30 - PiLockFlags, which are being loaded in background
-u32 loadedFiles; //0x80398B34 - PiLockFlags
+u32 loadedFiles; //0x80398B30 - PiLockFlags, which are being loaded in background
+u32 loadingFiles; //0x80398B34 - PiLockFlags
 u32 readyFiles; //0x80398B38 - PiLockFlags
 PiFreeList piFreeList;
 
@@ -1264,14 +1264,14 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
                 mmFree(pFile);
             } else if(fileNo == FILE_ANIMCURV_bin) {
                 //callback will free pFile (XXX verify)
-                loadingFiles |= LOADING_ANIMCURV_bin;
-                STUBBED_PRINTF("INANIMCURVE LOCK %x\n", loadingFiles);
+                loadedFiles |= LOADING_ANIMCURV_bin;
+                STUBBED_PRINTF("INANIMCURVE LOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[fileNo],
                     dataFileSizes[fileNo], 0, piDVDCallbackAnimCurve);
             } else {
                 //callback will free pFile
-                loadingFiles |= LOADING_ANIMCURV_tab;
-                STUBBED_PRINTF("INANIMCURVETAB LOCK %x\n", loadingFiles);
+                loadedFiles |= LOADING_ANIMCURV_tab;
+                STUBBED_PRINTF("INANIMCURVETAB LOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[fileNo],
                     dataFileSizes[fileNo], 0, piDVDCallbackAnimCurveTab);
             }
@@ -1331,9 +1331,9 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
                 mmFree(pFile);
             } else {
                 //callback will free pFile
-                if(slot == FILE_BLOCKS_bin) loadingFiles |= LOADING_BLOCKS_bin;
-                else loadingFiles |= LOADING_BLOCKS_bin2;
-                STUBBED_PRINTF("INBLOCKS LOCK %x\n", loadingFiles);
+                if(slot == FILE_BLOCKS_bin) loadedFiles |= LOADING_BLOCKS_bin;
+                else loadedFiles |= LOADING_BLOCKS_bin2;
+                STUBBED_PRINTF("INBLOCKS LOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackBlockbin);
             }
@@ -1390,9 +1390,9 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
                 piMergeIndex(BLOCKS_TAB, FILE_BLOCKS_tab,
                     FILE_BLOCKS_tab2, 0x800);
             } else {
-                if(slot == FILE_BLOCKS_tab) loadingFiles |= LOADING_BLOCKS_tab;
-                else loadingFiles |= LOADING_BLOCKS_tab2;
-                STUBBED_PRINTF("INBLOCKTAB LOCK %x\n", loadingFiles);
+                if(slot == FILE_BLOCKS_tab) loadedFiles |= LOADING_BLOCKS_tab;
+                else loadedFiles |= LOADING_BLOCKS_tab2;
+                STUBBED_PRINTF("INBLOCKTAB LOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackBlockstab);
             }
@@ -1448,9 +1448,9 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
                 DVDClose(pFile);
                 mmFree(pFile);
             } else {
-                if(slot == FILE_MODELS_bin) loadingFiles |= LOADING_MODELS_bin;
-                else loadingFiles |= LOADING_MODELS_bin2;
-                STUBBED_PRINTF("INMODELS LOCK %x\n", loadingFiles);
+                if(slot == FILE_MODELS_bin) loadedFiles |= LOADING_MODELS_bin;
+                else loadedFiles |= LOADING_MODELS_bin2;
+                STUBBED_PRINTF("INMODELS LOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackModelsbin);
             }
@@ -1506,9 +1506,9 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
                 piMergeIndex(MODELS_TAB, FILE_MODELS_tab,
                     FILE_MODELS_tab2, 0x800);
             } else {
-                if(slot == FILE_MODELS_tab) loadingFiles |= LOADING_MODELS_tab;
-                else loadingFiles |= LOADING_MODELS_tab2;
-                STUBBED_PRINTF("INMODTABLOCK %x\n", loadingFiles);
+                if(slot == FILE_MODELS_tab) loadedFiles |= LOADING_MODELS_tab;
+                else loadedFiles |= LOADING_MODELS_tab2;
+                STUBBED_PRINTF("INMODTABLOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[slot], dataFileSizes[slot],
                     0, piDVDCallbackModelstab);
             }
@@ -1560,9 +1560,9 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
                 DVDClose(pFile);
                 mmFree(pFile);
             } else {
-                if(slot == FILE_ANIM_BIN) loadingFiles |= LOADING_ANIM_BIN;
-                else loadingFiles |= LOADING_ANIM_BIN2;
-                STUBBED_PRINTF("INANIM LOCK %x\n", loadingFiles);
+                if(slot == FILE_ANIM_BIN) loadedFiles |= LOADING_ANIM_BIN;
+                else loadedFiles |= LOADING_ANIM_BIN2;
+                STUBBED_PRINTF("INANIM LOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackAnimbin);
             }
@@ -1616,9 +1616,9 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
                 piMergeIndex(ANIM_TAB,
                     FILE_ANIM_TAB, FILE_ANIM_TAB2, 3000);
             } else {
-                if(slot == FILE_ANIM_TAB) loadingFiles |= LOADING_ANIM_TAB;
-                else loadingFiles |= LOADING_ANIM_TAB2;
-                STUBBED_PRINTF("INANIMTAB LOCK %x\n", loadingFiles);
+                if(slot == FILE_ANIM_TAB) loadedFiles |= LOADING_ANIM_TAB;
+                else loadedFiles |= LOADING_ANIM_TAB2;
+                STUBBED_PRINTF("INANIMTAB LOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackAnimtab);
             }
@@ -1674,9 +1674,9 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
                 DVDClose(pFile);
                 mmFree(pFile);
             } else {
-                if(slot == FILE_TEX0_bin) loadingFiles |= LOADING_TEX0_bin;
-                else loadingFiles |= LOADING_TEX0_bin2;
-                STUBBED_PRINTF("INTEX2 LOCK %x\n", loadingFiles);
+                if(slot == FILE_TEX0_bin) loadedFiles |= LOADING_TEX0_bin;
+                else loadedFiles |= LOADING_TEX0_bin2;
+                STUBBED_PRINTF("INTEX2 LOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackTexbin2);
             }
@@ -1734,13 +1734,13 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
                 piMergeIndex(TEX0_TAB, FILE_TEX0_tab,
                     FILE_TEX0_tab2, 0x1000);
             } else if(slot == FILE_TEX0_tab) {
-                loadingFiles |= LOADING_TEX0_tab;
-                STUBBED_PRINTF("INTEX2TAB LOCK %x\n", loadingFiles);
+                loadedFiles |= LOADING_TEX0_tab;
+                STUBBED_PRINTF("INTEX2TAB LOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDvdCallbacktex2tab36);
             } else {
-                loadingFiles |= LOADING_TEX0_tab2;
-                STUBBED_PRINTF("INTEX2TAB LOCK %x\n", loadingFiles);
+                loadedFiles |= LOADING_TEX0_tab2;
+                STUBBED_PRINTF("INTEX2TAB LOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackTextab33);
             }
@@ -1792,9 +1792,9 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
                 DVDClose(pFile);
                 mmFree(pFile);
             } else {
-                if(slot == FILE_TEX1_bin) loadingFiles |= LOADING_TEX1_bin;
-                else loadingFiles |= LOADING_TEX1_bin2;
-                STUBBED_PRINTF("INTEX LOCK %x\n", loadingFiles);
+                if(slot == FILE_TEX1_bin) loadedFiles |= LOADING_TEX1_bin;
+                else loadedFiles |= LOADING_TEX1_bin2;
+                STUBBED_PRINTF("INTEX LOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackTexbin);
             }
@@ -1848,13 +1848,13 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
                 piMergeIndex(TEX1_TAB, FILE_TEX1_tab,
                     FILE_TEX1_tab2, 0x1000);
             } else if(slot == FILE_TEX1_tab) {
-                loadingFiles |= LOADING_TEX1_tab;
-                STUBBED_PRINTF("INTEXTAB LOCK %x\n", loadingFiles);
+                loadedFiles |= LOADING_TEX1_tab;
+                STUBBED_PRINTF("INTEXTAB LOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackTextab33);
             } else {
-                loadingFiles |= LOADING_TEX1_tab2;
-                STUBBED_PRINTF("INTEXTABB LOCK %x\n", loadingFiles);
+                loadedFiles |= LOADING_TEX1_tab2;
+                STUBBED_PRINTF("INTEXTABB LOCK %x\n", loadedFiles);
                 DVDReadAsync(pFile, dataFilePtrs[slot],
                     dataFileSizes[slot], 0, piDVDCallbackTextab33);
             }
@@ -2115,8 +2115,8 @@ void loadTableFiles(void) {
 	}
     //might be wrong vars here
 	readyFiles = loaded;
-	loadedFiles ^= loadingFiles;
-	loadingFiles = 0;
+	loadingFiles ^= loadedFiles;
+	loadedFiles = 0;
 	OSRestoreInterrupts(irq);
 	return;
 }
@@ -2125,7 +2125,26 @@ uint piGetLoadedFlags(int param_1) {
     BOOL level;
 	uint dVar1;
 	level = OSDisableInterrupts();
-	dVar1 = loadedFiles;
+	dVar1 = loadingFiles;
 	OSRestoreInterrupts(level);
 	return dVar1;
+}
+
+void piDVDCallbackModelstab(long stat, DVDFileInfo *file) {
+	BOOL level;
+
+	level = OSDisableInterrupts();
+	if(stat == -1) {
+		DVDClose(file);
+		mmFree(file);
+	} else {
+		DVDClose(file);
+		mmFree(file);
+		if(loadingFiles & 4) {
+            loadedFiles |= 4;
+		} else if(loadingFiles & 8) {
+            loadedFiles |= 8;
+        }
+	}
+	OSRestoreInterrupts(level);
 }
