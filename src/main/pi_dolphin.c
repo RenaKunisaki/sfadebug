@@ -177,6 +177,7 @@ int loadDataFileToBuf(DataFileId32 fileNo, void *buf);
 void piGetTEXTUREInfo(uint offset, uint mipIdx, uint *outSize,
     undefined4 *outCompSize, int size, void *dest, int doWhat);
 void loadTableFiles(void);
+uint piGetLoadedFlags(int param_1);
 
 const char *dataFileNames[] = { //802ef02c
     "AUDIO.tab", "AUDIO.bin",
@@ -814,7 +815,7 @@ MapDirIdx32 piRomGetGamNumber(mapId32 map) {
 int piRomLoadSectionL(DataFileId32 fileNo, void *dest, int offset,
 size_t length, uint *outSize, int index, u8 flags) {
 	int start;
-	u32 lockFlags;
+	u32 loaded;
 	char *sig;
 	int *header;
 	int *tab2;
@@ -970,11 +971,11 @@ size_t length, uint *outSize, int index, u8 flags) {
             break;
 
         case FILE_TEX0_bin:
-            lockFlags = piGetLockFlags(0);
-            if(((lockFlags & 0x400) == 0) && ((lockFlags & 0x100) == 0)) {
+            loaded = piGetLoadedFlags(0);
+            if(((loaded & 0x400) == 0) && ((loaded & 0x100) == 0)) {
                 tab1 = files[FILE_TEX0_tab];
             }
-            if(((lockFlags & 0x800) == 0) && ((lockFlags & 0x200) == 0)) {
+            if(((loaded & 0x800) == 0) && ((loaded & 0x200) == 0)) {
                 tab2 = files[FILE_TEX0_tab2];
             }
             if(tab2 && TEX0_TAB[index] & 0x80000000) {
@@ -1040,11 +1041,11 @@ size_t length, uint *outSize, int index, u8 flags) {
             break;
 
         case FILE_TEX1_bin:
-            lockFlags = piGetLockFlags(0);
-            if(((lockFlags & 0x4000) == 0) && ((lockFlags & 0x1000) == 0)) {
+            loaded = piGetLoadedFlags(0);
+            if(((loaded & 0x4000) == 0) && ((loaded & 0x1000) == 0)) {
                 tab1 = files[FILE_TEX1_tab];
             }
-            if(((lockFlags & 0x8000) == 0) && ((lockFlags & 0x2000) == 0)) {
+            if(((loaded & 0x8000) == 0) && ((loaded & 0x2000) == 0)) {
                 tab2 = files[FILE_TEX1_tab2];
             }
             if(tab2 && TEX1_TAB[index] & 0x80000000) {
@@ -2059,60 +2060,72 @@ uint* piRomGetTab(DataFileId32 file) {
         case FILE_BLOCKS_tab: return BLOCKS_TAB;
         case FILE_MODELS_tab: return MODELS_TAB;
         case FILE_ANIM_TAB: return ANIM_TAB;
-        default: return NULL;
+        default: {
+            STUBBED_PRINTF("ROMLOADTAB file=%s\n", dataFileNames[file]);
+            return NULL;
+        }
     }
 }
 
 void loadTableFiles(void) {
 	BOOL irq;
-	uint locked;
+	uint loaded;
 
 	irq = OSDisableInterrupts();
-	locked = piGetLockFlags(0);
-	if(readyFiles & LOADING_MODELS_tab && !(locked & LOADING_MODELS_tab)) {
+	loaded = piGetLoadedFlags(0);
+	if(readyFiles & LOADING_MODELS_tab && !(loaded & LOADING_MODELS_tab)) {
 		piMergeIndex(MODELS_TAB, FILE_MODELS_tab,
             FILE_MODELS_tab2, MODELS_TAB_SIZE);
 	}
-	if(readyFiles & LOADING_MODELS_tab2 && !(locked & LOADING_MODELS_tab2)) {
+	if(readyFiles & LOADING_MODELS_tab2 && !(loaded & LOADING_MODELS_tab2)) {
 		piMergeIndex(MODELS_TAB, FILE_MODELS_tab,
             FILE_MODELS_tab2, MODELS_TAB_SIZE);
 	}
-	if(readyFiles & LOADING_ANIM_TAB && !(locked & LOADING_ANIM_TAB)) {
+	if(readyFiles & LOADING_ANIM_TAB && !(loaded & LOADING_ANIM_TAB)) {
 		piMergeIndex(ANIM_TAB, FILE_ANIM_TAB,
             FILE_ANIM_TAB2, ANIM_TAB_SIZE);
 	}
-	if(readyFiles & LOADING_ANIM_TAB2 && !(locked & LOADING_ANIM_TAB2)) {
+	if(readyFiles & LOADING_ANIM_TAB2 && !(loaded & LOADING_ANIM_TAB2)) {
 		piMergeIndex(ANIM_TAB, FILE_ANIM_TAB,
             FILE_ANIM_TAB2, ANIM_TAB_SIZE);
 	}
-	if(readyFiles & LOADING_TEX0_tab && !(locked & LOADING_TEX0_tab)) {
+	if(readyFiles & LOADING_TEX0_tab && !(loaded & LOADING_TEX0_tab)) {
 		piMergeIndex(TEX0_TAB, FILE_TEX0_tab,
             FILE_TEX0_tab2, TEX0_TAB_SIZE);
 	}
-	if(readyFiles & LOADING_TEX0_tab2 && !(locked & LOADING_TEX0_tab2)) {
+	if(readyFiles & LOADING_TEX0_tab2 && !(loaded & LOADING_TEX0_tab2)) {
 		piMergeIndex(TEX0_TAB, FILE_TEX0_tab,
             FILE_TEX0_tab2, TEX0_TAB_SIZE);
 	}
-	if(readyFiles & LOADING_TEX1_tab && !(locked & LOADING_TEX1_tab)) {
+	if(readyFiles & LOADING_TEX1_tab && !(loaded & LOADING_TEX1_tab)) {
 		piMergeIndex(TEX1_TAB, FILE_TEX1_tab,
             FILE_TEX1_tab2, TEX1_TAB_SIZE);
 	}
-	if(readyFiles & LOADING_TEX1_tab2 && !(locked & LOADING_TEX1_tab2)) {
+	if(readyFiles & LOADING_TEX1_tab2 && !(loaded & LOADING_TEX1_tab2)) {
 		piMergeIndex(TEX1_TAB, FILE_TEX1_tab,
             FILE_TEX1_tab2, TEX1_TAB_SIZE);
 	}
-	if(readyFiles & LOADING_BLOCKS_tab && !(locked & LOADING_BLOCKS_tab)) {
+	if(readyFiles & LOADING_BLOCKS_tab && !(loaded & LOADING_BLOCKS_tab)) {
 		piMergeIndex(BLOCKS_TAB, FILE_BLOCKS_tab,
             FILE_BLOCKS_tab2, BLOCKS_TAB_SIZE);
 	}
-	if(readyFiles & LOADING_BLOCKS_tab2 && !(locked & LOADING_BLOCKS_tab2)) {
+	if(readyFiles & LOADING_BLOCKS_tab2 && !(loaded & LOADING_BLOCKS_tab2)) {
 		piMergeIndex(BLOCKS_TAB, FILE_BLOCKS_tab,
             FILE_BLOCKS_tab2, BLOCKS_TAB_SIZE);
 	}
     //might be wrong vars here
-	readyFiles = locked;
+	readyFiles = loaded;
 	loadedFiles ^= loadingFiles;
 	loadingFiles = 0;
 	OSRestoreInterrupts(irq);
 	return;
+}
+
+uint piGetLoadedFlags(int param_1) {
+    BOOL level;
+	uint dVar1;
+	level = OSDisableInterrupts();
+	dVar1 = loadedFiles;
+	OSRestoreInterrupts(level);
+	return dVar1;
 }
