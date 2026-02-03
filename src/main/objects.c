@@ -806,7 +806,7 @@ int *outData, int id, bool loadAsync) {
 				if(loadAsync) loadAsset_fileWithOffsetLength(
 						(void *)outData[1], FILE_WEAPONDA_bin,
 					    (int)offset, *outData);
-				else loadDataFileWithLength(
+				else piRomLoadAddr(
 				    FILE_WEAPONDA_bin, (void *)outData[1], (int)offset, *outData);
 				return;
 			}
@@ -830,7 +830,7 @@ ObjData *Object_objLoadData(int objType) {
 	objData = (ObjData *)mmAlloc(size,
 		ALLOC_TAG_OBJECTS_COL, (volatile u32)"obj:def");
 	if(objData) {
-		loadDataFileWithLength(FILE_OBJECTS_bin, objData, offset, size);
+		piRomLoadAddr(FILE_OBJECTS_bin, objData, offset, size);
 		if(objData->pEvent) OFFSET_TO_PTR(s16, objData, pEvent);
 		if(objData->pHits) OFFSET_TO_PTR(UNKTYPE, objData, pHits);
 		if(objData->pWeaponDa) OFFSET_TO_PTR(ObjWeaponData, objData, pWeaponDa);
@@ -944,7 +944,7 @@ ObjEventData *event,int animId,bool bImmediate) {
             }
             if(!bImmediate) loadAsset_fileWithOffsetLength(event->data,
                 FILE_OBJEVENT_bin, offset, event->size);
-            else loadDataFileWithLength(FILE_OBJEVENT_bin,
+            else piRomLoadAddr(FILE_OBJEVENT_bin,
                 event->data,offset,event->size);
             return;
         }
@@ -998,7 +998,7 @@ ModLine* loadModLine(int lineNo, s16 *outCount) {
     tempIdx = mmAlloc(0x10,ALLOC_TAG_TEST_COL,
 		(volatile u32)"obj:tempindex");
     lineNo *= 4;
-    loadDataFileWithLength(FILE_MODLINES_tab,
+    piRomLoadAddr(FILE_MODLINES_tab,
 		tempIdx, lineNo, 8);
 
     offset = tempIdx[0];
@@ -1006,7 +1006,7 @@ ModLine* loadModLine(int lineNo, s16 *outCount) {
     if((int)size > 0) {
         dest = mmAlloc(size, ALLOC_TAG_TRACK_COL,
 			(volatile u32)"obj:templine");
-        loadDataFileWithLength(FILE_MODLINES_bin,
+        piRomLoadAddr(FILE_MODLINES_bin,
 			dest, offset, size);
     }
     mmFree(tempIdx);

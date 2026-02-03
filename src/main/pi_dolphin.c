@@ -38,13 +38,14 @@ PiFreeList piFreeList;
 //where they go, and what args, are mostly huge guesses.
 //no guarantee they're in the right functions.
 // * prefix for ones we've placed
+
 // * "pi:table"
 // * "preloaded ... %s tablesize=%d table=%x\n"
 // * "LOAD FROM DISK... %s size %d\n"
 // * " Size %i \n"
 // * "ADDR ROMLOAD file=%s\n"
 // * "LOAD FROM DISK... %s\n"
-//   "######## DVDLOAD piRomLoadAddr() ----- file=%s  #################\n"
+// * "######## DVDLOAD piRomLoadAddr() ----- file=%s  #################\n"
 // * "temp dvd buffer"
 // * "PIFREE buffer  addr 0x%x"
 //   "piGetMapInfo() ----- table DB_MAPS or DB_MAPINDEX not loaded\n"
@@ -54,13 +55,13 @@ PiFreeList piFreeList;
 // * "pi_dolphin.c"
 // * "piRomLoadSection(): DB_MAPS Bin Not Loaded"
 // * "<Cyc %d | Instr %d | L1misscyc %d | DCmiss %d>\n"
-//   "piRomGetGamNumber() ----- mapNumber <%d> too high"
-//   "######## DVDLOAD piRomLoadSectionL() ----- file=%s  #################\n"
-//   "PIFREE buffer  addr 0x%x\n"
+// * "piRomGetGamNumber() ----- mapNumber <%d> too high"
+// * "######## DVDLOAD piRomLoadSectionL() ----- file=%s  #################\n"
+// * "PIFREE buffer  addr 0x%x\n"
 // * "ROMLOAD gamno=%d  level %s  fileno %d\n"
 // * "PIFREE pitable[%d]  addr %d"
-//   "FILENAME %s\n"
-//   "LOAD FROM DISK... %s %s/%s %d size %d\n"
+// * "FILENAME %s\n"
+// * "LOAD FROM DISK... %s %s/%s %d size %d\n"
 // * "######## DVDLOAD piRomLoadLevel() ---- file=%s  #################\n"
 // * "PIFREE pitable[%d]ANIMCURVE/TAB  addr %d"
 // * "INANIMCURVE LOCK %x\n"
@@ -106,10 +107,10 @@ PiFreeList piFreeList;
 // * "INTEXTAB LOCK %x\n"
 // * "INTEXTABB LOCK %x\n"
 // * "ERROR in piRomLoadLevel file %d\n"
-//   "piMergeIndex  one or other tabfiles is not loaded %x %x\n"
-//   "MODTAB %4d 0x%x "
-//   "T1 0x%x "
-//   "T2 0x%x "
+// * "piMergeIndex  one or other tabfiles is not loaded %x %x\n"
+// * "MODTAB %4d 0x%x "
+// * "T1 0x%x "
+// * "T2 0x%x "
 //   "PIFREE pitable[%d]  addr 0x%x  --- gamno %d size %d the file GAMNO %d\n"
 // * "Warning in piRomFreeLevel file || %s || not found !\n"
 // * "piRomFreeLevel(): flist array overflow"
@@ -175,7 +176,7 @@ void piDVDCallbackAnimbin(long param_1,DVDFileInfo *param_2);
 void initDataFiles(void);
 void *loadDataFile(DataFileId32 file, char *memName);
 int loadDataFileToBuf(DataFileId32 fileNo, void *buf);
-void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
+void piGetTEXTUREInfo(uint offset, uint mipIdx, uint *outSize,
     undefined4 *outCompSize, int size, void *dest, int doWhat);
 
 const char *dataFileNames[] = { //802ef02c
@@ -534,7 +535,7 @@ int loadDataFileToBuf(DataFileId32 fileNo, void *buf) {
  *  @param len Number of bytes to read.
  *  @return Number of bytes read.
  */
-int loadDataFileWithLength(DataFileId32 fileNo, void *buf,
+int piRomLoadAddr(DataFileId32 fileNo, void *buf,
 uint offset, int len) {
 	void *tmpBuf;
 	DVDFileInfo file;
@@ -588,7 +589,7 @@ int getLoadedDataFileSize(DataFileId32 fileNo) {
 	return 0;
 }
 
-void mapsBinGetRomlist(int offset, int *outNBlocks,
+void piGetMapInfo(int offset, int *outNBlocks,
 int *out1E, int *outRomListSize, int idx) {
 	MapsBinEntry0 *entry0;
 	int iVar2;
@@ -606,7 +607,7 @@ int *out1E, int *outRomListSize, int idx) {
     }
 }
 
-void loadModelsBin(uint offset, int *outNAnimations, uint *outAnimCacheSize,
+void piGetModelInfo(uint offset, int *outNAnimations, uint *outAnimCacheSize,
 BOOL *outNoAmap, int *outSize, int id) {
 	ModelsBinEntry *entry;
     ModelsBinEntry_Unk18 *unk18;
@@ -636,7 +637,9 @@ BOOL *outNoAmap, int *outSize, int id) {
     *outSize = entry->size;
 }
 
-void tex0GetMipmap(uint offset, uint mipIdx, uint *outSize,
+//official name: piGetTExtureInfo (weird capitalization)
+//gets info for tex0
+void piGetTExtureInfo(uint offset, uint mipIdx, uint *outSize,
 undefined4 *outCompSize, int nFrames, void *dest, int doWhat) {
     //doWhat: TexGetMipmapOp
 	u32 uVar1;
@@ -679,7 +682,8 @@ undefined4 *outCompSize, int nFrames, void *dest, int doWhat) {
     }
 }
 
-void tex1GetMipmap(uint offset, uint mipIdx, uint *outSize,
+//get info for tex1
+void piGetTEXTUREInfo(uint offset, uint mipIdx, uint *outSize,
 undefined4 *outCompSize, int nFrames, void *dest, int doWhat) {
     //doWhat: TexGetMipmapOp
 	int iVar1;
@@ -794,15 +798,21 @@ void loadTableFiles_(void) {
     loadTableFiles();
 }
 
-MapDirIdx32 mapGetDirIdx(mapId32 map) {
-	if((int)map >= NUM_MAP_DIRS) return 0;
+//convert map ID to dir index
+MapDirIdx32 piRomGetGamNumber(mapId32 map) {
+	if((int)map >= NUM_MAP_DIRS) {
+        //doesn't match if we include a parameter
+        STUBBED_PRINTF("piRomGetGamNumber() ----- mapNumber <%d> too high");
+        return 0;
+    }
 	return mapIdXltnTbl[map];
 }
 
-int loadAndDecompressDataFile(DataFileId32 fileNo, void *dest, int offset,
+//load and decompress an asset archive
+int piRomLoadSectionL(DataFileId32 fileNo, void *dest, int offset,
 size_t length, uint *outSize, int index, u8 flags) {
 	int start;
-	u32 loadFlags;
+	u32 lockFlags;
 	char *sig;
 	int *header;
 	int *tab2;
@@ -818,6 +828,7 @@ size_t length, uint *outSize, int index, u8 flags) {
     files = dataFilePtrs;
 	tab1 = NULL;
 	tab2 = NULL;
+
     switch(fileNo) {
         case FILE_MODELS_bin:
             tab1 = files[FILE_MODELS_tab];
@@ -957,11 +968,11 @@ size_t length, uint *outSize, int index, u8 flags) {
             break;
 
         case FILE_TEX0_bin:
-            loadFlags = getLoadedFileFlags(0);
-            if(((loadFlags & 0x400) == 0) && ((loadFlags & 0x100) == 0)) {
+            lockFlags = piGetLockFlags(0);
+            if(((lockFlags & 0x400) == 0) && ((lockFlags & 0x100) == 0)) {
                 tab1 = files[FILE_TEX0_tab];
             }
-            if(((loadFlags & 0x800) == 0) && ((loadFlags & 0x200) == 0)) {
+            if(((lockFlags & 0x800) == 0) && ((lockFlags & 0x200) == 0)) {
                 tab2 = files[FILE_TEX0_tab2];
             }
             if(tab2 && TEX0_TAB[index] & 0x80000000) {
@@ -1027,11 +1038,11 @@ size_t length, uint *outSize, int index, u8 flags) {
             break;
 
         case FILE_TEX1_bin:
-            loadFlags = getLoadedFileFlags(0);
-            if(((loadFlags & 0x4000) == 0) && ((loadFlags & 0x1000) == 0)) {
+            lockFlags = piGetLockFlags(0);
+            if(((lockFlags & 0x4000) == 0) && ((lockFlags & 0x1000) == 0)) {
                 tab1 = files[FILE_TEX1_tab];
             }
-            if(((loadFlags & 0x8000) == 0) && ((loadFlags & 0x2000) == 0)) {
+            if(((lockFlags & 0x8000) == 0) && ((lockFlags & 0x2000) == 0)) {
                 tab2 = files[FILE_TEX1_tab2];
             }
             if(tab2 && TEX1_TAB[index] & 0x80000000) {
@@ -1145,6 +1156,8 @@ size_t length, uint *outSize, int index, u8 flags) {
             dest, length);
     }
     else {
+        STUBBED_PRINTF("######## DVDLOAD piRomLoadSectionL() ----- file=%s  #################\n",
+            dataFileNames[fileNo]);
         //default case but file isn't loaded; read a chunk from it
         DVDOpen((char*)dataFileNames[fileNo], &file);
         if(((uint)dest & 0x1f) || (length & 0x1f)) {
@@ -1155,6 +1168,7 @@ size_t length, uint *outSize, int index, u8 flags) {
             DVDReadPrio(&file, tmpBuf,
                 length + 0x1f & 0x00ffffffe0, offset, 2);
             memcpy_src_dst_len(tmpBuf, dest, length);
+            STUBBED_PRINTF("PIFREE buffer  addr 0x%x\n", tmpBuf);
             mmFree(tmpBuf);
         } else { //range is aligned; we can read right into the destination buffer
             DVDReadPrio(&file, dest, length, offset, 2);
@@ -1189,10 +1203,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
 
     STUBBED_PRINTF("FILENAME %s\n", dataFileNames[fileNo]);
 
-    STUBBED_PRINTF("######## DVDLOAD piRomLoadLevel() ---- "
-        "file=%s  #################\n", dataFileNames[fileNo]);
-
-	bForceLoad = false;
+    bForceLoad = false;
     switch(fileNo) {
         case FILE_VOXMAP_tab: //0x1A
         case FILE_VOXMAP_bin: { //0x1B
@@ -1207,6 +1218,11 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
             //probably because it never uses a callback.
             sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             if(!DVDOpen(path, &file)) return NULL;
+
+            //total guess at params here
+            STUBBED_PRINTF("LOAD FROM DISK... %s %s/%s %d size %d\n",
+                "VOXMAPS", mapDirNames[gamno],
+                dataFileNames[fileNo], fileNo, file.length);
 
             //get the size and alloc the buffer
             dataFileSizes[fileNo] = file.length;
@@ -1844,6 +1860,8 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
         }
 
         default: {
+            STUBBED_PRINTF("######## DVDLOAD piRomLoadLevel() ---- "
+                "file=%s  #################\n", dataFileNames[fileNo]);
             STUBBED_PRINTF("ERROR in piRomLoadLevel file %d\n", fileNo);
             return NULL;
         }
@@ -1873,6 +1891,8 @@ int count) {
 	tblSize = 0;
     local_24 = 0;
     if(!dataFilePtrs[fileNo1] || !dataFilePtrs[fileNo2]) {
+        STUBBED_PRINTF("piMergeIndex  one or other tabfiles is not loaded %x %x\n",
+            dataFilePtrs[fileNo1], dataFilePtrs[fileNo2]);
         if(!dataFilePtrs[fileNo1]) noTab1 = true;
         if(!dataFilePtrs[fileNo2]) noTab2 = true;
     }
@@ -1944,9 +1964,6 @@ int count) {
                 if(tbl1) { STUBBED_OP(tbl1); }
                 if(tbl2) { STUBBED_OP(tbl2); }
                 if(noTab1) { STUBBED_OP(noTab1); }
-                //not sure where this goes. possibly not even this function
-                //(I just assumed the name from this message)
-                //STUBBED_PRINTF("piMergeIndex  one or other tabfiles is not loaded %x %x\n", fileNo1, fileNo2);
             }
 		}
 	}
@@ -1977,6 +1994,11 @@ int piRomFreeLevel(int map, uint flags) {
                 )
         ))) {
             //free the file and clear the pointer and owner-map-ID
+            STUBBED_PRINTF("PIFREE pitable[%d]  addr 0x%x  --- gamno %d size %d the file GAMNO %d\n",
+                localFreeList.item[iList].fileNo,
+                dataFilePtrs[localFreeList.item[iList].fileNo], map,
+                dataFileSizes[localFreeList.item[iList].fileNo],
+                loadedFileMapIds[localFreeList.item[iList].fileNo]);
 			mmFree(dataFilePtrs[localFreeList.item[iList].fileNo]);
 			dataFilePtrs[localFreeList.item[iList].fileNo] = NULL;
 			loadedFileMapIds[localFreeList.item[iList].fileNo] = -1;
@@ -2005,6 +2027,9 @@ int piRomFreeLevel(int map, uint flags) {
                     piMergeIndex(MODELS_TAB,
                         FILE_MODELS_tab, FILE_MODELS_tab2,
                         MODELS_TAB_SIZE);
+                    STUBBED_PRINTF("MODTAB %4d 0x%x ", map, flags);
+                    STUBBED_PRINTF("T1 0x%x ", dataFilePtrs[FILE_MODELS_tab]);
+                    STUBBED_PRINTF("T2 0x%x ", dataFilePtrs[FILE_MODELS_tab2]);
                     break;
 
                 case FILE_ANIM_TAB: case FILE_ANIM_TAB2:
@@ -2023,4 +2048,15 @@ int piRomFreeLevel(int map, uint flags) {
 		}
 	}
 	return 1;
+}
+
+uint* piRomGetTab(DataFileId32 file) {
+	switch(file) {
+        case FILE_TEX1_tab: return TEX1_TAB;
+        case FILE_TEX0_tab: return TEX0_TAB;
+        case FILE_BLOCKS_tab: return BLOCKS_TAB;
+        case FILE_MODELS_tab: return MODELS_TAB;
+        case FILE_ANIM_TAB: return ANIM_TAB;
+        default: return NULL;
+    }
 }

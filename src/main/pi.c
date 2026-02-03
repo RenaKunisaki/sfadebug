@@ -200,7 +200,7 @@ int loadAsset(AssetDef *load) { //80077B68
             break;
 
         case ASSET_TYPE_FILE_WITH_ID_SIZE:
-            loadDataFileWithLength(load->header.id,load->header.dest,
+            piRomLoadAddr(load->header.id,load->header.dest,
                 load->file.offset, load->file.size);
             break;
 

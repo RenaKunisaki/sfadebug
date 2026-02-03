@@ -57,7 +57,7 @@ void loadAsset_Character(ObjInstance **result, ObjDef *def, uint flags,
     int mapId, int objNo, ObjInstance *heldBy, undefined4 param7); /* extern */
 void loadAsset_fileWithOffsetLength(
     void *dest, DataFileId32 file, int offset, int length); /* extern */
-int loadDataFileWithLength(DataFileId32 fileNo, void *dest,
+int piRomLoadAddr(DataFileId32 fileNo, void *dest,
     uint offset, int len); /* extern */
 ModelInstance *loadModelInstance(int modelNum, uint flags); /* extern */
 ObjDefEnum mapGetPlayerObjType(int *outWhichObjs); /* extern */

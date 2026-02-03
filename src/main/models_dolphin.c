@@ -46,12 +46,12 @@ SparseArray *animsLoadedTable; //80398a3c
 
 void debugPrint(char *fmt,...);
 Texture * textureLoad(int id,int param_2);
-void * getTable(DataFileId32 file);
-void loadModelsBin(uint offset,int *outNAnimations,uint *outAnimCacheSize,
+void * piRomGetTab(DataFileId32 file);
+void piGetModelInfo(uint offset,int *outNAnimations,uint *outAnimCacheSize,
 	BOOL *outNoAmap,int *outSize,int id);
 void FUN_80065ff8(Mtx44 **pjMtx,Mtx44Ptr modelMatrix,AnimInstance *animInstance,Bone *joints,int numJoints,undefined2 *tiltList,int param_7,u32 flags);
 Animation * loadModelAnimation(Model *model,short id,short id2,void *dest);
-int loadAndDecompressDataFile(DataFileId32 file,void *dest,uint offset,size_t length,int *outSize,int index,s8 flags);
+int piRomLoadSectionL(DataFileId32 file,void *dest,uint offset,size_t length,int *outSize,int index,s8 flags);
 
 ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
 int Model_setupAnimInstance(Model *model,int flags,AnimUnk *anim,BOOL bAlways0);
@@ -143,7 +143,7 @@ ModelInstance * loadModelInstance(int modelNum,uint flags) { //8007DB84
 	int i;
 
 	/* final:
-	   loadDataFileWithLength(MODELIND.bin,globalModAnimBuffer,modelNum << 1,8);
+	   piRomLoadAddr(MODELIND.bin,globalModAnimBuffer,modelNum << 1,8);
 	   modelNum = (uint)*globalModAnimBuffer; */
 	modelNum = Model_lookupModelInd(modelNum);
     BADASSERTLINE(210, modelNum>=0 && modelNum<maxModelNum);
@@ -297,9 +297,9 @@ Model* loadModel(int modelNum) { //8007DE70
 	STUBBED_PRINTF("\t+++++ loadModel +++++ ARGS: %d\n", modelNum);
 
 	//locate the model and read its sizes
-	modelsTab = (uint *)getTable(FILE_MODELS_tab);
+	modelsTab = (uint *)piRomGetTab(FILE_MODELS_tab);
 	offset = modelsTab[modelNum];
-	loadModelsBin(offset,
+	piGetModelInfo(offset,
 		&nAnimations, &animCacheSize,
 		&bNoAmap, &decompSize, modelNum);
 
@@ -322,7 +322,7 @@ Model* loadModel(int modelNum) { //8007DE70
 	ptr = mmAlign16(ptr);
 	model = (Model *)ptr;
 
-	loadAndDecompressDataFile(FILE_MODELS_bin, model,
+	piRomLoadSectionL(FILE_MODELS_bin, model,
 		offset, decompSize, NULL,
 		modelNum, 0);
 
@@ -369,7 +369,7 @@ void Model_freeAnimations(Model *model) { //8007E0F8
 int Model_lookupModelInd(int id) { // 8007E160
 	if(id < 0) id = -id;
 	else {
-		loadDataFileWithLength(FILE_MODELIND_bin,
+		piRomLoadAddr(FILE_MODELIND_bin,
             globalModAnimBuffer, id * sizeof(s16), 8);
 		id = globalModAnimBuffer[0];
 	}
@@ -1064,7 +1064,7 @@ Model *model, int index, int id, void *dest) { // 80080168
 
 	//get the length (null destination)
 	offset = animOffsetTable[index];
-	loadAndDecompressDataFile(FILE_ANIM_BIN, NULL, offset,
+	piRomLoadSectionL(FILE_ANIM_BIN, NULL, offset,
         0, &animSize, index, 1);
     BADASSERTLINE(2150, animSize<model->animCacheSize-ANIMMAP_SIZE);
 
@@ -1072,14 +1072,14 @@ Model *model, int index, int id, void *dest) { // 80080168
     BADASSERTLINE(2155, anim);
 
 	//get the data
-	loadAndDecompressDataFile(
+	piRomLoadSectionL(
 	    FILE_ANIM_BIN, anim, offset, animSize,
 		NULL, index, 0);
 
 	//get the mapping array
 	len = ((model->numJoints - 1) & ~7) + 8;
 	offset2 = model->animOffset + id * len;
-	loadDataFileWithLength(FILE_AMAP_BIN, dest, offset2, len);
+	piRomLoadAddr(FILE_AMAP_BIN, dest, offset2, len);
 	return anim;
 }
 
@@ -1093,11 +1093,11 @@ Animation *getAnimation(short id) { // 80080270
 	if(!SparseArray_get(animsLoadedTable, id, &anim)) {
         //anim isn't loaded; load it now
 		offset = animOffsetTable[id];
-		loadAndDecompressDataFile(FILE_ANIM_BIN, NULL, offset, 0, &size, id, 1);
+		piRomLoadSectionL(FILE_ANIM_BIN, NULL, offset, 0, &size, id, 1);
 		anim = (Animation *)mmAlloc(size,
             ALLOC_TAG_ANIMS_COL, (volatile u32)"mod:anim");
         BADASSERTLINE(2203, anim);
-		loadAndDecompressDataFile(FILE_ANIM_BIN, &anim->usage, offset,
+		piRomLoadSectionL(FILE_ANIM_BIN, &anim->usage, offset,
             size, NULL, id, 0);
 		anim->usage = 1;
 		SparseArray_set(animsLoadedTable, id, &anim);
@@ -1529,7 +1529,7 @@ BOOL countModels(void) { // 800812A0
 	int *modelsTab;
 
     STUBBED_OP("models_dolphin.c");
-	modelsTab = getTable(FILE_MODELS_tab);
+	modelsTab = piRomGetTab(FILE_MODELS_tab);
 	if(!modelsTab) return FALSE;
 
     maxModelNum = 0;
@@ -1538,7 +1538,7 @@ BOOL countModels(void) { // 800812A0
 
     //looks like a bug, but maxModelNum is int, not short.
     BADASSERTLINE(3301, maxModelNum<=SHRT_MAX);
-    animOffsetTable = (u32 *)getTable(FILE_ANIM_TAB);
+    animOffsetTable = (u32 *)piRomGetTab(FILE_ANIM_TAB);
     if(!animOffsetTable) return FALSE;
     bHaveAnimTab = FALSE; //XXX wrong name?
     return TRUE;
@@ -1939,7 +1939,7 @@ int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations) {
 	} else {
 		result += nAnimations * 4;
         while(result & 7) result++;
-        loadDataFileWithLength(FILE_AMAP_TAB,
+        piRomLoadAddr(FILE_AMAP_TAB,
             pAmapTab, (id & ~3) * 4, sizeof(int)*8);
         idx = id & 3;
         ent = pAmapTab[idx+1] - pAmapTab[idx];
@@ -1970,7 +1970,7 @@ BOOL makeModelAnimation(Model *model, uint animId, s8 *hits) { //8007CC94
 
 	//get size and offset from MODANIM.TAB
 	amap = (s16*)pAmapTab;
-	loadDataFileWithLength(FILE_MODANIM_TAB,
+	piRomLoadAddr(FILE_MODANIM_TAB,
 		amap, animId * 2, 0x10);
 	offsThis = amap[0];
 	offsNext = amap[1];
@@ -1988,7 +1988,7 @@ BOOL makeModelAnimation(Model *model, uint animId, s8 *hits) { //8007CC94
 	if(size > 0x800) {
 		debugPrint("Warning: Model animation buffer overflow!! size=%d\n", size);
 	}
-	loadDataFileWithLength(FILE_AMAP_TAB,
+	piRomLoadAddr(FILE_AMAP_TAB,
 		pAmapTab, (animId & ~3) * 4, 0x20);
 	iBank = animId & 3;
 	model->animOffset = pAmapTab[iBank];
@@ -2000,10 +2000,10 @@ BOOL makeModelAnimation(Model *model, uint animId, s8 *hits) { //8007CC94
 		while(size & 7) size++;
 		totalSize += size;
 		hits += size;
-		loadDataFileWithLength(FILE_MODANIM_BIN,
+		piRomLoadAddr(FILE_MODANIM_BIN,
 			model->animIds, offset, size);
 	} else {
-		loadDataFileWithLength(FILE_MODANIM_BIN,
+		piRomLoadAddr(FILE_MODANIM_BIN,
 			globalModAnimBuffer, offset, size);
 		model->animIds = globalModAnimBuffer;
 	}
@@ -2035,7 +2035,7 @@ BOOL makeModelAnimation(Model *model, uint animId, s8 *hits) { //8007CC94
 		totalSize += animLen;
 
 		//load the amap into that buffer
-		loadDataFileWithLength(FILE_AMAP_BIN, model->amap,
+		piRomLoadAddr(FILE_AMAP_BIN, model->amap,
 			model->animOffset, animLen);
 
 		//load the actual animations
