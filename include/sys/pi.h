@@ -107,28 +107,28 @@ typedef enum { //different from final!
 
 //for piLockFlags
 typedef enum {
-    LOADING_MODELS_bin   = (1 << 0),
-    LOADING_MODELS_bin2  = (1 << 1),
-    LOADING_MODELS_tab   = (1 << 2),
-    LOADING_MODELS_tab2  = (1 << 3),
-    LOADING_ANIM_BIN     = (1 << 4),
-    LOADING_ANIM_BIN2    = (1 << 5),
-    LOADING_ANIM_TAB     = (1 << 6),
-    LOADING_ANIM_TAB2    = (1 << 7),
-    LOADING_TEX0_bin     = (1 << 8),
-    LOADING_TEX0_bin2    = (1 << 9),
-    LOADING_TEX0_tab     = (1 << 10),
-    LOADING_TEX0_tab2    = (1 << 11),
-    LOADING_TEX1_bin     = (1 << 12),
-    LOADING_TEX1_bin2    = (1 << 13),
-    LOADING_TEX1_tab     = (1 << 14),
-    LOADING_TEX1_tab2    = (1 << 15),
-    LOADING_BLOCKS_bin   = (1 << 16),
-    LOADING_BLOCKS_tab   = (1 << 17),
-    LOADING_BLOCKS_bin2  = (1 << 18),
-    LOADING_BLOCKS_tab2  = (1 << 19),
-    LOADING_ANIMCURV_bin = (1 << 20),
-    LOADING_ANIMCURV_tab = (1 << 21),
+    LOADING_MODELS_bin   = (1 <<  0), //0x00'0001
+    LOADING_MODELS_bin2  = (1 <<  1), //0x00'0002
+    LOADING_MODELS_tab   = (1 <<  2), //0x00'0004
+    LOADING_MODELS_tab2  = (1 <<  3), //0x00'0008
+    LOADING_ANIM_BIN     = (1 <<  4), //0x00'0010
+    LOADING_ANIM_BIN2    = (1 <<  5), //0x00'0020
+    LOADING_ANIM_TAB     = (1 <<  6), //0x00'0040
+    LOADING_ANIM_TAB2    = (1 <<  7), //0x00'0080
+    LOADING_TEX0_bin     = (1 <<  8), //0x00'0100
+    LOADING_TEX0_bin2    = (1 <<  9), //0x00'0200
+    LOADING_TEX0_tab     = (1 << 10), //0x00'0400
+    LOADING_TEX0_tab2    = (1 << 11), //0x00'0800
+    LOADING_TEX1_bin     = (1 << 12), //0x00'1000
+    LOADING_TEX1_bin2    = (1 << 13), //0x00'2000
+    LOADING_TEX1_tab     = (1 << 14), //0x00'4000
+    LOADING_TEX1_tab2    = (1 << 15), //0x00'8000
+    LOADING_BLOCKS_bin   = (1 << 16), //0x01'0000
+    LOADING_BLOCKS_tab   = (1 << 17), //0x02'0000
+    LOADING_BLOCKS_bin2  = (1 << 18), //0x04'0000
+    LOADING_BLOCKS_tab2  = (1 << 19), //0x08'0000
+    LOADING_ANIMCURV_bin = (1 << 20), //0x10'0000
+    LOADING_ANIMCURV_tab = (1 << 21), //0x20'0000
 } PiLockFlags;
 
 #define MODELS_TAB_SIZE 0x800
