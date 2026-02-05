@@ -127,30 +127,30 @@ enum {
 // * "piDVDCallbacktex2tab36 %x\n"
 // * "piDVDCallbackTex2tab36 ------ CHECKSUM  0x%x  REALSUM 0x%x\n"
 // * "piDVDCallbackTex2tab36 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n"
-//   "piDVDCallbackTex2tab36 ------ RE-READING\n"
-//   "piDVDCallbacktex2tab78 %x\n"
-//   "piDVDCallbackTex2tab78 ------ CHECKSUM  0x%x  REALSUM 0x%x\n"
-//   "piDVDCallbackTex2tab78 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n"
-//   "piDVDCallbackTex2tab78 ------ RE-READING\n"
-//   "piDVDCallbackTexbin  error on TEXBIN\n"
-//   "piDVDCallbacktexbin %x\n"
-//   "piDVDCallbackTextab  error on TEXTAB\n"
-//   "piDVDCallbacktextab33 %x\n"
-//   "piDVDCallbackTextab33 ------ CHECKSUM  0x%x  REALSUM 0x%x\n"
-//   "piDVDCallbackTex2tab33 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n"
-//   "piDVDCallbackTex2tab33 ------ RE-READING\n"
-//   "piDVDCallbacktextab76 %x\n"
-//   "piDVDCallbackTextab76 ------ CHECKSUM  0x%x  REALSUM 0x%x\n"
-//   "piDVDCallbackTextab76 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n"
-//   "piDVDCallbackTextab76 ------ RE-READING\n"
-//   "piDVDCallbackBlockbin  error on BLOCKBIN\n"
-//   "piDVDCallbackblockbin %x\n"
-//   "piDVDCallbackBlockstab  error on BLOCKSTAB\n"
-//   "piDVDCallbackblocktab %x\n"
-//   "piDVDCallbackAnimCurveb  error on AnimCurve\n"
-//   "piDVDCallbackAnimCurve %x\n"
-//   "piDVDCallbackAnimCurveTab  error on AnimCurveTab\n"
-//   "piDVDCallbackAnimCurveTab %x\n"
+// * "piDVDCallbackTex2tab36 ------ RE-READING\n"
+// * "piDVDCallbacktex2tab78 %x\n"
+// * "piDVDCallbackTex2tab78 ------ CHECKSUM  0x%x  REALSUM 0x%x\n"
+// * "piDVDCallbackTex2tab78 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n"
+// * "piDVDCallbackTex2tab78 ------ RE-READING\n"
+// * "piDVDCallbackTexbin  error on TEXBIN\n"
+// * "piDVDCallbacktexbin %x\n"
+// * "piDVDCallbackTextab  error on TEXTAB\n"
+// * "piDVDCallbacktextab33 %x\n"
+// * "piDVDCallbackTextab33 ------ CHECKSUM  0x%x  REALSUM 0x%x\n"
+// * "piDVDCallbackTex2tab33 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n"
+// * "piDVDCallbackTex2tab33 ------ RE-READING\n"
+// * "piDVDCallbacktextab76 %x\n"
+// * "piDVDCallbackTextab76 ------ CHECKSUM  0x%x  REALSUM 0x%x\n"
+// * "piDVDCallbackTextab76 ------ CHECKSUM IS INCORRECT   0x%x  REALSUM 0x%x\n"
+// * "piDVDCallbackTextab76 ------ RE-READING\n"
+// * "piDVDCallbackBlockbin  error on BLOCKBIN\n"
+// * "piDVDCallbackblockbin %x\n"
+// * "piDVDCallbackBlockstab  error on BLOCKSTAB\n"
+// * "piDVDCallbackblocktab %x\n"
+// * "piDVDCallbackAnimCurveb  error on AnimCurve\n"
+// * "piDVDCallbackAnimCurve %x\n"
+// * "piDVDCallbackAnimCurveTab  error on AnimCurveTab\n"
+// * "piDVDCallbackAnimCurveTab %x\n"
 
 //other files
 int piMergeIndex(uint *table,DataFileId32 file1,DataFileId32 file2,int count);
@@ -2132,6 +2132,7 @@ uint piGetLoadedFlags(int param_1) {
 void piDVDCallbackModtab(long stat, DVDFileInfo *file) {
 	BOOL level;
 
+    //this is the only one that disables interrupts...
 	level = OSDisableInterrupts();
 	if(stat == -1) {
         STUBBED_PRINTF("piDVDCallbackModtab  error on MODTAB\n");
@@ -2204,7 +2205,6 @@ void piDVDCallbackAnimbin(long stat, DVDFileInfo *file) {
     }
 }
 
-
 void piDVDCallbackTex2bin(long stat, DVDFileInfo *file) {
 	if(stat == -1) {
         STUBBED_PRINTF("piDVDCallbackTex2bin  error on TEX2BIN\n");
@@ -2222,7 +2222,6 @@ void piDVDCallbackTex2bin(long stat, DVDFileInfo *file) {
         loadingFiles |= FILE_FLAG_TEX0_bin2;
     }
 }
-
 
 void piDvdCallbacktex2tab36(long stat, DVDFileInfo *file) {
 	int idx;
@@ -2275,5 +2274,252 @@ void piDvdCallbacktex2tab36(long stat, DVDFileInfo *file) {
     mmFree(file);
     if((loadedFiles & FILE_FLAG_TEX0_tab) != 0) {
         loadingFiles |= FILE_FLAG_TEX0_tab;
+    }
+}
+
+void piDvdCallbacktex2tab78(long stat, DVDFileInfo *file) {
+	int idx;
+	u8 *data;
+    int *dataInt;
+	int cksum;
+	int realsum;
+	int tmpsum;
+    int val;
+
+	val = 0;
+	idx = 0;
+	cksum = 0;
+	tmpsum = 0;
+	if(stat == -1) {
+		OSReport("piDVDCallbackTextab  error on TEX2TAB\n");
+		DVDClose(file);
+		mmFree(file);
+        return;
+	}
+    OSReport("piDVDCallbacktex2tab78 %x\n", loadedFiles);
+    data = (u8 *)dataFilePtrs[FILE_TEX0_tab2];
+    dataInt = (int *)(dataFilePtrs[FILE_TEX0_tab2]);
+    while(val != -1) {
+        val = dataInt[idx++];
+        tmpsum += *(data++);
+        tmpsum += *(data++);
+        tmpsum += *(data++);
+        tmpsum += *(data++);
+    }
+    cksum = dataInt[idx++];
+    while(cksum == 0) cksum = dataInt[idx++];
+    realsum = tmpsum;
+    OSReport("piDVDCallbacktex2tab78 ------ CHECKSUM  0x%x  REALSUM 0x%x\n",
+        cksum, realsum);
+    if(cksum != realsum) {
+        OSReport("piDVDCallbacktex2tab78 ------ CHECKSUM IS INCORRECT   "
+            "0x%x  REALSUM 0x%x\n", cksum, realsum);
+        OSReport("piDVDCallbacktex2tab78 ------ CHECKSUM IS INCORRECT   "
+            "0x%x  REALSUM 0x%x\n", cksum, realsum);
+        OSReport("piDVDCallbacktex2tab78 ------ CHECKSUM IS INCORRECT   "
+            "0x%x  REALSUM 0x%x\n", cksum, realsum);
+        OSReport("piDVDCallbacktex2tab78 ------ RE-READING\n");
+        DVDReadAsyncPrio(file, dataFilePtrs[FILE_TEX0_tab2],
+            dataFileSizes[FILE_TEX0_tab2], 0,
+            piDvdCallbacktex2tab78, 2);
+        return;
+    }
+    DVDClose(file);
+    mmFree(file);
+    if((loadedFiles & FILE_FLAG_TEX0_tab2) != 0) {
+        loadingFiles |= FILE_FLAG_TEX0_tab2;
+    }
+}
+
+void piDVDCallbackTexbin(long stat, DVDFileInfo *file) {
+	if(stat == -1) {
+		OSReport("piDVDCallbackTexbin  error on TEXBIN\n");
+		DVDClose(file);
+		mmFree(file);
+        return;
+	}
+    DVDClose(file);
+    mmFree(file);
+    OSReport("piDVDCallbacktexbin %x\n", loadedFiles);
+    if(loadedFiles & FILE_FLAG_TEX1_bin) {
+        loadingFiles |= FILE_FLAG_TEX1_bin;
+    }
+    else if(loadedFiles & FILE_FLAG_TEX1_bin2) {
+        loadingFiles |= FILE_FLAG_TEX1_bin2;
+    }
+}
+
+void piDVDCallbackTex2tab33(long stat, DVDFileInfo *file) {
+	int idx;
+	u8 *data;
+    int *dataInt;
+	int cksum;
+	int realsum;
+	int tmpsum;
+    int val;
+
+	val = 0;
+	idx = 0;
+	cksum = 0;
+	tmpsum = 0;
+	if(stat == -1) {
+		OSReport("piDVDCallbackTextab  error on TEXTAB\n");
+		DVDClose(file);
+		mmFree(file);
+        return;
+	}
+    OSReport("piDVDCallbacktextab33 %x\n", loadedFiles);
+    data = (u8 *)dataFilePtrs[FILE_TEX1_tab];
+    dataInt = (int *)(dataFilePtrs[FILE_TEX1_tab]);
+    while(val != -1) {
+        val = dataInt[idx++];
+        tmpsum += *(data++);
+        tmpsum += *(data++);
+        tmpsum += *(data++);
+        tmpsum += *(data++);
+    }
+    cksum = dataInt[idx++];
+    while(cksum == 0) cksum = dataInt[idx++];
+    realsum = tmpsum;
+    OSReport("piDVDCallbackTextab33 ------ CHECKSUM  0x%x  REALSUM 0x%x\n",
+        cksum, realsum);
+    if(cksum != realsum) {
+        //XXX different message from above
+        OSReport("piDVDCallbackTex2tab33 ------ CHECKSUM IS INCORRECT   "
+            "0x%x  REALSUM 0x%x\n", cksum, realsum);
+        OSReport("piDVDCallbackTex2tab33 ------ CHECKSUM IS INCORRECT   "
+            "0x%x  REALSUM 0x%x\n", cksum, realsum);
+        OSReport("piDVDCallbackTex2tab33 ------ CHECKSUM IS INCORRECT   "
+            "0x%x  REALSUM 0x%x\n", cksum, realsum);
+        OSReport("piDVDCallbackTex2tab33 ------ RE-READING\n");
+        DVDReadAsyncPrio(file, dataFilePtrs[FILE_TEX1_tab],
+            dataFileSizes[FILE_TEX1_tab], 0,
+            piDVDCallbackTex2tab33, 2);
+        return;
+    }
+    DVDClose(file);
+    mmFree(file);
+    if((loadedFiles & FILE_FLAG_TEX1_tab) != 0) {
+        loadingFiles |= FILE_FLAG_TEX1_tab;
+    }
+}
+
+void piDVDCallbackTextab76(long stat, DVDFileInfo *file) {
+	int idx;
+	u8 *data;
+    int *dataInt;
+	int cksum;
+	int realsum;
+	int tmpsum;
+    int val;
+
+	val = 0;
+	idx = 0;
+	cksum = 0;
+	tmpsum = 0;
+	if(stat == -1) {
+		OSReport("piDVDCallbackTextab  error on TEX2TAB\n");
+		DVDClose(file);
+		mmFree(file);
+        return;
+	}
+    OSReport("piDVDCallbackTextab76 %x\n", loadedFiles);
+    data = (u8 *)dataFilePtrs[FILE_TEX1_tab2];
+    dataInt = (int *)(dataFilePtrs[FILE_TEX1_tab2]);
+    while(val != -1) {
+        val = dataInt[idx++];
+        tmpsum += *(data++);
+        tmpsum += *(data++);
+        tmpsum += *(data++);
+        tmpsum += *(data++);
+    }
+    cksum = dataInt[idx++];
+    while(cksum == 0) cksum = dataInt[idx++];
+    realsum = tmpsum;
+    OSReport("piDVDCallbackTextab76 ------ CHECKSUM  0x%x  REALSUM 0x%x\n",
+        cksum, realsum);
+    if(cksum != realsum) {
+        OSReport("piDVDCallbackTextab76 ------ CHECKSUM IS INCORRECT   "
+            "0x%x  REALSUM 0x%x\n", cksum, realsum);
+        OSReport("piDVDCallbackTextab76 ------ CHECKSUM IS INCORRECT   "
+            "0x%x  REALSUM 0x%x\n", cksum, realsum);
+        OSReport("piDVDCallbackTextab76 ------ CHECKSUM IS INCORRECT   "
+            "0x%x  REALSUM 0x%x\n", cksum, realsum);
+        OSReport("piDVDCallbackTextab76 ------ RE-READING\n");
+        DVDReadAsyncPrio(file, dataFilePtrs[FILE_TEX1_tab2],
+            dataFileSizes[FILE_TEX1_tab2], 0,
+            piDVDCallbackTextab76, 2);
+        return;
+    }
+    DVDClose(file);
+    mmFree(file);
+    if((loadedFiles & FILE_FLAG_TEX1_tab2) != 0) {
+        loadingFiles |= FILE_FLAG_TEX1_tab2;
+    }
+}
+
+void piDVDCallbackBlockbin(long stat, DVDFileInfo *file) {
+    //strangely "block" not "blocks" unlike elsewhere
+	if(stat == -1) {
+		OSReport("piDVDCallbackBlockbin  error on BLOCKBIN\n");
+		DVDClose(file);
+		mmFree(file);
+        return;
+	}
+    DVDClose(file);
+    mmFree(file);
+    OSReport("piDVDCallbackblockbin %x\n", loadedFiles);
+    if(loadedFiles & FILE_FLAG_BLOCKS_bin) {
+        loadingFiles |= FILE_FLAG_BLOCKS_bin;
+    } else if(loadedFiles & FILE_FLAG_BLOCKS_bin2) {
+        loadingFiles |= FILE_FLAG_BLOCKS_bin2;
+    }
+}
+
+void piDVDCallbackBlockstab(long stat, DVDFileInfo *file) {
+	if(stat == -1) {
+		OSReport("piDVDCallbackBlockstab  error on BLOCKSTAB\n");
+		DVDClose(file);
+		mmFree(file);
+        return;
+	}
+    DVDClose(file);
+    mmFree(file);
+    OSReport("piDVDCallbackblocktab %x\n", loadedFiles);
+    if(loadedFiles & FILE_FLAG_BLOCKS_tab) {
+        loadingFiles |= FILE_FLAG_BLOCKS_tab;
+    } else if(loadedFiles & FILE_FLAG_BLOCKS_tab2) {
+        loadingFiles |= FILE_FLAG_BLOCKS_tab2;
+    }
+}
+
+void piDVDCallbackAnimCurve(long stat, DVDFileInfo *file) {
+	if(stat == -1) {
+        //@bug typo'd name
+		OSReport("piDVDCallbackAnimCurveb  error on AnimCurve\n");
+		DVDClose(file);
+		mmFree(file);
+        return;
+	}
+    DVDClose(file);
+    mmFree(file);
+    OSReport("piDVDCallbackAnimCurve %x\n", loadedFiles);
+    if(loadedFiles & FILE_FLAG_ANIMCURV_bin) {
+        loadingFiles |= FILE_FLAG_ANIMCURV_bin;
+    }
+}
+
+void piDVDCallbackAnimCurveTab(long stat, DVDFileInfo *file) {
+	if(stat == -1) {
+		OSReport("piDVDCallbackAnimCurveTab  error on AnimCurve\n");
+		DVDClose(file);
+		mmFree(file);
+        return;
+	}
+    DVDClose(file);
+    mmFree(file);
+    OSReport("piDVDCallbackAnimCurveTab %x\n", loadedFiles);
+    if(loadedFiles & FILE_FLAG_ANIMCURV_tab) {
+        loadingFiles |= FILE_FLAG_ANIMCURV_tab;
     }
 }
