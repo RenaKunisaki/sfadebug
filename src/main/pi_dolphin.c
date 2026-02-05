@@ -2157,15 +2157,15 @@ void piDVDCallbackAnimtab(long stat, DVDFileInfo *file) {
         STUBBED_PRINTF("piDVDCallbackAnimtab  error on ANIMTAB\n");
 		DVDClose(file);
 		mmFree(file);
-        return;
-	}
-    DVDClose(file);
-    mmFree(file);
-    STUBBED_PRINTF("piDVDCallbackAnimtab %x\n", loadingFiles);
-    if(loadingFiles & FILE_FLAG_ANIM_TAB) {
-        loadedFiles |= FILE_FLAG_ANIM_TAB;
-    } else if(loadingFiles & FILE_FLAG_ANIM_TAB2) {
-        loadedFiles |= FILE_FLAG_ANIM_TAB2;
+	} else {
+        DVDClose(file);
+        mmFree(file);
+        STUBBED_PRINTF("piDVDCallbackAnimtab %x\n", loadingFiles);
+        if(loadingFiles & FILE_FLAG_ANIM_TAB) {
+            loadedFiles |= FILE_FLAG_ANIM_TAB;
+        } else if(loadingFiles & FILE_FLAG_ANIM_TAB2) {
+            loadedFiles |= FILE_FLAG_ANIM_TAB2;
+        }
     }
 }
 
@@ -2174,16 +2174,16 @@ void piDVDCallbackModbin(long stat, DVDFileInfo *file) {
         STUBBED_PRINTF("piDVDCallbackModbin  error on MODBIN\n");
 		DVDClose(file);
 		mmFree(file);
-        return;
-	}
-    DVDClose(file);
-    mmFree(file);
-    //@bug wrong message
-    STUBBED_PRINTF("piDVDCallbackModtab %x\n", loadingFiles);
-    if(loadingFiles & FILE_FLAG_MODELS_bin) {
-        loadedFiles |= FILE_FLAG_MODELS_bin;
-    } else if(loadingFiles & FILE_FLAG_MODELS_bin2) {
-        loadedFiles |= FILE_FLAG_MODELS_bin2;
+    } else {
+        DVDClose(file);
+        mmFree(file);
+        //@bug wrong message
+        STUBBED_PRINTF("piDVDCallbackModtab %x\n", loadingFiles);
+        if(loadingFiles & FILE_FLAG_MODELS_bin) {
+            loadedFiles |= FILE_FLAG_MODELS_bin;
+        } else if(loadingFiles & FILE_FLAG_MODELS_bin2) {
+            loadedFiles |= FILE_FLAG_MODELS_bin2;
+        }
     }
 }
 
@@ -2192,16 +2192,16 @@ void piDVDCallbackAnimbin(long stat, DVDFileInfo *file) {
         STUBBED_PRINTF("piDVDCallbackAnimbin  error on ANIMBIN\n");
 		DVDClose(file);
 		mmFree(file);
-        return;
-	}
-    DVDClose(file);
-    mmFree(file);
-    STUBBED_PRINTF("piDVDCallbackAnim %x\n", loadedFiles);
-    if(loadedFiles & FILE_FLAG_ANIM_BIN) {
-        loadingFiles |= FILE_FLAG_ANIM_BIN;
-    }
-    else if(loadedFiles & FILE_FLAG_ANIM_BIN2) {
-        loadingFiles |= FILE_FLAG_ANIM_BIN2;
+    } else {
+        DVDClose(file);
+        mmFree(file);
+        STUBBED_PRINTF("piDVDCallbackAnim %x\n", loadedFiles);
+        if(loadedFiles & FILE_FLAG_ANIM_BIN) {
+            loadingFiles |= FILE_FLAG_ANIM_BIN;
+        }
+        else if(loadedFiles & FILE_FLAG_ANIM_BIN2) {
+            loadingFiles |= FILE_FLAG_ANIM_BIN2;
+        }
     }
 }
 
@@ -2210,16 +2210,16 @@ void piDVDCallbackTex2bin(long stat, DVDFileInfo *file) {
         STUBBED_PRINTF("piDVDCallbackTex2bin  error on TEX2BIN\n");
 		DVDClose(file);
 		mmFree(file);
-        return;
-	}
-    DVDClose(file);
-    mmFree(file);
-    STUBBED_PRINTF("piDVDCallbackTEXTURES %x\n", loadedFiles);
-    if(loadedFiles & FILE_FLAG_TEX0_bin) {
-        loadingFiles |= FILE_FLAG_TEX0_bin;
-    }
-    else if(loadedFiles & FILE_FLAG_TEX0_bin2) {
-        loadingFiles |= FILE_FLAG_TEX0_bin2;
+	} else {
+        DVDClose(file);
+        mmFree(file);
+        STUBBED_PRINTF("piDVDCallbackTEXTURES %x\n", loadedFiles);
+        if(loadedFiles & FILE_FLAG_TEX0_bin) {
+            loadingFiles |= FILE_FLAG_TEX0_bin;
+        }
+        else if(loadedFiles & FILE_FLAG_TEX0_bin2) {
+            loadingFiles |= FILE_FLAG_TEX0_bin2;
+        }
     }
 }
 
@@ -2336,16 +2336,16 @@ void piDVDCallbackTexbin(long stat, DVDFileInfo *file) {
 		OSReport("piDVDCallbackTexbin  error on TEXBIN\n");
 		DVDClose(file);
 		mmFree(file);
-        return;
-	}
-    DVDClose(file);
-    mmFree(file);
-    OSReport("piDVDCallbacktexbin %x\n", loadedFiles);
-    if(loadedFiles & FILE_FLAG_TEX1_bin) {
-        loadingFiles |= FILE_FLAG_TEX1_bin;
-    }
-    else if(loadedFiles & FILE_FLAG_TEX1_bin2) {
-        loadingFiles |= FILE_FLAG_TEX1_bin2;
+	} else {
+        DVDClose(file);
+        mmFree(file);
+        OSReport("piDVDCallbacktexbin %x\n", loadedFiles);
+        if(loadedFiles & FILE_FLAG_TEX1_bin) {
+            loadingFiles |= FILE_FLAG_TEX1_bin;
+        }
+        else if(loadedFiles & FILE_FLAG_TEX1_bin2) {
+            loadingFiles |= FILE_FLAG_TEX1_bin2;
+        }
     }
 }
 
@@ -2464,15 +2464,15 @@ void piDVDCallbackBlockbin(long stat, DVDFileInfo *file) {
 		OSReport("piDVDCallbackBlockbin  error on BLOCKBIN\n");
 		DVDClose(file);
 		mmFree(file);
-        return;
-	}
-    DVDClose(file);
-    mmFree(file);
-    OSReport("piDVDCallbackblockbin %x\n", loadedFiles);
-    if(loadedFiles & FILE_FLAG_BLOCKS_bin) {
-        loadingFiles |= FILE_FLAG_BLOCKS_bin;
-    } else if(loadedFiles & FILE_FLAG_BLOCKS_bin2) {
-        loadingFiles |= FILE_FLAG_BLOCKS_bin2;
+	} else {
+        DVDClose(file);
+        mmFree(file);
+        OSReport("piDVDCallbackblockbin %x\n", loadedFiles);
+        if(loadedFiles & FILE_FLAG_BLOCKS_bin) {
+            loadingFiles |= FILE_FLAG_BLOCKS_bin;
+        } else if(loadedFiles & FILE_FLAG_BLOCKS_bin2) {
+            loadingFiles |= FILE_FLAG_BLOCKS_bin2;
+        }
     }
 }
 
@@ -2481,15 +2481,15 @@ void piDVDCallbackBlockstab(long stat, DVDFileInfo *file) {
 		OSReport("piDVDCallbackBlockstab  error on BLOCKSTAB\n");
 		DVDClose(file);
 		mmFree(file);
-        return;
-	}
-    DVDClose(file);
-    mmFree(file);
-    OSReport("piDVDCallbackblocktab %x\n", loadedFiles);
-    if(loadedFiles & FILE_FLAG_BLOCKS_tab) {
-        loadingFiles |= FILE_FLAG_BLOCKS_tab;
-    } else if(loadedFiles & FILE_FLAG_BLOCKS_tab2) {
-        loadingFiles |= FILE_FLAG_BLOCKS_tab2;
+	} else {
+        DVDClose(file);
+        mmFree(file);
+        OSReport("piDVDCallbackblocktab %x\n", loadedFiles);
+        if(loadedFiles & FILE_FLAG_BLOCKS_tab) {
+            loadingFiles |= FILE_FLAG_BLOCKS_tab;
+        } else if(loadedFiles & FILE_FLAG_BLOCKS_tab2) {
+            loadingFiles |= FILE_FLAG_BLOCKS_tab2;
+        }
     }
 }
 
@@ -2499,13 +2499,13 @@ void piDVDCallbackAnimCurve(long stat, DVDFileInfo *file) {
 		OSReport("piDVDCallbackAnimCurveb  error on AnimCurve\n");
 		DVDClose(file);
 		mmFree(file);
-        return;
-	}
-    DVDClose(file);
-    mmFree(file);
-    OSReport("piDVDCallbackAnimCurve %x\n", loadedFiles);
-    if(loadedFiles & FILE_FLAG_ANIMCURV_bin) {
-        loadingFiles |= FILE_FLAG_ANIMCURV_bin;
+	} else {
+        DVDClose(file);
+        mmFree(file);
+        OSReport("piDVDCallbackAnimCurve %x\n", loadedFiles);
+        if(loadedFiles & FILE_FLAG_ANIMCURV_bin) {
+            loadingFiles |= FILE_FLAG_ANIMCURV_bin;
+        }
     }
 }
 
@@ -2514,12 +2514,12 @@ void piDVDCallbackAnimCurveTab(long stat, DVDFileInfo *file) {
 		OSReport("piDVDCallbackAnimCurveTab  error on AnimCurve\n");
 		DVDClose(file);
 		mmFree(file);
-        return;
-	}
-    DVDClose(file);
-    mmFree(file);
-    OSReport("piDVDCallbackAnimCurveTab %x\n", loadedFiles);
-    if(loadedFiles & FILE_FLAG_ANIMCURV_tab) {
-        loadingFiles |= FILE_FLAG_ANIMCURV_tab;
+	} else {
+        DVDClose(file);
+        mmFree(file);
+        OSReport("piDVDCallbackAnimCurveTab %x\n", loadedFiles);
+        if(loadedFiles & FILE_FLAG_ANIMCURV_tab) {
+            loadingFiles |= FILE_FLAG_ANIMCURV_tab;
+        }
     }
 }
