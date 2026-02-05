@@ -109,10 +109,10 @@ enum {
 // * "MODTAB %4d 0x%x "
 // * "T1 0x%x "
 // * "T2 0x%x "
-//   "PIFREE pitable[%d]  addr 0x%x  --- gamno %d size %d the file GAMNO %d\n"
+// * "PIFREE pitable[%d]  addr 0x%x  --- gamno %d size %d the file GAMNO %d\n"
 // * "Warning in piRomFreeLevel file || %s || not found !\n"
 // * "piRomFreeLevel(): flist array overflow"
-//   "ROMLOADTAB file=%s\n"
+// * "ROMLOADTAB file=%s\n"
 // * "piDVDCallbackModtab  error on MODTAB\n"
 // * "\n\n\npiDVDCallbackModtab  %x\n\n\n"
 // * "piDVDCallbackAnimtab  error on ANIMTAB\n"
@@ -1885,14 +1885,14 @@ int count) {
 	int *tbl1;
 	int *tbl2;
 	int ii;
-	int local_24;
+	int jj;
     int dummy;
 
 	ii = 0;
 	noTab1 = false;
 	noTab2 = false;
 	tblSize = 0;
-    local_24 = 0;
+    jj = 0;
     if(!dataFilePtrs[fileNo1] || !dataFilePtrs[fileNo2]) {
         STUBBED_PRINTF("piMergeIndex  one or other tabfiles is not loaded %x %x\n",
             dataFilePtrs[fileNo1], dataFilePtrs[fileNo2]);
@@ -1930,16 +1930,16 @@ int count) {
 			if(!(noTab1 || (tbl1[ii] != -1))) {
 				BLOCKS_TAB[ii] = 0;
 				noTab1 = true;
-			} else if(!((noTab2) || (tbl2[ii] != -1))) {
+			} else if(!(noTab2 || tbl2[ii] != -1)) {
                 BLOCKS_TAB[ii] = 0;
                 noTab2 = true;
-            } else if(!((noTab1) || (tbl1[ii] == -1) || ((tbl1[ii] & 0x10000000U) == 0))) {
+            } else if(!(noTab1 || tbl1[ii] == -1 || (tbl1[ii] & 0x10000000U) == 0)) {
                 BLOCKS_TAB[ii] = tbl1[ii];
-            } else if(!((noTab2) || (tbl2[ii] == -1) || ((tbl2[ii] & 0x10000000U) == 0))) {
+            } else if(!(noTab2 || tbl2[ii] == -1 || (tbl2[ii] & 0x10000000U) == 0)) {
                 BLOCKS_TAB[ii] = tbl2[ii] & 0x00ffffffU | 0x20000000;
-            } else if(!((noTab1) || (tbl1[ii] == 0))) {
+            } else if(!(noTab1 || tbl1[ii] == 0)) {
                 BLOCKS_TAB[ii] = tbl1[ii];
-            } else if(!((noTab2) || (tbl2[ii] == 0))) {
+            } else if(!(noTab2 || tbl2[ii] == 0)) {
                 BLOCKS_TAB[ii] = tbl2[ii];
             } else {
                 BLOCKS_TAB[ii] = 0;
@@ -1947,22 +1947,23 @@ int count) {
 		}
 	} else {
 		for(; ii < tblSize; ii++) {
-			if(!((noTab1) || (tbl1[ii] == -1) || ((tbl1[ii] & 0x10000000U) == 0))) {
+			if(!(noTab1 || tbl1[ii] == -1 || (tbl1[ii] & 0x10000000U) == 0)) {
 				table[ii] = tbl1[ii];
-			} else if(!((noTab2) || (tbl2[ii] == -1) || ((tbl2[ii] & 0x10000000U) == 0))) {
-                *(uint *)((int)table + ii * 4) = tbl2[ii] & 0x00ffffffU | 0x20000000;
-            } else if(!((noTab1) || (tbl1[ii] == 0))) {
+			} else if(!(noTab2 || tbl2[ii] == -1 || (tbl2[ii] & 0x10000000U) == 0)) {
+                table[ii] = tbl2[ii] & 0x00ffffffU | 0x20000000;
+            } else if(!(noTab1 || tbl1[ii] == 0)) {
                 table[ii] = tbl1[ii];
-            } else if((!noTab2) && (tbl2[ii] != 0)) {
+            } else if(!noTab2 && tbl2[ii] != 0) {
                 table[ii] = tbl2[ii];
             }
 		}
 	}
-	*(undefined4 *)((int)table + (ii + -1) * 4) = 0x0ffffffff;
-    //@bug? unreachable (local_24 is always 0)
-	if(local_24 && table == TEX1_TAB) {
-		for(local_24 = 0; local_24 < ii; local_24++) {
-            if(!(local_24 - ((local_24 >> 3) * 8))) {
+    ii--;
+    table[ii] = -1;
+    //@bug? unreachable (jj is always 0)
+	if(jj && table == TEX1_TAB) {
+		for(jj = 0; jj < ii; jj++) {
+            if(!(jj - ((jj >> 3) * 8))) {
                 STUBBED_OP(noTab1);
                 if(tbl1) { STUBBED_OP(tbl1); }
                 if(tbl2) { STUBBED_OP(tbl2); }
