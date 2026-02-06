@@ -1912,37 +1912,32 @@ int count) {
 			if(!(noTab1 || tbl1[ii] == -1 || !(tbl1[ii] & 0x80000000u))) {
                 table[ii] = tbl1[ii] & 0x7fffffff;
                 table[ii] = table[ii] | 0x40000000;
-            } else if(!(noTab2 || tbl2[ii] == -1)) {
-                //XXX these checks are weird, might be wrong
-                if(tbl2[ii] & 0x80000000u) {
-                    table[ii] = tbl1[ii];
-                }
-                else if(!noTab1) {
-                    if(tbl2[ii]) table[ii] = tbl2[ii];
-                }
-                else if(!noTab2) {
-                    if(tbl1[ii]) table[ii] = tbl1[ii];
-                }
+            } else if(!(noTab2 || tbl2[ii] == -1 || !(tbl2[ii] & 0x80000000u))) {
+                table[ii] = tbl2[ii];
+            } else if((!noTab1) && tbl1[ii]) {
+                table[ii] = tbl1[ii];
+            } else if((!noTab2) && tbl2[ii]) {
+                table[ii] = tbl2[ii];
             }
 		}
 	} else if(table == BLOCKS_TAB) {
 		for(; ii < tblSize; ii++) {
-			if(!(noTab1 || (tbl1[ii] != -1))) {
-				BLOCKS_TAB[ii] = 0;
+			if((!noTab1) && tbl1[ii] == -1) {
+				table[ii] = 0;
 				noTab1 = true;
 			} else if(!(noTab2 || tbl2[ii] != -1)) {
-                BLOCKS_TAB[ii] = 0;
+                table[ii] = 0;
                 noTab2 = true;
             } else if(!(noTab1 || tbl1[ii] == -1 || (tbl1[ii] & 0x10000000U) == 0)) {
-                BLOCKS_TAB[ii] = tbl1[ii];
+                table[ii] = tbl1[ii];
             } else if(!(noTab2 || tbl2[ii] == -1 || (tbl2[ii] & 0x10000000U) == 0)) {
-                BLOCKS_TAB[ii] = tbl2[ii] & 0x00ffffffU | 0x20000000;
+                table[ii] = tbl2[ii] & 0x00ffffffU | 0x20000000;
             } else if(!(noTab1 || tbl1[ii] == 0)) {
-                BLOCKS_TAB[ii] = tbl1[ii];
+                table[ii] = tbl1[ii];
             } else if(!(noTab2 || tbl2[ii] == 0)) {
-                BLOCKS_TAB[ii] = tbl2[ii];
+                table[ii] = tbl2[ii];
             } else {
-                BLOCKS_TAB[ii] = 0;
+                table[ii] = 0;
             }
 		}
 	} else {
@@ -1964,6 +1959,7 @@ int count) {
 	if(jj && table == TEX1_TAB) {
 		for(jj = 0; jj < ii; jj++) {
             if(!(jj - ((jj >> 3) * 8))) {
+                //not aligned to 8
                 STUBBED_OP(noTab1);
                 if(tbl1) { STUBBED_OP(tbl1); }
                 if(tbl2) { STUBBED_OP(tbl2); }
