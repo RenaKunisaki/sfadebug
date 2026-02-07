@@ -378,22 +378,49 @@ const MapDirIdx32 mapIdXltnTbl[] = { //0x802ef38c
     MapDir_animtest_05,
 };
 
+//.rodata
+PiFreeList piFreeList = {0}; //0x802cf3b8 (why is this in rodata!?)
+PiFreeList DWORD_ARRAY_802cf460 = {
+    //these "map numbers" are some kind of bitflag, never used?
+    FILE_MODELS_bin, 0x1,
+    FILE_MODELS_tab, 0x2,
+    FILE_ANIM_TAB, 0x8,
+    FILE_ANIM_BIN, 0x4,
+    FILE_MODELS_bin2, 0x1,
+    FILE_MODELS_tab2, 0x2,
+    FILE_ANIM_TAB2, 0x8,
+    FILE_ANIM_BIN2, 0x4,
+    FILE_TEX0_tab, 0x20,
+    FILE_TEX0_bin, 0x10,
+    FILE_TEX0_tab2, 0x20,
+    FILE_TEX0_bin2, 0x10,
+    FILE_TEX1_tab, 0x80,
+    FILE_TEX1_bin, 0x40,
+    FILE_TEX1_tab2, 0x80,
+    FILE_TEX1_bin2, 0x40,
+    FILE_BLOCKS_bin, 0x100,
+    FILE_BLOCKS_tab, 0x200,
+    FILE_BLOCKS_bin2, 0x100,
+    FILE_BLOCKS_tab2, 0x200,
+};
+
+
 //.bss
-int dataFileSizes[NUM_FILES]; //0x8036bb40
-s16 loadedFileMapIds[NUM_FILES];
+u8 lbl_8035C9A8[0x88];
+s16 loadedFileMapIds[NUM_FILES]; //0x0x8035CA30
 void *dataFilePtrs[NUM_FILES]; //0x8035CAD0
-u8 dataFileArray_8035cc10[NUM_FILES]; //8035cc10 - initDataFiles stores 0 here for each file
-uint MODELS_TAB[MODELS_TAB_SIZE];
-uint ANIM_TAB[ANIM_TAB_SIZE]; //size might be 0x4e8?
-uint TEX0_TAB[TEX0_TAB_SIZE]; //size might be 0x6d0?
-uint TEX1_TAB[TEX1_TAB_SIZE];
-uint BLOCKS_TAB[BLOCKS_TAB_SIZE]; //size might be 0x1000?
+u8 dataFileArray_8035cc10[NUM_FILES]; //0x8035CC10 - initDataFiles stores 0 here for each file
+uint MODELS_TAB[MODELS_TAB_SIZE]; //0x8035CC60
+uint ANIM_TAB[ANIM_TAB_SIZE]; //0x8035EC60 size might be 0x4e8?
+uint TEX0_TAB[TEX0_TAB_SIZE]; //0x80361B40 size might be 0x6d0?
+uint TEX1_TAB[TEX1_TAB_SIZE]; //0x80365B40
+uint BLOCKS_TAB[BLOCKS_TAB_SIZE]; //0x80369B40 size might be 0x1000?
+int dataFileSizes[NUM_FILES]; //0x8036BB40
 
 //.sbss
 u32 loadingFiles; //0x80398B30 - PiLockFlags, which are being loaded in background
 u32 loadedFiles; //0x80398B34 - PiLockFlags
 u32 readyFiles; //0x80398B38 - PiLockFlags
-PiFreeList piFreeList;
 
 #define PIFREE(slot, name) if(dataFilePtrs[slot] != NULL) { \
     STUBBED_PRINTF("PIFREE pitable[%d]" #name "  addr %d", slot, dataFilePtrs[slot]); \
@@ -1974,7 +2001,7 @@ int piRomFreeLevel(int map, uint flags) {
 	int iList;
 	PiFreeList localFreeList;
 
-	localFreeList = piFreeList;
+	localFreeList = DWORD_ARRAY_802cf460;
 	//freeList.item[0].mapNo = map;
 
     for(iList = 0; iList < PI_FLIST_SIZE; iList++) {
@@ -1984,15 +2011,14 @@ int piRomFreeLevel(int map, uint flags) {
                 and a nonsensical bitfield check, OR
             - it belongs to the other map and we're freeing the other map
         */
-		if(dataFilePtrs[localFreeList.item[iList].fileNo] && (
-            flags & piRomFreeLevel_flag_freeForCurMap || (
-                (flags & localFreeList.item[iList].fileNo + 1U) && //@bug this makes no sense (decomp error?)
-                map == loadedFileMapIds[localFreeList.item[iList].fileNo]
-            ) || (
-                flags & piRomFreeLevel_flag_freeForOtherMap && (
-                    map != loadedFileMapIds[localFreeList.item[iList].fileNo]
-                )
-        ))) {
+		if(dataFilePtrs[localFreeList.item[iList].fileNo]
+        && (flags & piRomFreeLevel_flag_freeForCurMap || (
+            (flags & localFreeList.item[iList].fileNo + 1U) && //@bug this makes no sense (decomp error?)
+            map == loadedFileMapIds[localFreeList.item[iList].fileNo]
+        ) || (
+            flags & piRomFreeLevel_flag_freeForOtherMap && (
+            map != loadedFileMapIds[localFreeList.item[iList].fileNo]
+        )))) {
             //free the file and clear the pointer and owner-map-ID
             STUBBED_PRINTF("PIFREE pitable[%d]  addr 0x%x  --- gamno %d size %d the file GAMNO %d\n",
                 localFreeList.item[iList].fileNo,
@@ -2037,13 +2063,14 @@ int piRomFreeLevel(int map, uint flags) {
                         FILE_ANIM_TAB, FILE_ANIM_TAB2,
                         ANIM_TAB_SIZE);
                     break;
+
                 default:
                     STUBBED_PRINTF("Warning in piRomFreeLevel file || %s || not found !\n",
                         dataFileNames[localFreeList.item[iList].fileNo]);
             }
 		}
 		if(iList >= PI_FLIST_SIZE) {
-			OSPanic("pi_dolphin.c", 3549,
+			OSPanic(__FILE__, 3549,
 			    "piRomFreeLevel(): flist array overflow");
 		}
 	}

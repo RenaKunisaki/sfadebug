@@ -9,7 +9,7 @@
 
 typedef struct {
     int fileNo;
-    int mapNo;
+    int mapNo; //actually some kind of flags?
 } PiFreeListItem;
 typedef struct {
     PiFreeListItem item[PI_FLIST_SIZE];

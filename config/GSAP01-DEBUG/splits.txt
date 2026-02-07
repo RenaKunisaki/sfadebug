@@ -159,16 +159,16 @@ expr.c:
 
 main/objprint.c:
 	.text       start:0x8009471C end:0x800961A0
-	.rodata     start:0x802CF028 end:0x802CF3F8
+	.rodata     start:0x802CF028 end:0x802CF3B4
 
 main/objprint_dolphin.c:
 	.text       start:0x80096B30 end:0x800993E0
 
 main/pi_dolphin.c:
 	.text       start:0x8009942C end:0x8009E320
-	.rodata     start:0x802CF460 end:0x802CF500
+	.rodata     start:0x802CF3B4 end:0x802CF500
 	.data       start:0x802EECB0 end:0x802F07C0
-	.bss        start:0x8035C9A8 end:0x8035CC60
+	.bss        start:0x8035C9A8 end:0x8036BC80
 
 main/rcp_dolphin.c:
 	.text       start:0x8009E5F0 end:0x8009FE30
