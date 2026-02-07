@@ -315,8 +315,8 @@ extern GXRenderModeObj tvParamsNotProgScan;
 
 extern u8 DAT_80352f30[0x7EF]; //80352f30, unk type
 extern GXRenderModeObj *curTvParams; //80398b78
-extern s8 padSetupOk; // = -1; //80398908
-extern s8 debugMenuState; //80398904
+s8 padSetupOk; // = -1; //80398908
+s8 debugMenuState; //80398904
 
 int main(int argc, char **argv) { //80077ca8
 	if(argc > 1 && strcmp(argv[1], "prog") == 0u) {
