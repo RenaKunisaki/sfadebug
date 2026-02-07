@@ -2,8 +2,10 @@
 #define _OBJ_OBJECTS_H_
 
 #include "../types.h"
+#include "gfx/models/models.h"
 
 typedef int ObjDefEnum;
+#define DUMMY_OBJECT_ID 128
 
 #include "dolphin/mtx.h"
 #include "sys/dll.h"
@@ -59,12 +61,12 @@ void loadAsset_fileWithOffsetLength(
     void *dest, DataFileId32 file, int offset, int length); /* extern */
 int piRomLoadAddr(DataFileId32 fileNo, void *dest,
     uint offset, int len); /* extern */
-ModelInstance *loadModelInstance(int modelNum, uint flags); /* extern */
+ModelInstance *loadModelInstance(int modelNum, ObjModelFlags flags); /* extern */
 ObjDefEnum mapGetPlayerObjType(int *outWhichObjs); /* extern */
 f32 cosf(f32); /* extern */
 void memclr(void *param1, size_t param2); /* extern */
 void memcpy_src_dst_len(void *param1, void *param2, size_t param3); /* extern */
-u16 modelGetFieldA4(Model *model); /* extern */
+u16 modelGetCullDistance(Model *model); /* extern */
 void modelInstanceFree(ModelInstance *modelInstance); /* extern */
 void mtx44Transpose(Mtx44 *src, Mtx44 *dst); /* extern */
 void mtxRotateByVec3s(Mtx44 *mtx, S16Vec *rot); /* extern */
@@ -86,14 +88,14 @@ void texFreeTexture(Texture *tex); /* extern */
 void trackFreeMap(mapId32 mapNo); /* extern */
 void worldMapListFn_800aac60(mapId32 mapNo, int param2); /* extern */
 void Object_freeModels(ObjInstance *object, int count); /* static */
-ModelFlags_loadCharacter Object_getModelFlags(ObjInstance *obj); /* static */
+ObjModelFlags Object_getModelFlags(ObjInstance *obj); /* static */
 void *Object_objInitState(ObjInstance *object, void *ptr); /* static */
 ObjData *Object_objLoadData(int objType); /* static */
 void Object_objLoadEventData(ObjInstance *object, int romdefno,
     ObjEventData *event, int animId, bool bImmediate); /* static */
 void *Object_objSetupEvents(
     int romdefno, ObjInstance *obj, void *ptr); /* static */
-void* Object_objSetupModels(int romdefno,Model *model,ObjInstance *object,void *ptr); /* static */
+void* Object_objSetupModels(int romdefno,ModelInstance *modelInstance,ObjInstance *object,void *ptr); /* static */
 void Object_setPriority(ObjInstance *obj, s8 priority); /* static */
 void objSetupDll(ObjInstance *object,ObjDef *def,void *param); /* static */
 void Object_worldProcessObjFreeList(ObjInstance *obj, int param2); /* static */
@@ -106,7 +108,7 @@ void objFreeObjdef(int defNo); /* static */
 void objSetFrozen(ObjInstance *object,int freezeTimer,u8 r, u8 g, u8 b, u8 a); /* static */
 uint objGetTotalDataSize(ObjInstance *obj, ObjData *objData, ObjDef *objDef,
     uint flags); /* static */
-float objModelFn_800839d4(ObjInstance *object); /* static */
+float objGetDefaultCullDistance(ObjInstance *object); /* static */
 void objSetup(ObjInstance *object, uint bAddToLoadedObjs); /* static */
 void objModelMtxFn_800859e8(ObjInstance *object,Mtx *modelMatrix);
 void ModelInstance_freeField48(ModelInstance *modelInstance);
@@ -162,7 +164,7 @@ extern f32 lbl_8039A9C0;
 extern f32 lbl_8039A9C4;
 extern f32 lbl_8039A9C8;
 extern f32 lbl_8039A9CC;
-void modelLoadCb_800c5b80(int param_1, ModelInstance *param_2);
+void modelTexFuncPtr_800c5b80(int param_1, ModelInstance *param_2);
 extern s32 nTablesTab;
 extern s16 nVisibleObjs;
 extern s8 numEffectBoxes;

@@ -53,8 +53,8 @@ void FUN_80065ff8(Mtx44 **pjMtx,Mtx44Ptr modelMatrix,AnimInstance *animInstance,
 Animation * loadModelAnimation(Model *model,short id,short id2,void *dest);
 int piRomLoadSectionL(DataFileId32 file,void *dest,uint offset,size_t length,int *outSize,int index,s8 flags);
 
-ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew);
-int Model_setupAnimInstance(Model *model,int flags,AnimUnk *anim,BOOL bAlways0);
+ModelInstance *createModelInstance(Model *model, ObjModelFlags flags, BOOL bIsNew);
+int Model_setupAnimInstance(Model *model,ObjModelFlags flags,AnimUnk *anim,BOOL bAlways0);
 int modelGetAmapSize(uint id, BOOL bypassAmapTab, int nAnimations);
 BOOL makeModelAnimation(Model *model,uint animId,s8 *hits);
 void modelSetupAnims(ModelInstance *modelInstance,AnimInstance *animInstance);
@@ -84,7 +84,7 @@ void ModelInstance_setTexFuncPtr(ModelInstance *modelInstance,TexFuncPtr cb);
 TexFuncPtr ModelInstance_getTexFuncPtr(ModelInstance *modelInstance);
 void modelApplyFrozenEffect(ModelInstance *modelInstance,Mtx *modelMatrix,bool param3);
 void ModelInstance_freeField48(ModelInstance *modelInstance);
-u16 modelGetFieldA4(Model *model);
+u16 modelGetCullDistance(Model *model);
 Shader* modelGetShader(Model *model,int shaderNum);
 S16Vec* modelGetVtxPos(Model *model,int positionNum);
 Texture* modelGetGCTexture(Model *model,int textureNum);
@@ -137,7 +137,7 @@ void initModels(void) { //8007DAB0
 	countModels();
 }
 
-ModelInstance * loadModelInstance(int modelNum,uint flags) { //8007DB84
+ModelInstance * loadModelInstance(int modelNum,ObjModelFlags flags) { //8007DB84
 	Model *model;
 	ModelInstance *modelInstance;
 	int i;
@@ -220,7 +220,7 @@ void modelDebugPrint(Model *model) { //unused, only strings remain
 
 	printf("***** VERTEX COLOURS:\n");
 	for(i=0; i<model->numColours; i++) {
-		//I guess they forgot to actually print this
+		//@bug I guess they forgot to actually print this
 	}
 
 	printf("***** VERTEX TEXCOORDS:\n");
@@ -721,9 +721,9 @@ void ModelInstance_freeField48(ModelInstance *modelInstance) { //8007FCF8
 	}
 }
 
-u16 modelGetFieldA4(Model *model) { //8007FD3C
+u16 modelGetCullDistance(Model *model) { //8007FD3C
     BADASSERTLINE(1627, model);
-    return model->unka4;
+    return model->cullDistance;
 }
 
 S16Vec *modelInstanceGetVtxPos(ModelInstance *modelInstance, int positionNum) { //unused, only strings remain
@@ -1747,8 +1747,8 @@ void modelGetVtxPosFloat(Model *model, int positionNum, Vec *posVec) { // 800815
 	posVec->z = vp->z / 256.0f;
 }
 
-//flags: CreateModelInstanceFlags
-ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 8007C5B4
+ModelInstance *createModelInstance(Model *model, ObjModelFlags flags,
+BOOL bIsNew) { // 8007C5B4
 	ModelInstance *minst;
 	uint size;
     uint resultSize;
@@ -1763,8 +1763,8 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 		return NULL;
 	}
 	size = setupAnimInstance(model, flags, &animUnk, 0);
-	minst = (ModelInstance *)mmAlloc(
-	    size, ALLOC_TAG_MODEL_INSTANCE, (volatile u32) "minst");
+	minst = (ModelInstance *)mmAlloc(size, ALLOC_TAG_MODEL_INSTANCE,
+		(volatile u32) "minst");
 	if(!minst) return NULL;
 
 	memclr(minst, size);
@@ -1792,7 +1792,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 	next = mmAlign4(next);
 	minst->animInstances[0] = next; ADVANCE_PTR_BY(next,1,AnimInstance);
 
-	if(flags & CreateModelInstanceFlags_DoubleBufferAnims) {
+	if(flags & ObjModelFlags_DoubleBufferAnims) {
 		minst->animInstances[1] = next; ADVANCE_PTR_BY(next,1,AnimInstance);
 	}
 
@@ -1853,7 +1853,7 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 	next = mmAlign4(next);
 	minst->shaderDefs = next; ADVANCE_PTR_BY(next,model->numShaders,ShaderDef);
 
-	if(flags & CreateModelInstanceFlags_TexturedShadow) {
+	if(flags & ObjModelFlags_TexturedShadow) {
 		next = mmAlign2(next);
 		minst->shadow = next; ADVANCE_PTR_BY(next,1,TexturedShadow);
 		minst->shadow->state = 0;
@@ -1870,8 +1870,8 @@ ModelInstance *createModelInstance(Model *model, int flags, BOOL bIsNew) { // 80
 	return minst;
 }
 
-int Model_setupAnimInstance(
-Model *model, int flags, AnimUnk *anim, BOOL bAlways0) { // 8007C9C0
+int Model_setupAnimInstance(Model *model, ObjModelFlags flags,
+AnimUnk *anim, BOOL bAlways0) { // 8007C9C0
 	int result;
 
 	if(model->numAnims) {
@@ -1897,11 +1897,12 @@ Model *model, int flags, AnimUnk *anim, BOOL bAlways0) { // 8007C9C0
 		anim->nAnims = anim->animCacheSize * 4;
 	}
 	anim->size10 = sizeof(AnimInstance);
-	if(flags & 0x80) {
+	if(flags & ObjModelFlags_DoubleBufferAnims) {
 		anim->size10 *= 2;
 		anim->nAnims *= 2;
 	}
-	if((flags & 1) || model->bCopyVtxsToModelInst || bAlways0) {
+	if((flags & ObjModelFlags_Unk0000_0001)
+	|| model->bCopyVtxsToModelInst || bAlways0) {
 		anim->size10 += 0x30; //sizeof(Mtx)? but these are Mtx44?
 		result = 0x54; //probably sizeof(ModelInstance)
 		result += anim->nAnims + anim->size10;
@@ -1921,7 +1922,7 @@ Model *model, int flags, AnimUnk *anim, BOOL bAlways0) { // 8007C9C0
 		result += model->skin.numPieces * 4 + 4;
 	}
 	result += model->numShaders * 8;
-	if(flags & 0x8000) result += 0x1a;
+	if(flags & ObjModelFlags_TexturedShadow) result += sizeof(TexturedShadow);
 
 	result = (result + 0x2f & ~0xf) + 0x10;
 	return result;

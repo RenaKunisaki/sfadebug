@@ -239,7 +239,7 @@ typedef struct {
     /* 0x99 */ s8 unk99;
     /* 0x9a */ s8 unk9a;
     /* 0x9b */ u8 numLockData;
-    /* 0x9c */ u8 unk9c;
+    /* 0x9c */ u8 minCullDistance; //mult by 16, used as min of model cull distances
     /* 0x9d */ u8 fixedDepth; //mult by 100, used if flags & FIxedDepth
     /* 0x9e */ s8 unk9e;
     /* 0x9f */ s8 unk9f;

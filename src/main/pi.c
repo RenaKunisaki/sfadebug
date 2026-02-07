@@ -28,7 +28,7 @@ enum AssetTypeEnum {
 void* loadDataFile(DataFileId32 file, int);
 u32 loadDataFileToBuf(DataFileId32 file,void *buf);
 Texture* textureLoad(int id, int);
-ObjInstance* Object_objSetupObjectActual(ObjDef *objDef,
+ObjInstance* objSetupObjectActual(ObjDef *objDef,
     objSetupObjectActual_flags flags,
     MapId mapId,
     s32 romDefNo,
@@ -206,7 +206,7 @@ int loadAsset(AssetDef *load) { //80077B68
 
         case ASSET_TYPE_CHARACTER:
             *(ObjInstance **)load->header.dest =
-            Object_objSetupObjectActual(
+            objSetupObjectActual(
                 load->character.objDef,
                 (objSetupObjectActual_flags)load->character.objFlags, //objSetupObjectActual_flags
                 load->character.mapId, //MapId

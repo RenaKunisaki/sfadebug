@@ -12,7 +12,37 @@
 #include "../sys/compress.h"
 #include "types.h"
 
-typedef u32 ModelFlags_loadCharacter;
+typedef enum {
+    ObjModelFlags_Unk0000_0001     = (  1 <<  0), //0000_0001 force copy vtxs to model instance? related to ObjFileStructFlags44_ModelRelated
+    ObjModelFlags_HasShadow        = (  1 <<  1), //0000_0002
+    ObjModelFlags_Unk0000_0004     = (  1 <<  2), //0000_0004
+    ObjModelFlags_Unk0000_0008     = (  1 <<  3), //0000_0008
+    ObjModelFlags_Unk0000_0010     = (  1 <<  4), //0000_0010
+    ObjModelFlags_Unk0000_0020     = (  1 <<  5), //0000_0020
+    ObjModelFlags_HasEvents        = (  1 <<  6), //0000_0040
+    ObjModelFlags_DoubleBufferAnims= (  1 <<  7), //0000_0080
+    ObjModelFlags_HasModels        = (  1 <<  8), //0000_0100
+    ObjModelFlags_objFileHasModels = (  1 <<  9), //0000_0200 related to debug models
+    ObjModelFlags_OnlyLoadOneModel = (  1 << 10), //0000_0400
+    ObjModelFlags_ModelInstIdx     = (0xF << 11), //0000_0800
+    ObjModelFlags_TexturedShadow   = (  1 << 15), //0000_8000
+    ObjModelFlags_Unk0001_0000     = (  1 << 16), //0001_0000
+    ObjModelFlags_Unk0002_0000     = (  1 << 17), //0002_0000
+    ObjModelFlags_Unk0004_0000     = (  1 << 18), //0004_0000
+    ObjModelFlags_Unk0008_0000     = (  1 << 19), //0008_0000
+    ObjModelFlags_Unk0010_0000     = (  1 << 20), //0010_0000
+    ObjModelFlags_Unk0020_0000     = (  1 << 21), //0020_0000
+    ObjModelFlags_Unk0040_0000     = (  1 << 22), //0040_0000
+    ObjModelFlags_Unk0080_0000     = (  1 << 23), //0080_0000
+    ObjModelFlags_Unk0100_0000     = (  1 << 24), //0100_0000
+    ObjModelFlags_Unk0200_0000     = (  1 << 25), //0200_0000
+    ObjModelFlags_Unk0400_0000     = (  1 << 26), //0400_0000
+    ObjModelFlags_Unk0800_0000     = (  1 << 27), //0800_0000
+    ObjModelFlags_Unk1000_0000     = (  1 << 28), //1000_0000
+    ObjModelFlags_Unk2000_0000     = (  1 << 29), //2000_0000
+    ObjModelFlags_Unk4000_0000     = (  1 << 30), //4000_0000
+    ObjModelFlags_Unk8000_0000     = (  1 << 31), //8000_0000
+} ObjModelFlags; //aka ModelFlags_loadCharacter
 
 typedef enum {
     ObjShadowType_None,
@@ -41,11 +71,6 @@ typedef enum {
     ModelFlags18_MtxsLoaded       =  8,
     ModelFlags18_ShadersLoaded    = 64,
 } ModelFlags18;
-
-typedef enum {
-    CreateModelInstanceFlags_DoubleBufferAnims = 0x0080,
-    CreateModelInstanceFlags_TexturedShadow    = 0x8000,
-} CreateModelInstanceFlags;
 
 typedef struct {
     s16 x;
@@ -154,7 +179,7 @@ typedef struct Model {
     /* 0x9e */ u8 unk9e;
     /* 0x9f */ u8 unk9f;
     /* 0xa0 */ UNKTYPE **vertexAnims; //likely points to some struct, using UNKTYPE** to satisfy checks for now
-    /* 0xa4 */ u16 unka4;
+    /* 0xa4 */ u16 cullDistance;
     /* 0xa6 */ u16 shaderFlags; //ModelShaderFlags
     /* 0xa8 */ ushort numPositions;
     /* 0xaa */ s8 numNormals;

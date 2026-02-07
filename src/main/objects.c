@@ -206,9 +206,8 @@ int objNo, ObjInstance *heldBy) {
 	return obj;
 }
 
-ObjInstance *Object_objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
+ObjInstance *objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 s32 romDefNo, struct ObjInstance *heldBy) {
-	// should be down to regswap and string offsets
 	ObjInstance objTmp;
 	ObjData *objData;
 	ObjInstance *result;
@@ -219,10 +218,11 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	s32 ii;
 	s8 bModelFailed;
 	u32 totalSize;
-	u32 modelFlags; // ModelFlags_loadCharacter
+	ObjModelFlags modelFlags;
 	int nModels;
 	void *next;
 
+	//look up the real object type
 	oType = def->objType;
 	if(flags & 2) realType = oType;
 	else {
@@ -234,14 +234,14 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 		realType = Object_pObjIndex[oType];
 	}
 
+	//load the object data
 	memclr(&objTmp, sizeof(ObjInstance));
 	result = &objTmp;
 	objData = Object_objLoadData(realType);
 	result->objdata = objData;
 	if((!objData) || ((s32)objData == -1)) {
-		debugPrint("Warning: Unknown object type '%d/%d romdefno %d', using "
-		    "DummyObject (128)\n",
-		    oType, def->objType, result->romdefno);
+		debugPrint("Warning: Unknown object type '%d/%d romdefno %d', "
+			"using DummyObject (128)\n", oType, def->objType, result->romdefno);
 		if((s32)objData == -1) {
 			//@bug missing newline in message
 			debugPrint("Warning: Object romdefno is -1, check the object is in "
@@ -250,9 +250,10 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 		return NULL;
 	}
 
+	//set up the resulting object instance
 	result->objId = objData->objId;
 	result->pos.scale = objData->scale;
-	if(0.0f == result->pos.scale) result->pos.scale = 1.0f;
+	if(result->pos.scale == 0.0f) result->pos.scale = 1.0f;
 	result->pos.flags = 2;
 	if(objData->flags & 0x80) result->pos.flags |= 0x80;
 	if(objData->flags & 0x40000) result->flags_0xb0 |= ObjInstance_FlagsB0_LockAnimsAndControls;
@@ -273,21 +274,33 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	result->bound = def->bound * 8;
 	result->cullDist = def->cullDist * 8;
 
+	//load the object's DLL
 	result->dll = NULL;
 	if(objData->dll_id) {
 		// probably wrong return type here
-		result->dll = (struct LoadedDLL *)DLL_setup((u32)objData->dll_id, 6U, 1);
+		result->dll = (struct LoadedDLL *)DLL_setup(
+			(u32)objData->dll_id, 6U, 1);
 		if(!result->dll) printf("OBJECTS: warning DLL load failed\n");
 	}
+	if(result->romdefno == ObjDefNo_SB_ShipHead) { STUBBED_OP(result); }
 
-	if(result->romdefno == 0xF7) { STUBBED_OP(result); }
+	//get model flags
 	modelFlags = Object_getModelFlags(result);
-	if(objData->flags & 0x20) modelFlags &= ~1;
-	else modelFlags |= 1;
-	if(objData->shadowType != 0) modelFlags |= 2;
-	else modelFlags &= ~2;
-	if(objData->shadowType == 3) modelFlags |= 0x8000; // HasShadow
+	if(objData->flags & ObjFileStructFlags44_ModelRelated) {
+		modelFlags &= ~ObjModelFlags_Unk0000_0001;
+	}
+	else modelFlags |= ObjModelFlags_Unk0000_0001;
 
+	if(objData->shadowType != ObjShadowType_None) {
+		modelFlags |= ObjModelFlags_HasShadow;
+	}
+	else modelFlags &= ~ObjModelFlags_HasShadow;
+
+	if(objData->shadowType == ObjShadowType_Textured) {
+		modelFlags |= ObjModelFlags_TexturedShadow;
+	}
+
+	//allocate memory for object
 	totalSize = objGetTotalDataSize(result, objData, def, modelFlags);
 	result = (ObjInstance *)mmAlloc(totalSize,
 		ALLOC_TAG_OBJECTS_COL, (volatile u32) "obj");
@@ -301,11 +314,12 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	nModels = objData->noframes;
 	result->frames = (ModelInstance **)&result[1];
 
+	//load the models
 	ii = 0;
 	bModelFailed = false;
-	if(!(modelFlags & 0x200)) { // objFileHasModels
-		if(modelFlags & 0x400) { // OnlyLoadOneModel
-			iModelInst = (modelFlags >> 0xBU) & 0xF;
+	if(!(modelFlags & ObjModelFlags_objFileHasModels)) { //related to debug models
+		if(modelFlags & ObjModelFlags_OnlyLoadOneModel) {
+			iModelInst = (modelFlags >> 11) & 0xF;
 			if(iModelInst < nModels) {
 				result->frames[iModelInst] = loadModelInstance(
 				    -objData->pModelList[iModelInst], modelFlags);
@@ -317,7 +331,7 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 						result->frames[iModelInst]);
 					if(result->objdata->flags & 0x800) {
 						Modelnstance_setTexFuncPtr(result->frames[iModelInst],
-						    modelLoadCb_800c5b80);
+						    modelTexFuncPtr_800c5b80);
 					}
 				}
 			}
@@ -325,16 +339,16 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 			while(ii < nModels) {
 				result->frames[ii] = loadModelInstance(
 				    -(s32)objData->pModelList[ii], modelFlags);
-				if((s32)result->frames[ii] == 0) bModelFailed = true;
+				if(!(s32)result->frames[ii]) bModelFailed = true;
 				else {
 					ModelInstance_loadShaders(result->frames[ii], result);
 					modelInitSkeleton(result->pos.scale, result->frames[ii]);
 					if(result->objdata->flags & 0x800) {
 						Modelnstance_setTexFuncPtr(
-						    result->frames[ii], modelLoadCb_800c5b80);
+						    result->frames[ii], modelTexFuncPtr_800c5b80);
 					}
 				}
-				ii += 1;
+				ii++;
 			}
 		}
 	}
@@ -343,20 +357,23 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 		objFreeObjdef(realType);
 		return NULL;
 	}
+
+	//set up the object data following the object itself
 	next = &result->frames[objData->noframes];
 	next = Object_objInitState(result, next);
-	if(modelFlags & 0x40) {
+	if(modelFlags & ObjModelFlags_HasEvents) {
 		next = Object_objSetupEvents((s32)result->romdefno,
 			result, next);
 	}
-	if(modelFlags & 0x100) {
-		next = Object_objSetupModels(
-		    result->romdefno, result->frames[0]->mod, result, next);
+	if(modelFlags & ObjModelFlags_HasModels) {
+		next = Object_objSetupModels(result->romdefno,
+			result->frames[0], result, next);
 	}
-	if((modelFlags & 2) && ((s16)objData->shadowType != 0)) {
+	if((modelFlags & ObjModelFlags_HasShadow)
+	&& ((s16)objData->shadowType != ObjShadowType_None)) {
 		next = Object_objLoadShadow(result, next, 0);
 	}
-	result->cullDistance = result->pos.scale * objModelFn_800839d4(result);
+	result->cullDistance = result->pos.scale * objGetDefaultCullDistance(result);
 	if((u8)objData->maybeNumHits != 0) {
 		next = (void *)Object_objSetupHitState(result, next);
 		if((u8)objData->flags93 & 8) {
@@ -574,7 +591,7 @@ void modelInitSkeleton(float scale, ModelInstance *modelInstance) {
 	}
 }
 
-float objModelFn_800839d4(ObjInstance *object) {
+float objGetDefaultCullDistance(ObjInstance *object) {
 	ModelInstance *mInst;
 	float result;
 	s32 ii;
@@ -583,12 +600,14 @@ float objModelFn_800839d4(ObjInstance *object) {
 	for(ii = 0; ii < object->objdata->noframes; ii++) {
 		if((int)object->frames[ii]) {
 			mInst = object->frames[ii];
-			if(modelGetFieldA4(mInst->mod) > result) {
-				result = modelGetFieldA4(mInst->mod);
+			if(modelGetCullDistance(mInst->mod) > result) {
+				result = modelGetCullDistance(mInst->mod);
 			}
 		}
 	}
-	if(result < object->objdata->unk9c) { result = 16.0f * object->objdata->unk9c; }
+	if(result < object->objdata->minCullDistance) {
+		result = 16.0f * object->objdata->minCullDistance;
+	}
 	return result;
 }
 
@@ -895,8 +914,7 @@ void* Object_objInitState(ObjInstance *object,void *state) {
     return state;
 }
 
-//return: ModelFlags_loadCharacter
-u32 Object_getModelFlags(ObjInstance *object) {
+ObjModelFlags Object_getModelFlags(ObjInstance *object) {
     switch(object->romdefno) {
         case ObjDefNo_Krystal:
         case ObjDefNo_Sabre:
@@ -905,8 +923,7 @@ u32 Object_getModelFlags(ObjInstance *object) {
         default:
             if(object->dll && ((LoadedDLL*)object->dll)->funcs->Object.getModelFlags) {
 				return (*((LoadedDLL*)object->dll)->funcs->Object.getModelFlags)(object);
-			}
-			else return 0;
+			} else return 0;
     }
 }
 
@@ -952,9 +969,9 @@ ObjEventData *event,int animId,bool bImmediate) {
 }
 
 
-void* Object_objSetupModels(int romdefno, Model *model,
+void* Object_objSetupModels(int romdefno, ModelInstance *modelnstance,
 ObjInstance *object,void *ptr) {
-    if(!model) return ptr;
+    if(!modelnstance) return ptr;
 
     ptr = mmAlign4(ptr);
     object->models = ptr;
