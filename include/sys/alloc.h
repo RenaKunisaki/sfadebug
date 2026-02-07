@@ -38,7 +38,7 @@ typedef enum {
   ALLOC_TAG_WHITE           = 0x00000022,
   ALLOC_TAG_GREY            = 0x00000023,
   ALLOC_TAG_ORANGE          = 0x00000024,
-  ALLOC_TAG_ModelInstance   = 0x00000089,
+  ALLOC_TAG_MODEL_INSTANCE  = 0x00000089,
   ALLOC_TAG_OBJECTS         = 0x0000EEFF,
   ALLOC_TAG_VOX             = 0x00880099,
   ALLOC_TAG_ANIMS           = 0x008888FF,
