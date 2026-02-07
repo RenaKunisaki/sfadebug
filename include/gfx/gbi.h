@@ -4603,7 +4603,8 @@ typedef union {
 #define gResetTev(pkt, param)    _gxWord(pkt, GX_RESET_TEV, param)
 #define gSetTexMtx(pkt, param)   _gxWord(pkt, GX_SET_TEXMTX, param)
 #define gSetCullMode(pkt, param) _gxWord(pkt, G_GEOMETRYMODE, param)
-#define gSync(pkt, param)        _gxWord(pkt, G_ENDDL, param)
+//XXX what's going on here
+#define gSync(pkt, param)        _gxWord(pkt, (G_ENDDL << 24), param)
 #define gUnkFloat(pkt, param)    _gxWord(pkt, G_QUAD, param)
 #define gUseTexMtx(pkt, param)   _gxWord(pkt, GX_USE_TEXMTX, param)
 
