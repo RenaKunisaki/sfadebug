@@ -14,6 +14,10 @@ typedef int ObjDefEnum;
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"
 
+enum ObjSetupFlags {
+    ObjSetupFlags_Global = (1 << 0), //add to global object list
+};
+
 int Camera_addWorldMtx(void *); /* extern */
 void Camera_setPlayerNo(int); /* extern */
 DLL_func **DLL_setup(
@@ -109,7 +113,7 @@ void objSetFrozen(ObjInstance *object,int freezeTimer,u8 r, u8 g, u8 b, u8 a); /
 uint objGetTotalDataSize(ObjInstance *obj, ObjData *objData, ObjDef *objDef,
     uint flags); /* static */
 float objGetDefaultCullDistance(ObjInstance *object); /* static */
-void objSetup(ObjInstance *object, uint bAddToLoadedObjs); /* static */
+void objSetup(ObjInstance *object, uint flags); /* static */
 void objModelMtxFn_800859e8(ObjInstance *object,Mtx *modelMatrix);
 void ModelInstance_freeField48(ModelInstance *modelInstance);
 void fn_80085dc8(ObjInstance *object);

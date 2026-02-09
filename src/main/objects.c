@@ -197,12 +197,12 @@ int objNo, ObjInstance *heldBy) {
 	ObjInstance *obj;
 
 	obj = NULL;
-	if(getPiLockedFlags() & 1) STUBBED_OP(obj);
+	if(getPiLockedFlags() & 1) STUBBED_OP(def);
 
 	loadAsset_Character(&obj, def, flags, mapId, objNo, heldBy, 0);
 	if(obj) objSetup(obj, flags);
 
-	if(getPiLockedFlags() & 1) STUBBED_OP(obj);
+	if(getPiLockedFlags() & 1) STUBBED_OP(def);
 	return obj;
 }
 
@@ -426,7 +426,7 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	return result;
 }
 
-void objSetup(ObjInstance *object, uint bAddToLoadedObjs) {
+void objSetup(ObjInstance *object, uint flags) {
 	if(object->heldBy) multVectorByObjMtx(object->pos.pos.x,
 		object->pos.pos.y,
 		object->pos.pos.z,
@@ -466,7 +466,7 @@ void objSetup(ObjInstance *object, uint bAddToLoadedObjs) {
 	} else if(object->priority == 0) {
 		Object_setPriority(object, OBJ_PRIORITY_DEFAULT);
 	}
-	if(bAddToLoadedObjs & 1) {
+	if(flags & ObjSetupFlags_Global) { //add to global obj list
 		object->flags_0xb0 |= ObjInstance_FlagsB0_IsInGlobalObjList;
 		Object_loadedObjs[ObjListSize++] = object;
 		ASSERTLINE(1202, ObjListSize < MAX_OBJECTS);
