@@ -1003,10 +1003,10 @@ void objFreeObjdef(int defNo) {
 ModLine* loadModLine(int lineNo, s16 *outCount) {
 	s16 size16;
     ModLine *dest;
+    uint offset;
     uint *tempIdx;
     uint size;
     int fileSize;
-    uint offset;
 
     dest = NULL;
     fileSize = (getLoadedDataFileSize(FILE_MODLINES_tab) - 4) >> 2;
@@ -1014,9 +1014,9 @@ ModLine* loadModLine(int lineNo, s16 *outCount) {
 
     tempIdx = mmAlloc(0x10,ALLOC_TAG_TEST_COL,
 		(volatile u32)"obj:tempindex");
-    lineNo *= 4;
+    offset = lineNo * 4;
     piRomLoadAddr(FILE_MODLINES_tab,
-		tempIdx, lineNo, 8);
+		tempIdx, offset, 8);
 
     offset = tempIdx[0];
     size = tempIdx[1] - tempIdx[0];
