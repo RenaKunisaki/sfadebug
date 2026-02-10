@@ -1044,14 +1044,14 @@ BOOL ObjEdit_isObjIndexNotEmpty(int idx) {
 	return Object_pObjIndex[idx] != -1;
 }
 
-int Object_objGetControlNo(int objType) { //regalloc
+int Object_objGetControlNo(int objType) {
 	u8 wat[180];
 	uint ii;
 	uint offset;
 	int count;
 	int index;
 
-	if (objType > Object_maxObjType) {
+	if(objType > Object_maxObjType) {
 		printf("objGetControlNo objtype out of range %d/%d\n",
 			objType, Object_maxObjType);
 		return 0;
@@ -1059,17 +1059,17 @@ int Object_objGetControlNo(int objType) { //regalloc
 	index = Object_pObjIndex[objType];
 	if(index == -1) return 0;
 
-	//wtf is this?
+	//likely an optimized-out clear of some struct
+	//that's never referenced
 	count = 0;
-	for (ii = &wat[90] - &wat[0]; (ii & 1) != 0; count++) {
+	for(ii=&wat[90] - &wat[0]; (ii & 1) != 0; count++) {
 		ii--;
 	}
 
 	offset = Object_pObjectsTab[index] + ii;
 	loadAsset_fileWithOffsetLength(
 		contNoBuf, FILE_OBJECTS_bin,
-		offset,
-		8);
+		offset, 8);
 	index = contNoBuf[count];
 	return index;
 }
