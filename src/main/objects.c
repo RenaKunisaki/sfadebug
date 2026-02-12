@@ -624,7 +624,7 @@ void Object_freeModels(ObjInstance *object, int count) {
 
 void objFreeFn_80083b54(ObjInstance *object) {
     if(object->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList) {
-        objRemoveFromList(&objList_80398a88, object);
+        objListRemove(&objList_80398a88, object);
     }
 }
 
@@ -644,7 +644,6 @@ void fn_80083B94(ObjInstance *object) {
 	while((int)r31 && object->priority < r31->priority) {
 		r30 = r31;
 		//sp10 = *(ObjInstance **)((int)r31 + size);
-		//use of r3 for list is suspicious, maybe inlining?
 		r31 = *(ObjInstance **)((int)r31 + size);
 	}
 	objListAdd(&objList_80398a88, r30, object);

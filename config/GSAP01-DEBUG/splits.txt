@@ -113,6 +113,9 @@ musyx/chorus_fx.c:
 amc/AmcExi.c:
 	.text       start:0x8005A8E4 end:0x8005ACBC
 
+main/objlist.c:
+	.text       start:0x800705D8 end:0x800706E8
+
 sparsearray.c:
 	.text       start:0x800706E8 end:0x80070B18
 
