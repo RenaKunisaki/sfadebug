@@ -79,11 +79,11 @@ void multVectorByObjMtx(double x, double y, double z, float *outX, float *outY,
 void objFn_8002aac8(ObjInstance *); /* extern */
 void objFreeAll(void); /* extern */
 void objListAdd(
-    ObjListStruct *param_1, ObjInstance *obj1, ObjInstance *obj2); /* extern */
+    ObjectList *param_1, ObjInstance *obj1, ObjInstance *obj2); /* extern */
 void objModelMtxFn_8007b0c0(ObjInstance *obj, f32 (*)[4]); /* extern */
 void objMultPosByMtx(
     ObjInstance *obj, float *x, float *y, float *z); /* extern */
-void objListRemove(ObjListStruct *entry, ObjInstance *obj); /* extern */
+void objListRemove(ObjectList *entry, ObjInstance *obj); /* extern */
 void playerOnLoad(ObjInstance *object, ObjDef *def, void *param); /* extern */
 void playerUpdateFn_800ae404(void); /* extern */
 void setShadowFlag_803db658(s8 param_1); /* extern */

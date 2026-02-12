@@ -499,10 +499,14 @@ typedef struct ObjInstance {
     /* 0xf8 */ u32 flags_0xf8; //prevents picking up - also an ObjDefEnum
 } ObjInstance;
 
+/**
+ * @brief Linked list used to keep track of objects.
+ */
 typedef struct {
-    short usage;
-    short objSize;
-    ObjInstance *obj;
-} ObjListStruct;
+    short count;  //number of elements
+    short stride; //stride between objects
+    ObjInstance *obj; //first element
+    //additional data may be here, if stride allows it.
+} ObjectList;
 
 #endif //_OBJ_OBJINSTANCE_H_

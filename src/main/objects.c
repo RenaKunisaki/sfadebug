@@ -18,7 +18,7 @@
 
 
 s16 *contNoBuf; //80398a44
-ObjListStruct objList_80398a88;
+ObjectList objList_80398a88;
 ObjData **objDefNoList; //80398a60
 u8 *objDefNoUsage; //80398a64
 
@@ -637,7 +637,7 @@ void fn_80083B94(ObjInstance *object) {
 
 	if(!(object->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList)) return;
 
-	size = objList_80398a88.objSize;
+	size = objList_80398a88.stride;
 	r30 = NULL;
 	r31 = objList_80398a88.obj;
 	sp10 = r31;

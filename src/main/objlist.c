@@ -3,59 +3,76 @@
 #include "obj/Objects.h"
 
 
-void objListInit(ObjListStruct *list, short size) { //800705d8
+/**
+ * @brief Initialize an object list.
+ *
+ *  @param list The list.
+ *  @param stride Size of each element (must be >= sizeof(ObjInstance*)).
+ */
+void objListInit(ObjectList *list, short stride) { //800705d8
 	list->obj = NULL;
-	list->objSize = size;
+	list->stride = stride;
+    //@bug? list->count is not initialized.
+    //this is true in the final too, maybe it's fine?
 }
 
 
-void objListAdd(ObjListStruct *list, ObjInstance *obj1, ObjInstance *obj2) { //800705e8
+/**
+ * @brief Add an object to an object list.
+ *
+ *  @param list The list.
+ *  @param addAfter Add the object after this one. If NULL, add it to
+ *    the beginning of the list. (Used for priority sorting.) This
+ *    object must be in the list!
+ *  @param obj The object to add.
+ */
+void objListAdd(ObjectList *list, ObjInstance *addAfter, ObjInstance *obj) { //800705e8
 	ObjInstance *prev;
 
 	if(!list->obj) { //first slot is empty, put it there
-		list->obj = obj2;
+		list->obj = obj;
 	} else {
-		if(!obj1) { //insert at beginning
+		if(!addAfter) { //insert at beginning
 			prev = list->obj;
-			list->obj = obj2;
+			list->obj = obj;
 		} else {
-			prev = *(ObjInstance **)((int)obj1 + (int)list->objSize);
-			*(ObjInstance **)((int)obj1 + (int)list->objSize) = obj2;
+			prev = *(ObjInstance **)((int)addAfter + list->stride);
+			*(ObjInstance **)((int)addAfter + list->stride) = obj;
 		}
-		*(ObjInstance **)((int)obj2 + (int)list->objSize) = prev;
+		*(ObjInstance **)((int)obj + list->stride) = prev;
 	}
-	list->usage++;
+	list->count++;
 }
 
+/**
+ * @brief Remove an object from an object list.
+ *
+ *  @param list The list.
+ *  @param obj The object.
+ *  @note Does nothing if the object isn't in the list.
+ */
+void objListRemove(ObjectList *list, ObjInstance *obj) { //80070648
+	ObjInstance *newNext;
+	ObjInstance *prev;
+	ObjInstance *next;
 
-void objListRemove(ObjListStruct *entry, ObjInstance *obj) { //80070648
-	ObjInstance *pOVar1;
-	ObjInstance *pOVar2;
-	ObjInstance *pOVar3;
-
-	if(entry->obj == obj) {
-		entry->obj = *(ObjInstance **)((int)&(entry->obj->pos).rotation.x
-		    + (int)entry->objSize);
-		entry->usage = entry->usage + -1;
-	} else {
-		pOVar2 = entry->obj;
-		for(pOVar3 = entry->obj; pOVar3 != NULL && (pOVar3 != obj);
-		    pOVar3 = *(ObjInstance **)((int)&(pOVar3->pos).rotation.x
-		        + (int)entry->objSize)) {
-			pOVar2 = pOVar3;
+	if(list->obj == obj) { //remove first element
+		list->obj = *(ObjInstance **)((int)list->obj + list->stride);
+		list->count--;
+	} else { //find this element in the list
+		prev = list->obj;
+		for(next = prev; next && next != obj;
+        next = *(ObjInstance **)((int)next + list->stride)) {
+			prev = next;
 		}
-		if(pOVar3 != NULL) {
-			pOVar1 = *(ObjInstance **)((int)&(pOVar3->pos).rotation.x
-			    + (int)entry->objSize);
-			if(pOVar3 == entry->obj) {
-				entry->obj = pOVar1;
+		if(next) { //remove it
+			newNext = *(ObjInstance **)((int)next + list->stride);
+			if(next == list->obj) {
+				list->obj = newNext;
 			} else {
-				*(ObjInstance **)((int)&(pOVar2->pos).rotation.x
-				    + (int)entry->objSize)
-				    = pOVar1;
+				*(ObjInstance **)((int)prev + list->stride) = newNext;
 			}
-			entry->usage = entry->usage + -1;
+			list->count--;
 		}
 	}
-	return;
 }
