@@ -91,7 +91,7 @@ float sqrt(float __x); /* extern */
 void texFreeTexture(Texture *tex); /* extern */
 void trackFreeMap(mapId32 mapNo); /* extern */
 void worldMapListFn_800aac60(mapId32 mapNo, int param2); /* extern */
-void Object_freeModels(ObjInstance *object, int count); /* static */
+void Object_freeModels(ObjInstance *object, int count, int oType); /* static */
 ObjModelFlags Object_getModelFlags(ObjInstance *obj); /* static */
 void *Object_objInitState(ObjInstance *object, void *ptr); /* static */
 ObjData *Object_objLoadData(int objType); /* static */
@@ -103,7 +103,7 @@ void* Object_objSetupModels(int romdefno,ModelInstance *modelInstance,ObjInstanc
 void Object_setPriority(ObjInstance *obj, s8 priority); /* static */
 void objSetupDll(ObjInstance *object,ObjDef *def,void *param); /* static */
 void Object_worldProcessObjFreeList(ObjInstance *obj, int param2); /* static */
-void fn_80083B94(ObjInstance *object); /* static */
+void objAddToGlobalObjList(ObjInstance *object); /* static */
 void fn_80085D68(ObjInstance *outNumObjs); /* static */
 void fn_80085DDC(ObjInstance *outNumObjs); /* static */
 ModLine *loadModLine(int lineNo, s16 *outCount); /* static */

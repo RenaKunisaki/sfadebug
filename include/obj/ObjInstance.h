@@ -436,7 +436,7 @@ typedef struct ObjInstance {
     /* 0x3c */ float bound; //same value as 0x40
     /* 0x40 */ float cullDist; //2040=100% opacity, 128=~50% - camera distance?
     /* 0x44 */ s16 objId; //same for multiple objs
-    /* 0x46 */ s16 romdefno; //ObjDefEnum
+    /* 0x46 */ s16 objtype; //ObjDefEnum
     /* 0x48 */ s16 realType;
     /* 0x4a */ s16 _4A;
     /* 0x4c */ ObjDef *def;
@@ -465,7 +465,7 @@ typedef struct ObjInstance {
     /* 0xae */ s8 priority; //0x50 for most
     /* 0xaf */ u8 flags_0xaf; //ObjInstance_FlagsAF 28=don't render something (no models?)
     /* 0xb0 */ u16 flags_0xb0; //ObjInstance_FlagsB0
-    /* 0xb2 */ s16 romDefNo;
+    /* 0xb2 */ s16 romdefno;
     /* 0xb4 */ s16 curSeqSlot;
     /* 0xb6 */ s8 _B6; //padding?
     /* 0xb7 */ s8 _B7;

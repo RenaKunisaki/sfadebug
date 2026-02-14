@@ -64,7 +64,7 @@ ObjInstance *obj, s8 shouldRender) {
         }
     }
     else if(shouldRender) {
-        switch(obj->romdefno) {
+        switch(obj->objtype) {
             case ObjDefNo_Krystal:
             case ObjDefNo_Sabre:
                 playerRender(obj, gfx, mtx, pol, vtx, shouldRender);

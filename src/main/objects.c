@@ -18,7 +18,7 @@
 
 
 s16 *contNoBuf; //80398a44
-ObjectList objList_80398a88;
+ObjectList globalObjList;
 ObjData **objDefNoList; //80398a60
 u8 *objDefNoUsage; //80398a64
 
@@ -208,18 +208,18 @@ int objNo, ObjInstance *heldBy) {
 
 ObjInstance *objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 s32 romDefNo, struct ObjInstance *heldBy) {
+	int nModels;
+	u32 totalSize;
+	ObjModelFlags modelFlags;
 	ObjInstance objTmp;
+	s32 dummy;
 	ObjData *objData;
 	ObjInstance *result;
-	s32 oType;
 	s32 realType;
-	s32 iModelInst;
+	s32 oType;
 	s32 iLock;
 	s32 ii;
 	s8 bModelFailed;
-	u32 totalSize;
-	ObjModelFlags modelFlags;
-	int nModels;
 	void *next;
 
 	//look up the real object type
@@ -241,7 +241,7 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	result->objdata = objData;
 	if((!objData) || ((s32)objData == -1)) {
 		debugPrint("Warning: Unknown object type '%d/%d romdefno %d', "
-			"using DummyObject (128)\n", oType, def->objType, result->romdefno);
+			"using DummyObject (128)\n", realType, def->objType, result->objtype);
 		if((s32)objData == -1) {
 			//@bug missing newline in message
 			debugPrint("Warning: Object romdefno is -1, check the object is in "
@@ -264,8 +264,8 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	result->pos.pos.z = def->pos.z;
 	result->realType = realType;
 	result->def = def;
-	result->romdefno = oType;
-	result->romDefNo = romDefNo;
+	result->objtype = oType;
+	result->romdefno = romDefNo;
 	result->mapId = mapId;
 	result->curAnimId = -1;
 	result->curSeqSlot = -1;
@@ -282,7 +282,7 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 			(u32)objData->dll_id, 6U, 1);
 		if(!result->dll) printf("OBJECTS: warning DLL load failed\n");
 	}
-	if(result->romdefno == ObjDefNo_SB_ShipHead) { STUBBED_OP(result); }
+	if(result->objtype == ObjDefNo_SB_ShipHead) { STUBBED_OP(result); }
 
 	//get model flags
 	modelFlags = Object_getModelFlags(result);
@@ -319,18 +319,18 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	bModelFailed = false;
 	if(!(modelFlags & ObjModelFlags_objFileHasModels)) { //related to debug models
 		if(modelFlags & ObjModelFlags_OnlyLoadOneModel) {
-			iModelInst = (modelFlags >> 11) & 0xF;
-			if(iModelInst < nModels) {
-				result->frames[iModelInst] = loadModelInstance(
-				    -objData->pModelList[iModelInst], modelFlags);
-				if(!(s32)result->frames[iModelInst]) bModelFailed = true;
+			ii = (modelFlags >> 11) & 0xF;
+			if(ii < nModels) {
+				result->frames[ii] = loadModelInstance(
+				    -objData->pModelList[ii], modelFlags);
+				if(!(s32)result->frames[ii]) bModelFailed = true;
 				else {
 					ModelInstance_loadShaders(
-					    result->frames[iModelInst], result);
+					    result->frames[ii], result);
 					modelInitSkeleton(result->pos.scale,
-						result->frames[iModelInst]);
+						result->frames[ii]);
 					if(result->objdata->flags & 0x800) {
-						Modelnstance_setTexFuncPtr(result->frames[iModelInst],
+						Modelnstance_setTexFuncPtr(result->frames[ii],
 						    modelTexFuncPtr_800c5b80);
 					}
 				}
@@ -353,7 +353,7 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 		}
 	}
 	if(bModelFailed) {
-		Object_freeModels(result, nModels);
+		Object_freeModels(result, nModels, oType);
 		objFreeObjdef(realType);
 		return NULL;
 	}
@@ -362,11 +362,11 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	next = &result->frames[objData->noframes];
 	next = Object_objInitState(result, next);
 	if(modelFlags & ObjModelFlags_HasEvents) {
-		next = Object_objSetupEvents((s32)result->romdefno,
+		next = Object_objSetupEvents((s32)result->objtype,
 			result, next);
 	}
 	if(modelFlags & ObjModelFlags_HasModels) {
-		next = Object_objSetupModels(result->romdefno,
+		next = Object_objSetupModels(result->objtype,
 			result->frames[0], result, next);
 	}
 	if((modelFlags & ObjModelFlags_HasShadow)
@@ -398,7 +398,7 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	}
 	if(((u8)objData->maybeNumHits != 0) && ((u8)objData->bDisableHits != 0)) {
 		next = mmAlign4(next);
-		next = Object_objSetupHits((s32)result->romdefno,
+		next = Object_objSetupHits((s32)result->objtype,
 		    (ModelInstance *)result->frames[0],
 		    result->hits,
 		    next,
@@ -422,7 +422,7 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 		printf("objects.c: objSetupObject: sizes do not match\n");
 	}
 	result->heldBy = heldBy;
-	Object_streamFn_8018fa50(result, (s32)result->romdefno);
+	Object_streamFn_8018fa50(result, (s32)result->objtype);
 	return result;
 }
 
@@ -484,7 +484,7 @@ void objSetup(ObjInstance *object, uint flags) {
 }
 
 int objGetExtraSize(ObjInstance *object, void *state) {
-	switch(object->romdefno) {
+	switch(object->objtype) {
 		case ObjDefNo_Krystal:
 		case ObjDefNo_Sabre: return 0x8c4; // sizeof(PlayerState)
 
@@ -611,7 +611,7 @@ float objGetDefaultCullDistance(ObjInstance *object) {
 	return result;
 }
 
-void Object_freeModels(ObjInstance *object, int count) {
+void Object_freeModels(ObjInstance *object, int count, int oType) {
 	s32 spC;
 	s32 ii;
 
@@ -624,29 +624,25 @@ void Object_freeModels(ObjInstance *object, int count) {
 
 void objFreeFn_80083b54(ObjInstance *object) {
     if(object->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList) {
-        objListRemove(&objList_80398a88, object);
+        objListRemove(&globalObjList, object);
     }
 }
 
-//something like "add to global(?) object list"
-void fn_80083B94(ObjInstance *object) {
-	ObjInstance *r30;
-	ObjInstance *r31;
-	ObjInstance *sp10;
-	volatile s16 size; //spC
+void objAddToGlobalObjList(ObjInstance *object) {
+	ObjInstance *newNext; //r30
+	ObjInstance *prev; //r31
+	volatile s16 stride; //spC
+	ObjInstance *next; //sp10
 
 	if(!(object->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList)) return;
 
-	size = objList_80398a88.stride;
-	r30 = NULL;
-	r31 = objList_80398a88.obj;
-	sp10 = r31;
-	while((int)r31 && object->priority < r31->priority) {
-		r30 = r31;
-		//sp10 = *(ObjInstance **)((int)r31 + size);
-		r31 = *(ObjInstance **)((int)r31 + size);
+	stride = globalObjList.stride;
+	prev = NULL;
+	for(next = globalObjList.obj; (int)next && object->priority < prev->priority;
+	next = *(ObjInstance **)((int)prev + stride)) {
+		prev = next;
 	}
-	objListAdd(&objList_80398a88, r30, object);
+	objListAdd(&globalObjList, prev, object);
 }
 
 void objFreeObject(ObjInstance *obj) {
@@ -673,7 +669,7 @@ void objFreeObject(ObjInstance *obj) {
 	}
 	obj->flags_0xb0 |= ObjInstance_FlagsB0_IsFreed;
 
-	LAB_8018fb20(obj, obj->romdefno);
+	LAB_8018fb20(obj, obj->objtype);
 	if(obj->lockedFreeTick) {
 		// add to the lock list if not already present
 		for(ii = 0; ii < ObjListSize; ii++) {
@@ -712,7 +708,7 @@ void objFreeObject(ObjInstance *obj) {
 void objSetupDll(ObjInstance *object,ObjDef *def,void *param) {
     ObjDefEnum sVar1;
 
-    switch(object->romdefno) {
+    switch(object->objtype) {
 		case ObjDefNo_Krystal:
 		case ObjDefNo_Sabre:
             playerOnLoad(object, def, param);
@@ -773,7 +769,7 @@ void fn_80083F50(ObjInstance *object) {
 	}
 	if(getPiLockedFlags() & 2) STUBBED_OP(object);
 	if(!(object->flags_0xb0 & ObjInstance_FlagsB0_DontUpdate)) {
-		switch(object->romdefno) {
+		switch(object->objtype) {
 			case ObjDefNo_Krystal:
 			case ObjDefNo_Sabre:
 				playerFn801925a0(object);
@@ -883,7 +879,7 @@ void fn_80084238(ObjInstance *object) {
     ObjDefEnum OVar1;
 
     if ((object->flags_0xb0 & ObjInstance_FlagsB0_DontMove) == 0) {
-        switch(object->romdefno) {
+        switch(object->objtype) {
             case ObjDefNo_Krystal:
             case ObjDefNo_Sabre:
                 LAB_801929c4(object);
@@ -914,7 +910,7 @@ void* Object_objInitState(ObjInstance *object,void *state) {
 }
 
 ObjModelFlags Object_getModelFlags(ObjInstance *object) {
-    switch(object->romdefno) {
+    switch(object->objtype) {
         case ObjDefNo_Krystal:
         case ObjDefNo_Sabre:
             return 0x1cb;
@@ -1116,7 +1112,7 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 	ASSERTLINE(2276, obj->objdata);
 	if(obj->nTouchCallbacks) freeFn_80092460(obj);
 
-	switch(obj->romdefno) {
+	switch(obj->objtype) {
         case ObjDefNo_Krystal:
         	krystalFree(obj, param2);
 			break;
