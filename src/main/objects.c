@@ -16,6 +16,7 @@
 #include "gfx/models/models.h"
 #include "save/SaveGame.h"
 
+extern u8 framesThisStep;
 
 s16 *contNoBuf; //80398a44
 ObjectList globalObjList;
@@ -28,6 +29,7 @@ ObjInstance *playerHeldBy; //80398a94
 
 float sinf(float);
 float cosf(float);
+ObjInstance* objGetMain();
 
 void clearPlayerObjIdxs();
 void objInitLists(void);
@@ -88,6 +90,77 @@ void Object_initObjects(void) {
 	initLists();
 	initCirclePols();
 }
+
+void objObjectsTick(void) {
+	ObjInstance *player;
+	ObjInstance *obj;
+	short objListSize;
+
+	objListSize = globalObjList.stride;
+	LAB_800bac18();
+	updateModels();
+	Object_updateHitModels(ObjListSize);
+
+	//update high-priority objects
+	for(obj = globalObjList.obj;
+	obj && (obj->priority == 100);
+	obj = *(ObjInstance **)((int)obj + objListSize)) {
+		objUpdate(obj);
+	}
+
+	while(obj && obj->objdata->flags & ObjFileStructFlags44_IsWorldObj) {
+		objUpdate(obj);
+		obj->mtxIdx = Camera_addWorldMtx(&obj->pos);
+		obj = *(ObjInstance **)((int)obj + objListSize);
+	}
+	updateHitModelObjs();
+
+	while(obj) {
+		if(!obj->hits) {
+			objUpdate(obj);
+		//@bug? probably should be !(obj->hits->flags5A & HitStateFlags5A_HasPolyHit)
+		} else if((obj->hits->flags5A != HitStateFlags5A_HasPolyHit)
+		|| !(obj->hits->flags & HitStateFlags58_HasPolyHit)) {
+			objUpdate(obj);
+		}
+		obj = *(ObjInstance **)(obj + objListSize);
+	}
+
+	//update staff
+	player = objGetMain();
+	if(player && player->child[0]) {
+		player->child[0]->heldBy = player->heldBy;
+		objUpdate(player->child[0]);
+	}
+
+	//tick global objects
+	Objects_buildHitList(ObjListSize);
+	for(obj = globalObjList.obj; obj;
+	obj = *(ObjInstance **)((int)obj + objListSize)) {
+		objTick(obj);
+	}
+
+	//tick staff
+	player = objGetMain();
+	if(player && player->child[0]) {
+		player->child[0]->heldBy = player->heldBy;
+		objTick(player->child[0]);
+	}
+
+	pDll_waterfx->funcs->waterfx.func03(framesThisStep);
+	if(!isModelAnimDisabled()) {
+		pDll_projgfx->funcs->projgfx.func05(framesThisStep, 0);
+		pDll_modgfx->funcs->ModGfx.func05(0, 0, 0);
+		pDll_expgfx->funcs->expgfx.func05(0, framesThisStep, 0, 0);
+	}
+
+	LAB_8008d10c();
+	pDll_anim->funcs->anim.func0C();
+	pDll_anim->funcs->anim.func08();
+	pDll_camcontrol->funcs->camcontrol.func04(framesThisStep);
+	updateLightMtxs();
+}
+
 
 void processObjDeleteList(void) {
 	int iObj;

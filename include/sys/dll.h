@@ -37,7 +37,7 @@ typedef struct {
             void (*func09)(undefined *param1,ObjDef *objDef);
             void (*func0A)(undefined *param1);
             void (*func0B)(undefined *param1);
-            void (*func0C)(double param_1);
+            void (*func0C)(void);
             void (*func0D)(ObjInstance *obj);
             undefined4 (*func0E_ret0)(void);
             BOOL (*isEnabled)(void);
@@ -239,7 +239,7 @@ typedef struct {
         struct {
             void (*func03)(void);
             void (*func04)(int *param_1,int param_2);
-            void (*func05)(s8 param_1,uint param_2);
+            void (*func05)(s8 param_1,uint param_2,int, int);
             void (*func06)(void);
             void (*ownerFree)(ObjInstance *obj);
             void (*ownerFree2)(ObjInstance *obj);
@@ -259,6 +259,7 @@ typedef struct {
             char* (*loadTextGroupString)(ushort textId,ushort param2);
             void (*func09)(s8 *param1,int param2);
         } gametext;
+
         struct {
             void(*func03_nop)(Gfx**, Mtx44**, N64Vertex **vtx);
             void(*newgame)(int);
@@ -323,7 +324,7 @@ typedef struct {
         struct {
             void (*func03)(void);
             int (*func04)(struct ModGfxStruct0F *param1,undefined4 param_2,int param3,int param4,int param5,int param6,int textureId,Texture *tex);
-            void (*func05)(void);
+            void (*func05)(int, int, int);
             void (*free)(void);
             void (*func07)(int param1);
             void (*func08)(int param1);
@@ -364,6 +365,13 @@ typedef struct {
             UNKTYPE *unk04;
             void(*func08)(struct ObjInstance *object);
         } Player;
+
+        struct {
+            UNKTYPE *unk03;
+            UNKTYPE *unk04;
+            void (*func05)(int framesThisStep, int);
+            //TODO: fill in the rest
+        } projgfx;
 
         struct {
             void (*func03)(void);

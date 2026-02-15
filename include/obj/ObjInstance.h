@@ -273,14 +273,17 @@ typedef struct {
 } ObjHitsEntry;
 
 typedef enum { //u16
-    HitStateFlags58_AltColor    = 0x0002,
-    HitStateFlags58_NoRotationY = 0x0800,
-    HitStateFlags58_NoRotationZ = 0x1000,
+    HitStateFlags58_HasPolyHit   = 0x0001,
+    HitStateFlags58_SkipHitList2 = 0x0002, //changes color
+    HitStateFlags58_Unk4         = 0x0004, //related to min/max in hit list
+    HitStateFlags58_NoRotationY  = 0x0800,
+    HitStateFlags58_NoRotationZ  = 0x1000,
 } HitStateFlags58;
 
 typedef enum { //u8
     HitStateFlags5A_RenderFlag1  = 0x01,
     HitStateFlags5A_RenderFlag2  = 0x02,
+    HitStateFlags5A_HasPolyHit   = 0x08, //some code checks if ==8 (bug?)
     HitStateFlags5A_HaveSkeleton = 0x20,
 } HitStateFlags5A;
 
