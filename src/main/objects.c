@@ -37,9 +37,18 @@ void objFreeObject(ObjInstance *obj);
 //objlist.c
 void objListInit(ObjectList *list, short stride);
 
-void processObjDeleteList(void) {
 
+void processObjDeleteList(void) {
+	int iObj;
+
+	for(iObj = 0; iObj < objDelListCount; iObj++) {
+		worldProcessObjFreeList(Object_delList[iObj], 0);
+		Object_delList[iObj] = NULL;
+	}
+	objDelListCount = 0;
+	return;
 }
+
 
 void objFreeAll(void) {
 	int iObj;
