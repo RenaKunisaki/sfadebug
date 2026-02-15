@@ -137,4 +137,14 @@ typedef enum {
 #define TEX1_TAB_SIZE 0x1000
 #define BLOCKS_TAB_SIZE 0x800
 
+extern s16 loadedFileMapIds[NUM_FILES];
+extern void *dataFilePtrs[NUM_FILES];
+extern u8 dataFileArray_8035cc10[NUM_FILES];
+extern uint MODELS_TAB[MODELS_TAB_SIZE];
+extern uint ANIM_TAB[ANIM_TAB_SIZE];
+extern uint TEX0_TAB[TEX0_TAB_SIZE];
+extern uint TEX1_TAB[TEX1_TAB_SIZE];
+extern uint BLOCKS_TAB[BLOCKS_TAB_SIZE];
+extern int dataFileSizes[NUM_FILES];
+
 #endif //_SYS_PI_H_

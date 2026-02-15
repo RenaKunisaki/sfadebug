@@ -6,6 +6,7 @@
 
 typedef int ObjDefEnum;
 #define DUMMY_OBJECT_ID 128
+#define MAX_LOADED_OBJECTS 1400
 
 #include "dolphin/mtx.h"
 #include "sys/dll.h"

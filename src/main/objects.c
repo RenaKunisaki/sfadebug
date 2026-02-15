@@ -38,6 +38,57 @@ void objFreeObject(ObjInstance *obj);
 void objListInit(ObjectList *list, short stride);
 
 
+void Object_initObjects(void) {
+	int iVar1;
+
+	//alloc some lists
+	Object_delList = mmAlloc(800, ALLOC_TAG_OBJECTS_COL,
+		(volatile u32)"obj:dellist");
+	objLockList = mmAlloc(0x60, ALLOC_TAG_OBJECTS_COL,
+		(volatile u32)"obj:locklist");
+	contNoBuf = (s16 *)mmAlloc(0x10, ALLOC_TAG_OBJECTS_COL,
+		(volatile u32)"obj:contnobuf");
+
+	//load objindex and count number of object types
+	loadAsset_file(&Object_pObjIndex, FILE_OBJINDEX_bin);
+	Object_maxObjType = (getLoadedDataFileSize(FILE_OBJINDEX_bin) >> 1) - 1;
+	while(Object_pObjIndex[Object_maxObjType] == 0) Object_maxObjType--;
+
+	//load objtab and find the max index
+	loadAsset_file(&Object_pObjectsTab, FILE_OBJECTS_tab);
+	Object_maxObjId = 0;
+	while(Object_pObjectsTab[Object_maxObjId] != -1) Object_maxObjId++;
+	Object_maxObjId--;
+
+	//load object type index
+	//XXX this should probably be FILE_OBJECTS_tab?
+	//not sure if bug or we have wrong file IDs
+	Object_objTypes = mmAlloc2(
+	    Object_pObjectsTab[Object_maxObjId] + 0x10,
+		ALLOC_TAG_OBJECTS_COL,
+		"obj:objtypes");
+	loadAsset_fileWithOffset(Object_objTypes, FILE_OBJECTS_bin);
+
+	//alloc deflist and refcount
+	objDefNoList = (ObjData **)mmAlloc(Object_maxObjId << 2, ALLOC_TAG_OBJECTS_COL,
+		(volatile u32)"obj:deflist");
+	objDefNoUsage = (u8 *)mmAlloc(Object_maxObjId, ALLOC_TAG_OBJECTS_COL,
+		(volatile u32)"obj:defno");
+	for(iVar1 = 0; iVar1 < (int)Object_maxObjId; iVar1++) { objDefNoUsage[iVar1] = 0; }
+
+	//load tables and count entries
+	loadAsset_file(&tables_bin, FILE_TABLES_bin);
+	loadAsset_file(&tables_tab, FILE_TABLES_tab);
+	nTablesTab = 0;
+	while(tables_tab[nTablesTab] != -1) nTablesTab++;
+
+	objLoadedObjs = (ObjInstance **)mmAlloc(MAX_LOADED_OBJECTS, ALLOC_TAG_OBJECTS_COL,
+		(volatile u32)"obj:ObjList");
+	allocHitLists();
+	initLists();
+	initCirclePols();
+}
+
 void processObjDeleteList(void) {
 	int iObj;
 
