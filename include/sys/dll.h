@@ -74,7 +74,7 @@ typedef struct {
             void (*setupCamControl1)(int param1,s8 param2,s8 param3,uint len,ObjDef *odef,int param6,u8 param7);
             void (*getCamAction)(int actNo);
             void (*func0B)(int param1,uint param2);
-            void (*setObjA0)(ObjInstance *param1);
+            void (*setObjA0)(ObjInstance *obj, int);
             void (*setPosCC)(float x,float y,float z);
             void (*moveBy)(float x,float y,float z);
             void (*func0F)(float param1,float param2,float param3,float param4,float param5,float *param6);

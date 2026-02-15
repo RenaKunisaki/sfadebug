@@ -21,6 +21,57 @@ s16 *contNoBuf; //80398a44
 ObjectList globalObjList;
 ObjData **objDefNoList; //80398a60
 u8 *objDefNoUsage; //80398a64
+ObjDef ObjDef_802eca98;
+LoadedDLL *pDll_camcontrol;
+LoadedDLL *pDll_dummy04;
+ObjInstance *playerHeldBy; //80398a94
+
+float sinf(float);
+float cosf(float);
+
+void clearPlayerObjIdxs();
+void objInitLists(void);
+void objInitHitLists();
+void objFreeObject(ObjInstance *obj);
+
+//objlist.c
+void objListInit(ObjectList *list, short stride);
+
+void processObjDeleteList(void) {
+
+}
+
+void objFreeAll(void) {
+	int iObj;
+
+	processObjDeleteList();
+	var_80396D08 = 0;
+	for(iObj = ObjListSize-1; iObj >= 0; iObj--) {
+		objFreeObject(objLoadedObjs[iObj]);
+	}
+	processObjDeleteList();
+	var_80396D08 = 2;
+	objDelListCount = 0;
+	objLockListLen = 0;
+	ObjListSize = 0;
+	objListInit(&globalObjList, 0x38);
+	objInitLists();
+	pDll_camcontrol->funcs->camcontrol.setObjA0(NULL, 0);
+	return;
+}
+
+
+void objInitLists(void) {
+	//inlined in final
+	objDelListCount = 0;
+	objLockListLen = 0;
+	playerHeldBy = NULL;
+	ObjListSize = 0;
+	objListInit(&globalObjList, 56);
+	nVisibleObjs = 0;
+	clearPlayerObjIdxs();
+	objInitHitLists();
+}
 
 /**
  * @brief Reset nVisibleObjs.
@@ -58,7 +109,7 @@ int getNumVisibleObjects(s32 *outNumObjs) {
 	while(result <= nObjs) {
 		stop = 0;
 		while(result <= nObjsStart2 && !stop) {
-			if(Object_loadedObjs[result]->objdata->flags & 1) {
+			if(objLoadedObjs[result]->objdata->flags & 1) {
 				result++;
 			} else
 				stop = -1;
@@ -66,16 +117,16 @@ int getNumVisibleObjects(s32 *outNumObjs) {
 
 		stop = 0;
 		while(nObjs >= nObjsStart && !stop) {
-			if(!(Object_loadedObjs[nObjs]->objdata->flags & 1)) {
+			if(!(objLoadedObjs[nObjs]->objdata->flags & 1)) {
 				nObjs--;
 			} else
 				stop = -1;
 		}
 
 		if(result < nObjs) { // swap
-			obj = Object_loadedObjs[result];
-			Object_loadedObjs[result] = Object_loadedObjs[nObjs];
-			Object_loadedObjs[nObjs] = obj;
+			obj = objLoadedObjs[result];
+			objLoadedObjs[result] = objLoadedObjs[nObjs];
+			objLoadedObjs[nObjs] = obj;
 			result++;
 			nObjs--;
 		}
@@ -93,7 +144,7 @@ void depthSortObjects_doSort(s32 arg0, s32 arg1) {
 	if(arg0 > arg1) return;
 
 	for(ii = arg0; ii <= arg1; ii++) {
-		obj = Object_loadedObjs[ii];
+		obj = objLoadedObjs[ii];
 		if(obj->objdata->flags & ObjData_Flag_FixedDepth) {
 			obj->depth = obj->objdata->fixedDepth * 100;
 		} else {
@@ -106,11 +157,11 @@ void depthSortObjects_doSort(s32 arg0, s32 arg1) {
 	while(!done) {
 		done = true;
 		for(ii = arg0; ii < arg1; ii++) {
-			if(Object_loadedObjs[ii + 1]->depth
-			    < Object_loadedObjs[ii]->depth) {
-				obj = Object_loadedObjs[ii];
-				Object_loadedObjs[ii] = Object_loadedObjs[ii + 1];
-				Object_loadedObjs[ii + 1] = obj;
+			if(objLoadedObjs[ii + 1]->depth
+			    < objLoadedObjs[ii]->depth) {
+				obj = objLoadedObjs[ii];
+				objLoadedObjs[ii] = objLoadedObjs[ii + 1];
+				objLoadedObjs[ii + 1] = obj;
 				done = false;
 			}
 		}
@@ -124,7 +175,7 @@ void updateObjMtxs(void) {
 	s32 ii;
 
 	for(ii = 0; ii < ObjListSize; ii++) {
-		obj1 = Object_loadedObjs[ii];
+		obj1 = objLoadedObjs[ii];
 		if(obj1->pObj_0xc0) {
 			obj2 = obj1->pObj_0xc0;
 			if(!obj1->heldBy && obj2->heldBy) { obj1->heldBy = obj2->heldBy; }
@@ -143,7 +194,7 @@ void updateObjMtxs(void) {
 ObjInstance **Object_getObjects(s32 *outFirstObj, s32 *outNumObjs) {
 	if(outFirstObj) *outFirstObj = 0;
 	if(outNumObjs) *outNumObjs = ObjListSize;
-	return Object_loadedObjs;
+	return objLoadedObjs;
 }
 
 /**
@@ -154,7 +205,7 @@ ObjInstance **Object_getObjects(s32 *outFirstObj, s32 *outNumObjs) {
  */
 ObjInstance *Object_getObject(s32 idx) {
 	if((idx < 0) || (idx >= ObjListSize)) { return NULL; }
-	return Object_loadedObjs[idx];
+	return objLoadedObjs[idx];
 }
 
 /**
@@ -171,7 +222,7 @@ ObjInstance *Object_findByUniqueId(u32 id) {
 	ii = 0;
 	nObjs = ObjListSize;
 	while(ii < nObjs) {
-		obj = Object_loadedObjs[ii];
+		obj = objLoadedObjs[ii];
 		if(obj->def && obj->def->id == id) { return obj; }
 		ii++;
 	}
@@ -282,7 +333,10 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 			(u32)objData->dll_id, 6U, 1);
 		if(!result->dll) printf("OBJECTS: warning DLL load failed\n");
 	}
-	if(result->objtype == ObjDefNo_SB_ShipHead) { STUBBED_OP(result); }
+	if(result->objtype == ObjDefNo_SB_ShipHead) {
+		//STUBBED_OP(result);
+		STUBBED_PRINTF("GALLEON HEAD\n");
+	}
 
 	//get model flags
 	modelFlags = Object_getModelFlags(result);
@@ -468,8 +522,8 @@ void objSetup(ObjInstance *object, uint flags) {
 	}
 	if(flags & ObjSetupFlags_Global) { //add to global obj list
 		object->flags_0xb0 |= ObjInstance_FlagsB0_IsInGlobalObjList;
-		Object_loadedObjs[ObjListSize++] = object;
-		ASSERTLINE(1202, ObjListSize < MAX_OBJECTS);
+		objLoadedObjs[ObjListSize++] = object;
+		ASSERTLINE(1202, ObjListSize<MAX_OBJECTS);
 		LAB_80083bd4(object);
 	}
 	if(0 < object->objdata->numSeqs) {
@@ -655,13 +709,13 @@ void objFreeObject(ObjInstance *obj) {
 	if(obj->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList) {
 		// find this object's index in the global object list
 		for(ii = 0; ii < ObjListSize; ii++) {
-			if(Object_loadedObjs[ii] == obj) break;
+			if(objLoadedObjs[ii] == obj) break;
 		}
 		if(ii < ObjListSize) {
 			// shift all following entries down
 			ObjListSize--;
 			for(jj = ii; jj < ObjListSize; jj++) {
-				Object_loadedObjs[jj] = Object_loadedObjs[jj + 1];
+				objLoadedObjs[jj] = objLoadedObjs[jj + 1];
 			}
 		}
 		objFreeFn_80083b54(obj);
@@ -673,11 +727,11 @@ void objFreeObject(ObjInstance *obj) {
 	if(obj->lockedFreeTick) {
 		// add to the lock list if not already present
 		for(ii = 0; ii < ObjListSize; ii++) {
-			if(Object_loadedObjs[ii] == obj) break;
+			if(objLoadedObjs[ii] == obj) break;
 		}
-		if(ii == Object_lockListLen) {
-			Object_lockList[Object_lockListLen] = obj;
-			Object_lockListLen++;
+		if(ii == objLockListLen) {
+			objLockList[objLockListLen] = obj;
+			objLockListLen++;
 		} else {
 			printf("objFreeTick %08x locked %d,already on list\n",
 			    obj,
@@ -685,18 +739,18 @@ void objFreeObject(ObjInstance *obj) {
 		}
 	} else if(var_80396D08 == 2) {
 		// add to delete list if not already present
-		ii = Object_objDelListCount;
-		if(Object_objDelListCount != 0) {
+		ii = objDelListCount;
+		if(objDelListCount != 0) {
 			for(ii = 0; ii < ObjListSize; ii++) {
-				if(Object_loadedObjs[ii] == obj) break;
+				if(objLoadedObjs[ii] == obj) break;
 			}
 		}
-		if(ii == Object_objDelListCount) {
-			Object_delList[Object_objDelListCount] = obj;
-			Object_objDelListCount += 1;
-			if(Object_objDelListCount == 200) {
+		if(ii == objDelListCount) {
+			Object_delList[objDelListCount] = obj;
+			objDelListCount += 1;
+			if(objDelListCount == 200) {
 				printf("objFreeObject: delete list size overrun\n");
-				Object_objDelListCount -= 1;
+				objDelListCount -= 1;
 			}
 		}
 	}
@@ -1136,7 +1190,7 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 		if(!param2) {
 			ii = 0;
 			for(jj = 0; jj < (int)ObjListSize; jj += 1) {
-				that = Object_loadedObjs[jj];
+				that = objLoadedObjs[jj];
 				if(PTR_EQ(that->heldBy, obj)) {
 					that->heldBy = NULL;
 					if(that->def) {
@@ -1156,14 +1210,14 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 	}
 	if(param2 == 0 && obj->objId == 0x10) {
 		for(jj = 0; jj < (int)ObjListSize; jj += 1) {
-			that = Object_loadedObjs[jj];
+			that = objLoadedObjs[jj];
 			if(PTR_EQ(that->pObj_0xc0, obj)) {
 				that->pObj_0xc0 = NULL;
 			}
 		}
 	}
 	for(kk = 0; kk < ObjListSize; kk++) {
-		that = Object_loadedObjs[kk];
+		that = objLoadedObjs[kk];
 		if(that->objId == 0x10) {
 			state = that->state; //XXX type
 			if(*state == obj) {
@@ -1222,13 +1276,6 @@ ObjDef * objAlloc(uint size,ObjDefEnum type) {
 	return odef;
 }
 
-ObjDef ObjDef_802eca98;
-LoadedDLL *pDll_camcontrol;
-LoadedDLL *pDll_dummy04;
-ObjInstance *playerHeldBy; //80398a94
-float sinf(float);
-float cosf(float);
-
 void mapSetupPlayer(void) {
 	ObjInstance *heldBy; //r31
 	CharPos *charPos; //r29
@@ -1271,8 +1318,8 @@ void mapSetupPlayer(void) {
 		cam = getCurCamera();
 		cam->obj40 = heldBy;
 		for(ii = 0; ii < (int)ObjListSize; ii += 1) {
-			if(Object_loadedObjs[ii] != heldBy) {
-				Object_loadedObjs[ii]->heldBy = heldBy;
+			if(objLoadedObjs[ii] != heldBy) {
+				objLoadedObjs[ii]->heldBy = heldBy;
 			}
 		}
 		//game is using r0 instead of r3 as temporary here

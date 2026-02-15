@@ -145,7 +145,8 @@ main/SKNControl.c:
 	.text       start:0x800816B4 end:0x80081DB4
 
 main/objects.c:
-	.text       start:0x800826F8 end:0x80085F14
+	.text       start:0x80082590 end:0x80085F14
+	.data       start:0x802ECA98 end:0x802ED344
 
 objanim.c:
 	.text       start:0x800860E0 end:0x80086488
