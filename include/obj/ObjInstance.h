@@ -72,10 +72,10 @@ enum { //u32
     //missing                                            0x00004000
     //missing                                            0x00008000
     //missing                                            0x00010000
-    //missing                                            0x00020000
+    ObjFileStructFlags44_Unk0002_0000                  = 0x00020000, //related to update priority
 	ObjFileStructFlags44_LockAnimsAndControls          = 0x00040000,
-	ObjFileStructFlags44_FixedDepth                    = 0x00080000,	//o->data->depth is the Z depth for sorting
-	ObjFileStructFlags44_OpacityDrawGroupFlag_0x100000 = 0x00100000,	//affects whether opacity is used to calc draw group
+	ObjFileStructFlags44_FixedDepth                    = 0x00080000, //o->data->depth is the Z depth for sorting
+	ObjFileStructFlags44_OpacityDrawGroupFlag_0x100000 = 0x00100000, //affects whether opacity is used to calc draw group
 	ObjFileStructFlags44_KeepHitboxWhenInvisible       = 0x00200000,
 	ObjFileStructFlags44_HasEvent                      = 0x00400000,
 	ObjFileStructFlags44_DidLoadModels                 = 0x00800000,

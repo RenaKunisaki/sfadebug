@@ -26,6 +26,7 @@ ObjDef ObjDef_802eca98;
 LoadedDLL *pDll_camcontrol;
 LoadedDLL *pDll_dummy04;
 ObjInstance *playerHeldBy; //80398a94
+s8 objSeqEditFlag80399a74;
 
 float sinf(float);
 float cosf(float);
@@ -161,6 +162,62 @@ void objObjectsTick(void) {
 	updateLightMtxs();
 }
 
+
+void objUpdateFn_80082238(void) {
+	int nObjs;
+	int iVar2;
+	ObjInstance *obj;
+	bool bVar4;
+	uint flag;
+	uint iFlag;
+	int iObj;
+
+	updateModels();
+	pDll_anim->funcs->anim.func0C();
+	nObjs = ObjListSize;
+	for(iFlag = 1; (int)iFlag < 3; iFlag++) {
+		for(iObj = 0; iObj < nObjs; iObj++) {
+			/* c4 */
+			obj = objLoadedObjs[iObj];
+			if(obj->objdata->flags & ObjFileStructFlags44_IsWorldObj) flag = 1;
+			else flag = 2;
+			if(!(flag & iFlag)) continue;
+
+			if(obj->objId != 0x10) {
+				STUBBED_OP(obj);
+			}
+			else if(objSeqEditFlag80399a74) {
+				objUpdate(obj);
+			}
+			else /* 94 */ if(obj->objdata->flags & ObjFileStructFlags44_Unk0002_0000) {
+				objUpdate(obj);
+			}
+			/* ac */ if(flag == 1) {
+				iVar2 = Camera_addWorldMtx(&obj->pos);
+				obj->mtxIdx = (u8)iVar2;
+			}
+		}
+	}
+	obj = objGetMain();
+	if(obj) {
+		if(obj->pObj_0xc0 && checkSomeDebugFlags_8017c4f8()) {
+			objUpdate(obj);
+		}
+		if(obj->child[0]) { objUpdate(obj->child[0]); }
+	}
+	for(iObj = 0; iObj < (int)ObjListSize; iObj++) {
+		obj = objLoadedObjs[iObj];
+		objMultPosByMtx(obj,
+		    &(obj->prevPos).x,
+		    &(obj->prevPos).y,
+		    &(obj->prevPos).z);
+	}
+	pDll_anim->funcs->anim.func08();
+	if(false) {
+		pDll_camcontrol->funcs->camcontrol.func04(framesThisStep);
+	}
+	return;
+}
 
 void processObjDeleteList(void) {
 	int iObj;
