@@ -27,6 +27,7 @@ LoadedDLL *pDll_camcontrol;
 LoadedDLL *pDll_dummy04;
 ObjInstance *playerHeldBy; //80398a94
 s8 objSeqEditFlag80399a74;
+int bDisableModelRendering;
 
 float sinf(float);
 float cosf(float);
@@ -165,10 +166,9 @@ void objObjectsTick(void) {
 
 void objUpdateFn_80082238(void) {
 	int nObjs;
-	int iVar2;
 	ObjInstance *obj;
 	bool bVar4;
-	uint flag;
+	int flag;
 	uint iFlag;
 	int iObj;
 
@@ -177,7 +177,6 @@ void objUpdateFn_80082238(void) {
 	nObjs = ObjListSize;
 	for(iFlag = 1; (int)iFlag < 3; iFlag++) {
 		for(iObj = 0; iObj < nObjs; iObj++) {
-			/* c4 */
 			obj = objLoadedObjs[iObj];
 			if(obj->objdata->flags & ObjFileStructFlags44_IsWorldObj) flag = 1;
 			else flag = 2;
@@ -185,22 +184,27 @@ void objUpdateFn_80082238(void) {
 
 			if(obj->objId != 0x10) {
 				STUBBED_OP(obj);
+				goto lbl_94;
 			}
 			else if(objSeqEditFlag80399a74) {
 				objUpdate(obj);
 			}
-			else /* 94 */ if(obj->objdata->flags & ObjFileStructFlags44_Unk0002_0000) {
-				objUpdate(obj);
+			else {
+				goto lbl_ac;
+				lbl_94:
+				if(obj->objdata->flags & ObjFileStructFlags44_Unk0002_0000) {
+					objUpdate(obj);
+				}
 			}
-			/* ac */ if(flag == 1) {
-				iVar2 = Camera_addWorldMtx(&obj->pos);
-				obj->mtxIdx = (u8)iVar2;
+			lbl_ac:
+			if(flag == 1) {
+				obj->mtxIdx = (s8)Camera_addWorldMtx(&obj->pos);
 			}
 		}
 	}
 	obj = objGetMain();
 	if(obj) {
-		if(obj->pObj_0xc0 && checkSomeDebugFlags_8017c4f8()) {
+		if(obj->pObj_0xc0 && checkSomeDebugFlags_8017c4f8() & 0xff) {
 			objUpdate(obj);
 		}
 		if(obj->child[0]) { objUpdate(obj->child[0]); }
@@ -213,10 +217,9 @@ void objUpdateFn_80082238(void) {
 		    &(obj->prevPos).z);
 	}
 	pDll_anim->funcs->anim.func08();
-	if(false) {
+	if(bDisableModelRendering) {
 		pDll_camcontrol->funcs->camcontrol.func04(framesThisStep);
 	}
-	return;
 }
 
 void processObjDeleteList(void) {
@@ -227,7 +230,6 @@ void processObjDeleteList(void) {
 		Object_delList[iObj] = NULL;
 	}
 	objDelListCount = 0;
-	return;
 }
 
 
