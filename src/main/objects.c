@@ -22,7 +22,6 @@ s16 *contNoBuf; //80398a44
 ObjectList globalObjList;
 ObjData **objDefNoList; //80398a60
 u8 *objDefNoUsage; //80398a64
-ObjDef ObjDef_802eca98;
 LoadedDLL *pDll_camcontrol;
 LoadedDLL *pDll_dummy04;
 ObjInstance *playerHeldBy; //80398a94
@@ -42,6 +41,20 @@ void objUpdateModels(void);
 //objlist.c
 void objListInit(ObjectList *list, short stride);
 
+static ObjDef_Player objdef_player = {
+	0, //objType
+	0, //allocatedSize
+	0, //mapStates1
+	0, //RomListObjLoadFlags
+	0, //mapStates2
+	0, //bound
+	0, //cullDist
+	0.0f, //pos.x
+	0.0f, //pos.y
+	0.0f, //pos.z
+	0, //id
+	0xff3c, 0x005c, 0x005a, 0x1e14
+};
 
 void Object_initObjects(void) {
 	int iVar1;
@@ -481,8 +494,11 @@ s32 Object_getFirstLoadedObj(void) {
 }
 
 s32 *getTablesBinEntry(s32 idx) {
-	// why is this here?
-	if((idx < 0) || (idx >= nTablesTab)) { return tables_bin; }
+	if((idx < 0) || (idx >= nTablesTab)) {
+		//doesn't match if we include params
+		STUBBED_PRINTF("objGetSequence objtype out of range %d/%d\n");
+		return tables_bin;
+	}
 	return (s32 *)((u32)tables_bin + tables_tab[idx] * 4);
 }
 
@@ -515,6 +531,10 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	s32 ii;
 	s8 bModelFailed;
 	void *next;
+
+	STUBBED_PRINTF("objects/objects.c: OBJECT SETUP[%i]\n");
+	//probably some debug stuff in here? these two messages are adjacent.
+	STUBBED_PRINTF("objects/objects.c: OBJECT SETUP END[%i]\n");
 
 	//look up the real object type
 	oType = def->objType;
@@ -946,6 +966,8 @@ void objFreeObject(ObjInstance *obj) {
 	int ii, jj;
 
 	ASSERTLINE(1467, obj);
+	//weird this line is here...
+	STUBBED_PRINTF("Tried to free non-existent object\n");
 	if(obj->flags_0xb0 & ObjInstance_FlagsB0_IsFreed) return;
 	objStopSounds(obj, 0x7f, __FILE__, 1474);
 
@@ -1005,6 +1027,10 @@ void objFreeObject(ObjInstance *obj) {
 void objSetupDll(ObjInstance *object,ObjDef *def,void *param) {
     ObjDefEnum sVar1;
 
+	//not sure where these go
+	STUBBED_PRINTF("objects.c: CONTROL[%d]\n");
+	STUBBED_PRINTF("objects.c: CONTROL END[%d]\n");
+
     switch(object->objtype) {
 		case ObjDefNo_Krystal:
 		case ObjDefNo_Sabre:
@@ -1024,6 +1050,35 @@ void objSetupDll(ObjInstance *object,ObjDef *def,void *param) {
     object->pos_0x8c.y = object->pos.pos.y;
     object->pos_0x8c.z = object->pos.pos.z;
 }
+
+void Object_objLoadEventData(ObjInstance *object,int romdefno,
+ObjEventData *event,int animId,bool bImmediate) {
+    int offset;
+    int ii;
+    s16 *evtData;
+
+    evtData = (s16 *)object->objdata->pEvent;
+    event->size = 0;
+    if(!evtData) return;
+
+    for(ii = 0; evtData[ii] != -1; ii += 3) {
+        if(animId == evtData[ii]) {
+            offset = evtData[ii + 1];
+            event->size = evtData[ii + 2];
+            //0x50 might be sizeof(ObjEventData2)
+            if(event->size > 0x50) {
+                printf("objects.c: event data size overflow\n");
+                event->size = 0x50;
+            }
+            if(!bImmediate) loadAsset_fileWithOffsetLength(event->data,
+                FILE_OBJEVENT_bin, offset, event->size);
+            else piRomLoadAddr(FILE_OBJEVENT_bin,
+                event->data,offset,event->size);
+            return;
+        }
+    }
+}
+
 
 void fn_80083F50(ObjInstance *object) {
 	if(object->flags_0xb0 & ObjInstance_FlagsB0_IsFreed) return;
@@ -1232,35 +1287,6 @@ void* Object_objSetupEvents(int romdefno, ObjInstance *object, void *ptr) {
     return ptr;
 }
 
-void Object_objLoadEventData(ObjInstance *object,int romdefno,
-ObjEventData *event,int animId,bool bImmediate) {
-    int offset;
-    int ii;
-    s16 *evtData;
-
-    evtData = (s16 *)object->objdata->pEvent;
-    event->size = 0;
-    if(!evtData) return;
-
-    for(ii = 0; evtData[ii] != -1; ii += 3) {
-        if(animId == evtData[ii]) {
-            offset = evtData[ii + 1];
-            event->size = evtData[ii + 2];
-            //0x50 might be sizeof(ObjEventData2)
-            if(event->size > 0x50) {
-                printf("objects.c: event data size overflow\n");
-                event->size = 0x50;
-            }
-            if(!bImmediate) loadAsset_fileWithOffsetLength(event->data,
-                FILE_OBJEVENT_bin, offset, event->size);
-            else piRomLoadAddr(FILE_OBJEVENT_bin,
-                event->data,offset,event->size);
-            return;
-        }
-    }
-}
-
-
 void* Object_objSetupModels(int romdefno, ModelInstance *modelnstance,
 ObjInstance *object,void *ptr) {
     if(!modelnstance) return ptr;
@@ -1396,6 +1422,36 @@ u8 Object_objTypeGetClass(int objType) {
   	return data->class_;
 }
 
+const char* Object_objTypeName(int objType) { //not present in binary
+	ObjData *data;
+
+	if(objType > Object_maxObjType) {
+		printf("objTypeName objtype out of range %d/%d\n",
+			objType, Object_maxObjType);
+		return 0;
+	}
+	objType = Object_pObjIndex[objType];
+	if(objType >= Object_maxObjId) return 0;
+
+	data = (ObjData*)((u32)Object_objTypes + Object_pObjectsTab[objType]);
+  	return data->name;
+}
+
+int Object_objGetTypeNo(int objType) { //not present in binary
+	ObjData *data;
+
+	if(objType > Object_maxObjType) {
+		printf("objGetTypeNo objtype out of range %d/%d\n",
+			objType, Object_maxObjType);
+		return 0;
+	}
+	objType = Object_pObjIndex[objType];
+	if(objType >= Object_maxObjId) return 0;
+
+	data = (ObjData*)((u32)Object_objTypes + Object_pObjectsTab[objType]);
+  	return 0; //presumably data->something, but idk which
+}
+
 void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 	int noframes;
 	int ii;
@@ -1529,11 +1585,12 @@ void mapSetupPlayer(void) {
 	float x, y, z;
 	ObjDef chrDef;
 	int whichObjs; //sp10
-	volatile int playerIdx; //sp0C
+	volatile int playerNo; //sp0C
 	volatile int mapType; //sp08
 
 	mapType = getCurMapType();
 	if(mapType == 2 || mapType == 3) {
+		STUBBED_PRINTF("=======  OBJFREEALL \n"); //becomes OSReport in final
 		objFreeAll();
 		return;
 	}
@@ -1568,13 +1625,16 @@ void mapSetupPlayer(void) {
 		//game is using r0 instead of r3 as temporary here
 		heldBy->mtxIdx = Camera_addWorldMtx(&heldBy->pos);
 	}
-	playerIdx = 1;
+	playerNo = 1;
 	charPos = (CharPos *)pDll_gplay->funcs->gplay.getCurCharPos();
 	x = charPos->pos.x;
 	y = charPos->pos.y;
 	z = charPos->pos.z;
 	charObj = NULL;
-	if(playerIdx > -1 && mapType != 4) {
+	if(playerNo > -1 && mapType != 4) {
+		//doesn't match with args
+		//becomes OSReport in final
+		STUBBED_PRINTF("\n\n\n\n\n\n\n    LOADING CHARACTER     maptype %d  playerno %d\n\n\n\n\n\n\n");
 		memclr(&chrDef, sizeof(ObjDef));
 		chrDef.id = -1;
 		chrDef.mapStates1 = 0;
@@ -1582,7 +1642,7 @@ void mapSetupPlayer(void) {
 		chrDef.mapStates2 = 4;
 		chrDef.bound = 0xff;
 		chrDef.cullDist = 100;
-		chrDef.objType = playerObjIds[playerIdx];
+		chrDef.objType = playerObjIds[playerNo];
 		chrDef.allocatedSize = sizeof(ObjDef);
 		chrDef.pos.x = x;
 		chrDef.pos.y = y;
@@ -1591,13 +1651,15 @@ void mapSetupPlayer(void) {
 			ObjSpawnFlags_KeepLoaded, -1, -1,
 			heldBy);
 	}
-	ObjDef_802eca98.pos.x = sinf(((charPos->rotX << 8) * PI) / 32767.0f) * 60.0f + x;
-	ObjDef_802eca98.pos.y = y + 40.0f;
-	ObjDef_802eca98.pos.z = cosf(((charPos->rotX << 8) * PI) / 32767.0f) * 60.0f + z;
+	objdef_player.odef.pos.x = sinf(((charPos->rotX << 8) * PI) / 32767.0f) * 60.0f + x;
+	objdef_player.odef.pos.y = y + 40.0f;
+	objdef_player.odef.pos.z = cosf(((charPos->rotX << 8) * PI) / 32767.0f) * 60.0f + z;
 	pDll_camcontrol->funcs->camcontrol.func03(charObj,
-		ObjDef_802eca98.pos.x, ObjDef_802eca98.pos.y, ObjDef_802eca98.pos.z);
-	pDll_camcontrol->funcs->camcontrol.setupCamControl1(
-		0x50, 0, 0, 0x20, &ObjDef_802eca98, 0, 0xff);
+		objdef_player.odef.pos.x,
+		objdef_player.odef.pos.y,
+		objdef_player.odef.pos.z);
+	pDll_camcontrol->funcs->camcontrol.setupCamControl1(0x50, 0,
+		0, 0x20, &objdef_player.odef, 0, 0xff);
 	pDll_camcontrol->funcs->camcontrol.func04(1);
 	pDll_dummy04->funcs->Dummy04.func06_nop(charObj);
 	playerHeldBy = heldBy;
@@ -1608,11 +1670,24 @@ void mapSetupPlayer(void) {
 typedef struct {
 	ObjDef def;
 	u8 param0, param1;
-	//probably more...
+	//probably more... no more than 2 additional bytes, both zeros
 } ObjDef_802ed010_t;
 
 void fn_80085448(ObjInstance *object, int objType) { //reloc
-	static ObjDef_802ed010_t ObjDef_802ed010;
+	static ObjDef_802ed010_t ObjDef_802ed010 = {
+		-1, //objtype
+		7, //allocatedSize
+		0, //mapStates1
+		1, //loadFlags
+		4, //mapStates2
+		0xff, //bound
+		0xff, //cullDist
+		0.0f, //pos.x
+		0.0f, //pos.y
+		0.0f, //pos.z
+		-1, //id
+		0, 0,
+	};
 	ObjDef_802ed010_t *objdef = (ObjDef_802ed010_t*)object->def;
 	ObjDef_802ed010.def.objType = objType;
 	ObjDef_802ed010.def.pos.x = (object->prevPos).x;
@@ -1740,6 +1815,8 @@ int combatCamDist, u8 fieldF, u8 flags) {
 		lock = object->lockdata;
 		if(lock) {
 			lock += object->lockCountE4;
+			STUBBED_PRINTF("locknum out of range\n");
+			STUBBED_PRINTF("infonum out of range\n");
 			if(fieldC) lock->fieldC = fieldC >> 2;
 			if(combatCamDist) lock->combatCamDist = combatCamDist >> 2;
 			if(maxDist) lock->maxDist = maxDist >> 2;
@@ -1791,6 +1868,9 @@ void vecToObjSpace(ObjInstance *object,Vec *vIn,Vec *vOut) {
 void objModelMtxFn_800859e8(ObjInstance *object, Mtx *modelMatrix) {
 	int dummy;
 	ASSERTLINE(0xc98, object);
+	//this line doesn't belong here, but this message does
+	//belong between these two assert messages
+	STUBBED_PRINTF("Failed assertion instanceNum>=0 && instanceNum<object->objdata->noframes");
 	ASSERTLINE(0xc99, modelMatrix);
 	if(!object->heldBy) {
 		object->pos.pos.x -= playerMapOffsetX;
@@ -1890,4 +1970,10 @@ u8 r, u8 g, u8 b, u8 a) {
 		objSetFrozen(object->child[ii], freezeTimer, r, g, b, a);
 	}
 	return;
+}
+
+void objUpdateWhileFrozen(ObjInstance *object) {
+	//works much differently in final
+	object->freezeTimer -= timeDelta;
+	if(object->freezeTimer < 1) { objShatter(object); }
 }

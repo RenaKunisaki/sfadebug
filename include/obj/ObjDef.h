@@ -44,4 +44,12 @@ typedef struct { //object with ID 9
     //probably more...
 } ObjDef_Id9;
 
+typedef struct {
+    /* 0x00 */ ObjDef odef;
+    /* 0x18 */ s16 unk18;
+    /* 0x1A */ s16 unk1A;
+    /* 0x1C */ s16 unk1C;
+    /* 0x1E */ s16 unk1E;
+} ObjDef_Player;
+
 #endif //_OBJ_OBJDEF_H_
