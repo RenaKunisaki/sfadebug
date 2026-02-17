@@ -37,6 +37,7 @@ void clearPlayerObjIdxs();
 void objInitLists(void);
 void objInitHitLists();
 void objFreeObject(ObjInstance *obj);
+void objUpdateModels(void);
 
 //objlist.c
 void objListInit(ObjectList *list, short stride);
@@ -100,7 +101,7 @@ void objObjectsTick(void) {
 
 	objListSize = globalObjList.stride;
 	LAB_800bac18();
-	updateModels();
+	objUpdateModels();
 	Object_updateHitModels(ObjListSize);
 
 	//update high-priority objects
@@ -167,14 +168,14 @@ void objObjectsTick(void) {
 void objUpdateFn_80082238(void) {
 	int nObjs;
 	ObjInstance *obj;
-	uint iFlag;
+	int iFlag;
 	int flag;
 	int iObj;
 
-	updateModels();
+	objUpdateModels();
 	pDll_anim->funcs->anim.func0C();
 	nObjs = ObjListSize;
-	for(iFlag = 1; (int)iFlag < 3; iFlag++) {
+	for(iFlag = 1; iFlag < 3; iFlag++) {
 		for(iObj = 0; iObj < nObjs; iObj++) {
 			obj = objLoadedObjs[iObj];
 			if(obj->objdata->flags & ObjFileStructFlags44_IsWorldObj) flag = 1;
@@ -218,6 +219,57 @@ void objUpdateFn_80082238(void) {
 	pDll_anim->funcs->anim.func08();
 	if(bDisableModelRendering) {
 		pDll_camcontrol->funcs->camcontrol.func04(framesThisStep);
+	}
+}
+
+
+void objUpdateModels(void) {
+	int iFrame;
+	int iObj;
+	int iChild;
+	s8 *state;
+	ObjInstance *obj;
+	ObjInstance *child;
+	ObjInstance *objC0;
+	ModelInstance *model;
+
+	for(iObj = 0; iObj < ObjListSize; iObj++) {
+		obj = objLoadedObjs[iObj];
+		if(obj && obj->objdata) {
+			for(iFrame = 0; iFrame < obj->objdata->noframes; iFrame++) {
+				model = obj->frames[iFrame];
+				if(model) {
+					model->flags &= ~ModelFlags18_MtxsLoaded;
+					if(model->mod->bCopyVtxsToModelInst) {
+						//TODO: fill in correct type for state
+						objC0 = obj->pObj_0xc0;
+						state = objC0 ? objC0->state : NULL;
+						if(!objC0 || state && state[0x4e] == 0) {
+							modelFn_80080c28(model, timeDelta);
+						}
+					}
+				}
+			}
+			for(iChild = 0; iChild < obj->nChildren; iChild++) {
+				child = obj->child[iChild];
+				if(child && child->objdata) {
+					for(iFrame = 0; iFrame < child->objdata->noframes; iFrame++) {
+						model = child->frames[iFrame];
+						if(model) {
+							model->flags &= ~ModelFlags18_MtxsLoaded;
+							if(model->mod->bCopyVtxsToModelInst) {
+								//TODO: fill in correct type for state
+								objC0 = child->pObj_0xc0;
+								state = objC0 ? objC0->state : NULL;
+								if(!objC0 || state && state[0x4e] == 0) {
+									modelFn_80080c28(model, timeDelta);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }
 

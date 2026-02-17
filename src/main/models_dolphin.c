@@ -101,7 +101,7 @@ void fn_80080734(ModelInstance *modelInstance,Model *model,ObjInstance *object,M
 void vtxAnimFn80080A50(ModelInstance *modelInstance);
 void vtxAnimFn_80080adc(ModelInstance *modelInstance,int idx,int animIdx1,int animIdx2,float speed,s8 flags);
 void LAB_80080c00(double param_1,int *param_2,int param_3);
-void modelFn_80080c28(float scale, ModelInstance *modelInstance);
+void modelFn_80080c28(ModelInstance *modelInstance, float dT);
 void copyVtxsToModelInstance(ModelInstance *modelInstance);
 void fn_8008102C(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf);
 void modelApplyBoneTransforms(S16Vec *vtxs,S16Vec *vtxs2,u16 numPositions,short *anims1,short *anims2,int pos);
@@ -1321,7 +1321,7 @@ void fn_80080bdc(float pos, ModelInstance *modelInstance, int idx) { // 80080BDC
     field20->flags = field20->flags | 4;
 }
 
-void modelFn_80080c28(float scale, ModelInstance *modelInstance) { //80080C28
+void modelFn_80080c28(ModelInstance *modelInstance, float dT) { //80080C28
 	int ii;
 	ModelInstanceField20 *field20;
 
@@ -1333,7 +1333,7 @@ void modelFn_80080c28(float scale, ModelInstance *modelInstance) { //80080C28
 		} else {
 LAB_80080c74:
 			if(!(field20->flags & 1)) {
-				field20->pos += field20->speed * scale;
+				field20->pos += field20->speed * dT;
 				if(field20->pos > 1.0f) {
 					field20->pos = 0.99f;
 					field20->speed = 0.001f;
