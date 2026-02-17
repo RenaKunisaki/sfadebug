@@ -167,9 +167,8 @@ void objObjectsTick(void) {
 void objUpdateFn_80082238(void) {
 	int nObjs;
 	ObjInstance *obj;
-	bool bVar4;
-	int flag;
 	uint iFlag;
+	int flag;
 	int iObj;
 
 	updateModels();
@@ -184,7 +183,7 @@ void objUpdateFn_80082238(void) {
 
 			if(obj->objId != 0x10) {
 				STUBBED_OP(obj);
-				goto lbl_94;
+				goto lbl_94; //this can't be right.
 			}
 			else if(objSeqEditFlag80399a74) {
 				objUpdate(obj);
