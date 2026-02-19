@@ -1366,9 +1366,8 @@ BOOL ObjEdit_isObjIndexNotEmpty(int idx) {
 }
 
 int Object_objGetControlNo(int objType) {
-	u8 wat[180];
+    u8 temp[184];
 	uint ii;
-	uint offset;
 	int count;
 	int index;
 
@@ -1377,23 +1376,24 @@ int Object_objGetControlNo(int objType) {
 			objType, Object_maxObjType);
 		return 0;
 	}
-	index = Object_pObjIndex[objType];
-	if(index == -1) return 0;
+	objType = Object_pObjIndex[objType];
+	if(objType == -1) return 0;
 
-	//likely an optimized-out clear of some struct
-	//that's never referenced
+	//wtf?
 	count = 0;
-	for(ii=&wat[90] - &wat[0]; (ii & 1) != 0; count++) {
+	for(ii=&temp[90] - &temp[0]; (ii & 1) != 0; count++) {
 		ii--;
 	}
 
-	offset = Object_pObjectsTab[index] + ii;
+	index = Object_pObjectsTab[objType] + ii;
 	loadAsset_fileWithOffsetLength(
 		contNoBuf, FILE_OBJECTS_bin,
-		offset, 8);
-	index = contNoBuf[count];
-	return index;
+		index, 8);
+	objType = contNoBuf[count];
+	return objType;
+
 }
+
 
 ObjFileStructFlags44 Object_objTypeGetFlags(int objType) {
 	ObjData *data;
@@ -1544,13 +1544,13 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 		obj->msgQueue = NULL;
 	}
 	noframes = obj->objdata->noframes;
-	for(kk = 0; noframes < kk; kk++) {
+	for(kk = 0; kk < noframes; kk++) {
 		if((int)obj->frames[kk]) {
 			modelInstanceFree(obj->frames[kk]);
 		}
 	}
-	if(obj->stateFlags & 1) objThaw(obj);
-	if(obj->stateFlags & 2) LAB_800860ac(obj);
+	if(obj->stateFlags & OBJ_STATE_ISFROZEN) objThaw(obj);
+	if(obj->stateFlags & OBJ_STATE_FREEZING) objSetFreezing(obj);
 	objFreeObjdef(obj->realType);
 	if((obj->curSeqSlot > -1) && (param2 == 0)) {
 		pDll_checkpoint->funcs->anim.endObjSequence(obj->curSeqSlot);
@@ -1559,7 +1559,7 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 	if((obj->pos.flags & ObjInstance_Flags06_DontSave) && obj->def) {
 		mmFree(obj->def);
 	}
-	memclr(obj, 0xfc);
+	memclr(obj, sizeof(ObjInstance));
 	mmFree(obj);
 }
 
