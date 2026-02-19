@@ -1391,9 +1391,7 @@ int Object_objGetControlNo(int objType) {
 		index, 8);
 	objType = contNoBuf[count];
 	return objType;
-
 }
-
 
 ObjFileStructFlags44 Object_objTypeGetFlags(int objType) {
 	ObjData *data;
@@ -1456,13 +1454,13 @@ int Object_objGetTypeNo(int objType) { //not present in binary
 }
 
 void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
-	int noframes;
-	int ii;
-	int jj;
-	int kk;
-	ObjInstance **state;
-	ObjInstance *that;
 	ObjInstance *freelist[50];
+	ObjInstance *that;
+	ObjInstance **state;
+	int jj;
+	int ii;
+	int iFree;
+	int noframes;
 
 	ASSERTLINE(2275, obj);
 	ASSERTLINE(2276, obj->objdata);
@@ -1490,36 +1488,34 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 	if(obj->objdata->flags & ObjFileStructFlags44_IsWorldObj) {
 		objRemoveObjectType(obj, 7);
 		if(!param2) {
-			ii = 0;
-			for(jj = 0; jj < (int)ObjListSize; jj += 1) {
-				that = objLoadedObjs[jj];
+			iFree = 0;
+			for(ii = 0; ii < (int)ObjListSize; ii++) {
+				that = objLoadedObjs[ii];
 				if(PTR_EQ(that->heldBy, obj)) {
 					that->heldBy = NULL;
 					if(that->def) {
-						freelist[ii] = that;
-						ii += 1;
-						//no idea where this number comes from
-						//typo? since the list is 50 elements
-						if(ii >= 40) printf("world free obj list overflow\n");
+						freelist[iFree++] = that;
+						//@bug? list size is 50, not 40
+						if(iFree >= 40) printf("world free obj list overflow\n");
 					}
 				}
 			}
-			for(jj = 0; jj < ii; jj += 1) {
-				objFreeObject(freelist[jj]);
+			for(ii = 0; ii < iFree; ii++) {
+				objFreeObject(freelist[ii]);
 			}
 			trackFreeMap((uint)obj->map);
 		}
 	}
 	if(param2 == 0 && obj->objId == 0x10) {
-		for(jj = 0; jj < (int)ObjListSize; jj += 1) {
-			that = objLoadedObjs[jj];
+		for(ii = 0; ii < (int)ObjListSize; ii++) {
+			that = objLoadedObjs[ii];
 			if(PTR_EQ(that->pObj_0xc0, obj)) {
 				that->pObj_0xc0 = NULL;
 			}
 		}
 	}
-	for(kk = 0; kk < ObjListSize; kk++) {
-		that = objLoadedObjs[kk];
+	for(jj = 0; jj < ObjListSize; jj++) {
+		that = objLoadedObjs[jj];
 		if(that->objId == 0x10) {
 			state = that->state; //XXX type
 			if(*state == obj) {
@@ -1544,9 +1540,9 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 		obj->msgQueue = NULL;
 	}
 	noframes = obj->objdata->noframes;
-	for(kk = 0; kk < noframes; kk++) {
-		if((int)obj->frames[kk]) {
-			modelInstanceFree(obj->frames[kk]);
+	for(jj = 0; jj < noframes; jj++) {
+		if((int)obj->frames[jj]) {
+			modelInstanceFree(obj->frames[jj]);
 		}
 	}
 	if(obj->stateFlags & OBJ_STATE_ISFROZEN) objThaw(obj);
