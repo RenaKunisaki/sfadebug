@@ -37,6 +37,7 @@ void objInitLists(void);
 void objInitHitLists();
 void objFreeObject(ObjInstance *obj);
 void objUpdateModels(void);
+void objThaw(ObjInstance *object);
 
 //objlist.c
 void objListInit(ObjectList *list, short stride);
@@ -1115,8 +1116,8 @@ void fn_80083F50(ObjInstance *object) {
 	}
 	if(object->stateFlags) {
 		if(!object->parent) {
-			if(object->stateFlags & 1) fn_80085dc8(object);
-			if(object->stateFlags & 2) objFn_8002aac8(object);
+			if(object->stateFlags & OBJ_STATE_ISFROZEN) objUpdateWhileFrozen(object);
+			if(object->stateFlags & OBJ_STATE_FREEZING) objFlashWhileFreezing(object);
 		}
 	}
 	if(getPiLockedFlags() & 2) STUBBED_OP(object);
@@ -1546,7 +1547,7 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 			modelInstanceFree(obj->frames[kk]);
 		}
 	}
-	if(obj->stateFlags & 1) fn_80085DDC(obj);
+	if(obj->stateFlags & 1) objThaw(obj);
 	if(obj->stateFlags & 2) LAB_800860ac(obj);
 	objFreeObjdef(obj->realType);
 	if((obj->curSeqSlot > -1) && (param2 == 0)) {
@@ -1856,15 +1857,6 @@ ModelInstance* objGetModelInstance(ObjInstance *object) {
 	return object->frames[object->modelno];
 }
 
-void vecToObjSpace(ObjInstance *object,Vec *vIn,Vec *vOut) {
-	Mtx44 mtx;
-
-	objModelMtxFn_800859e8(object, (Mtx*)&mtx);
-	MTXMultVec(mtx, vIn, vOut);
-	vOut->x = vOut->x + playerMapOffsetX;
-	vOut->z = vOut->z + playerMapOffsetZ;
-}
-
 void objModelMtxFn_800859e8(ObjInstance *object, Mtx *modelMatrix) {
 	int dummy;
 	ASSERTLINE(0xc98, object);
@@ -1909,12 +1901,20 @@ void objModelMtxFn_80085ab8(ObjInstance *object, Mtx *modelMatrix) {
 	}
 }
 
+void vecToObjSpace(ObjInstance *object,Vec *vIn,Vec *vOut) {
+	Mtx44 mtx;
+
+	objModelMtxFn_800859e8(object, (Mtx*)&mtx);
+	MTXMultVec(mtx, vIn, vOut);
+	vOut->x = vOut->x + playerMapOffsetX;
+	vOut->z = vOut->z + playerMapOffsetZ;
+}
+
 void lightVecFn_80085c50(ObjInstance *obj, Vec *vIn, Vec *vOut) {
 	Mtx44 mtx;
 	objModelMtxFn_800859e8(obj,(Mtx*)&mtx);
 	MTXMultVecSR(mtx,vIn,vOut);
 }
-
 
 void fn_80085d10(ObjInstance *object, int timerE6) {
 	int dummy[4];
@@ -1923,7 +1923,7 @@ void fn_80085d10(ObjInstance *object, int timerE6) {
 	if(object->objdata->unkb4 & ObjDataFlagsB4_CanFreeze) {
 		if(object->impendingFreezeTimer < 10) {
 			object->impendingFreezeTimer++;
-			objSetFrozen(object, 30, 0xa0, 0xff, 0xff, 0);
+			objHandleIceBlast(object, 30, 0xa0, 0xff, 0xff, 0);
 		}
 		if(object->impendingFreezeTimer == 10) {
 			if(object->stateFlags & 2) LAB_800860ac(object);
@@ -1940,40 +1940,35 @@ u8 objIsFrozen(ObjInstance *object) {
 	return object->stateFlags & OBJ_STATE_ISFROZEN;
 }
 
-void fn_80085dc8(ObjInstance *object) {
+void objUpdateWhileFrozen(ObjInstance *object) {
+	//works much differently in final
 	object->freezeTimer -= timeDelta;
-	if(object->freezeTimer <= 0) fn_80085DDC(object);
+	if(object->freezeTimer <= 0) { objThaw(object); }
 }
 
-void fn_80085DDC(ObjInstance *object) {
+void objThaw(ObjInstance *object) {
 	object->freezeTimer = 0;
 	object->stateFlags &= ~OBJ_STATE_ISFROZEN;
 	object->impendingFreezeTimer = 0;
-	ModelInstance_freeField48(objGetModelInstance(object));
-	return;
+	ModelInstance_freeFreezeModel(objGetModelInstance(object));
 }
 
-void objSetFrozen(ObjInstance *object, int freezeTimer,
+void objHandleIceBlast(ObjInstance *object, int thawTimer,
 u8 r, u8 g, u8 b, u8 a) {
+	//called when hit by ice blast
 	int ii;
 
 	ASSERTLINE(0xd9f, !(object->stateFlags&OBJ_STATE_ISFROZEN));
-	object->freezeTimer = (short)freezeTimer;
-	object->stateFlags &= ~4;
-	object->stateFlags |= 2;
+	object->freezeTimer = (short)thawTimer;
+	object->stateFlags &= ~OBJ_STATE_FLASHING;
+	object->stateFlags |= OBJ_STATE_FREEZING;
 	object->freezeColor.r = r;
 	object->freezeColor.g = g;
 	object->freezeColor.b = b;
 	if(a) object->freezeColor.a = 180;
 	else object->freezeColor.a = 0;
 	for(ii = 0; ii < object->nChildren; ii++) {
-		objSetFrozen(object->child[ii], freezeTimer, r, g, b, a);
+		objHandleIceBlast(object->child[ii], thawTimer, r, g, b, a);
 	}
 	return;
-}
-
-void objUpdateWhileFrozen(ObjInstance *object) {
-	//works much differently in final
-	object->freezeTimer -= timeDelta;
-	if(object->freezeTimer < 1) { objShatter(object); }
 }

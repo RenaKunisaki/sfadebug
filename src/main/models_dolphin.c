@@ -83,7 +83,7 @@ void modelInstSwapJmtxs(ModelInstance *modelInstance);
 void ModelInstance_setTexFuncPtr(ModelInstance *modelInstance,TexFuncPtr cb);
 TexFuncPtr ModelInstance_getTexFuncPtr(ModelInstance *modelInstance);
 void modelApplyFrozenEffect(ModelInstance *modelInstance,Mtx *modelMatrix,bool param3);
-void ModelInstance_freeField48(ModelInstance *modelInstance);
+void ModelInstance_freeFreezeModel(ModelInstance *modelInstance);
 u16 modelGetCullDistance(Model *model);
 Shader* modelGetShader(Model *model,int shaderNum);
 S16Vec* modelGetVtxPos(Model *model,int positionNum);
@@ -714,7 +714,7 @@ TexFuncPtr ModelInstance_getTexFuncPtr(ModelInstance *modelInstance) { //8007F13
     return modelInstance->texFuncPtr;
 }
 
-void ModelInstance_freeField48(ModelInstance *modelInstance) { //8007FCF8
+void ModelInstance_freeFreezeModel(ModelInstance *modelInstance) { //8007FCF8
 	if(modelInstance->freezeModel) {
 		mmFree(modelInstance->freezeModel);
 		modelInstance->freezeModel = NULL;

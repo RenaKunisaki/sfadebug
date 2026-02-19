@@ -24,8 +24,8 @@ struct ObjInstance;
 
 typedef enum { //u8
     OBJ_STATE_ISFROZEN = 0x01, //official name
-    //0x02: related to freezing
-    //0x04: related to freezing
+    OBJ_STATE_FREEZING = 0x02, //hit by ice but not frozen yet
+    OBJ_STATE_FLASHING = 0x04, //toggles while getting hit by ice
 } ObjStateFlags;
 
 enum { //u16

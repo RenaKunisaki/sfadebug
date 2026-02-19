@@ -77,7 +77,7 @@ void mtx44Transpose(Mtx44 *src, Mtx44 *dst); /* extern */
 void mtxRotateByVec3s(Mtx44 *mtx, S16Vec *rot); /* extern */
 void multVectorByObjMtx(double x, double y, double z, float *outX, float *outY,
     float *outZ, ObjInstance *obj); /* extern */
-void objFn_8002aac8(ObjInstance *); /* extern */
+void objFlashWhileFreezing(ObjInstance *); /* extern */
 void objFreeAll(void); /* extern */
 void objListAdd(
     ObjectList *param_1, ObjInstance *obj1, ObjInstance *obj2); /* extern */
@@ -105,19 +105,19 @@ void Object_setPriority(ObjInstance *obj, s8 priority); /* static */
 void objSetupDll(ObjInstance *object,ObjDef *def,void *param); /* static */
 void Object_worldProcessObjFreeList(ObjInstance *obj, int param2); /* static */
 void objAddToGlobalObjList(ObjInstance *object); /* static */
-void fn_80085D68(ObjInstance *outNumObjs); /* static */
-void fn_80085DDC(ObjInstance *outNumObjs); /* static */
+void objUpdateWhileFrozen(ObjInstance *outNumObjs); /* static */
+void objThaw(ObjInstance *outNumObjs); /* static */
 ModLine *loadModLine(int lineNo, s16 *outCount); /* static */
 void modelInitSkeleton(float scale, ModelInstance *model); /* static */
 void objFreeObjdef(int defNo); /* static */
-void objSetFrozen(ObjInstance *object,int freezeTimer,u8 r, u8 g, u8 b, u8 a); /* static */
+void objHandleIceBlast(ObjInstance *object,int freezeTimer,u8 r, u8 g, u8 b, u8 a); /* static */
 uint objGetTotalDataSize(ObjInstance *obj, ObjData *objData, ObjDef *objDef,
     uint flags); /* static */
 float objGetDefaultCullDistance(ObjInstance *object); /* static */
 void objSetup(ObjInstance *object, uint flags); /* static */
 void objModelMtxFn_800859e8(ObjInstance *object,Mtx *modelMatrix);
-void ModelInstance_freeField48(ModelInstance *modelInstance);
-void fn_80085dc8(ObjInstance *object);
+void ModelInstance_freeFreezeModel(ModelInstance *modelInstance);
+void objUpdateWhileFrozen(ObjInstance *object);
 ObjInstance **Object_getObjects(s32 *outFirstObj, s32 *outNumObjs);
 
 extern u8 BYTE_802eca98;
