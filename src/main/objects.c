@@ -1927,7 +1927,7 @@ void fn_80085d10(ObjInstance *object, int timerE6) {
 		}
 		if(object->impendingFreezeTimer == 10) {
 			if(object->stateFlags & 2) LAB_800860ac(object);
-			object->freezeTimer = timerE6;
+			object->thawTimer = timerE6;
 			object->stateFlags |= OBJ_STATE_ISFROZEN;
 			objModelMtxFn_800859e8(object, &mtx);
 			modelApplyFrozenEffect(objGetModelInstance(object),
@@ -1942,12 +1942,12 @@ u8 objIsFrozen(ObjInstance *object) {
 
 void objUpdateWhileFrozen(ObjInstance *object) {
 	//works much differently in final
-	object->freezeTimer -= timeDelta;
-	if(object->freezeTimer <= 0) { objThaw(object); }
+	object->thawTimer -= timeDelta;
+	if(object->thawTimer <= 0) { objThaw(object); }
 }
 
 void objThaw(ObjInstance *object) {
-	object->freezeTimer = 0;
+	object->thawTimer = 0;
 	object->stateFlags &= ~OBJ_STATE_ISFROZEN;
 	object->impendingFreezeTimer = 0;
 	ModelInstance_freeFreezeModel(objGetModelInstance(object));
@@ -1959,7 +1959,7 @@ u8 r, u8 g, u8 b, u8 a) {
 	int ii;
 
 	ASSERTLINE(0xd9f, !(object->stateFlags&OBJ_STATE_ISFROZEN));
-	object->freezeTimer = (short)thawTimer;
+	object->thawTimer = (short)thawTimer;
 	object->stateFlags &= ~OBJ_STATE_FLASHING;
 	object->stateFlags |= OBJ_STATE_FREEZING;
 	object->freezeColor.r = r;
@@ -1970,5 +1970,32 @@ u8 r, u8 g, u8 b, u8 a) {
 	for(ii = 0; ii < object->nChildren; ii++) {
 		objHandleIceBlast(object->child[ii], thawTimer, r, g, b, a);
 	}
-	return;
+}
+
+void objFlashWhileFreezing(ObjInstance *object) {
+	//while object is being hit by ice blast but hasn't yet frozen,
+	//make it flash between normal and frozen colors.
+	int iChild;
+	float phase;
+
+	if(object->stateFlags & OBJ_STATE_FLASHING) {
+		phase = timeDelta * 12.0f + (float)(object->freezeColor).a;
+	} else {
+		phase = -(timeDelta * 12.0f - (float)(object->freezeColor).a);
+	}
+	if(phase < 0.0f) {
+		phase = -phase;
+		object->stateFlags = object->stateFlags ^ OBJ_STATE_FLASHING;
+	} else if(phase > 180.0f) {
+		phase = 180.0f - (phase - 180.0f);
+		object->stateFlags = object->stateFlags ^ OBJ_STATE_FLASHING;
+	}
+	(object->freezeColor).a = phase;
+	object->thawTimer -= timeDelta;
+	if((object->thawTimer <= 0) && !object->parent) {
+		objSetFreezing(object);
+	}
+	for(iChild = 0; iChild < object->nChildren; iChild++) {
+		objFlashWhileFreezing(object->child[iChild]);
+	}
 }
