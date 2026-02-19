@@ -38,6 +38,7 @@ void objInitHitLists();
 void objFreeObject(ObjInstance *obj);
 void objUpdateModels(void);
 void objThaw(ObjInstance *object);
+void objSetFreezing(ObjInstance *object);
 
 //objlist.c
 void objListInit(ObjectList *list, short stride);
@@ -1997,5 +1998,17 @@ void objFlashWhileFreezing(ObjInstance *object) {
 	}
 	for(iChild = 0; iChild < object->nChildren; iChild++) {
 		objFlashWhileFreezing(object->child[iChild]);
+	}
+}
+
+
+void objSetFreezing(ObjInstance *object) {
+	//apply the "hit by ice but not yet frozen" effect
+	int iChild;
+
+	object->thawTimer = 0;
+	object->stateFlags &= ~(OBJ_STATE_FREEZING | OBJ_STATE_FLASHING);
+	for(iChild = 0; iChild < object->nChildren; iChild++) {
+		objSetFreezing(object->child[iChild]);
 	}
 }

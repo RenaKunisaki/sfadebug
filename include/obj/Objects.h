@@ -46,7 +46,7 @@ void dll_26F_init(ObjInstance *object, ObjDef *objDef, ObjInstance *obj2,
 void objStopSounds(
     ObjInstance *pbj, u8 flags, char *file, int line); /* extern */
 void fn_8007FCF8(); /* extern */
-void fn_8008607C(s16 *); /* extern */
+void objSetFreezing(ObjInstance*); /* extern */
 mapId32 mapCoordsToId(float x, float z); /* extern */
 f32 fn_8018FAC0(s16 *, s16); /* extern */
 void fn_801921E8(ObjInstance *); /* extern */
