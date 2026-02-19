@@ -520,19 +520,19 @@ int objNo, ObjInstance *heldBy) {
 
 ObjInstance *objSetupObjectActual(ObjDef *def, s32 flags, s32 mapId,
 s32 romDefNo, struct ObjInstance *heldBy) {
-	int nModels;
-	u32 totalSize;
 	ObjModelFlags modelFlags;
-	ObjInstance objTmp;
-	s32 dummy;
 	ObjData *objData;
+	ObjInstance objTmp;
 	ObjInstance *result;
 	s32 realType;
-	s32 oType;
 	s32 iLock;
 	s32 ii;
-	s8 bModelFailed;
 	void *next;
+	int nModels;
+	u32 totalSize;
+	s8 bModelFailed;
+	s32 dummy;
+	s32 oType;
 
 	STUBBED_PRINTF("objects/objects.c: OBJECT SETUP[%i]\n");
 	//probably some debug stuff in here? these two messages are adjacent.
@@ -574,6 +574,7 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	if(objData->flags & 0x80) result->pos.flags |= 0x80;
 	if(objData->flags & 0x40000) result->flags_0xb0 |= ObjInstance_FlagsB0_LockAnimsAndControls;
 	if(flags & 4) result->pos.flags |= ObjInstance_Flags06_DontSave;
+	STUBBED_OP(objData->flags);
 
 	result->pos.pos.x = def->pos.x;
 	result->pos.pos.y = def->pos.y;
@@ -599,8 +600,8 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 		if(!result->dll) printf("OBJECTS: warning DLL load failed\n");
 	}
 	if(result->objtype == ObjDefNo_SB_ShipHead) {
-		//STUBBED_OP(result);
 		STUBBED_PRINTF("GALLEON HEAD\n");
+		STUBBED_OP(def);
 	}
 
 	//get model flags
