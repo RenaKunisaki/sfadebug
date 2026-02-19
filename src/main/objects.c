@@ -2001,7 +2001,6 @@ void objFlashWhileFreezing(ObjInstance *object) {
 	}
 }
 
-
 void objSetFreezing(ObjInstance *object) {
 	//apply the "hit by ice but not yet frozen" effect
 	int iChild;

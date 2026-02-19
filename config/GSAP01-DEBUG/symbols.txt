@@ -13723,6 +13723,7 @@ BYTE_802ed268 = .data:0x802ED268; // type:object size:0x1 data:byte
 lbl_802ED269 = .data:0x802ED269; // type:object size:0x53
 lbl_802ED2BC = .data:0x802ED2BC; // type:object size:0x74
 objVar_802ed330 = .data:0x802ED330; // type:object size:0x14 data:4byte
+lbl_802ED344 = .data:0x802ED344; // type:object size:0x80
 lbl_802ED3C4 = .data:0x802ED3C4; // type:object size:0x40
 lbl_802ED404 = .data:0x802ED404; // type:object size:0xC
 lbl_802ED410 = .data:0x802ED410; // type:object size:0x14 data:string
