@@ -951,16 +951,19 @@ void objFreeFn_80083b54(ObjInstance *object) {
 void objAddToGlobalObjList(ObjInstance *object) {
 	ObjInstance *newNext; //r30
 	ObjInstance *prev; //r31
-	volatile s16 stride; //spC
 	ObjInstance *next; //sp10
+	volatile s16 stride; //spC
 
 	if(!(object->flags_0xb0 & ObjInstance_FlagsB0_IsInGlobalObjList)) return;
 
 	stride = globalObjList.stride;
 	prev = NULL;
-	for(next = globalObjList.obj; (int)next && object->priority < prev->priority;
-	next = *(ObjInstance **)((int)prev + stride)) {
+	for(newNext = next = globalObjList.obj;
+	(int)newNext && object->priority < next->priority;
+	next = newNext) {
 		prev = next;
+		newNext = *(ObjInstance **)((int)newNext + stride);
+		STUBBED_OP(&newNext);
 	}
 	objListAdd(&globalObjList, prev, object);
 }
