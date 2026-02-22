@@ -110,19 +110,21 @@ void Object_initObjects(void) {
 }
 
 void objObjectsTick(void) {
-	ObjInstance *player;
 	ObjInstance *obj;
-	short objListSize;
+	ObjInstance *obj2;
+	s16 objListSize;
 
 	objListSize = globalObjList.stride;
-	LAB_800bac18();
+	trackIntersectLastlinesFn_800babe4();
 	objUpdateModels();
 	Object_updateHitModels(ObjListSize);
 
 	//update high-priority objects
-	for(obj = globalObjList.obj;
+	for(obj = obj2 = globalObjList.obj;
 	obj && (obj->priority == 100);
 	obj = *(ObjInstance **)((int)obj + objListSize)) {
+		STUBBED_OP(&objListSize);
+		STUBBED_OP(&obj2);
 		objUpdate(obj);
 	}
 
@@ -134,21 +136,23 @@ void objObjectsTick(void) {
 	updateHitModelObjs();
 
 	while(obj) {
-		if(!obj->hits) {
-			objUpdate(obj);
 		//@bug? probably should be !(obj->hits->flags5A & HitStateFlags5A_HasPolyHit)
-		} else if((obj->hits->flags5A != HitStateFlags5A_HasPolyHit)
-		|| !(obj->hits->flags & HitStateFlags58_HasPolyHit)) {
+		if(obj->hits && (
+			(obj->hits->flags5A != HitStateFlags5A_HasPolyHit)
+			|| !(obj->hits->flags & HitStateFlags58_HasPolyHit))) {
+				objUpdate(obj);
+		}
+		else {
 			objUpdate(obj);
 		}
 		obj = *(ObjInstance **)(obj + objListSize);
 	}
 
 	//update staff
-	player = objGetMain();
-	if(player && player->child[0]) {
-		player->child[0]->heldBy = player->heldBy;
-		objUpdate(player->child[0]);
+	obj = objGetMain();
+	if(obj && obj->child[0]) {
+		obj->child[0]->heldBy = obj->heldBy;
+		objUpdate(obj->child[0]);
 	}
 
 	//tick global objects
@@ -159,10 +163,10 @@ void objObjectsTick(void) {
 	}
 
 	//tick staff
-	player = objGetMain();
-	if(player && player->child[0]) {
-		player->child[0]->heldBy = player->heldBy;
-		objTick(player->child[0]);
+	obj = objGetMain();
+	if(obj && obj->child[0]) {
+		obj->child[0]->heldBy = obj->heldBy;
+		objTick(obj->child[0]);
 	}
 
 	pDll_waterfx->funcs->waterfx.func03(framesThisStep);
