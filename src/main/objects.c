@@ -111,41 +111,46 @@ void Object_initObjects(void) {
 
 void objObjectsTick(void) {
 	ObjInstance *obj;
-	ObjInstance *obj2;
-	s16 objListSize;
+	struct { //some kind of iterator?
+		s16 objListSize; //sp8
+		int obj; //spC
+	} iter;
 
-	objListSize = globalObjList.stride;
+	iter.objListSize = globalObjList.stride;
 	trackIntersectLastlinesFn_800babe4();
 	objUpdateModels();
 	Object_updateHitModels(ObjListSize);
 
 	//update high-priority objects
-	for(obj = obj2 = globalObjList.obj;
-	obj && (obj->priority == 100);
-	obj = *(ObjInstance **)((int)obj + objListSize)) {
-		STUBBED_OP(&objListSize);
-		STUBBED_OP(&obj2);
+	obj = globalObjList.obj;
+	iter.obj = (int)obj;
+	while(iter.obj && (obj->priority == 100)) {
 		objUpdate(obj);
+		iter.obj = (int)*(ObjInstance **)(iter.obj + iter.objListSize);
+		obj = (ObjInstance*)iter.obj;
 	}
 
-	while(obj && obj->objdata->flags & ObjFileStructFlags44_IsWorldObj) {
+	while(iter.obj && obj->objdata->flags & ObjFileStructFlags44_IsWorldObj) {
 		objUpdate(obj);
 		obj->mtxIdx = Camera_addWorldMtx(&obj->pos);
-		obj = *(ObjInstance **)((int)obj + objListSize);
+		iter.obj = (int)*(ObjInstance **)(iter.obj + iter.objListSize);
+		obj = (ObjInstance*)iter.obj;
 	}
 	updateHitModelObjs();
 
-	while(obj) {
+	while(iter.obj) {
 		//@bug? probably should be !(obj->hits->flags5A & HitStateFlags5A_HasPolyHit)
-		if(obj->hits && (
-			(obj->hits->flags5A != HitStateFlags5A_HasPolyHit)
-			|| !(obj->hits->flags & HitStateFlags58_HasPolyHit))) {
+		if(obj->hits) {
+			if((obj->hits->flags5A != HitStateFlags5A_HasPolyHit)
+			|| !(obj->hits->flags & HitStateFlags58_HasPolyHit)) {
 				objUpdate(obj);
+			}
 		}
 		else {
 			objUpdate(obj);
 		}
-		obj = *(ObjInstance **)(obj + objListSize);
+		iter.obj = (int)*(ObjInstance **)(iter.obj + iter.objListSize);
+		obj = (ObjInstance*)iter.obj;
 	}
 
 	//update staff
@@ -157,9 +162,12 @@ void objObjectsTick(void) {
 
 	//tick global objects
 	Objects_buildHitList(ObjListSize);
-	for(obj = globalObjList.obj; obj;
-	obj = *(ObjInstance **)((int)obj + objListSize)) {
+	obj = globalObjList.obj;
+	iter.obj = (int)obj;
+	while(iter.obj) {
 		objTick(obj);
+		iter.obj = (int)*(ObjInstance **)(iter.obj + iter.objListSize);
+		obj = (ObjInstance*)iter.obj;
 	}
 
 	//tick staff
