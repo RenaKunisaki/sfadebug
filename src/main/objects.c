@@ -112,11 +112,11 @@ void Object_initObjects(void) {
 void objObjectsTick(void) {
 	ObjInstance *obj;
 	struct { //some kind of iterator?
-		s16 objListSize; //sp8
+		s16 listSize; //sp8
 		int obj; //spC
 	} iter;
 
-	iter.objListSize = globalObjList.stride;
+	iter.listSize = globalObjList.stride;
 	trackIntersectLastlinesFn_800babe4();
 	objUpdateModels();
 	Object_updateHitModels(ObjListSize);
@@ -126,30 +126,28 @@ void objObjectsTick(void) {
 	iter.obj = (int)obj;
 	while(iter.obj && (obj->priority == 100)) {
 		objUpdate(obj);
-		iter.obj = (int)*(ObjInstance **)(iter.obj + iter.objListSize);
+		iter.obj = *(int *)(iter.obj + iter.listSize);
 		obj = (ObjInstance*)iter.obj;
 	}
 
 	while(iter.obj && obj->objdata->flags & ObjFileStructFlags44_IsWorldObj) {
 		objUpdate(obj);
 		obj->mtxIdx = Camera_addWorldMtx(&obj->pos);
-		iter.obj = (int)*(ObjInstance **)(iter.obj + iter.objListSize);
+		iter.obj = *(int *)(iter.obj + iter.listSize);
 		obj = (ObjInstance*)iter.obj;
 	}
 	updateHitModelObjs();
 
 	while(iter.obj) {
-		//@bug? probably should be !(obj->hits->flags5A & HitStateFlags5A_HasPolyHit)
 		if(obj->hits) {
+			//@bug? probably should be !(obj->hits->flags5A & HitStateFlags5A_HasPolyHit)
 			if((obj->hits->flags5A != HitStateFlags5A_HasPolyHit)
 			|| !(obj->hits->flags & HitStateFlags58_HasPolyHit)) {
 				objUpdate(obj);
 			}
 		}
-		else {
-			objUpdate(obj);
-		}
-		iter.obj = (int)*(ObjInstance **)(iter.obj + iter.objListSize);
+		else objUpdate(obj);
+		iter.obj = *(int *)(iter.obj + iter.listSize);
 		obj = (ObjInstance*)iter.obj;
 	}
 
@@ -166,7 +164,7 @@ void objObjectsTick(void) {
 	iter.obj = (int)obj;
 	while(iter.obj) {
 		objTick(obj);
-		iter.obj = (int)*(ObjInstance **)(iter.obj + iter.objListSize);
+		iter.obj = *(int *)(iter.obj + iter.listSize);
 		obj = (ObjInstance*)iter.obj;
 	}
 
@@ -184,7 +182,7 @@ void objObjectsTick(void) {
 		pDll_expgfx->funcs->expgfx.func05(0, framesThisStep, 0, 0);
 	}
 
-	LAB_8008d10c();
+	objHitsFn_8008d100();
 	pDll_anim->funcs->anim.func0C();
 	pDll_anim->funcs->anim.func08();
 	pDll_camcontrol->funcs->camcontrol.func04(framesThisStep);
