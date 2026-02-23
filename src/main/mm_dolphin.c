@@ -397,11 +397,7 @@ void checkHeaps(void) { // 8007BDFC
     }
 }
 
-inline void *dummy_0x8007c054(void *ptr) {
-    //generates a useless cmpwi
-    return ptr;
-}
-void _mmHeapFree(void *ptr) { // 8007BFD8 regswap
+void _mmHeapFree(void *ptr) { // 8007BFD8
 	int idx;
 	HeapEntry *ent;
 	int ii;
@@ -409,11 +405,12 @@ void _mmHeapFree(void *ptr) { // 8007BFD8 regswap
     idx = _mmGetHeapIdx(ptr);
 	if(idx == -1) return;
     ent = heaps[idx].data;
+	STUBBED_OP(ent);
     ii = 0;
     do {
         if(ent[ii].entry.loc == ptr) {
             if((ent[ii].type == 1) || (ent[ii].type == 4)) {
-                if(idx) dummy_0x8007c054(&ptr);
+                if(idx) STUBBED_OP(&ptr);
                 _mmActuallyFree(idx, ii);
             }
             return;
