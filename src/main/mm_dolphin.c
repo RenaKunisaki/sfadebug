@@ -244,24 +244,24 @@ const char *name) { // 8007B7F4
 }
 
 void *mmAlloc2(volatile int size, u32 tag, const char *name) { // 8007BADC
-	// eq except regswap
 	u32 *tags;
 	u32 *crash;
 	volatile u32 crash2;
 	void *result;
 
 	tags = allocTagColorTbl;
+	STUBBED_OP(tags);
 	if(tag <= ALLOC_TAG_TEST_COL) tag = tags[tag];
 	if(!size) {
-		result = NULL;
-		crash2 = ((u32*)result)[5];
+		crash = NULL;
+		crash2 = ((u32*)crash)[5];
 		return NULL;
 	}
 
 	result = heapAlloc(1, size, tag, name);
 	if(!result) {
 		crash = NULL;
-		crash2 = crash[5];
+		crash2 = ((u32*)crash)[5];
 	}
 	return result;
 }
