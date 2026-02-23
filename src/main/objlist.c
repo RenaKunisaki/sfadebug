@@ -53,24 +53,26 @@ void objListAdd(ObjectList *list, ObjInstance *addAfter, ObjInstance *obj) { //8
  */
 void objListRemove(ObjectList *list, ObjInstance *obj) { //80070648
 	ObjInstance *newNext;
-	ObjInstance *prev;
-	ObjInstance *next;
+	int iter;
+	int iter2;
 
-	if(list->obj == obj) { //remove first element
+	if((int)list->obj == (int)obj) { //remove first element
 		list->obj = *(ObjInstance **)((int)list->obj + list->stride);
 		list->count--;
 	} else { //find this element in the list
-		prev = list->obj;
-		for(next = prev; next && next != obj;
-        next = *(ObjInstance **)((int)next + list->stride)) {
-			prev = next;
+		iter2 = (int)list->obj;
+		iter = iter2;
+        STUBBED_OP(iter);
+        while(iter2 && iter2 != (int)obj) {
+            iter = iter2;
+            iter2 = *(int*)(iter2 + list->stride);
 		}
-		if(next) { //remove it
-			newNext = *(ObjInstance **)((int)next + list->stride);
-			if(next == list->obj) {
+		if(iter2) { //remove it
+			newNext = *(ObjInstance **)(iter2 + list->stride);
+			if(iter2 == (int)list->obj) {
 				list->obj = newNext;
 			} else {
-				*(ObjInstance **)((int)prev + list->stride) = newNext;
+				*(ObjInstance **)(iter + list->stride) = newNext;
 			}
 			list->count--;
 		}
