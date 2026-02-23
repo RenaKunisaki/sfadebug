@@ -504,7 +504,7 @@ config.libs = [
             Object(Matching, "main/models_dolphin.c",
                 extra_cflags=[*cflags_base, "-O0,s", "-use_lmw_stmw on"],
             ),
-            Object(NonMatching, "main/objlist.c"),
+            Object(Matching, "main/objlist.c"),
             Object(Matching, "main/objects.c"),
             Object(NonMatching, "main/objprint.c"),
             Object(Matching, "main/pi.c"),
