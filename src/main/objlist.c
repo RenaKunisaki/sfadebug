@@ -29,10 +29,10 @@ void objListInit(ObjectList *list, short stride) { //800705d8
 void objListAdd(ObjectList *list, ObjInstance *addAfter, ObjInstance *obj) { //800705e8
 	ObjInstance *prev;
 
-	if(!list->obj) { //first slot is empty, put it there
+	if(!(int)list->obj) { //first slot is empty, put it there
 		list->obj = obj;
 	} else {
-		if(!addAfter) { //insert at beginning
+		if(!(int)addAfter) { //insert at beginning
 			prev = list->obj;
 			list->obj = obj;
 		} else {
