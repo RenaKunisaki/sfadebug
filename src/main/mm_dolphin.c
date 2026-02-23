@@ -419,12 +419,8 @@ void _mmHeapFree(void *ptr) { // 8007BFD8
     } while(ii != -1);
 }
 
-inline void *dummy_0x8007c094(void *ptr) {
-    //generates a useless cmpwi
-    return ptr;
-}
 void _mmAddToFreeList(void *ptr) { // 8007C090
-    if(freeListEntries >= 0x400) dummy_0x8007c094(ptr);
+    if(freeListEntries >= 0x400) STUBBED_OP(ptr);
 	freeList[freeListEntries].ptr = ptr;
 	freeList[freeListEntries].delay = mmDelay;
 	freeListEntries = freeListEntries + 1;
