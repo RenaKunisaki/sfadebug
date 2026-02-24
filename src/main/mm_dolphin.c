@@ -266,49 +266,47 @@ void *mmAlloc2(volatile int size, u32 tag, const char *name) { // 8007BADC
 	return result;
 }
 
-inline void *dummy_0x8007bd00(void *ptr) {
-    //generates a useless cmpwi
-    return ptr;
-}
 void *heapAlloc(volatile int iHeap, volatile int size,
-u32 tag, const char *name) { // 8007BB74 regalloc
-	u32 irq;
+u32 tag, const char *name) { //8007BB74
 	void *result;
 	HeapEntry *data;
-	volatile int largest;
-	volatile int smallest;
-	int iVar3;
+	int largest; //sp18
+	int smallest; //r26
+	int idx;
 	int iEntry;
-    int size2;
+	u32 irq;
 
-	smallest = 0;
+	largest = 0;
     irq = n64DisableInterrupts();
 
 	heaps[iHeap].used2 += size;
-    do { size; } while(0);
+    if(size) STUBBED_OP(tag); //could be wrong var
 	if(heaps[iHeap].used + 1 == heaps[iHeap].avail) {
         n64EnableInterrupts(irq);
 		return NULL;
 	}
 
-    if(size & 0x1f) size = (size & ~0x1F) + 0x20;
+    if(size & 0x1f) size = (size & ~0x1F) + 0x20; //align
     iEntry = -1;
-    largest = 0x7fffffff;
-    data = &heaps[iHeap].data[iVar3=0];
+    smallest = 0x7fffffff;
+	data = heaps[iHeap].data;
+	idx  = 0;
     do {
-        if(data->type == 0) {
-            size2 = (int)data->entry.size;
-            if(size2 >= smallest) {
-                if(size2 < smallest) {
-                    largest = data->entry.size;
-                }
-                iEntry = iVar3;
-            } else if(largest > (int)data->entry.size) {
-                largest = data->entry.size;
-                iEntry = iVar3;
-            }
-        }
-    } while((iVar3 = data->next) != -1);
+		data = &data[idx];
+        if(data->type != 0) continue;
+		if((int)data->entry.size >= size) {
+			if((int)data->entry.size >= smallest) continue;
+			smallest = data->entry.size;
+			iEntry = idx;
+		} else if((int)data->entry.size > largest) {
+			largest = data->entry.size;
+		}
+    } while((idx = data->next) != -1);
+
+	//force these to be allocated on the stack
+	//STUBBED_OP(&smallest);
+	STUBBED_OP(&largest);
+	STUBBED_OP(&tag);
 
     if(iEntry != -1) {
         heapSetEntry(iHeap, iEntry, size, 1, 0, tag, name);
@@ -316,8 +314,10 @@ u32 tag, const char *name) { // 8007BB74 regalloc
         n64EnableInterrupts(irq);
         return *(void**)result;
     }
+	//failure case
+	//@bug interrupts aren't re-enabled
     if((iHeap == 2 && size > 0x3000) || (iHeap != 3 && iHeap == 1)) {
-        result = dummy_0x8007bd00(result);
+        STUBBED_OP(result);
     }
     return NULL;
 }
