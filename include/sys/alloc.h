@@ -79,7 +79,7 @@ typedef struct {
   /* 0x0 */ uint mode;
   /* 0x4 */ ushort width;
   /* 0x6 */ ushort height;
-  /* 0x8 */ short height2;
+  /* 0x8 */ ushort height2;
   /* 0xa */ short unkA;
   /* 0xc */ short unkC;
   /* 0xe */ ushort width2;

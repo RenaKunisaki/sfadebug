@@ -23,6 +23,25 @@
 };
 /* clang-format on */
 
+const char *allocTagNames[] = {
+	"LISTS_COL",
+	"SCREEN_COL",
+	"CODE_COL",
+	"TRACK_COL",
+	"TRACKTEX_COL",
+	"SPRITETEX_COL",
+	"MODELS_COL",
+	"ANIMS_COL",
+	"AUDIO_COL",
+	"OBJECTS_COL",
+	"ANIMSEQ_COL",
+	"EXPGFX_COL",
+	"MODGFX_COL",
+	"PROJGFX_COL",
+	"SHAD_COL",
+	"GAME_COL",
+	"TEST_COL"};
+
 //.bss
 /* 803555F8 */ Heap heaps[MAX_HEAPS];
 /* 80355698 */ FreeListEntry freeList[MAX_FREELIST_SIZE];
@@ -39,59 +58,99 @@
 /* 80398B78 */ extern TVParams *curTvParams; // probably doesn't belong here
 
 
+//debug strings that need to be put in appropriate places
+// * marks those that have been placed
+// * "LISTS_COL"
+// * "SCREEN_COL"
+// * "CODE_COL"
+// * "TRACK_COL"
+// * "TRACKTEX_COL"
+// * "SPRITETEX_COL"
+// * "MODELS_COL"
+// * "ANIMS_COL"
+// * "AUDIO_COL"
+// * "OBJECTS_COL"
+// * "ANIMSEQ_COL"
+// * "EXPGFX_COL"
+// * "MODGFX_COL"
+// * "PROJGFX_COL"
+// * "SHAD_COL"
+// * "GAME_COL"
+// * "TEST_COL"
+// * "####### MEM large %d  overall %d\n"
+// * "####### MEM medium %d\n"
+// * "mm_dolphin.c""Memory region setup is too big"
+// * "####### MEM small %d\n"
+//   "1:mmAlloc(%d,%d): Size==0 : RA:0x%08x\n"
+//   "4:mmAlloc(%s,%d): failed : RA:0x%08x\n"
+//   "mmRealloc(0x%08x,%d), RA:0x%08x\n"
+//   "mmAllocDi(%s,%d): Size==0 : RA:0x%08x\n"
+//   "mmAllocDi(%s,%d): failed : RA:0x%08x\n"
+//   "*** mmAlloc: size = 0 ***\n"
+//   "1: *** mm Error *** ---> '%s' No more slots available.\n"
+//   "\n2: *** mm Error *** --->  '%s' region=%d col=%x wantsize=%d largestsize=%d...No suitble block found for allocation.\n"
+//   "*** mmAllocAtAddr: '%s' size = 0 ***\n"
+//   "\n3: *** mm Error *** ---> No more slots available.\n"
+//   "\n4: *** mm Error *** ---> Can't allocate memory '%s' at desired address.\n"
+//   "\n5: *** mm Error *** ---> Can't free ram at this location: %x\n"
+//   "\n6: *** mm Error *** ---> No match found for mmFree, %08x.\n"
+//   "\n7: *** mm Error *** ---> stbf stack too deep!\n"
+//   "mem %dk/%dk %dk/%dk %dk/%dk\n\tslot %d/%d %d/%d %d/%d\t\n"
+//   "mm:audioheap"
+
+
 void _mmHeapFree(void *ptr);
 void _mmAddToFreeList(void *ptr);
 void _mmActuallyFree(int iHeap, int iEntry);
 
 void initHeaps(void) { // 8007B3A4
-	int iVar1;
+	int frameBufSize;
 	size_t size;
-	void *pvVar2;
+	void *ptr;
 	void *arenaEnd;
 	OSHeapHandle heap;
-	u32 *tags;
-
-	tags = allocTagColorTbl; // probably fake for string reloc
 
 	numHeaps = 0;
-	pvVar2 = OSGetArenaLo();
-	iVar1 = (curTvParams->width + 0xf & 0xfff0) *
-        (ushort)curTvParams->height2 * 2;
-	pFrameBuffer_80398b74 = (void *)OSRoundUp32B(pvVar2);
-	pFrameBuffer_80398b70
-	    = (void *)OSRoundUp32B((u32)pFrameBuffer_80398b74 + iVar1);
-	pvVar2 = (void *)OSRoundUp32B((u32)pFrameBuffer_80398b70 + iVar1);
-	OSSetArenaLo(pvVar2);
+	ptr = OSGetArenaLo();
+	frameBufSize = (curTvParams->width + 0xf & 0xfff0) * curTvParams->height2 * 2;
+	pFrameBuffer_80398b74 = (void *)OSRoundUp32B(ptr);
+	pFrameBuffer_80398b70 = (void *)OSRoundUp32B((u32)pFrameBuffer_80398b74 + frameBufSize);
+	ptr = (void *)OSRoundUp32B((u32)pFrameBuffer_80398b70 + frameBufSize);
+	OSSetArenaLo(ptr);
 
 	arenaEnd = OSGetArenaHi();
-	pvVar2 = OSInitAlloc(pvVar2, arenaEnd, 1);
-	OSSetArenaLo(pvVar2);
+	ptr = OSInitAlloc(ptr, arenaEnd, 1);
+	OSSetArenaLo(ptr);
 
-	pvVar2 = (void *)OSRoundUp32B(pvVar2);
+	ptr = (void *)OSRoundUp32B(ptr);
 	arenaEnd = (void *)((uint)arenaEnd & ~0x1f);
-	heap = OSCreateHeap(pvVar2, arenaEnd);
+	heap = OSCreateHeap(ptr, arenaEnd);
 	OSSetCurrentHeap(heap);
 
-	size = (uint)arenaEnd - (uint)pvVar2 - 0x5a0000;
-	pvVar2 = OSAllocFromHeap(__OSCurrHeap, size);
-	memset_(pvVar2, 0, size);
-	DCFlushRange(pvVar2, size);
-	heapInit((HeapEntry *)pvVar2, size, 0x2ee);
+	size = (uint)arenaEnd - (uint)ptr - 0x5a0000;
+	ptr = OSAllocFromHeap(__OSCurrHeap, size);
+	//missing parameter here, no way to know what
+	STUBBED_PRINTF("####### MEM large %d  overall %d\n", size);
+	memset_(ptr, 0, size);
+	DCFlushRange(ptr, size);
+	heapInit((HeapEntry *)ptr, size, 750);
 
     size = 0x500000;
-	pvVar2 = OSAllocFromHeap(__OSCurrHeap, size);
-	memset_(pvVar2, 0, size);
-	DCFlushRange(pvVar2, size);
-	heapInit((HeapEntry *)pvVar2, size, 0x5aa);
+	ptr = OSAllocFromHeap(__OSCurrHeap, size);
+	STUBBED_PRINTF("####### MEM medium %d\n", size);
+	memset_(ptr, 0, size);
+	DCFlushRange(ptr, size);
+	heapInit((HeapEntry *)ptr, size, 1450);
 
-    size = 0x9ffa0;
-	pvVar2 = OSAllocFromHeap(__OSCurrHeap, size);
-	if(!pvVar2) {
-		OSPanic(__FILE__, 0x142, "Memory region setup is too big");
+    size = 0x5a0000 - (0x500000 + 0x60); //0x9ffa0
+	ptr = OSAllocFromHeap(__OSCurrHeap, size);
+	if(!ptr) {
+		OSPanic(__FILE__, 322, "Memory region setup is too big");
 	}
-	memset_(pvVar2, 0, size);
-	DCFlushRange(pvVar2, size);
-	heapInit((HeapEntry *)pvVar2, size, 0x76c);
+	STUBBED_PRINTF("####### MEM small %d\n", size);
+	memset_(ptr, 0, size);
+	DCFlushRange(ptr, size);
+	heapInit((HeapEntry *)ptr, size, 1900);
 	mmSetDelay(2);
 	freeListEntries = 0;
 	return;
@@ -274,7 +333,7 @@ u32 tag, const char *name) { //8007BB74
 	int smallest; //r26
 	int idx;
 	int iEntry;
-	u32 irq;
+	u32 irq; //r24
 
 	largest = 0;
     irq = n64DisableInterrupts();
@@ -282,6 +341,7 @@ u32 tag, const char *name) { //8007BB74
 	heaps[iHeap].used2 += size;
     if(size) STUBBED_OP(tag); //could be wrong var
 	if(heaps[iHeap].used + 1 == heaps[iHeap].avail) {
+		//out of slots
         n64EnableInterrupts(irq);
 		return NULL;
 	}
@@ -306,7 +366,7 @@ u32 tag, const char *name) { //8007BB74
 	//force these to be allocated on the stack
 	//STUBBED_OP(&smallest);
 	STUBBED_OP(&largest);
-	STUBBED_OP(&tag);
+	//STUBBED_OP(&tag);
 
     if(iEntry != -1) {
         heapSetEntry(iHeap, iEntry, size, 1, 0, tag, name);
