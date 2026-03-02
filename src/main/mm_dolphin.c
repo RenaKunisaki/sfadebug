@@ -86,9 +86,9 @@ const char *allocTagNames[] = {
 // * "mmRealloc(0x%08x,%d), RA:0x%08x\n"
 // * "mmAllocDi(%s,%d): Size==0 : RA:0x%08x\n"
 // * "mmAllocDi(%s,%d): failed : RA:0x%08x\n"
-//   "*** mmAlloc: size = 0 ***\n"
-//   "1: *** mm Error *** ---> '%s' No more slots available.\n"
-//   "\n2: *** mm Error *** --->  '%s' region=%d col=%x wantsize=%d largestsize=%d...No suitble block found for allocation.\n"
+// * "*** mmAlloc: size = 0 ***\n"
+// * "1: *** mm Error *** ---> '%s' No more slots available.\n"
+// * "\n2: *** mm Error *** --->  '%s' region=%d col=%x wantsize=%d largestsize=%d...No suitble block found for allocation.\n"
 //   "*** mmAllocAtAddr: '%s' size = 0 ***\n"
 //   "\n3: *** mm Error *** ---> No more slots available.\n"
 //   "\n4: *** mm Error *** ---> Can't allocate memory '%s' at desired address.\n"
@@ -328,8 +328,7 @@ void *mmAllocDi(int size, u32 tag, const char *name) { // 8007BADC
 	return result;
 }
 
-void *heapAlloc(volatile int iHeap, volatile int size,
-u32 tag, const char *name) { //8007BB74
+void *heapAlloc(int region, int size, u32 tag, const char *name) { //8007BB74
 	void *result;
 	HeapEntry *data;
 	int largest; //sp18
@@ -341,10 +340,12 @@ u32 tag, const char *name) { //8007BB74
 	largest = 0;
     irq = n64DisableInterrupts();
 
-	heaps[iHeap].used2 += size;
-    if(size) STUBBED_OP(tag); //could be wrong var
-	if(heaps[iHeap].used + 1 == heaps[iHeap].avail) {
-		//out of slots
+	heaps[region].used2 += size;
+    if(!size) { //@bug wrong function name
+		STUBBED_PRINTF("*** mmAlloc: size = 0 ***\n");
+	}
+	if(heaps[region].used + 1 == heaps[region].avail) {
+		STUBBED_PRINTF("1: *** mm Error *** ---> '%s' No more slots available.\n", name);
         n64EnableInterrupts(irq);
 		return NULL;
 	}
@@ -352,7 +353,7 @@ u32 tag, const char *name) { //8007BB74
     if(size & 0x1f) size = (size & ~0x1F) + 0x20; //align
     iEntry = -1;
     smallest = 0x7fffffff;
-	data = heaps[iHeap].data;
+	data = heaps[region].data;
 	idx  = 0;
     do {
 		data = &data[idx];
@@ -366,21 +367,19 @@ u32 tag, const char *name) { //8007BB74
 		}
     } while((idx = data->next) != -1);
 
-	//force these to be allocated on the stack
-	//STUBBED_OP(&smallest);
-	STUBBED_OP(&largest);
-	//STUBBED_OP(&tag);
-
     if(iEntry != -1) {
-        heapSetEntry(iHeap, iEntry, size, 1, 0, tag, name);
+        heapSetEntry(region, iEntry, size, 1, 0, tag, name);
         result = &data[iEntry].entry.loc;
         n64EnableInterrupts(irq);
         return *(void**)result;
     }
 	//failure case
 	//@bug interrupts aren't re-enabled
-    if((iHeap == 2 && size > 0x3000) || (iHeap != 3 && iHeap == 1)) {
-        STUBBED_OP(result);
+    if((region == 2 && size > 0x3000) || (region != 3 && region == 1)) {
+        STUBBED_PRINTF("\n2: *** mm Error *** --->  '%s' "
+			"region=%d col=%x wantsize=%d largestsize=%d..."
+			"No suitble block found for allocation.\n", name, region,
+			tag, size, largest);
     }
     return NULL;
 }

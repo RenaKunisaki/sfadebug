@@ -125,7 +125,7 @@ void *heapInit(HeapEntry *addr, int size, int nSlots);
 void *mmAlloc(volatile int size, volatile u32 tag, volatile u32 name);
 void *mmRealloc(void *volatile offset, volatile int size, const char *name);
 void *mmAllocDi(int size, u32 tag, const char *name);
-void *heapAlloc(volatile int heap, volatile int size, u32 tag, const char *name);
+void *heapAlloc(int heap, int size, u32 tag, const char *name);
 void mmSetDelay(int delay);
 void mmFree(void *__ptr);
 void checkHeaps(void);
