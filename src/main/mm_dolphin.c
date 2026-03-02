@@ -81,8 +81,8 @@ const char *allocTagNames[] = {
 // * "####### MEM medium %d\n"
 // * "mm_dolphin.c""Memory region setup is too big"
 // * "####### MEM small %d\n"
-//   "1:mmAlloc(%d,%d): Size==0 : RA:0x%08x\n"
-//   "4:mmAlloc(%s,%d): failed : RA:0x%08x\n"
+// * "1:mmAlloc(%d,%d): Size==0 : RA:0x%08x\n"
+// * "4:mmAlloc(%s,%d): failed : RA:0x%08x\n"
 //   "mmRealloc(0x%08x,%d), RA:0x%08x\n"
 //   "mmAllocDi(%s,%d): Size==0 : RA:0x%08x\n"
 //   "mmAllocDi(%s,%d): failed : RA:0x%08x\n"
@@ -105,7 +105,7 @@ void _mmActuallyFree(int iHeap, int iEntry);
 
 void initHeaps(void) { // 8007B3A4
 	int frameBufSize;
-	size_t size;
+	int size;
 	void *ptr;
 	void *arenaEnd;
 	OSHeapHandle heap;
@@ -196,18 +196,17 @@ void* heapInit(HeapEntry *addr, int size, int nSlots) { // 8007B580
 
 void *mmAlloc(volatile int size, volatile u32 tag, volatile u32 name) { // 8007B690
 	void *result;
-	u32 *tags;
 	void *crash;
 	volatile u32 crash2;
 
-	tags = allocTagColorTbl;
 	if(!size) {
+		STUBBED_PRINTF("1:mmAlloc(%d,%d): Size==0 : RA:0x%08x\n");
 		crash = NULL;
 		crash2 = *(volatile u32 *)((u32)crash + 0x14);
 		return NULL;
 	}
 
-	if(tag <= ALLOC_TAG_TEST_COL) tag = tags[tag];
+	if(tag <= ALLOC_TAG_TEST_COL) tag = allocTagColorTbl[tag];
 	if(size >= 0x3000 || n64RamSize != 0x800000) {
 		result = heapAlloc(0, size, tag, (const char *)name);
 		if(!result) result = heapAlloc(1, size, tag, (const char *)name);
@@ -220,6 +219,7 @@ void *mmAlloc(volatile int size, volatile u32 tag, volatile u32 name) { // 8007B
 	}
 
 	if(!result) {
+		STUBBED_PRINTF("4:mmAlloc(%s,%d): failed : RA:0x%08x\n");
 		crash = NULL;
 		crash2 = *(volatile u32 *)((u32)crash + 0x14);
 	}
