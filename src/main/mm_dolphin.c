@@ -83,9 +83,9 @@ const char *allocTagNames[] = {
 // * "####### MEM small %d\n"
 // * "1:mmAlloc(%d,%d): Size==0 : RA:0x%08x\n"
 // * "4:mmAlloc(%s,%d): failed : RA:0x%08x\n"
-//   "mmRealloc(0x%08x,%d), RA:0x%08x\n"
-//   "mmAllocDi(%s,%d): Size==0 : RA:0x%08x\n"
-//   "mmAllocDi(%s,%d): failed : RA:0x%08x\n"
+// * "mmRealloc(0x%08x,%d), RA:0x%08x\n"
+// * "mmAllocDi(%s,%d): Size==0 : RA:0x%08x\n"
+// * "mmAllocDi(%s,%d): failed : RA:0x%08x\n"
 //   "*** mmAlloc: size = 0 ***\n"
 //   "1: *** mm Error *** ---> '%s' No more slots available.\n"
 //   "\n2: *** mm Error *** --->  '%s' region=%d col=%x wantsize=%d largestsize=%d...No suitble block found for allocation.\n"
@@ -227,7 +227,7 @@ void *mmAlloc(volatile int size, volatile u32 tag, volatile u32 name) { // 8007B
 	return result;
 }
 
-void *realloc(void *volatile offset, volatile int size,
+void *mmRealloc(void *volatile offset, volatile int size,
 const char *name) { // 8007B7F4
 	int iHeap;
 	int uVar4;
@@ -239,8 +239,10 @@ const char *name) { // 8007B7F4
 	volatile u32 crash2;
 
 	if(size <= 0) {
+		STUBBED_PRINTF("mmRealloc(0x%08x,%d), RA:0x%08x\n");
+		//something to do with getting the return address
 		crash = NULL;
-		crash2 = *(volatile u32 *)((u32)crash + 0x14);
+		crash2 = ((u32*)crash)[5];
 		return NULL;
 	}
 
@@ -302,16 +304,15 @@ const char *name) { // 8007B7F4
 	return offset;
 }
 
-void *mmAlloc2(volatile int size, u32 tag, const char *name) { // 8007BADC
-	u32 *tags;
+void *mmAllocDi(int size, u32 tag, const char *name) { // 8007BADC
 	u32 *crash;
 	volatile u32 crash2;
 	void *result;
 
-	tags = allocTagColorTbl;
-	STUBBED_OP(tags);
-	if(tag <= ALLOC_TAG_TEST_COL) tag = tags[tag];
+	if(tag <= ALLOC_TAG_TEST_COL) tag = allocTagColorTbl[tag];
 	if(!size) {
+		STUBBED_PRINTF("mmAllocDi(%s,%d): Size==0 : RA:0x%08x\n",
+			name, size);
 		crash = NULL;
 		crash2 = ((u32*)crash)[5];
 		return NULL;
@@ -319,6 +320,8 @@ void *mmAlloc2(volatile int size, u32 tag, const char *name) { // 8007BADC
 
 	result = heapAlloc(1, size, tag, name);
 	if(!result) {
+		STUBBED_PRINTF("mmAllocDi(%s,%d): failed : RA:0x%08x\n",
+			name, size);
 		crash = NULL;
 		crash2 = ((u32*)crash)[5];
 	}

@@ -82,7 +82,7 @@ void diFn_800703c4(DiStack *stack, int *); // 800703c4
 void diStackPop(DiStack *stack, void *out); // 80070440
 int ret0_800BFC8C(void); // 800BFC8C
 void nop_800BFBF0(UNKTYPE *, UNKTYPE *, int);
-void *mmAlloc2(uint size, uint tag, char *name); // 8007badc
+void *mmAllocDi(uint size, uint tag, char *name); // 8007badc
 void memcpy_src_dst_len(void *src, void *dst, size_t len); // 800bfc20
 void debugSaveFn_8017a688(void);
 void nop_800BFC0C(void *param);
@@ -189,15 +189,15 @@ void perfInit(void) { // 80179ec0 matching except string offsets
 	DWORD_803997c8 = 0;
 	DWORD_803997cc = 0;
 	DWORD_80399820 = DWORD_80399824 = 0;
-	meter_distack  = mmAlloc2(16384, 0xff00ff, "meter:distack");
-	meter_cpustack = mmAlloc2(16000, 0xff00ff, "meter:cpustack");
-	meter_times    = mmAlloc2(16192, 0xff00ff, "meter:times");
-	meter_rcptimes = mmAlloc2( 3200, 0xff00ff, "meter:rcptimes");
-	meter_cputimes = mmAlloc2(16000, 0xff00ff, "meter:cputimes");
-	meter_actimes  = mmAlloc2( 3200, 0xff00ff, "meter:actimes");
-	meter_sctimes  = mmAlloc2( 6400, 0xff00ff, "meter:sctimes");
-	meter_cmdbuf   = mmAlloc2( 1024, 0xff00ff, "meter:cmdbuf");
-	meter_gfx      = mmAlloc2(64832, 0xff00ff, "meter:gfx");
+	meter_distack  = mmAllocDi(16384, 0xff00ff, "meter:distack");
+	meter_cpustack = mmAllocDi(16000, 0xff00ff, "meter:cpustack");
+	meter_times    = mmAllocDi(16192, 0xff00ff, "meter:times");
+	meter_rcptimes = mmAllocDi( 3200, 0xff00ff, "meter:rcptimes");
+	meter_cputimes = mmAllocDi(16000, 0xff00ff, "meter:cputimes");
+	meter_actimes  = mmAllocDi( 3200, 0xff00ff, "meter:actimes");
+	meter_sctimes  = mmAllocDi( 6400, 0xff00ff, "meter:sctimes");
+	meter_cmdbuf   = mmAllocDi( 1024, 0xff00ff, "meter:cmdbuf");
+	meter_gfx      = mmAllocDi(64832, 0xff00ff, "meter:gfx");
 	initPerfMon();
 	if(DWORD_80396e88 == 0) {
 		DWORD_8039984c = 0x307e;
@@ -233,8 +233,8 @@ void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8 matching except string off
 	} else if(param1 == 1) {
 		diMenuHide();
 		debugSaveFn_8017a688();
-		pMeterPerfdata1 = mmAlloc2(0x286e0, 0xff00ff, "meter:perfdata1");
-		pMeterPerfdata2 = (DebugSaveStruct *)mmAlloc2(
+		pMeterPerfdata1 = mmAllocDi(0x286e0, 0xff00ff, "meter:perfdata1");
+		pMeterPerfdata2 = (DebugSaveStruct *)mmAllocDi(
 			0x124, 0xff00ff, "meter:perfdata2");
 		if((pMeterPerfdata1 == 0) || (pMeterPerfdata2 == 0)) {
 			printf("Sorry No DI memory left to store profile.");
@@ -248,8 +248,8 @@ void diProfStoreFn_8017a0d8(int param1) { // 8017A0D8 matching except string off
 	} else if(param1 == 2) {
 		diMenuHide();
 		debugSaveFn_8017a688();
-		pMeterPerfdata1 = mmAlloc2(0x5c, 0xff00ff, "meter:perfdata3");
-		pMeterPerfdata2 = (DebugSaveStruct *)mmAlloc2(
+		pMeterPerfdata1 = mmAllocDi(0x5c, 0xff00ff, "meter:perfdata3");
+		pMeterPerfdata2 = (DebugSaveStruct *)mmAllocDi(
 			0x124, 0xff00ff, "meter:perfdata4");
 		if((pMeterPerfdata1 == 0) || (pMeterPerfdata2 == 0)) {
 			printf("Sorry No DI memory left to store profile.");

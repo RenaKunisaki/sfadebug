@@ -83,7 +83,7 @@ void Object_initObjects(void) {
 	//load object type index
 	//XXX this should probably be FILE_OBJECTS_tab?
 	//not sure if bug or we have wrong file IDs
-	Object_objTypes = mmAlloc2(
+	Object_objTypes = mmAllocDi(
 	    Object_pObjectsTab[Object_maxObjId] + 0x10,
 		ALLOC_TAG_OBJECTS_COL,
 		"obj:objtypes");

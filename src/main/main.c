@@ -909,9 +909,9 @@ void allocFrameBuffers(void) { //800793B4
     main_pol[1] = main_pol[0] + 1000;
     main_vtx[0] = (N64Vertex *)mmAlloc(32000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:vtx");
     main_vtx[1] = main_vtx[0] + 1000;
-    main_dipol[0] = (Pol *)mmAlloc2(96000,1,"main:dipol");
+    main_dipol[0] = (Pol *)mmAllocDi(96000,1,"main:dipol");
     main_dipol[1] = main_dipol[0] + 3000;
-    main_divtx[0] = (N64Vertex *)mmAlloc2(0xe100,1,"main:divtx");
+    main_divtx[0] = (N64Vertex *)mmAllocDi(0xe100,1,"main:divtx");
     main_divtx[1] = main_divtx[0] + 0x708;
 }
 
