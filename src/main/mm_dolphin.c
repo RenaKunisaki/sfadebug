@@ -406,20 +406,6 @@ void mmFree(void *__ptr) { // 8007BDA4
 	n64EnableInterrupts(irq);
 }
 
-inline void countHeap(int idx, int *out) {
-    int iVar3;
-	HeapEntry *entry;
-    entry = heaps[idx].data;
-	do {
-		if(entry->type) {
-			*out += entry->entry.size;
-		}
-		iVar3 = entry->next;
-		if(iVar3 == -1) break;
-        entry = heaps[idx].data + iVar3;
-	} while(iVar3 != -1);
-}
-
 inline void handleFreeLists() {
     u32 irq;
     int iVar3;
@@ -440,24 +426,35 @@ inline void handleFreeLists() {
 	n64EnableInterrupts(irq);
 }
 
+#define CHECK_HEAP(IDX, USED) do { \
+	entry = heaps[IDX].data; \
+	do { \
+		if(entry->type) { \
+			USED += entry->entry.size; \
+		} \
+		ii = entry->next; \
+		if(ii != -1) entry = heaps[IDX].data + ii; \
+	} while(ii != -1); \
+} while(0)
+
 void checkHeaps(void) { // 8007BDFC
-	int pct;
-	int iVar3;
+	int ii;
+	HeapEntry *entry;
 
 	handleFreeLists();
 	heapUsed0 = 0;
 	heapUsed2 = 0; //out of order
 	heapUsed1 = 0;
-    countHeap(0, &heapUsed0);
-    countHeap(1, &heapUsed1);
-    countHeap(2, &heapUsed2);
 
-	pct = memUsedPct++;
-    iVar3 = 500;
-	if(!(pct - ((pct / iVar3) * iVar3))) {
+	CHECK_HEAP(0, heapUsed0);
+	CHECK_HEAP(1, heapUsed1);
+	CHECK_HEAP(2, heapUsed2);
+
+	if(!(memUsedPct++ % 500)) {
         getTotalHeapUsed(0);
     }
 }
+#undef CHECK_HEAP
 
 void _mmHeapFree(void *ptr) { // 8007BFD8
 	int idx;
