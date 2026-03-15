@@ -501,7 +501,7 @@ int _mmGetHeapIdx(void *offset) { // 8007C0DC
 	return -1;
 }
 
-void _mmActuallyFree(int iHeap, int iEntry) { // 8007C154 regswap
+void _mmActuallyFree(int iHeap, int iEntry) { //8007C154
 	int next;
 	int prev;
 	int tmp;
@@ -518,18 +518,18 @@ void _mmActuallyFree(int iHeap, int iEntry) { // 8007C154 regswap
 		tmp = entry[next].next;
 		entry[iEntry].next = tmp;
 		if(tmp != -1) {
-            entry[tmp].prev = (s16)iEntry;
+            entry[tmp].prev = iEntry;
         }
 		entry[--heaps[iHeap].used].stack = next;
 	}
 	if((prev != -1) && (entry[prev].type == 0)) {
 		entry[prev].entry.size += entry[iEntry].entry.size;
-		next = entry[iEntry].next;
-		entry[prev].next = next;
-		if(next != -1) {
-            entry[next].prev = prev;
+		tmp = entry[iEntry].next;
+		entry[prev].next = tmp;
+		if(tmp != -1) {
+            entry[tmp].prev = prev;
         }
-		entry[--heaps[iHeap].used].stack = (s16)iEntry;
+		entry[--heaps[iHeap].used].stack = iEntry;
 	}
 	return;
 }
