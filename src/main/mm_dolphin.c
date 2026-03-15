@@ -106,13 +106,15 @@ void _mmActuallyFree(int iHeap, int iEntry);
 void initHeaps(void) { // 8007B3A4
 	int frameBufSize;
 	int size;
+	uint width;
 	void *ptr;
 	void *arenaEnd;
 	OSHeapHandle heap;
 
 	numHeaps = 0;
 	ptr = OSGetArenaLo();
-	frameBufSize = (curTvParams->width + 0xf & 0xfff0) * curTvParams->height2 * 2;
+	width = curTvParams->width + 0xf & 0xfff0;
+	frameBufSize = width * curTvParams->height2 * 2;
 	pFrameBuffer_80398b74 = (void *)OSRoundUp32B(ptr);
 	pFrameBuffer_80398b70 = (void *)OSRoundUp32B((u32)pFrameBuffer_80398b74 + frameBufSize);
 	ptr = (void *)OSRoundUp32B((u32)pFrameBuffer_80398b70 + frameBufSize);
