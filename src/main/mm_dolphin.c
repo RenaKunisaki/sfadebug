@@ -106,30 +106,31 @@ void _mmActuallyFree(int iHeap, int iEntry);
 void initHeaps(void) { // 8007B3A4
 	int frameBufSize;
 	int size;
-	uint width;
 	void *ptr;
+	void *frameBuf;
 	void *arenaEnd;
 	OSHeapHandle heap;
 
 	numHeaps = 0;
-	ptr = OSGetArenaLo();
-	width = curTvParams->width + 0xf & 0xfff0;
-	frameBufSize = width * curTvParams->height2 * 2;
-	pFrameBuffer_80398b74 = (void *)OSRoundUp32B(ptr);
+
+	//final moves this framebuffer size logic to init()
+	frameBuf = OSGetArenaLo();
+	frameBufSize = (curTvParams->width + 0xf & 0xfff0) * curTvParams->height2 * 2;
+	pFrameBuffer_80398b74 = (void *)OSRoundUp32B(frameBuf);
 	pFrameBuffer_80398b70 = (void *)OSRoundUp32B((u32)pFrameBuffer_80398b74 + frameBufSize);
-	ptr = (void *)OSRoundUp32B((u32)pFrameBuffer_80398b70 + frameBufSize);
-	OSSetArenaLo(ptr);
+	frameBuf = (void *)OSRoundUp32B((u32)pFrameBuffer_80398b70 + frameBufSize);
+	OSSetArenaLo(frameBuf);
 
 	arenaEnd = OSGetArenaHi();
-	ptr = OSInitAlloc(ptr, arenaEnd, 1);
-	OSSetArenaLo(ptr);
+	frameBuf = OSInitAlloc(frameBuf, arenaEnd, 1);
+	OSSetArenaLo(frameBuf);
 
-	ptr = (void *)OSRoundUp32B(ptr);
+	frameBuf = (void *)OSRoundUp32B(frameBuf);
 	arenaEnd = (void *)((uint)arenaEnd & ~0x1f);
-	heap = OSCreateHeap(ptr, arenaEnd);
+	heap = OSCreateHeap(frameBuf, arenaEnd);
 	OSSetCurrentHeap(heap);
 
-	size = (uint)arenaEnd - (uint)ptr - 0x5a0000;
+	size = (uint)arenaEnd - (uint)frameBuf - 0x5a0000;
 	ptr = OSAllocFromHeap(__OSCurrHeap, size);
 	//missing parameter here, no way to know what
 	STUBBED_PRINTF("####### MEM large %d  overall %d\n", size);
@@ -155,7 +156,6 @@ void initHeaps(void) { // 8007B3A4
 	heapInit((HeapEntry *)ptr, size, 1900);
 	mmSetDelay(2);
 	freeListEntries = 0;
-	return;
 }
 
 void* heapInit(HeapEntry *addr, int size, int nSlots) { // 8007B580
@@ -343,7 +343,7 @@ void *heapAlloc(int region, int size, u32 tag, const char *name) { //8007BB74
     irq = n64DisableInterrupts();
 
 	heaps[region].used2 += size;
-    if(!size) { //@bug wrong function name
+    if(!size) { //@bug wrong function name (we already have an mmAlloc)
 		STUBBED_PRINTF("*** mmAlloc: size = 0 ***\n");
 	}
 	if(heaps[region].used + 1 == heaps[region].avail) {
@@ -354,7 +354,7 @@ void *heapAlloc(int region, int size, u32 tag, const char *name) { //8007BB74
 
     if(size & 0x1f) size = (size & ~0x1F) + 0x20; //align
     iEntry = -1;
-    smallest = 0x7fffffff;
+    smallest = INT_MAX;
 	data = heaps[region].data;
 	idx  = 0;
     do {
