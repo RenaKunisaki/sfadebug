@@ -113,6 +113,7 @@ void initHeaps(void) { // 8007B3A4
 
 	numHeaps = 0;
 
+	//allocate frame buffers
 	//final moves this framebuffer size logic to init()
 	frameBuf = OSGetArenaLo();
 	frameBufSize = (curTvParams->width + 0xf & 0xfff0) * curTvParams->height2 * 2;
@@ -130,22 +131,23 @@ void initHeaps(void) { // 8007B3A4
 	heap = OSCreateHeap(frameBuf, arenaEnd);
 	OSSetCurrentHeap(heap);
 
-	size = (uint)arenaEnd - (uint)frameBuf - 0x5a0000;
+	//large region: everything left over
+	size = (uint)arenaEnd - (uint)frameBuf - (MEM_MEDIUM_SIZE+MEM_SMALL_SIZE);
 	ptr = OSAllocFromHeap(__OSCurrHeap, size);
-	//missing parameter here, no way to know what
-	STUBBED_PRINTF("####### MEM large %d  overall %d\n", size);
+	STUBBED_PRINTF("####### MEM large %d  overall %d\n", size,
+		MEM_MEDIUM_SIZE+MEM_SMALL_SIZE);
 	memset_(ptr, 0, size);
 	DCFlushRange(ptr, size);
-	heapInit((HeapEntry *)ptr, size, 750);
+	heapInit((HeapEntry *)ptr, size, MEM_LARGE_SLOTS);
 
-    size = 0x500000;
+    size = MEM_MEDIUM_SIZE;
 	ptr = OSAllocFromHeap(__OSCurrHeap, size);
 	STUBBED_PRINTF("####### MEM medium %d\n", size);
 	memset_(ptr, 0, size);
 	DCFlushRange(ptr, size);
-	heapInit((HeapEntry *)ptr, size, 1450);
+	heapInit((HeapEntry *)ptr, size, MEM_MEDIUM_SLOTS);
 
-    size = 0x5a0000 - (0x500000 + 0x60); //0x9ffa0
+    size = MEM_SMALL_SIZE - 0x60; //0x9ffa0 (not sure where this 0x60 comes from)
 	ptr = OSAllocFromHeap(__OSCurrHeap, size);
 	if(!ptr) {
 		OSPanic(__FILE__, 322, "Memory region setup is too big");
@@ -153,7 +155,7 @@ void initHeaps(void) { // 8007B3A4
 	STUBBED_PRINTF("####### MEM small %d\n", size);
 	memset_(ptr, 0, size);
 	DCFlushRange(ptr, size);
-	heapInit((HeapEntry *)ptr, size, 1900);
+	heapInit((HeapEntry *)ptr, size, MEM_SMALL_SLOTS);
 	mmSetDelay(2);
 	freeListEntries = 0;
 }

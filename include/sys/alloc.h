@@ -1,5 +1,15 @@
 #ifndef _SYS_ALLOC_H_
 #define _SYS_ALLOC_H_
+
+//arena sizes in bytes
+//large size: all available minus these
+#define MEM_MEDIUM_SIZE 0x500000
+#define MEM_SMALL_SIZE  0x0a0000
+//arena slot counts
+#define MEM_LARGE_SLOTS 750
+#define MEM_MEDIUM_SLOTS 1450
+#define MEM_SMALL_SLOTS 1900
+
 typedef enum {
   ALLOC_TAG_ZERO            = 0x00000000,
   ALLOC_TAG_LISTS_COL       = 0x00000001,
