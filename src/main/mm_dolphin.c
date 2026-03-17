@@ -81,48 +81,6 @@ static const char *allocTagNames[] = {
 /* 80398B74 */ void *pFrameBuffer_80398b74;
 /* 80398B78 */ extern TVParams *curTvParams; // probably doesn't belong here
 
-
-//debug strings that need to be put in appropriate places
-// * marks those that have been placed
-// * "LISTS_COL"
-// * "SCREEN_COL"
-// * "CODE_COL"
-// * "TRACK_COL"
-// * "TRACKTEX_COL"
-// * "SPRITETEX_COL"
-// * "MODELS_COL"
-// * "ANIMS_COL"
-// * "AUDIO_COL"
-// * "OBJECTS_COL"
-// * "ANIMSEQ_COL"
-// * "EXPGFX_COL"
-// * "MODGFX_COL"
-// * "PROJGFX_COL"
-// * "SHAD_COL"
-// * "GAME_COL"
-// * "TEST_COL"
-// * "####### MEM large %d  overall %d\n"
-// * "####### MEM medium %d\n"
-// * "mm_dolphin.c""Memory region setup is too big"
-// * "####### MEM small %d\n"
-// * "1:mmAlloc(%d,%d): Size==0 : RA:0x%08x\n"
-// * "4:mmAlloc(%s,%d): failed : RA:0x%08x\n"
-// * "mmRealloc(0x%08x,%d), RA:0x%08x\n"
-// * "mmAllocDi(%s,%d): Size==0 : RA:0x%08x\n"
-// * "mmAllocDi(%s,%d): failed : RA:0x%08x\n"
-// * "*** mmAlloc: size = 0 ***\n"
-// * "1: *** mm Error *** ---> '%s' No more slots available.\n"
-// * "\n2: *** mm Error *** --->  '%s' region=%d col=%x wantsize=%d largestsize=%d...No suitble block found for allocation.\n"
-// * "*** mmAllocAtAddr: '%s' size = 0 ***\n"
-// * "\n3: *** mm Error *** ---> No more slots available.\n"
-// * "\n4: *** mm Error *** ---> Can't allocate memory '%s' at desired address.\n"
-// * "\n5: *** mm Error *** ---> Can't free ram at this location: %x\n"
-// * "\n6: *** mm Error *** ---> No match found for mmFree, %08x.\n"
-// * "\n7: *** mm Error *** ---> stbf stack too deep!\n"
-// * "mem %dk/%dk %dk/%dk %dk/%dk\n\tslot %d/%d %d/%d %d/%d\t\n"
-//   "mm:audioheap"
-
-
 void _mmHeapFree(void *ptr);
 void _mmAddToFreeList(void *ptr);
 void _mmActuallyFree(int iHeap, int iEntry);
@@ -222,13 +180,13 @@ void* heapInit(HeapEntry *addr, int size, int nSlots) { // 8007B580
 	return heaps[iHeap].data;
 }
 
-void *mmAlloc(volatile int size, volatile u32 tag, volatile u32 name) { // 8007B690
+void *mmAlloc(int size, u32 tag, const char *name) { // 8007B690
 	void *result;
 	void *crash;
 	volatile u32 crash2;
 
 	if(!size) {
-		STUBBED_PRINTF("1:mmAlloc(%d,%d): Size==0 : RA:0x%08x\n");
+		STUBBED_PRINTF("1:mmAlloc(%d,%d): Size==0 : RA:0x%08x\n", size, tag);
 		crash = NULL;
 		crash2 = *(volatile u32 *)((u32)crash + 0x14);
 		return NULL;
@@ -236,18 +194,18 @@ void *mmAlloc(volatile int size, volatile u32 tag, volatile u32 name) { // 8007B
 
 	if(tag <= ALLOC_TAG_TEST_COL) tag = allocTagColorTbl[tag];
 	if(size >= 0x3000 || n64RamSize != 0x800000) {
-		result = heapAlloc(0, size, tag, (const char *)name);
-		if(!result) result = heapAlloc(1, size, tag, (const char *)name);
+		result = mmAllocR(0, size, tag, name);
+		if(!result) result = mmAllocR(1, size, tag, name);
 	} else if(size >= 0x400) {
-		result = heapAlloc(1, size, tag, (const char *)name);
-		if(!result) result = heapAlloc(2, size, tag, (const char *)name);
+		result = mmAllocR(1, size, tag, name);
+		if(!result) result = mmAllocR(2, size, tag, name);
 	} else {
-		result = heapAlloc(2, size, tag, (const char *)name);
-		if(!result) result = heapAlloc(0, size, tag, (const char *)name);
+		result = mmAllocR(2, size, tag, name);
+		if(!result) result = mmAllocR(0, size, tag, name);
 	}
 
 	if(!result) {
-		STUBBED_PRINTF("4:mmAlloc(%s,%d): failed : RA:0x%08x\n");
+		STUBBED_PRINTF("4:mmAlloc(%s,%d): failed : RA:0x%08x\n", name, tag);
 		crash = NULL;
 		crash2 = *(volatile u32 *)((u32)crash + 0x14);
 	}
@@ -346,7 +304,7 @@ void *mmAllocDi(int size, u32 tag, const char *name) { // 8007BADC
 		return NULL;
 	}
 
-	result = heapAlloc(1, size, tag, name);
+	result = mmAllocR(1, size, tag, name);
 	if(!result) {
 		STUBBED_PRINTF("mmAllocDi(%s,%d): failed : RA:0x%08x\n",
 			name, size);
@@ -356,7 +314,7 @@ void *mmAllocDi(int size, u32 tag, const char *name) { // 8007BADC
 	return result;
 }
 
-void *heapAlloc(int region, int size, u32 tag, const char *name) { //8007BB74
+void *mmAllocR(int region, int size, u32 tag, const char *name) { //8007BB74
 	void *result;
 	HeapEntry *data;
 	int largest; //sp18
