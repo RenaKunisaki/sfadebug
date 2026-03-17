@@ -19,28 +19,52 @@
     ALLOC_TAG_SHAD,   ALLOC_TAG_GAME,     ALLOC_TAG_TEST,
     0x000000FF,       0xFF0000FF,         0x00FF00FF,
     0x0000FFFF,       0x00FFFFFF,         0xFF00FFFF,
-    0xFFFF00FF,       0xFFFFFFFF,
+    0xFFFF00FF,       0xFFFFFFFF,         0x7F7F7FFF,
+	0xFF7F7FFF
 };
 /* clang-format on */
 
-const char *allocTagNames[] = {
+//not referenced in this file, but has to be static
+//or else it doesn't get put in the binary.
+static const char *allocTagNames[] = {
+	"0",
 	"LISTS_COL",
 	"SCREEN_COL",
 	"CODE_COL",
+	"DLL_COL",
 	"TRACK_COL",
+	"TEX_COL",
 	"TRACKTEX_COL",
 	"SPRITETEX_COL",
 	"MODELS_COL",
 	"ANIMS_COL",
 	"AUDIO_COL",
+	"SEQ_COL",
+	"SFX_COL",
 	"OBJECTS_COL",
+	"CAM_COL",
+	"VOX_COL",
 	"ANIMSEQ_COL",
+	"LFX_COL",
+	"GFX_COL",
 	"EXPGFX_COL",
 	"MODGFX_COL",
 	"PROJGFX_COL",
+	"SKY_COL",
 	"SHAD_COL",
 	"GAME_COL",
-	"TEST_COL"};
+	"TEST_COL",
+	"BLACK",
+	"RED",
+	"GREEN",
+	"BLUE",
+	"CYAN",
+	"MAGENTA",
+	"YELLOW",
+	"WHITE",
+	"GREY",
+	"ORANGE"
+};
 
 //.bss
 /* 803555F8 */ Heap heaps[MAX_HEAPS];
@@ -89,13 +113,13 @@ const char *allocTagNames[] = {
 // * "*** mmAlloc: size = 0 ***\n"
 // * "1: *** mm Error *** ---> '%s' No more slots available.\n"
 // * "\n2: *** mm Error *** --->  '%s' region=%d col=%x wantsize=%d largestsize=%d...No suitble block found for allocation.\n"
-//   "*** mmAllocAtAddr: '%s' size = 0 ***\n"
-//   "\n3: *** mm Error *** ---> No more slots available.\n"
-//   "\n4: *** mm Error *** ---> Can't allocate memory '%s' at desired address.\n"
-//   "\n5: *** mm Error *** ---> Can't free ram at this location: %x\n"
-//   "\n6: *** mm Error *** ---> No match found for mmFree, %08x.\n"
-//   "\n7: *** mm Error *** ---> stbf stack too deep!\n"
-//   "mem %dk/%dk %dk/%dk %dk/%dk\n\tslot %d/%d %d/%d %d/%d\t\n"
+// * "*** mmAllocAtAddr: '%s' size = 0 ***\n"
+// * "\n3: *** mm Error *** ---> No more slots available.\n"
+// * "\n4: *** mm Error *** ---> Can't allocate memory '%s' at desired address.\n"
+// * "\n5: *** mm Error *** ---> Can't free ram at this location: %x\n"
+// * "\n6: *** mm Error *** ---> No match found for mmFree, %08x.\n"
+// * "\n7: *** mm Error *** ---> stbf stack too deep!\n"
+// * "mem %dk/%dk %dk/%dk %dk/%dk\n\tslot %d/%d %d/%d %d/%d\t\n"
 //   "mm:audioheap"
 
 
@@ -388,6 +412,63 @@ void *heapAlloc(int region, int size, u32 tag, const char *name) { //8007BB74
     return NULL;
 }
 
+void *mmAllocAtAddr(s32 size, void *address, s32 tag, const char *name) { //stripped
+	//copied from DP because no code left in this version.
+	//debug strings inserted where they seem to fit to match .data.
+	s32 idx;
+	HeapEntry *currSlot;
+	HeapEntry *slots;
+	s32 intFlags;
+	u32 *canary;
+
+	intFlags = n64DisableInterrupts();
+
+	if(size == 0) {
+		STUBBED_PRINTF("*** mmAllocAtAddr: '%s' size = 0 ***\n", name);
+	}
+
+	if((heaps[0].used + 1) == heaps[0].avail) {
+		STUBBED_PRINTF("\n3: *** mm Error *** ---> No more slots available.\n");
+		n64EnableInterrupts(intFlags);
+	} else {
+		size = (s32)ALIGN16(size);
+		size = size + SLOT_CANARY_SIZE;
+
+		slots = heaps[0].data;
+		for(idx = 0; idx != -1; idx = currSlot->next) {
+			currSlot = &slots[idx];
+			if(currSlot->type == 0) {
+				if((u32)address >= (u32)currSlot->entry.loc
+				    && (u32)address + size
+				        <= (u32)currSlot->entry.loc + currSlot->entry.size) {
+					if(address == currSlot->entry.loc) {
+						mmAllocSlot2(0, idx, size, SLOT_USED, SLOT_FREE, tag, name);
+						n64EnableInterrupts(intFlags);
+
+						return currSlot->entry.loc;
+					} else {
+						idx = mmAllocSlot2(0, idx,
+						    (u32)address - (u32)currSlot->entry.loc,
+						    SLOT_FREE, SLOT_USED, tag, name);
+						mmAllocSlot2(0, idx, size, SLOT_USED, SLOT_FREE, tag, name);
+						n64EnableInterrupts(intFlags);
+
+						canary = (u32 *)(slots + idx)->entry.loc;
+						canary += ((s32)(size - SLOT_CANARY_SIZE) >> 2);
+						canary[0] = SLOT_CANARY_VALUE;
+						canary[1] = SLOT_CANARY_VALUE;
+
+						return (slots + idx)->entry.loc;
+					}
+				}
+			}
+		}
+		n64EnableInterrupts(intFlags);
+	}
+	STUBBED_PRINTF("\n4: *** mm Error *** ---> Can't allocate memory '%s' at desired address.\n", name);
+	return NULL;
+}
+
 void mmSetDelay(int delay) { // 8007BD28
 	u32 irq;
 
@@ -405,6 +486,9 @@ void mmSetDelay(int delay) { // 8007BD28
 void mmFree(void *__ptr) { // 8007BDA4
 	u32 irq;
 	irq = n64DisableInterrupts();
+	//unsure where these could fit
+	STUBBED_PRINTF("\n5: *** mm Error *** ---> Can't free ram at this location: %x\n");
+	STUBBED_PRINTF("\n6: *** mm Error *** ---> No match found for mmFree, %08x.\n");
 	if(mmDelay == 0) _mmHeapFree(__ptr);
 	else _mmAddToFreeList(__ptr);
 	n64EnableInterrupts(irq);
@@ -416,6 +500,8 @@ inline void handleFreeLists() {
 
     irq = n64DisableInterrupts();
 	iVar3 = 0;
+	//unsure where this could fit
+	STUBBED_PRINTF("\n7: *** mm Error *** ---> stbf stack too deep!\n");
 	while(iVar3 < freeListEntries) {
 		freeList[iVar3].delay--;
 		if(freeList[iVar3].delay == 0) {
@@ -456,6 +542,7 @@ void checkHeaps(void) { // 8007BDFC
 
 	if(!(memUsedPct++ % 500)) {
         getTotalHeapUsed(0);
+		STUBBED_PRINTF("mem %dk/%dk %dk/%dk %dk/%dk\n\tslot %d/%d %d/%d %d/%d\t\n");
     }
 }
 #undef CHECK_HEAP
@@ -465,6 +552,7 @@ void _mmHeapFree(void *ptr) { // 8007BFD8
 	HeapEntry *ent;
 	int ii;
 
+	STUBBED_PRINTF("mm:audioheap"); //unsure where this goes
     idx = _mmGetHeapIdx(ptr);
 	if(idx == -1) return;
     ent = heaps[idx].data;

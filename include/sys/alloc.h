@@ -10,6 +10,15 @@
 #define MEM_MEDIUM_SLOTS 1450
 #define MEM_SMALL_SLOTS 1900
 
+//copied from DP
+#define SLOT_FREE 0
+#define SLOT_USED (1 << 0)
+#define SLOT_LOCKED (1 << 1)
+#define SLOT_SAFEGUARD (1 << 2)
+#define SLOT_CANARY_SIZE 8
+#define SLOT_CANARY_VALUE -1
+#define ALIGN16(a) (((u32)(a) & 0xF) ? (((u32)(a) & ~0xF) + 0x10) : (u32)(a))
+
 typedef enum {
   ALLOC_TAG_ZERO            = 0x00000000,
   ALLOC_TAG_LISTS_COL       = 0x00000001,
@@ -100,33 +109,36 @@ typedef struct {
 } TVParams; //XXX should be part of dolphin?
 
 typedef struct {
-  /* 0x0 */ void *loc;
+  /* 0x0 */ void *loc; //dp: data
   /* 0x4 */ u32 size;
 } HeapEntryStruct80355698;
 
+//using official names here, but including
+//the DP decomp names for reference
 typedef struct {
   //IIRC in final this field is just void* and this
   //sub-struct doesn't exist
+  //XXX are we sure this is a struct?
   /* 0x0 */ HeapEntryStruct80355698 entry;
-  /* 0x8 */ s16 type;
-  /* 0xa */ s16 prev;
-  /* 0xc */ s16 next;
-  /* 0xe */ s16 stack;
+  /* 0x8 */ s16 type; //dp: flags
+  /* 0xa */ s16 prev; //dp: prevIndex
+  /* 0xc */ s16 next; //dp: nextIndex
+  /* 0xe */ s16 stack; //dp: index
   /* 0x10 */ u32 tag;
-} HeapEntry;
+} HeapEntry; //dp: MemoryPoolSlot
 
 typedef struct {
-  /* 0x0 */ int avail;
-  /* 0x4 */ int used;
-  /* 0x8 */ HeapEntry *data;
-  /* 0xc */ int size;
-  /* 0x10 */ int used2;
-} Heap;
+  /* 0x0 */ int avail; //dp: maxSlots
+  /* 0x4 */ int used; //dp: numSlots
+  /* 0x8 */ HeapEntry *data; //dp: slots
+  /* 0xc */ int size; //dp: memAllocated
+  /* 0x10 */ int used2; //dp: memUsed
+} Heap; //dp: MemoryPool
 
 typedef struct {
-    /* 0x0 */ void *ptr;
-    /* 0x4 */ u8 delay;
-} FreeListEntry;
+    /* 0x0 */ void *ptr; //dp: address
+    /* 0x4 */ u8 delay; //dp: ticksLeft
+} FreeListEntry; //dp: MemoryFreeQueueElement
 #define MAX_FREELIST_SIZE 1024
 
 void initHeaps(void);
