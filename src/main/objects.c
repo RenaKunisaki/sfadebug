@@ -63,11 +63,11 @@ void Object_initObjects(void) {
 
 	//alloc some lists
 	Object_delList = mmAlloc(800, ALLOC_TAG_OBJECTS_COL,
-		(volatile u32)"obj:dellist");
+		"obj:dellist");
 	objLockList = mmAlloc(0x60, ALLOC_TAG_OBJECTS_COL,
-		(volatile u32)"obj:locklist");
+		"obj:locklist");
 	contNoBuf = (s16 *)mmAlloc(0x10, ALLOC_TAG_OBJECTS_COL,
-		(volatile u32)"obj:contnobuf");
+		"obj:contnobuf");
 
 	//load objindex and count number of object types
 	loadAsset_file(&Object_pObjIndex, FILE_OBJINDEX_bin);
@@ -91,9 +91,9 @@ void Object_initObjects(void) {
 
 	//alloc deflist and refcount
 	objDefNoList = (ObjData **)mmAlloc(Object_maxObjId << 2, ALLOC_TAG_OBJECTS_COL,
-		(volatile u32)"obj:deflist");
+		"obj:deflist");
 	objDefNoUsage = (u8 *)mmAlloc(Object_maxObjId, ALLOC_TAG_OBJECTS_COL,
-		(volatile u32)"obj:defno");
+		"obj:defno");
 	for(iVar1 = 0; iVar1 < (int)Object_maxObjId; iVar1++) { objDefNoUsage[iVar1] = 0; }
 
 	//load tables and count entries
@@ -103,7 +103,7 @@ void Object_initObjects(void) {
 	while(tables_tab[nTablesTab] != -1) nTablesTab++;
 
 	objLoadedObjs = (ObjInstance **)mmAlloc(MAX_LOADED_OBJECTS, ALLOC_TAG_OBJECTS_COL,
-		(volatile u32)"obj:ObjList");
+		"obj:ObjList");
 	allocHitLists();
 	initLists();
 	initCirclePols();
@@ -633,7 +633,7 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	//allocate memory for object
 	totalSize = objGetTotalDataSize(result, objData, def, modelFlags);
 	result = (ObjInstance *)mmAlloc(totalSize,
-		ALLOC_TAG_OBJECTS_COL, (volatile u32) "obj");
+		ALLOC_TAG_OBJECTS_COL, "obj");
 	if(!result) {
 		printf("ObjSetupObject(3) Memory fail!!\n");
 		objFreeObjdef(realType);
@@ -1210,7 +1210,7 @@ ObjData *Object_objLoadData(int objType) {
 	offset = Object_pObjectsTab[objType];
 	size = Object_pObjectsTab[objType + 1] - offset;
 	objData = (ObjData *)mmAlloc(size,
-		ALLOC_TAG_OBJECTS_COL, (volatile u32)"obj:def");
+		ALLOC_TAG_OBJECTS_COL, "obj:def");
 	if(objData) {
 		piRomLoadAddr(FILE_OBJECTS_bin, objData, offset, size);
 		if(objData->pEvent) OFFSET_TO_PTR(s16, objData, pEvent);
@@ -1347,7 +1347,7 @@ ModLine* loadModLine(int lineNo, s16 *outCount) {
     if(lineNo > fileSize) return NULL;
 
     tempIdx = mmAlloc(0x10,ALLOC_TAG_TEST_COL,
-		(volatile u32)"obj:tempindex");
+		"obj:tempindex");
     offset = lineNo * 4;
     piRomLoadAddr(FILE_MODLINES_tab,
 		tempIdx, offset, 8);
@@ -1356,7 +1356,7 @@ ModLine* loadModLine(int lineNo, s16 *outCount) {
     size = tempIdx[1] - tempIdx[0];
     if((int)size > 0) {
         dest = mmAlloc(size, ALLOC_TAG_TRACK_COL,
-			(volatile u32)"obj:templine");
+			"obj:templine");
         piRomLoadAddr(FILE_MODLINES_bin,
 			dest, offset, size);
     }
@@ -1576,7 +1576,7 @@ ObjDef * objAlloc(uint size,ObjDefEnum type) {
 	ObjDef *odef;
 
 	odef = (ObjDef *)mmAlloc(size,
-		ALLOC_TAG_OBJECTS_COL,(volatile u32)"romdef");
+		ALLOC_TAG_OBJECTS_COL,"romdef");
 	memclr(odef,size);
 	odef->id         = -1;
 	odef->bound      = 100;

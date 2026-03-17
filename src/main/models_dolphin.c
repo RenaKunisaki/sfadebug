@@ -128,7 +128,7 @@ void initModels(void) { //8007DAB0
     BADASSERTLINE(169, animsLoadedTable);
 
     mem = mmAlloc(0x830, ALLOC_TAG_ANIMS_COL,
-        (volatile u32)"mod:globalAnimBuffer");
+        "mod:globalAnimBuffer");
     BADASSERTLINE(174, mem);
 
 	globalModAnimBuffer = mem;
@@ -316,7 +316,7 @@ Model* loadModel(int modelNum) { //8007DE70
 
 	//allocate and load the model
 	model = (Model *)mmAlloc(size,
-		ALLOC_TAG_MODELS_COL, (volatile u32)"mod");
+		ALLOC_TAG_MODELS_COL, "mod");
 	BADASSERTLINE(491, model);
 	ptr = model;
 	ptr = mmAlign16(ptr);
@@ -798,7 +798,7 @@ bool param3) { // 8007F184
 		//total: 0x46c
 		size3,
 		ALLOC_TAG_ANIMS_COL,
-		(volatile u32)"mod:freezemodel");
+		"mod:freezemodel");
 	if(!modelInstance->freezeModel) return;
 
 	freezeModel = modelInstance->freezeModel;
@@ -1095,7 +1095,7 @@ Animation *getAnimation(short id) { // 80080270
 		offset = animOffsetTable[id];
 		piRomLoadSectionL(FILE_ANIM_BIN, NULL, offset, 0, &size, id, 1);
 		anim = (Animation *)mmAlloc(size,
-            ALLOC_TAG_ANIMS_COL, (volatile u32)"mod:anim");
+            ALLOC_TAG_ANIMS_COL, "mod:anim");
         BADASSERTLINE(2203, anim);
 		piRomLoadSectionL(FILE_ANIM_BIN, &anim->usage, offset,
             size, NULL, id, 0);
@@ -1764,7 +1764,7 @@ BOOL bIsNew) { // 8007C5B4
 	}
 	size = setupAnimInstance(model, flags, &animUnk, 0);
 	minst = (ModelInstance *)mmAlloc(size, ALLOC_TAG_MODEL_INSTANCE,
-		(volatile u32) "minst");
+		"minst");
 	if(!minst) return NULL;
 
 	memclr(minst, size);
