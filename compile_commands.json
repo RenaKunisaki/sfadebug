@@ -1,6 +1,282 @@
 [
   {
     "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/snd_init.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/snd_init.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/snd_init.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/snd_init.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/snd_math.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/snd_math.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/snd_math.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/snd_math.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/snd_midictrl.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/snd_midictrl.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/snd_midictrl.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/snd_midictrl.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/snd_service.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/snd_service.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/snd_service.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/snd_service.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/hardware.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/hardware.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/hardware.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/hardware.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/hw_aramdma.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/hw_aramdma.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/hw_aramdma.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/hw_aramdma.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/hw_dolphin.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/hw_dolphin.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/hw_dolphin.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/hw_dolphin.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/hw_memory.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/hw_memory.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/hw_memory.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/hw_memory.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/reverb_fx.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/reverb_fx.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/reverb_fx.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/reverb_fx.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/reverb.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/reverb.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/reverb.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/reverb.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/chorus_fx.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/chorus_fx.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/musyx/chorus_fx.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/musyx/chorus_fx.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/amc/AmcExi.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/amc/AmcExi.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/amc/AmcExi.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/amc/AmcExi.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
     "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/objlist.c",
     "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/objlist.o",
     "arguments": [
@@ -22,6 +298,29 @@
       "/home/rena/projects/sfa/decomp/sfadebug/src/main/objlist.c",
       "-o",
       "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/objlist.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/light.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/light.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/main/light.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/light.o"
     ]
   },
   {
@@ -134,6 +433,29 @@
   },
   {
     "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/SKNControl.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/SKNControl.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/main/SKNControl.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/SKNControl.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
     "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/objects.c",
     "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/objects.o",
     "arguments": [
@@ -159,6 +481,29 @@
   },
   {
     "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/objhits.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/objhits.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/main/objhits.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/objhits.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
     "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/objprint.c",
     "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/objprint.o",
     "arguments": [
@@ -180,6 +525,29 @@
       "/home/rena/projects/sfa/decomp/sfadebug/src/main/objprint.c",
       "-o",
       "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/objprint.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/objprint_dolphin.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/objprint_dolphin.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/main/objprint_dolphin.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/objprint_dolphin.o"
     ]
   },
   {
@@ -230,6 +598,121 @@
       "/home/rena/projects/sfa/decomp/sfadebug/src/main/rcp_dolphin.c",
       "-o",
       "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/rcp_dolphin.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/shader.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/shader.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/main/shader.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/shader.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/lightmap.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/lightmap.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/main/lightmap.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/lightmap.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/tex_dolphin.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/tex_dolphin.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/main/tex_dolphin.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/tex_dolphin.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/track_dolphin.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/track_dolphin.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/main/track_dolphin.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/track_dolphin.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/maketex.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/maketex.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/main/maketex.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/maketex.o"
     ]
   },
   {
