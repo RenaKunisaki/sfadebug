@@ -517,7 +517,7 @@ void *loadDataFile(DataFileId32 fileNo, char *memName) {
         dataFileNames[fileNo], dataFileSizes[fileNo]);
     dataFilePtrs[fileNo] = mmAlloc(dataFileSizes[fileNo] + 0x20,
         ALLOC_TAG_DVD_BUFFER,
-        (volatile u32)dataFileNames[fileNo]);
+        dataFileNames[fileNo]);
     DCInvalidateRange(dataFilePtrs[fileNo], dataFileSizes[fileNo]);
     DVDReadPrio(&file, dataFilePtrs[fileNo],
         dataFileSizes[fileNo], 0, 2);
@@ -590,7 +590,7 @@ uint offset, int len) {
             //@bug missing checks for failures here
             tmpBuf = mmAlloc(len + 0x1f & ~0x1f,
 			    ALLOC_TAG_DVD_BUFFER,
-			    (volatile u32)"temp dvd buffer");
+			    "temp dvd buffer");
 			DCInvalidateRange(tmpBuf, len + 0x1f & ~0x1f);
 			DVDReadPrio(&file, tmpBuf, len + 0x1f & ~0x1f, offset, 2);
 			memcpy_src_dst_len(tmpBuf, buf, len);
@@ -1194,7 +1194,7 @@ size_t length, uint *outSize, int index, u8 flags) {
             //not aligned; need to read aligned chunk into temp buffer.
             //probably could have used a stack buffer instead of alloc...
             tmpBuf = mmAlloc(length + 0x1f & 0x00ffffffe0,
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)"temp dvd buffer");
+                ALLOC_TAG_DVD_BUFFER, "temp dvd buffer");
             DVDReadPrio(&file, tmpBuf,
                 length + 0x1f & 0x00ffffffe0, offset, 2);
             memcpy_src_dst_len(tmpBuf, dest, length);
@@ -1257,7 +1257,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
             //get the size and alloc the buffer
             dataFileSizes[fileNo] = file.length;
             dataFilePtrs[fileNo] = mmAlloc(dataFileSizes[fileNo],
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)"VOXMAPS");
+                ALLOC_TAG_DVD_BUFFER, "VOXMAPS");
 
             //read the file and return it
             DVDReadPrio(&file, dataFilePtrs[fileNo],
@@ -1275,7 +1275,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
             PIFREE(fileNo, "ANIMCURVE/TAB");
             sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[fileNo]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[fileNo]);
             if(!DVDOpen(path, pFile)) {
                 //@bug pFile is leaked
                 return NULL;
@@ -1283,7 +1283,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
 
             dataFileSizes[fileNo] = pFile->length;
             dataFilePtrs[fileNo] = mmAlloc(dataFileSizes[fileNo],
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[fileNo]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[fileNo]);
             if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[fileNo],
                     dataFileSizes[fileNo], 0, 2);
@@ -1342,14 +1342,14 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
             }
 
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)"BLOCKS");
+                ALLOC_TAG_DVD_BUFFER, "BLOCKS");
             if(!DVDOpen(path, pFile)) {
                 //@bug pFile is leaked
                 return NULL;
             }
             dataFileSizes[slot] = pFile->length;
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot],
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)"BLOCKS");
+                ALLOC_TAG_DVD_BUFFER, "BLOCKS");
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
             if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[slot],
@@ -1398,7 +1398,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
                 sprintf(path, "%s/mod%d.tab", mapNames[gamno], gamno);
             }
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)"BLOCKSTAB");
+                ALLOC_TAG_DVD_BUFFER, "BLOCKSTAB");
             if(!DVDOpen(path, pFile)) {
                 //@bug pFile is leaked
                 return NULL;
@@ -1406,7 +1406,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
 
             dataFileSizes[slot] = pFile->length;
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot],
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
             if(bForceLoad) {
@@ -1457,7 +1457,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
             PIFREE(slot, "MODELS");
             sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             if(!DVDOpen(path, pFile)) {
                 //@bug pFile is leaked
@@ -1466,7 +1466,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
 
             dataFileSizes[slot] = pFile->length;
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot],
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
             if(bForceLoad) {
@@ -1513,7 +1513,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
             PIFREE(slot, "MODTAB");
             sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             if(!DVDOpen(path, pFile)) {
                 //@bug pFile is leaked
@@ -1522,7 +1522,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
 
             dataFileSizes[slot] = pFile->length;
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot],
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
             if(bForceLoad) {
@@ -1569,7 +1569,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
             PIFREE(slot, "ANIM");
             sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             if(!DVDOpen(path, pFile)) {
                 //@bug pFile is leaked
@@ -1578,7 +1578,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
 
             dataFileSizes[slot] = pFile->length;
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot],
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
             if(bForceLoad) {
@@ -1623,7 +1623,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
             PIFREE(slot, "ANIMTAB");
             sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             if(!DVDOpen(path, pFile)) {
                 //@bug pFile is leaked
@@ -1632,7 +1632,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
 
             dataFileSizes[slot] = pFile->length;
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot],
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
             if(bForceLoad) {
@@ -1679,7 +1679,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
             PIFREE(slot, "TEXTURES2");
             sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             if(!DVDOpen(path, pFile)) {
                 //@bug pFile is leaked
@@ -1688,7 +1688,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
 
             dataFileSizes[slot] = pFile->length;
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot] + 0x20,
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             STUBBED_PRINTF("######## DVDLOAD piRomLoadLevel() ---- "
                 "file=%s  piTable 0x%x #################\n",
@@ -1737,7 +1737,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
             PIFREE(slot, "TEXTAB2");
             sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             if(!DVDOpen(path, pFile)) {
                 //@bug pFile is leaked
@@ -1746,7 +1746,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
 
             dataFileSizes[slot] = pFile->length;
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot] + 0x20,
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             STUBBED_PRINTF("######## DVDLOAD piRomLoadLevel() ----- "
                 "file=%s  #################\n",
@@ -1802,7 +1802,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
             PIFREE(slot, "TEXTURES");
             sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[fileNo]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[fileNo]);
 
             if(!DVDOpen(path, pFile)) {
                 //@bug pFile is leaked
@@ -1811,7 +1811,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
 
             dataFileSizes[slot] = pFile->length;
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot] + 0x20,
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[fileNo]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[fileNo]);
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
             if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[slot],
@@ -1856,7 +1856,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
             PIFREE(slot, "TEXTAB");
             sprintf(path, "%s/%s", mapNames[gamno], dataFileNames[fileNo]);
             pFile = (DVDFileInfo *)mmAlloc(sizeof(DVDFileInfo),
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[slot]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[slot]);
 
             if(!DVDOpen(path, pFile)) {
                 //@bug pFile is leaked
@@ -1865,7 +1865,7 @@ void *piRomLoadLevel(int gamno, DataFileId32 fileNo) {
 
             dataFileSizes[slot] = pFile->length;
             dataFilePtrs[slot] = mmAlloc(dataFileSizes[slot],
-                ALLOC_TAG_DVD_BUFFER, (volatile u32)dataFileNames[fileNo]);
+                ALLOC_TAG_DVD_BUFFER, dataFileNames[fileNo]);
             DCInvalidateRange(dataFilePtrs[slot], dataFileSizes[slot]);
             if(bForceLoad) {
                 DVDReadPrio(pFile, dataFilePtrs[slot],
