@@ -37,6 +37,20 @@ void Mtx44Mult(Mtx44Ptr ma,Mtx44Ptr mb,Mtx44Ptr out);
 s8 areModelsEnabled(); //maybe areModelsDisabled - not bool
 s8 isMainCharacterEnabled(); //maybe isMainCharacterDisabled
 
+// * "objprint.c"
+// * "Failed assertion obj->frames"
+// * "Failed assertion jMtx"
+// * "Failed assertion pMtx"
+// * "2: objprint.c: modelno overflow\n"
+// * "3: objprint.c: modelno overflow\n"
+// * "Failed assertion jointmtx"
+// * "4: objprint.c: modelno overflow\n"
+//   "LOCK POSITION MODE\n"
+//   "Lock Point * Model Scale %f, %f, %f\n"
+//   " Broken Run  at %i \t"
+//   "obj:circlepols"
+//   "+++++ objprintDrawGCModel +++++ ARGS: %x %x\n"
+
 void objRender(Gfx **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx,
 ObjInstance *obj, s8 shouldRender) {
 	ObjInstance *child;
@@ -176,13 +190,16 @@ Mtx44Ptr pMtx_80398ad8;
 
 ModelInstance* playerBoneFn_80094cbc(Gfx **gfx, Mtx44 **mtx, Pol **pol,
 N64Vertex **vtx, ObjInstance *obj, ModelInstance *mInst, Mtx44Ptr mtx2,
-undefined4 alwaysZero, ObjInstance *player, int iAttachPoint) {
-    int dummy;
-	Model *model;
+int alwaysZero, ObjInstance *player, int iAttachPoint) {
+    Model *model;
 	Mtx44Ptr jMtx;
 	int ii;
 	ModelInstance *frame;
 	ObjPos pos;
+
+    //unsure where these go
+    STUBBED_PRINTF("Failed assertion jMtx");
+    STUBBED_PRINTF("Failed assertion pMtx");
 
 	pMtx_80398ad8 = NULL;
 	frame = player->frames[player->modelno];
@@ -462,7 +479,7 @@ N64Vertex **vtx, ObjInstance *obj) {
         fVar4 = (fVar2 - fVar1) / 2.0f;
         y = fVar1 + fVar4 + obj->prevPos.y;
         r = 0xff; g = 0; b = 0;
-        if(hits->flags & HitStateFlags58_AltColor) { r = 0; g = 0; b = 0xff; }
+        if(hits->flags & HitStateFlags58_SkipHitList2) { r = 0; g = 0; b = 0xff; }
         drawCircle(gfx, mtx,
             obj->prevPos.x, y, obj->prevPos.z,
             hits->scale, fVar4, r, g, b);
@@ -473,7 +490,7 @@ N64Vertex **vtx, ObjInstance *obj) {
         pos.pos.y = obj->pos.pos.y;
         pos.pos.z = obj->pos.pos.z;
         mtxLoadFn8006a754(gfx, mtx, &pos, 1.0f, 0.0f, NULL);
-        if(hits->flags & HitStateFlags58_AltColor) {
+        if(hits->flags & HitStateFlags58_SkipHitList2) {
             rcpSetPrimColor(gfx, 0, 0, 0xff, 0xff);
         } else {
             rcpSetPrimColor(gfx, 0xff, 0, 0, 0xff);
