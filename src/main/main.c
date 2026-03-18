@@ -901,13 +901,13 @@ void cutsceneExit(void) { //800793A8
 }
 
 void allocFrameBuffers(void) { //800793B4
-    main_gfx[0] = (Gfx *)mmAlloc(160000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:gfx");
+    main_gfx[0] = (Gfx *)mmAlloc(160000,ALLOC_TAG_LISTS_COL,"main:gfx");
     main_gfx[1] = main_gfx[0] + 10000;
-    main_mtx[0] = (Mtx44 *)mmAlloc(0x19000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:mtx");
+    main_mtx[0] = (Mtx44 *)mmAlloc(0x19000,ALLOC_TAG_LISTS_COL,"main:mtx");
     main_mtx[1] = main_mtx[0] + 800;
-    main_pol[0] = (Pol *)mmAlloc(32000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:pol");
+    main_pol[0] = (Pol *)mmAlloc(32000,ALLOC_TAG_LISTS_COL,"main:pol");
     main_pol[1] = main_pol[0] + 1000;
-    main_vtx[0] = (N64Vertex *)mmAlloc(32000,ALLOC_TAG_LISTS_COL,(volatile u32)"main:vtx");
+    main_vtx[0] = (N64Vertex *)mmAlloc(32000,ALLOC_TAG_LISTS_COL,"main:vtx");
     main_vtx[1] = main_vtx[0] + 1000;
     main_dipol[0] = (Pol *)mmAllocDi(96000,1,"main:dipol");
     main_dipol[1] = main_dipol[0] + 3000;

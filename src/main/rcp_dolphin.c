@@ -86,7 +86,7 @@ void videoInitFn_8009e5f0(undefined *unused, int bIsProgScan) {
 	GXColor tevColor2;
 
 	rcpGxFifo = mmAlloc(RCP_GX_FIFO_SIZE, ALLOC_TAG_SHAD_COL,
-        (volatile u32) "rcp_dolphin:GfxFifo");
+        "rcp_dolphin:GfxFifo");
 	DCInvalidateRange(rcpGxFifo, RCP_GX_FIFO_SIZE);
 	gxInitVal = GXInit(rcpGxFifo, RCP_GX_FIFO_SIZE);
 
