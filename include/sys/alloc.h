@@ -1,5 +1,6 @@
 #ifndef _SYS_ALLOC_H_
 #define _SYS_ALLOC_H_
+#include "dolphin/types.h"
 
 //arena sizes in bytes
 //large size: all available minus these

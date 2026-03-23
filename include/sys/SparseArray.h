@@ -1,5 +1,6 @@
 #ifndef _SYS_SPARSEARRAY_H_
 #define _SYS_SPARSEARRAY_H_
+#include "dolphin/types.h"
 
 typedef struct {
     short key;
@@ -12,6 +13,7 @@ typedef struct {
     /* 0x08 */ short *highPtr;
     /* 0x0c */ u8 keySize;
     /* 0x0d */ u8 elemSize;
+    //2 bytes padding
 } SparseArray;
 
 SparseArray* SparseArray_create(int capacity,int itemSize);

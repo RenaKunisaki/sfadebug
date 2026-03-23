@@ -302,6 +302,31 @@
   },
   {
     "directory": "/home/rena/projects/sfa/decomp/sfadebug",
+    "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/sparsearray.c",
+    "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/sparsearray.o",
+    "arguments": [
+      "clang",
+      "-nostdinc",
+      "-fno-builtin",
+      "--target=powerpc-eabi",
+      "-fno-short-enums",
+      "-fno-cxx-exceptions",
+      "-fno-rtti",
+      "-Iinclude",
+      "-Iinclude/libc",
+      "-Ibuild/GSAP01-DEBUG/include",
+      "-DVERSION=0",
+      "-DDEBUG=1",
+      "--language=c",
+      "--std=c99",
+      "-c",
+      "/home/rena/projects/sfa/decomp/sfadebug/src/main/sparsearray.c",
+      "-o",
+      "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/sparsearray.o"
+    ]
+  },
+  {
+    "directory": "/home/rena/projects/sfa/decomp/sfadebug",
     "file": "/home/rena/projects/sfa/decomp/sfadebug/src/main/light.c",
     "output": "/home/rena/projects/sfa/decomp/sfadebug/build/GSAP01-DEBUG/src/main/light.o",
     "arguments": [
