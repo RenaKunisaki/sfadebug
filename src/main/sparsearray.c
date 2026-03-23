@@ -59,3 +59,20 @@ void SparseArray_remove(SparseArray *sparseArray, int key) {
         sparseArray->highPtr -= sparseArray->elemSize;
     }
 }
+
+BOOL SparseArray_get(SparseArray *sparseArray, int id, void *element) {
+	SparseArrayItem *keyPtr;
+
+    ASSERTLINE(188, sparseArray);
+    ASSERTLINE(189, element);
+	keyPtr = sparseArray->items;
+	while(keyPtr < sparseArray->highPtr) {
+		if(keyPtr->key == id) {
+            memcpy(element, keyPtr + 1,
+                sparseArray->keySize);
+	        return TRUE;
+        }
+		keyPtr += sparseArray->elemSize;
+	}
+    return FALSE;
+}
