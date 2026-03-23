@@ -76,3 +76,21 @@ BOOL SparseArray_get(SparseArray *sparseArray, int id, void *element) {
 	}
     return FALSE;
 }
+
+BOOL SparseArray_find(SparseArray *sparseArray, void *element, int *key) {
+	SparseArrayItem *keyPtr;
+
+    ASSERTLINE(226, sparseArray);
+    ASSERTLINE(227, element);
+    ASSERTLINE(228, key);
+	keyPtr = sparseArray->items;
+	while(keyPtr < sparseArray->highPtr) {
+		if(!memcmp(keyPtr + 1, element,
+            sparseArray->keySize)) {
+            *key = keyPtr->key;
+	        return TRUE;
+        }
+		keyPtr += sparseArray->elemSize;
+	}
+	return FALSE;
+}
