@@ -9,7 +9,7 @@ typedef struct {
 
 typedef struct {
     /* 0x00 */ SparseArrayItem *items;
-    /* 0x04 */ SparseArrayItem *lastElem;
+    /* 0x04 */ SparseArrayItem *highPtr;
     /* 0x08 */ SparseArrayItem *endPtr;
     /* 0x0c */ u8 keySize;
     /* 0x0d */ u8 elemSize;
