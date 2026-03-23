@@ -506,7 +506,7 @@ config.libs = [
             Object(Matching, "main/objects.c"),
             Object(Matching, "main/objlist.c"),
             Object(Matching, "main/pi.c"),
-            Object(NonMatching, "main/sparsearray.c"),
+            Object(Matching, "main/sparsearray.c"),
             Object(NonMatching, "dll/anim.c"),
             Object(NonMatching, "dll/animobj1C0.c"),
             Object(NonMatching, "dll/animobjD2.c"),
