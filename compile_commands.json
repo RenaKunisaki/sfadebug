@@ -895,6 +895,8 @@
       "-Ibuild/GSAP01-DEBUG/include",
       "-DVERSION=0",
       "-DDEBUG=1",
+      "--language=c",
+      "--std=c99",
       "-c",
       "/home/rena/projects/sfa/decomp/sfadebug/src/main/timer.c",
       "-o",
