@@ -17,3 +17,10 @@ BOOL timerTickDown(Timer timer) {
 	}
     return FALSE;
 }
+
+void timerSet(Timer timer, short initialVal) {
+    ASSERTLINE(65, timer);
+    ASSERTLINE(66, initialVal > 0);
+    ASSERTLINE(67, *timer == 0);
+	*timer = ((initialVal * 60) / 60);
+}
