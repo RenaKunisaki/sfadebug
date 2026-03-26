@@ -528,7 +528,7 @@ config.libs = [
             Object(NonMatching, "main/SKNControl.c"),
             Object(   Matching, "main/sparsearray.c"),
             Object(NonMatching, "main/tex_dolphin.c"),
-            Object(NonMatching, "main/timer.c"),
+            Object(   Matching, "main/timer.c"),
             Object(NonMatching, "main/track_dolphin.c"),
             Object(NonMatching, "musyx/chorus_fx.c"),
             Object(NonMatching, "musyx/hardware.c"),
