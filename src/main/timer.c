@@ -30,3 +30,7 @@ void timerReset(Timer timer) {
     *timer = 0;
 }
 
+int timerGetTime(Timer timer) {
+    ASSERTLINE(95, *timer >= 0);
+	return *timer;
+}
