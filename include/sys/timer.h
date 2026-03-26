@@ -6,3 +6,4 @@ BOOL timerTickDown(Timer timer);
 void timerSet(Timer timer, short initialVal);
 void timerReset(Timer timer);
 int timerGetTime(Timer timer);
+BOOL timerRand(int chance);
