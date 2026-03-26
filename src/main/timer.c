@@ -24,3 +24,9 @@ void timerSet(Timer timer, short initialVal) {
     ASSERTLINE(67, *timer == 0);
 	*timer = ((initialVal * 60) / 60);
 }
+
+void timerReset(Timer timer) {
+    ASSERTLINE(81, timer);
+    *timer = 0;
+}
+
