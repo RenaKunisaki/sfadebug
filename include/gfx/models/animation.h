@@ -2,6 +2,7 @@
 #define _GFX_MODELS_ANIMATION_H_
 
 #include "gfx/models/skeleton.h"
+#include "sys/SparseArray.h"
 #include "types.h"
 
 typedef struct {
@@ -197,5 +198,7 @@ typedef struct {
     /* 0x66 */ undefined unk66;
     /* 0x67 */ undefined unk67;
 } AnimInstance;
+
+extern SparseArray *animsLoadedTable; //80398a3c
 
 #endif //_GFX_MODELS_ANIMATION_H_

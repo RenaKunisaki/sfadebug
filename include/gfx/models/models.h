@@ -337,4 +337,6 @@ typedef struct {
     /* 0x53 */ s8 unk53;
 } ModelInstance;
 
+extern SparseArray *modelsLoadedTable; //80398a38
+
 #endif //_GFX_MODELS_MODELS_H_

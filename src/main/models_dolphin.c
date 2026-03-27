@@ -23,26 +23,24 @@
 int randInt(int min,int max);
 
 //x, y, z but not S16Vec or array
-extern s16 objAnimVar_8039872c_x;
-extern s16 objAnimVar_8039872c_y;
-extern s16 objAnimVar_8039872c_z;
+/* 8039872c */ extern s16 objAnimVar_8039872c_x;
+/* 8039872e */ extern s16 objAnimVar_8039872c_y;
+/* 80398730 */ extern s16 objAnimVar_8039872c_z;
 
-int DAT_80398a10;
-int DWORD_80398a14;
-int DWORD_80398a18;
+/* 80398a10 */ int DAT_80398a10;
+/* 80398a14 */ int DWORD_80398a14;
+/* 80398a18 */ int DWORD_80398a18;
 
 #define TILTLIST_MAX 44
-s16 Tiltlist[TILTLIST_MAX]; //80357698
+/* 80357698 */ s16 Tiltlist[TILTLIST_MAX];
 
-int maxModelNum; //80398a20
-s16 *globalModAnimBuffer; //80398a24
-int *pAmapTab; //s16[16] @ 80398a28, also accessed as int
-void *modelOffsetTable;
-u32 *animOffsetTable; //80398a2c
-UNKTYPE *globalModAnimBufferPlus0x810; //80398a30
-BOOL bHaveAnimTab; //80398a34
-SparseArray *modelsLoadedTable; //80398a38
-SparseArray *animsLoadedTable; //80398a3c
+/* 80398a20 */ int maxModelNum;
+/* 80398a24 */ s16 *globalModAnimBuffer;
+/* 80398a28 */ int *pAmapTab; //s16[16], also accessed as int
+//void *modelOffsetTable; //accessed by stripped function, should be here
+/* 80398a2c */ u32 *animOffsetTable;
+/* 80398a30 */ UNKTYPE *globalModAnimBufferPlus0x810;
+/* 80398a34 */ BOOL bHaveAnimTab;
 
 void debugPrint(char *fmt,...);
 Texture * textureLoad(int id,int param_2);
@@ -1457,6 +1455,7 @@ void fn_8008102C(ModelInstance *modelInstance, MtxPtr mtx, u8 *mtxBuf) { // 8008
 }
 
 void modelLoadOffsetTables() { //unused
+	static void *modelOffsetTable;
 	printf("--------MODELS Load Offset Tables-------\n");
 	if(!modelOffsetTable) {
 		printf("modelLoadOffsetTables() --- modelOffsetTable is NULL\n");

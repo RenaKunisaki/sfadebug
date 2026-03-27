@@ -1,5 +1,6 @@
 #include "dolphin.h"
 #include "macros.h"
+#include "sys/SparseArray.h"
 #include "types.h"
 #include "debug/debug.h"
 #include "sys/alloc.h"
@@ -76,10 +77,13 @@ static const char *allocTagNames[] = {
 /* 80398A0C */ int mmDelay;
 /* 80398A10 */ int heapUsed0, heapUsed1, heapUsed2;
 /* 80398A1C */ int memUsedPct;
+/* 80398a38 */ SparseArray *modelsLoadedTable;
+/* 80398a3c */ SparseArray *animsLoadedTable;
 
 /* 80398B70 */ void *pFrameBuffer_80398b70;
 /* 80398B74 */ void *pFrameBuffer_80398b74;
 /* 80398B78 */ extern TVParams *curTvParams; // probably doesn't belong here
+
 
 void _mmHeapFree(void *ptr);
 void _mmAddToFreeList(void *ptr);

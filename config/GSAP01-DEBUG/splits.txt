@@ -141,6 +141,7 @@ main/models_dolphin.c:
 	.text       start:0x8007C57C end:0x800816B4
 	.rodata     start:0x802CF000 end:0x802CF018
 	.data       start:0x802EB690 end:0x802EC988
+	.bss        start:0x80357698 end:0x803576F0
 
 main/SKNControl.c:
 	.text       start:0x800816B4 end:0x80081DB4
