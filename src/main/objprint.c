@@ -11,14 +11,14 @@
 #include "obj/ObjInstance.h"
 #include "obj/Player.h"
 
-s8 debugRenderMode;
-s8 BYTE_80398afc;
-int DAT_80398aec;
-u8 framesThisStep;
+/* 80399b8a */ s8 debugRenderMode;
+/* 80398afc */ s8 BYTE_80398afc;
+/* 80398aec */ int DAT_80398aec;
+/* 80396c15 */ u8 framesThisStep;
 
-u8 Color_ARRAY_802ee504[8][3];
-u8 BYTE_802ee2b8[];
-u8 BYTE_802ee158;
+/* 802ee504 */ u8 Color_ARRAY_802ee504[8][3];
+/* 802ee2b8 */ u8 BYTE_802ee2b8[];
+/* 802ee158 */ u8 BYTE_802ee158;
 
 void playerRender(ObjInstance *object, Gfx **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, bool shouldRender);
 void objRenderCurrentModel(ObjInstance *obj);

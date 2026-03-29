@@ -20,7 +20,6 @@
 /* 803906EC */ DiMenuStrings diMenuStrings[MAX_MENU_STRINGS];
 /* 80390944 */ bool diMenuStringIsUsed[MAX_MENU_STRINGS];
 
-// 80398240: .sbss
 /* 80399860 */ extern s8 diMenuItemFlag_80399860;
 /* 80399864 */ extern Gfx **diMenuGfx;
 /* 80399868 */ extern Mtx *diMenuMtx;

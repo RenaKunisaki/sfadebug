@@ -16,17 +16,17 @@
 #include "gfx/models/models.h"
 #include "save/SaveGame.h"
 
-extern u8 framesThisStep;
+/* 80396c15 */ extern u8 framesThisStep;
 
-s16 *contNoBuf; //80398a44
-ObjectList globalObjList;
-ObjData **objDefNoList; //80398a60
-u8 *objDefNoUsage; //80398a64
-LoadedDLL *pDll_camcontrol;
-LoadedDLL *pDll_dummy04;
-ObjInstance *playerHeldBy; //80398a94
-s8 objSeqEditFlag80399a74;
-int bDisableModelRendering;
+/* 80398a44 */ s16 *contNoBuf;
+/* 80398a88 */ ObjectList globalObjList;
+/* 80398a60 */ ObjData **objDefNoList;
+/* 80398a64 */ u8 *objDefNoUsage;
+/* 80398938 */ LoadedDLL *pDll_camcontrol;
+/* 8039895c */ LoadedDLL *pDll_dummy04;
+/* 80398a94 */ ObjInstance *playerHeldBy;
+/* 80399a74 */ s8 objSeqEditFlag80399a74;
+/* 803999b8 */ int bDisableModelRendering;
 
 float sinf(float);
 float cosf(float);

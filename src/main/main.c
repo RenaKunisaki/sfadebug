@@ -13,23 +13,18 @@
 #include "sys/pi.h"
 #include "global.h"
 
-//.data
+/* 802d8d88 */ extern GXRenderModeObj tvParamsProgScan;
+/* 802d8e3c */ extern GXRenderModeObj tvParamsNotProgScan;
 /* 802eadc8 */ const char *s_buildDate = BUILD_DATE;
 /* 802eadd8 */ const char *s_buildName = BUILD_AUTHOR;
 /* 802eade3 */ const char *s_buildVersion = VERSION_STRING;
-//these are NOT extern. that makes gameLoop not match.
 /* 802eae0c */ int tempDllIds[3] = {-1, 0x33, 0x35};
 /* 802eae18 */ LoadedDLL *tempDlls[3] = {0};
 /* 802eae24 */ float frameTimes[10] = {0};
-
-//this must belong to some other file...
 /* 80321198 */ //char _defaultBits[] = " Stolen "; //likely part of larger struct
-extern char _defaultBits[];
-
-//.bss (0x80325D20)
+/* 80321198 */ extern char _defaultBits[];
+/* 80352f30 */ extern u8 DAT_80352f30[0x7EF]; //unk type
 /* 80355238 */ extern PlayerPrevPosition playerPrevPositions[NUM_PLAYER_PREV_POSITIONS];
-
-//.sdata (0x80396700)
 /* 80396c08 */ const char *s_codeVersion = CODE_VERSION;
 /* 80396c14 */ extern s8 debugMenuPrevState;
 /* 80396c15 */ extern u8 framesThisStep;
@@ -45,8 +40,6 @@ extern char _defaultBits[];
 /* 80396E88 */ int DAT_80396E88;
 /* 80396E8C */ extern u32 n64RamSize ;// = N64_RAM_SIZE;
 /* 80396E90 */ extern int unk_80396E90 ;//= 0x80000000;
-
-//.sbss (0x803988e0)
 /* 803988e0 */ N64Vertex *main_vtx[2];
 /* 803988e8 */ N64Vertex *cur_vtx;
 /* 803988ec */ Pol *main_pol[2];
@@ -57,9 +50,11 @@ extern char _defaultBits[];
 /* 803988fe */ short main_pol_count;
 /* 80398900 */ short di_vtx_count;
 /* 80398902 */ short di_pol_count;
+/* 80398904 */ s8 debugMenuState;
 /* 80398905 */ s8 anyQueuedLoads; //maybe "isMapChangePending"
 /* 80398906 */ u8 main_framebuf_idx;
 /* 80398907 */ s8 screenBlankFrameCount;
+/* 80398908 */ s8 padSetupOk; // = -1;
 /* 80398909 */ s8 e3MenuFrameCount_80398909; //probably not actually E3 related
 /* 8039890a */ u8 newGameCounter8039890a;
 /* 8039890b */ u8 newGameFlag8039890b;
@@ -121,9 +116,12 @@ extern char _defaultBits[];
 /* 803989f4 */ extern Gfx *cur_gfx;
 /* 803989f8 */ extern Gfx *gfx;
 /* 803989fc */ extern Gfx *main_gfx[2];
+/* 80398b78 */ extern GXRenderModeObj *curTvParams;
 /* 80398e44 */ extern UNKTYPE *currentScreen;
 /* 80398e48 */ extern UNKTYPE *otherZbuf;
 /* 803997d0 */ extern int diFlag_803997d0;
+/* 80399904 */ extern int debugSetupPoint;
+/* 80399924 */ extern int debugSetupPointMapNo;
 /* 803999d0 */ extern int mapEditFlag803999d0;
 /* 80399a74 */ extern s8 objSeqEditFlag80399a74;
 
@@ -308,15 +306,7 @@ GXRenderModeObj tvParamsNotProgScan = { //802d8e3c
     /* vfilter[7]; */
         0x08, 0x08, 0x0A, 0x0C, 0x0A, 0x08, 0x08,
 };
-#else
-extern GXRenderModeObj tvParamsProgScan;
-extern GXRenderModeObj tvParamsNotProgScan;
 #endif
-
-extern u8 DAT_80352f30[0x7EF]; //80352f30, unk type
-extern GXRenderModeObj *curTvParams; //80398b78
-s8 padSetupOk; // = -1; //80398908
-s8 debugMenuState; //80398904
 
 int main(int argc, char **argv) { //80077ca8
 	if(argc > 1 && strcmp(argv[1], "prog") == 0u) {
@@ -1041,10 +1031,6 @@ uint mainDecBit(int bitNo) { //80079880
     else return 0;
 }
 
-
-extern int debugSetupPoint; //80399904
-extern int debugSetupPointMapNo; //80399924
-
 void mapDoDebugSetupPoint(void) { //800798D8
     switch(debugSetupPointMapNo) {
         case 0x9: break;
@@ -1121,7 +1107,6 @@ BOOL DLL_createTempDll(int id) { //80079AD8
 }
 
 BOOL DLL_removeTempDll(int id) { //80079B80
-    //should be equivalent, only reloc
     int iVar1;
     uint idx;
 
@@ -1405,9 +1390,9 @@ int randInt(int min,int max) { //8007A228
     return uVar1;
 }
 
-//probably doesn't belong here
-/* 802eb0a0 */ extern Mtx44 mtx44_identity ; /*= {
+//probably doesn't belong here.
+/* 802eb0a0 */ Mtx44 mtx44_identity = {
     1.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f}; */
+    0.0f, 0.0f, 0.0f, 1.0f};

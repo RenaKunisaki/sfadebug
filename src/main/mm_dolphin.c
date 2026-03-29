@@ -27,6 +27,7 @@
 
 //not referenced in this file, but has to be static
 //or else it doesn't get put in the binary.
+/* 802eb248 */
 static const char *allocTagNames[] = {
 	"0",
 	"LISTS_COL",

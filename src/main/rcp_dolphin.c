@@ -12,39 +12,36 @@
 #include "gfx/gbi.h"
 #include "gfx/render.h"
 
-extern Mtx44 projMtx_80382d00;
-
-RcpQueue RcpQueue_8036bc80; //8036bc80
-RcpQueue RcpQueue_8036bcfc; //8036bcfc
-OSThread rcpThread; //8036bd78
-struct OSStopwatch stopwatchCpu; //8036cfa8
-struct OSStopwatch stopwatchGp; //8036cfe0
-struct OSStopwatch stopwatchFrame; //8036d018
-
-bool bNeedSetVerticalRegs; //80396de0
-GXColor DAT_80396de4; //80396de4
-RSPState *RSP_pState; //80396e28
-
-void *rcpGxFifo; //80398b40
-GXFifoObj *gxInitVal; //80398b44
-void *pFrameBuffer_80398b48; //80398b48
-void *pCurFrameBuffer; //80398b4c
-bool gxBreakPtFlag_80398b50; //80398b50
-bool rcpBreakptVal_80398b51; //80398b51
-bool viVal_80398b52; //80398b52
-u16 peToken_80398b54; //80398b54
-OSThreadQueue rcpThreadQueue; //80398b58
-float frameTime; //80398b60
-float rcpBreakpointTime; //80398b64
-float FLOAT_80398b68; //80398b68
-int frameCountThisStep; //80398b6c
-void *pFrameBuffer_80398b70; //80398b70
-void *pFrameBuffer_80398b74; //80398b74
-GXRenderModeObj *curTvParams; //80398b78
-int DAT_80398b7c; //80398b7c
-bool gxZUpdateEnable; //80398b80
-int gxZCompareFunc; //80398b84
-bool gxZCompareEnable; //80398b88
+/* 80382d00 */ extern Mtx44 projMtx_80382d00;
+/* 8036bc80 */ RcpQueue RcpQueue_8036bc80;
+/* 8036bcfc */ RcpQueue RcpQueue_8036bcfc;
+/* 8036bd78 */ OSThread rcpThread;
+/* 8036cfa8 */ struct OSStopwatch stopwatchCpu;
+/* 8036cfe0 */ struct OSStopwatch stopwatchGp;
+/* 8036d018 */ struct OSStopwatch stopwatchFrame;
+/* 80396de0 */ bool bNeedSetVerticalRegs;
+/* 80396de4 */ GXColor DAT_80396de4;
+/* 80396e28 */ RSPState *RSP_pState;
+/* 80398b40 */ void *rcpGxFifo;
+/* 80398b44 */ GXFifoObj *gxInitVal;
+/* 80398b48 */ void *pFrameBuffer_80398b48;
+/* 80398b4c */ void *pCurFrameBuffer;
+/* 80398b50 */ bool gxBreakPtFlag_80398b50;
+/* 80398b51 */ bool rcpBreakptVal_80398b51;
+/* 80398b52 */ bool viVal_80398b52;
+/* 80398b54 */ u16 peToken_80398b54;
+/* 80398b58 */ OSThreadQueue rcpThreadQueue;
+/* 80398b60 */ float frameTime;
+/* 80398b64 */ float rcpBreakpointTime;
+/* 80398b68 */ float FLOAT_80398b68;
+/* 80398b6c */ int frameCountThisStep;
+/* 80398b70 */ void *pFrameBuffer_80398b70;
+/* 80398b74 */ void *pFrameBuffer_80398b74;
+/* 80398b78 */ GXRenderModeObj *curTvParams;
+/* 80398b7c */ int DAT_80398b7c;
+/* 80398b80 */ bool gxZUpdateEnable;
+/* 80398b84 */ int gxZCompareFunc;
+/* 80398b88 */ bool gxZCompareEnable;
 
 //declarations for other files
 u16 getPeToken(void);
