@@ -49,8 +49,8 @@
 /* 80358a74 */ undefined4 DAT_80358a74;
 /* 80358a78 */ undefined4 DAT_80358a78;
 /* 80358a7c */ undefined4 DAT_80358a7c;
+
 /* 80358e70 */ undefined4 DWORD_80358e70;
-/* 80358a74 */ undefined4 DAT_80358a74;
 
 /* 80359458 */ u16 *objTypeIdxs[MAX_OBJTYPES];
 /* 803594e4 */ ObjInstance *objTypeObjs[MAX_OBJTYPE_OBJS];
@@ -59,14 +59,56 @@
 /* 80396c15 */ extern u8 framesThisStep;
 
 /* 80398938 */ extern LoadedDLL *pDll_camcontrol;
+
 /* 8039895c */ LoadedDLL *pDll_dummy04;
+
+//.sbss
+/* 80398a40 */ s16 nVisibleObjs;
 /* 80398a44 */ s16 *contNoBuf;
 /* 80398a48 */ ObjData *objTypes;
+/* 80398a4c */ s32 *pObjectsTab;
+/* 80398a50 */ s32 objMaxObjId;
+/* 80398a54 */ s32 *tables_bin;
+/* 80398a58 */ s32 *tables_tab;
+/* 80398a5c */ s32 nTablesTab;
 /* 80398a60 */ ObjData **objDefNoList;
 /* 80398a64 */ u8 *objDefNoUsage;
+/* 80398a68 */ s16 *Object_pObjIndex;
+/* 80398a6c */ s32 objMaxObjType;
+/* 80398a70 */ ObjInstance **Object_delList;
+/* 80398a74 */ s32 objDelListCount;
+/* 80398a78 */ ObjInstance **objLockList;
+/* 80398a7c */ s32 objLockListLen;
+/* 80398a80 */ ObjInstance **objLoadedObjs;
+/* 80398a84 */ s32 ObjListSize;
 /* 80398a88 */ ObjectList globalObjList;
-/* 80398a94 */ extern ObjInstance *playerHeldBy;
+/* 80398a90 */ s8 numEffectBoxes;
+/* 80398a91 */ u8 BYTE_80398a91;
+/* 80398a94 */ ObjInstance *playerHeldBy;
+/* 80398a98 */ float timeDelta_80398a98;
+/* 80398a9c */ ObjInstance **hitModels;
+/* 80398aa0 */ s32 numHitModels;
+/* 80398aa4 */ ohits_lasthits_struct *ohits_lasthits;
+/* 80398aa8 */ UNKTYPE *ohits_hitvols;
+/* 80398aac */ UNKTYPE *ohits_hitspheres;
+/* 80398ab0 */ UNKTYPE *PTR_DAT_80398ab0;
+/* 80398ab4 */ UNKTYPE *PTR_DAT_80398ab4;
+/* 80398ab8 */ UNKTYPE *PTR_DAT_80398ab8;
+/* 80398abc */ undefined4 DAT_80398abc;
+/* 80398ac0 */ s16 numObjTypes;
+/* 80398ac4 */ undefined4 DAT_80398ac4;
+/* 80398ac8 */ s32 nTouchCallbacks;
+/* 80398acc */ undefined4 DAT_80398acc;
+/* 80398ad0 */ u8 exprControlFlags;
+/* 80398ad4 */ undefined4 DAT_80398ad4;
+/* 80398ad8 */ undefined4 DAT_80398ad8;
+/* 80398adc */ UNKTYPE *PTR_DAT_80398adc;
+/* 80398ae0 */ UNKTYPE *circlePols;
+/* 80398ae4 */ s8 BYTE_80398ae4;
+/* 80398ae6 */ s16 WORD_80398ae6;
+
 /* 803999b8 */ extern int bDisableModelRendering;
+
 /* 80399a74 */ extern s8 objSeqEditFlag80399a74;
 
 float sinf(float);
@@ -80,6 +122,7 @@ void objFreeObject(ObjInstance *obj);
 void objUpdateModels(void);
 void objThaw(ObjInstance *object);
 void objSetFreezing(ObjInstance *object);
+void LAB_8018fb20(ObjInstance *obj,ObjDefEnum objtype);
 
 //objlist.c
 void objListInit(ObjectList *list, short stride);
@@ -112,30 +155,30 @@ void Object_initObjects(void) {
 
 	//load objindex and count number of object types
 	loadAsset_file(&Object_pObjIndex, FILE_OBJINDEX_bin);
-	Object_maxObjType = (getLoadedDataFileSize(FILE_OBJINDEX_bin) >> 1) - 1;
-	while(Object_pObjIndex[Object_maxObjType] == 0) Object_maxObjType--;
+	objMaxObjType = (getLoadedDataFileSize(FILE_OBJINDEX_bin) >> 1) - 1;
+	while(Object_pObjIndex[objMaxObjType] == 0) objMaxObjType--;
 
 	//load objtab and find the max index
-	loadAsset_file(&Object_pObjectsTab, FILE_OBJECTS_tab);
-	Object_maxObjId = 0;
-	while(Object_pObjectsTab[Object_maxObjId] != -1) Object_maxObjId++;
-	Object_maxObjId--;
+	loadAsset_file(&pObjectsTab, FILE_OBJECTS_tab);
+	objMaxObjId = 0;
+	while(pObjectsTab[objMaxObjId] != -1) objMaxObjId++;
+	objMaxObjId--;
 
 	//load object type index
 	//XXX this should probably be FILE_OBJECTS_tab?
 	//not sure if bug or we have wrong file IDs
 	objTypes = mmAllocDi(
-	    Object_pObjectsTab[Object_maxObjId] + 0x10,
+	    pObjectsTab[objMaxObjId] + 0x10,
 		ALLOC_TAG_OBJECTS_COL,
 		"obj:objtypes");
 	loadAsset_fileWithOffset(objTypes, FILE_OBJECTS_bin);
 
 	//alloc deflist and refcount
-	objDefNoList = (ObjData **)mmAlloc(Object_maxObjId << 2, ALLOC_TAG_OBJECTS_COL,
+	objDefNoList = (ObjData **)mmAlloc(objMaxObjId << 2, ALLOC_TAG_OBJECTS_COL,
 		"obj:deflist");
-	objDefNoUsage = (u8 *)mmAlloc(Object_maxObjId, ALLOC_TAG_OBJECTS_COL,
+	objDefNoUsage = (u8 *)mmAlloc(objMaxObjId, ALLOC_TAG_OBJECTS_COL,
 		"obj:defno");
-	for(iVar1 = 0; iVar1 < (int)Object_maxObjId; iVar1++) { objDefNoUsage[iVar1] = 0; }
+	for(iVar1 = 0; iVar1 < (int)objMaxObjId; iVar1++) { objDefNoUsage[iVar1] = 0; }
 
 	//load tables and count entries
 	loadAsset_file(&tables_bin, FILE_TABLES_bin);
@@ -593,9 +636,9 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	oType = def->objType;
 	if(flags & 2) realType = oType;
 	else {
-		if(oType > Object_maxObjType) {
+		if(oType > objMaxObjType) {
 			printf("objSetupObjectActual objtype out of range %d/%d\n",
-			    oType, Object_maxObjType);
+			    oType, objMaxObjType);
 			return NULL;
 		}
 		realType = Object_pObjIndex[oType];
@@ -1242,14 +1285,14 @@ ObjData *objLoadData(int objType) {
 	uint offset;
 	uint size;
 
-	if(objType >= (int)Object_maxObjId) return NULL;
+	if(objType >= (int)objMaxObjId) return NULL;
 	if(objDefNoUsage[objType] != 0) {
 		objDefNoUsage[objType]++;
 		objData = objDefNoList[objType];
 		return objData;
 	}
-	offset = Object_pObjectsTab[objType];
-	size = Object_pObjectsTab[objType + 1] - offset;
+	offset = pObjectsTab[objType];
+	size = pObjectsTab[objType + 1] - offset;
 	objData = (ObjData *)mmAlloc(size,
 		ALLOC_TAG_OBJECTS_COL, "obj:def");
 	if(objData) {
@@ -1411,11 +1454,11 @@ void nop_800849FC() {
 }
 
 int Object_getMaxObjType() {
-	return Object_maxObjType;
+	return objMaxObjType;
 }
 
 BOOL ObjEdit_isObjIndexNotEmpty(int idx) {
-	if(idx > Object_maxObjType) return false;
+	if(idx > objMaxObjType) return false;
 	return Object_pObjIndex[idx] != -1;
 }
 
@@ -1425,9 +1468,9 @@ int objGetControlNo(int objType) {
 	int count;
 	int index;
 
-	if(objType > Object_maxObjType) {
+	if(objType > objMaxObjType) {
 		printf("objGetControlNo objtype out of range %d/%d\n",
-			objType, Object_maxObjType);
+			objType, objMaxObjType);
 		return 0;
 	}
 	objType = Object_pObjIndex[objType];
@@ -1439,7 +1482,7 @@ int objGetControlNo(int objType) {
 		ii--;
 	}
 
-	index = Object_pObjectsTab[objType] + ii;
+	index = pObjectsTab[objType] + ii;
 	loadAsset_fileWithOffsetLength(
 		contNoBuf, FILE_OBJECTS_bin,
 		index, 8);
@@ -1450,60 +1493,60 @@ int objGetControlNo(int objType) {
 ObjFileStructFlags44 objTypeGetFlags(int objType) {
 	ObjData *data;
 
-	if(objType > Object_maxObjType) {
+	if(objType > objMaxObjType) {
 		printf("objTypeGetFlags objtype out of range %d/%d\n",
-			objType, Object_maxObjType);
+			objType, objMaxObjType);
 		return 0;
 	}
 	objType = Object_pObjIndex[objType];
-	if(objType >= Object_maxObjId) return 0;
+	if(objType >= objMaxObjId) return 0;
 
-	data = (ObjData*)((u32)objTypes + Object_pObjectsTab[objType]);
+	data = (ObjData*)((u32)objTypes + pObjectsTab[objType]);
 	return data->flags;
 }
 
 u8 objTypeGetClass(int objType) {
 	ObjData *data;
 
-	if(objType > Object_maxObjType) {
+	if(objType > objMaxObjType) {
 		printf("objTypeGetClass objtype out of range %d/%d\n",
-			objType, Object_maxObjType);
+			objType, objMaxObjType);
 		return 0;
 	}
 	objType = Object_pObjIndex[objType];
-	if(objType >= Object_maxObjId) return 0;
+	if(objType >= objMaxObjId) return 0;
 
-	data = (ObjData*)((u32)objTypes + Object_pObjectsTab[objType]);
+	data = (ObjData*)((u32)objTypes + pObjectsTab[objType]);
   	return data->class_;
 }
 
 const char* objTypeName(int objType) { //not present in binary
 	ObjData *data;
 
-	if(objType > Object_maxObjType) {
+	if(objType > objMaxObjType) {
 		printf("objTypeName objtype out of range %d/%d\n",
-			objType, Object_maxObjType);
+			objType, objMaxObjType);
 		return 0;
 	}
 	objType = Object_pObjIndex[objType];
-	if(objType >= Object_maxObjId) return 0;
+	if(objType >= objMaxObjId) return 0;
 
-	data = (ObjData*)((u32)objTypes + Object_pObjectsTab[objType]);
+	data = (ObjData*)((u32)objTypes + pObjectsTab[objType]);
   	return data->name;
 }
 
 int objGetTypeNo(int objType) { //not present in binary
 	ObjData *data;
 
-	if(objType > Object_maxObjType) {
+	if(objType > objMaxObjType) {
 		printf("objGetTypeNo objtype out of range %d/%d\n",
-			objType, Object_maxObjType);
+			objType, objMaxObjType);
 		return 0;
 	}
 	objType = Object_pObjIndex[objType];
-	if(objType >= Object_maxObjId) return 0;
+	if(objType >= objMaxObjId) return 0;
 
-	data = (ObjData*)((u32)objTypes + Object_pObjectsTab[objType]);
+	data = (ObjData*)((u32)objTypes + pObjectsTab[objType]);
   	return 0; //presumably data->something, but idk which
 }
 

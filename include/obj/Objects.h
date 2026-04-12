@@ -26,6 +26,10 @@ typedef struct {
     /* 0x8 */ void *cb;
 } TouchCallback;
 
+typedef struct {
+    u8 unk[0x3C];
+} ohits_lasthits_struct;
+
 enum ObjSetupFlags {
     ObjSetupFlags_Global = (1 << 0), //add to global object list
 };
@@ -145,20 +149,20 @@ extern f64 DOUBLE_8039a9b8;
 extern int DWORD_80396d10;
 extern int DWORD_80398a88;
 extern ObjInstance *playerHeldBy;
-extern s16 *Object_contNoBuf;
+extern s16 *objContNoBuf;
 extern ObjInstance **Object_delList;
 extern ObjInstance **objLoadedObjs;
 extern ObjInstance **objLockList;
 extern s32 objLockListLen;
-extern s32 Object_maxObjId;
-extern s32 Object_maxObjType;
+extern s32 objMaxObjId;
+extern s32 objMaxObjType;
 extern s32 ObjListSize;
 extern s32 objDelListCount;
 extern ObjData *objTypes;
 extern s16 *Object_pObjIndex;
-extern s32 *Object_pObjectsTab;
-extern s32 defList;
-extern s32 defNo;
+extern s32 *pObjectsTab;
+extern ObjData **objDefNoList;
+extern u8 *objDefNoUsage;
 extern ObjInstance *effectBoxes[MAX_EFFECT_BOXES];
 extern s8 lbl_802ECCE4;
 extern s8 lbl_802ECCF0;
