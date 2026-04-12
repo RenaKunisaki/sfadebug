@@ -15,12 +15,16 @@
 
 /* 802d8d88 */ extern GXRenderModeObj tvParamsProgScan;
 /* 802d8e3c */ extern GXRenderModeObj tvParamsNotProgScan;
+
 /* 802eadc8 */ const char *s_buildDate = BUILD_DATE;
 /* 802eadd8 */ const char *s_buildName = BUILD_AUTHOR;
+//this can't be right
+//this is the address of the string, not the pointer
 /* 802eade3 */ const char *s_buildVersion = VERSION_STRING;
 /* 802eae0c */ int tempDllIds[3] = {-1, 0x33, 0x35};
 /* 802eae18 */ LoadedDLL *tempDlls[3] = {0};
 /* 802eae24 */ float frameTimes[10] = {0};
+
 /* 80321198 */ //char _defaultBits[] = " Stolen "; //likely part of larger struct
 /* 80321198 */ extern char _defaultBits[];
 /* 80352f30 */ extern u8 DAT_80352f30[0x7EF]; //unk type
@@ -125,7 +129,7 @@
 /* 803999d0 */ extern int mapEditFlag803999d0;
 /* 80399a74 */ extern s8 objSeqEditFlag80399a74;
 
-ObjInstance* Object_objGetMain(void);
+ObjInstance* objGetMain(void);
 BOOL videoBackendRun(void);
 bool checkSomeDebugFlags_8017c4f8(); //8017c4f8
 u16 getEnabledButtonsHeld(int pad);
@@ -685,7 +689,7 @@ void gameUpdate(void) { //80078BBC
     u16 bPressed;
     ObjInstance *player;
 
-    player = Object_objGetMain();
+    player = objGetMain();
     pDll_camcontrol->funcs->camcontrol.func17();
     pDll_Dummy15->funcs->Dummy15.func08_nop();
     if(videoBackendRun() == FALSE) {
@@ -703,7 +707,7 @@ void gameUpdate(void) { //80078BBC
             && e3MenuFrameCount_80398909 == 0) {
                 if((screenBlankFrameCount == 0)
                 && ((bPressed & PAD_BUTTON_START) != 0)) {
-                    player = Object_objGetMain();
+                    player = objGetMain();
                     if (player
                     && ((player->flags_0xb0 & ObjInstance_FlagsB0_SeqActive) == 0)) {
                         setShowCommandMenu(2);
@@ -1184,7 +1188,7 @@ void updatePlayerPosLog(void) { //80079DC4
     ObjInstance *player;
     PlayerPrevPosition *pos;
 
-    player = Object_objGetMain();
+    player = objGetMain();
     pos = &playerPrevPositions[playerPrevPosidx];
     frameCount_playerPosLog += framesThisStep;
     if(player) {
@@ -1389,10 +1393,3 @@ int randInt(int min,int max) { //8007A228
     uVar1 += min;
     return uVar1;
 }
-
-//probably doesn't belong here.
-/* 802eb0a0 */ Mtx44 mtx44_identity = {
-    1.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f};

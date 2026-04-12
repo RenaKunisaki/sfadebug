@@ -22,17 +22,19 @@
 
 int randInt(int min,int max);
 
+//presumably debug stuff that would be set differently
+//depending on compile flags?
+typedef struct { int val[3]; } int3_80080D04;
+/* 802cf000 */ const int3_80080D04 DWORD_ARRAY_802cf000 = {0, 0, 0};
+/* 802cf00c */ const int3_80080D04 DWORD_ARRAY_802cf00c = {0, 0, 0};
+
+#define TILTLIST_MAX 44
+/* 80357698 */ s16 Tiltlist[TILTLIST_MAX];
+
 //x, y, z but not S16Vec or array
 /* 8039872c */ extern s16 objAnimVar_8039872c_x;
 /* 8039872e */ extern s16 objAnimVar_8039872c_y;
 /* 80398730 */ extern s16 objAnimVar_8039872c_z;
-
-/* 80398a10 */ int DAT_80398a10;
-/* 80398a14 */ int DWORD_80398a14;
-/* 80398a18 */ int DWORD_80398a18;
-
-#define TILTLIST_MAX 44
-/* 80357698 */ s16 Tiltlist[TILTLIST_MAX];
 
 /* 80398a20 */ int maxModelNum;
 /* 80398a24 */ s16 *globalModAnimBuffer;
@@ -41,6 +43,8 @@ int randInt(int min,int max);
 /* 80398a2c */ u32 *animOffsetTable;
 /* 80398a30 */ UNKTYPE *globalModAnimBufferPlus0x810;
 /* 80398a34 */ BOOL bHaveAnimTab;
+/* 80398a38 */ SparseArray *modelsLoadedTable;
+/* 80398a3c */ SparseArray *animsLoadedTable;
 
 void debugPrint(char *fmt,...);
 Texture * textureLoad(int id,int param_2);
@@ -488,7 +492,6 @@ void Model_initSkinningWeights(Model *model, ModelInstance *mInst) { // 8007E76C
 		}
 	}
 }
-
 
 void Model_initShaders(Model *model) { // 8007e814
 	Shader *shader;
@@ -1043,8 +1046,8 @@ void modelUnkTexCoordFn(int s, int t) { //unused
 	BADASSERTLINE(0, t>=SHRT_MIN && t<=SHRT_MAX);
 }
 
-Animation *loadAnimation(
-    Model *model, short id, short id2, void *dest) { // 8008010C
+Animation *loadAnimation(Model *model, short id, short id2,
+void *dest) { // 8008010C
 	if(!dest) {
 		return getAnimation(id);
 	} else {
@@ -1052,8 +1055,8 @@ Animation *loadAnimation(
 	}
 }
 
-Animation *modelLoadAnimation(
-Model *model, int index, int id, void *dest) { // 80080168
+Animation *modelLoadAnimation(Model *model, int index, int id,
+void *dest) { // 80080168
 	u32 len;
 	uint offset;
 	uint offset2;
@@ -1345,12 +1348,6 @@ LAB_80080c74:
 		}
 	}
 }
-
-//presumably debug stuff that would be set differently
-//depending on compile flags?
-typedef struct { int val[3]; } int3_80080D04;
-const int3_80080D04 DWORD_ARRAY_802cf000 = {0, 0, 0};
-const int3_80080D04 DWORD_ARRAY_802cf00c = {0, 0, 0};
 
 void copyVtxsToModelInstance(ModelInstance *modelInstance) { // 80080D04
 	short endPos;
@@ -2065,8 +2062,8 @@ BOOL makeModelAnimation(Model *model, uint animId, s8 *hits) { //8007CC94
 	return FALSE;
 }
 
-void modelSetupAnims(
-    ModelInstance *modelInstance, AnimInstance *animInstance) { // 8007CFA4
+void modelSetupAnims(ModelInstance *modelInstance,
+AnimInstance *animInstance) { // 8007CFA4
 	AnimCache *anim;
 	Model *model;
 
@@ -2110,7 +2107,8 @@ void modelSetupAnims(
 	}
 }
 
-void* fn_8007D174(short param_1,short param_2,undefined4 param_3,undefined4 param_4) { //8007D174
+void* fn_8007D174(short param_1,short param_2,undefined4 param_3,
+undefined4 param_4) { //8007D174
 	void *result;
 
 	result = NULL;

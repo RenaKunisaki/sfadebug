@@ -179,7 +179,34 @@ void piGetTEXTUREInfo(uint offset, uint mipIdx, uint *outSize,
 void loadTableFiles(void);
 uint piGetLoadedFlags(int param_1);
 
-const char *dataFileNames[] = { //802ef02c
+//.rodata
+/* 802cf3b8 */ PiFreeList piFreeList = {0}; //why is this in rodata!?
+/* 802cf458 */
+/* 802cf460 */ PiFreeList DWORD_ARRAY_802cf460 = {
+    //these "map numbers" are some kind of bitflag, never used?
+    FILE_MODELS_bin,      0x1,
+    FILE_MODELS_tab,      0x2,
+    FILE_ANIM_TAB,        0x8,
+    FILE_ANIM_BIN,        0x4,
+    FILE_MODELS_bin2,     0x1,
+    FILE_MODELS_tab2,     0x2,
+    FILE_ANIM_TAB2,       0x8,
+    FILE_ANIM_BIN2,       0x4,
+    FILE_TEX0_tab,       0x20,
+    FILE_TEX0_bin,       0x10,
+    FILE_TEX0_tab2,    0x20,
+    FILE_TEX0_bin2,    0x10,
+    FILE_TEX1_tab,     0x80,
+    FILE_TEX1_bin,     0x40,
+    FILE_TEX1_tab2,    0x80,
+    FILE_TEX1_bin2,    0x40,
+    FILE_BLOCKS_bin,  0x100,
+    FILE_BLOCKS_tab,  0x200,
+    FILE_BLOCKS_bin2, 0x100,
+    FILE_BLOCKS_tab2, 0x200,
+};
+
+/* 802ef02c */ const char *dataFileNames[] = {
     "AUDIO.tab", "AUDIO.bin",
     "SFX.tab", "SFX.bin",
     "AMBIENT.tab", "AMBIENT.bin",
@@ -315,7 +342,7 @@ const char *mapNames[] = {
     "bosstrex",
     "animtest"};
 
-const MapDirIdx32 mapIdXltnTbl[] = { //0x802ef38c
+/* 802ef38c */ const MapDirIdx32 mapIdXltnTbl[] = {
     MapDir_animtest_05,
     MapDir_animtest_05,
     MapDir_dragrock,
@@ -378,49 +405,22 @@ const MapDirIdx32 mapIdXltnTbl[] = { //0x802ef38c
     MapDir_animtest_05,
 };
 
-//.rodata
-PiFreeList piFreeList = {0}; //0x802cf3b8 (why is this in rodata!?)
-PiFreeList DWORD_ARRAY_802cf460 = {
-    //these "map numbers" are some kind of bitflag, never used?
-    FILE_MODELS_bin, 0x1,
-    FILE_MODELS_tab, 0x2,
-    FILE_ANIM_TAB, 0x8,
-    FILE_ANIM_BIN, 0x4,
-    FILE_MODELS_bin2, 0x1,
-    FILE_MODELS_tab2, 0x2,
-    FILE_ANIM_TAB2, 0x8,
-    FILE_ANIM_BIN2, 0x4,
-    FILE_TEX0_tab, 0x20,
-    FILE_TEX0_bin, 0x10,
-    FILE_TEX0_tab2, 0x20,
-    FILE_TEX0_bin2, 0x10,
-    FILE_TEX1_tab, 0x80,
-    FILE_TEX1_bin, 0x40,
-    FILE_TEX1_tab2, 0x80,
-    FILE_TEX1_bin2, 0x40,
-    FILE_BLOCKS_bin, 0x100,
-    FILE_BLOCKS_tab, 0x200,
-    FILE_BLOCKS_bin2, 0x100,
-    FILE_BLOCKS_tab2, 0x200,
-};
-
-
 //.bss
-u8 lbl_8035C9A8[0x88];
-s16 loadedFileMapIds[NUM_FILES]; //0x0x8035CA30
-void *dataFilePtrs[NUM_FILES]; //0x8035CAD0
-u8 dataFileArray_8035cc10[NUM_FILES]; //0x8035CC10 - initDataFiles stores 0 here for each file
-uint MODELS_TAB[MODELS_TAB_SIZE]; //0x8035CC60
-uint ANIM_TAB[ANIM_TAB_SIZE]; //0x8035EC60 size might be 0x4e8?
-uint TEX0_TAB[TEX0_TAB_SIZE]; //0x80361B40 size might be 0x6d0?
-uint TEX1_TAB[TEX1_TAB_SIZE]; //0x80365B40
-uint BLOCKS_TAB[BLOCKS_TAB_SIZE]; //0x80369B40 size might be 0x1000?
-int dataFileSizes[NUM_FILES]; //0x8036BB40
+/* 8035C9A8 */ u8 lbl_8035C9A8[0x88];
+/* 8035CA30 */ s16 loadedFileMapIds[NUM_FILES];
+/* 8035CAD0 */ void *dataFilePtrs[NUM_FILES];
+/* 8035CC10 */ u8 dataFileArray_8035cc10[NUM_FILES]; //initDataFiles stores 0 here for each file
+/* 8035CC60 */ uint MODELS_TAB[MODELS_TAB_SIZE];
+/* 8035EC60 */ uint ANIM_TAB[ANIM_TAB_SIZE]; //size might be 0x4e8?
+/* 80361B40 */ uint TEX0_TAB[TEX0_TAB_SIZE]; //size might be 0x6d0?
+/* 80365B40 */ uint TEX1_TAB[TEX1_TAB_SIZE];
+/* 80369B40 */ uint BLOCKS_TAB[BLOCKS_TAB_SIZE]; //size might be 0x1000?
+/* 8036BB40 */ int dataFileSizes[NUM_FILES];
 
 //.sbss
-u32 loadingFiles; //0x80398B30 - PiLockFlags, which are being loaded in background
-u32 loadedFiles; //0x80398B34 - PiLockFlags
-u32 readyFiles; //0x80398B38 - PiLockFlags
+/* 80398B30 */ u32 loadingFiles; //PiLockFlags, which are being loaded in background
+/* 80398B34 */ u32 loadedFiles; //PiLockFlags
+/* 80398B38 */ u32 readyFiles; //PiLockFlags
 
 #define PIFREE(slot, name) if(dataFilePtrs[slot] != NULL) { \
     STUBBED_PRINTF("PIFREE pitable[%d]" #name "  addr %d", slot, dataFilePtrs[slot]); \

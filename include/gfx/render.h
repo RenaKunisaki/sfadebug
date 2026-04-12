@@ -138,6 +138,7 @@ extern short di_pol_count;
 extern RSPState *RSP_pState;
 extern int diFlag_803997d0; */
 
+void n64DrawTriangles(Gfx **gfx,N64VertexIdxs *vtxs,uint nVtxs);
 void RSP_pipeSync(Gfx **gfx);
 void rcpApplyOtherMode(Gfx **gfx);
 void rcpSetPrimColor(Gfx **gfx,u8 r,u8 g,u8 b,u8 a);

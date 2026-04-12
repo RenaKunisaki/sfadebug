@@ -16,17 +16,58 @@
 #include "gfx/models/models.h"
 #include "save/SaveGame.h"
 
+/* 802eca98 */ struct {
+	ObjDef def;
+	u8 unk[8]; //params, but idk what object type
+} objDef_802eca98;
+
+/* 803576f8 */ undefined BYTE_803576f8;
+
+/* 80357708 */ undefined4 DAT_80357708;
+/* 8035770c */ undefined4 DAT_8035770c;
+/* 80357710 */ undefined4 DAT_80357710;
+
+/* 80357720 */ ObjInstance *effectBoxes[MAX_EFFECT_BOXES];
+/* 80357770 */ undefined BYTE_80357770;
+/* 80357774 */ undefined4 DAT_80357774;
+/* 80357778 */ undefined4 DAT_80357778;
+/* 8035777c */ undefined4 DAT_8035777c;
+/* 80357780 */ undefined4 DAT_80357780;
+/* 80357784 */ undefined4 DAT_80357784;
+/* 80357788 */ undefined DAT_80357788;
+/* 80357789 */ undefined DAT_80357789;
+
+/* 80357e70 */ undefined4 DAT_80357e70;
+/* 80357e74 */ undefined4 DAT_80357e74;
+/* 80357e78 */ undefined4 DAT_80357e78;
+/* 80357e7c */ undefined4 DAT_80357e7c;
+/* 80357e80 */ undefined4 DAT_80357e80;
+/* 80357e84 */ undefined4 DAT_80357e84;
+/* 80357e88 */ undefined4 DAT_80357e88;
+
+/* 80358a70 */ undefined4 DAT_80358a70;
+/* 80358a74 */ undefined4 DAT_80358a74;
+/* 80358a78 */ undefined4 DAT_80358a78;
+/* 80358a7c */ undefined4 DAT_80358a7c;
+/* 80358e70 */ undefined4 DWORD_80358e70;
+/* 80358a74 */ undefined4 DAT_80358a74;
+
+/* 80359458 */ u16 *objTypeIdxs[MAX_OBJTYPES];
+/* 803594e4 */ ObjInstance *objTypeObjs[MAX_OBJTYPE_OBJS];
+/* 803598e8 */ TouchCallback touchCallbacks[MAX_TOUCH_CALLBACKS];
+
 /* 80396c15 */ extern u8 framesThisStep;
 
+/* 80398938 */ extern LoadedDLL *pDll_camcontrol;
+/* 8039895c */ LoadedDLL *pDll_dummy04;
 /* 80398a44 */ s16 *contNoBuf;
-/* 80398a88 */ ObjectList globalObjList;
+/* 80398a48 */ ObjData *objTypes;
 /* 80398a60 */ ObjData **objDefNoList;
 /* 80398a64 */ u8 *objDefNoUsage;
-/* 80398938 */ LoadedDLL *pDll_camcontrol;
-/* 8039895c */ LoadedDLL *pDll_dummy04;
-/* 80398a94 */ ObjInstance *playerHeldBy;
-/* 80399a74 */ s8 objSeqEditFlag80399a74;
-/* 803999b8 */ int bDisableModelRendering;
+/* 80398a88 */ ObjectList globalObjList;
+/* 80398a94 */ extern ObjInstance *playerHeldBy;
+/* 803999b8 */ extern int bDisableModelRendering;
+/* 80399a74 */ extern s8 objSeqEditFlag80399a74;
 
 float sinf(float);
 float cosf(float);
@@ -83,11 +124,11 @@ void Object_initObjects(void) {
 	//load object type index
 	//XXX this should probably be FILE_OBJECTS_tab?
 	//not sure if bug or we have wrong file IDs
-	Object_objTypes = mmAllocDi(
+	objTypes = mmAllocDi(
 	    Object_pObjectsTab[Object_maxObjId] + 0x10,
 		ALLOC_TAG_OBJECTS_COL,
 		"obj:objtypes");
-	loadAsset_fileWithOffset(Object_objTypes, FILE_OBJECTS_bin);
+	loadAsset_fileWithOffset(objTypes, FILE_OBJECTS_bin);
 
 	//alloc deflist and refcount
 	objDefNoList = (ObjData **)mmAlloc(Object_maxObjId << 2, ALLOC_TAG_OBJECTS_COL,
@@ -563,7 +604,7 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	//load the object data
 	memclr(&objTmp, sizeof(ObjInstance));
 	result = &objTmp;
-	objData = Object_objLoadData(realType);
+	objData = objLoadData(realType);
 	result->objdata = objData;
 	if((!objData) || ((s32)objData == -1)) {
 		debugPrint("Warning: Unknown object type '%d/%d romdefno %d', "
@@ -690,24 +731,24 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 
 	//set up the object data following the object itself
 	next = &result->frames[objData->noframes];
-	next = Object_objInitState(result, next);
+	next = objInitState(result, next);
 	if(modelFlags & ObjModelFlags_HasEvents) {
-		next = Object_objSetupEvents((s32)result->objtype,
+		next = objSetupEvents((s32)result->objtype,
 			result, next);
 	}
 	if(modelFlags & ObjModelFlags_HasModels) {
-		next = Object_objSetupModels(result->objtype,
+		next = objSetupModels(result->objtype,
 			result->frames[0], result, next);
 	}
 	if((modelFlags & ObjModelFlags_HasShadow)
 	&& ((s16)objData->shadowType != ObjShadowType_None)) {
-		next = Object_objLoadShadow(result, next, 0);
+		next = objLoadShadow(result, next, 0);
 	}
 	result->cullDistance = result->pos.scale * objGetDefaultCullDistance(result);
 	if((u8)objData->maybeNumHits != 0) {
-		next = (void *)Object_objSetupHitState(result, next);
+		next = (void *)objSetupHitState(result, next);
 		if((u8)objData->flags93 & 8) {
-			next = (void *)Object_objSetupField58(result, next);
+			next = (void *)objSetupField58(result, next);
 		}
 	}
 	if((u8)objData->nJoints != 0) {
@@ -728,7 +769,7 @@ s32 romDefNo, struct ObjInstance *heldBy) {
 	}
 	if(((u8)objData->maybeNumHits != 0) && ((u8)objData->bDisableHits != 0)) {
 		next = mmAlign4(next);
-		next = Object_objSetupHits((s32)result->objtype,
+		next = objSetupHits((s32)result->objtype,
 		    (ModelInstance *)result->frames[0],
 		    result->hits,
 		    next,
@@ -789,7 +830,7 @@ void objSetup(ObjInstance *object, uint flags) {
 		    (int)*(short *)&object->objdata->unka0, (int)object);
 	}
 	if((object->objdata->flags & ObjFileStructFlags44_IsWorldObj)) {
-		Object_objAddObjectType(object, ObjCat_StaticCamera);
+		objAddObjectType(object, ObjCat_StaticCamera);
 		if(object->priority != OBJ_PRIORITY_WORLD) {
 			Object_setPriority(object, OBJ_PRIORITY_WORLD);
 		}
@@ -906,7 +947,7 @@ void modelInitSkeleton(float scale, ModelInstance *modelInstance) {
 		skel->scale[iJoint] = scale * radi[iJoint];
 		skel->unk08[iJoint] = skel->scale[iJoint] * skel->scale[iJoint];
 
-		iParent = model->joints[iJoint].idx[0];
+		iParent = (s8)model->joints[iJoint].idx[0];
 		distV.x = model->joints[iJoint].translation.x;
 		distV.y = model->joints[iJoint].translation.y;
 		distV.z = model->joints[iJoint].translation.z;
@@ -1067,7 +1108,7 @@ void objSetupDll(ObjInstance *object,ObjDef *def,void *param) {
     object->pos_0x8c.z = object->pos.pos.z;
 }
 
-void Object_objLoadEventData(ObjInstance *object,int romdefno,
+void objLoadEventData(ObjInstance *object,int romdefno,
 ObjEventData *event,int animId,bool bImmediate) {
     int offset;
     int ii;
@@ -1168,7 +1209,7 @@ l953:
 	object->flags_0xaf = object->flags_0xaf & ~7;
 }
 
-void Object_objLoadWeaponData(ObjInstance *object, int objType,
+void objLoadWeaponData(ObjInstance *object, int objType,
 int *outData, int id, bool loadAsync) {
 	int ii;
 	int offset;
@@ -1196,7 +1237,7 @@ int *outData, int id, bool loadAsync) {
 	}
 }
 
-ObjData *Object_objLoadData(int objType) {
+ObjData *objLoadData(int objType) {
 	ObjData *objData;
 	uint offset;
 	uint size;
@@ -1262,7 +1303,7 @@ void fn_80084238(ObjInstance *object) {
     }
 }
 
-void* Object_objInitState(ObjInstance *object,void *state) {
+void* objInitState(ObjInstance *object,void *state) {
     int size;
 
     state = mmAlign4(state);
@@ -1290,7 +1331,7 @@ ObjModelFlags Object_getModelFlags(ObjInstance *object) {
     }
 }
 
-void* Object_objSetupEvents(int romdefno, ObjInstance *object, void *ptr) {
+void* objSetupEvents(int romdefno, ObjInstance *object, void *ptr) {
     ptr = (ObjEventData *)mmAlign4(ptr);
     object->pEventName = ptr;
 
@@ -1303,7 +1344,7 @@ void* Object_objSetupEvents(int romdefno, ObjInstance *object, void *ptr) {
     return ptr;
 }
 
-void* Object_objSetupModels(int romdefno, ModelInstance *modelnstance,
+void* objSetupModels(int romdefno, ModelInstance *modelnstance,
 ObjInstance *object,void *ptr) {
     if(!modelnstance) return ptr;
 
@@ -1378,7 +1419,7 @@ BOOL ObjEdit_isObjIndexNotEmpty(int idx) {
 	return Object_pObjIndex[idx] != -1;
 }
 
-int Object_objGetControlNo(int objType) {
+int objGetControlNo(int objType) {
     u8 temp[184];
 	uint ii;
 	int count;
@@ -1406,7 +1447,7 @@ int Object_objGetControlNo(int objType) {
 	return objType;
 }
 
-ObjFileStructFlags44 Object_objTypeGetFlags(int objType) {
+ObjFileStructFlags44 objTypeGetFlags(int objType) {
 	ObjData *data;
 
 	if(objType > Object_maxObjType) {
@@ -1417,11 +1458,11 @@ ObjFileStructFlags44 Object_objTypeGetFlags(int objType) {
 	objType = Object_pObjIndex[objType];
 	if(objType >= Object_maxObjId) return 0;
 
-	data = (ObjData*)((u32)Object_objTypes + Object_pObjectsTab[objType]);
+	data = (ObjData*)((u32)objTypes + Object_pObjectsTab[objType]);
 	return data->flags;
 }
 
-u8 Object_objTypeGetClass(int objType) {
+u8 objTypeGetClass(int objType) {
 	ObjData *data;
 
 	if(objType > Object_maxObjType) {
@@ -1432,11 +1473,11 @@ u8 Object_objTypeGetClass(int objType) {
 	objType = Object_pObjIndex[objType];
 	if(objType >= Object_maxObjId) return 0;
 
-	data = (ObjData*)((u32)Object_objTypes + Object_pObjectsTab[objType]);
+	data = (ObjData*)((u32)objTypes + Object_pObjectsTab[objType]);
   	return data->class_;
 }
 
-const char* Object_objTypeName(int objType) { //not present in binary
+const char* objTypeName(int objType) { //not present in binary
 	ObjData *data;
 
 	if(objType > Object_maxObjType) {
@@ -1447,11 +1488,11 @@ const char* Object_objTypeName(int objType) { //not present in binary
 	objType = Object_pObjIndex[objType];
 	if(objType >= Object_maxObjId) return 0;
 
-	data = (ObjData*)((u32)Object_objTypes + Object_pObjectsTab[objType]);
+	data = (ObjData*)((u32)objTypes + Object_pObjectsTab[objType]);
   	return data->name;
 }
 
-int Object_objGetTypeNo(int objType) { //not present in binary
+int objGetTypeNo(int objType) { //not present in binary
 	ObjData *data;
 
 	if(objType > Object_maxObjType) {
@@ -1462,7 +1503,7 @@ int Object_objGetTypeNo(int objType) { //not present in binary
 	objType = Object_pObjIndex[objType];
 	if(objType >= Object_maxObjId) return 0;
 
-	data = (ObjData*)((u32)Object_objTypes + Object_pObjectsTab[objType]);
+	data = (ObjData*)((u32)objTypes + Object_pObjectsTab[objType]);
   	return 0; //presumably data->something, but idk which
 }
 
@@ -1477,7 +1518,7 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 
 	ASSERTLINE(2275, obj);
 	ASSERTLINE(2276, obj->objdata);
-	if(obj->nTouchCallbacks) freeFn_80092460(obj);
+	if(obj->nTouchCallbacks) Object_freeFn_80092460(obj);
 
 	switch(obj->objtype) {
         case ObjDefNo_Krystal:
@@ -1711,7 +1752,7 @@ void fn_80085448(ObjInstance *object, int objType) { //reloc
 		ObjSpawnFlags_KeepLoaded,-1,-1,NULL);
 }
 
-ObjInstance* Object_objGetMain(void) {
+ObjInstance* objGetMain(void) {
 	ObjInstance **objs;
 	int nObj;
 
@@ -1792,14 +1833,14 @@ void objSetModelNo(ObjInstance *object,int modelNo) {
 	}
 }
 
-void Object_objAddEffectBox(ObjInstance *object) {
+void objAddEffectBox(ObjInstance *object) {
 	effectBoxes[numEffectBoxes++] = object;
 	if(numEffectBoxes == MAX_EFFECT_BOXES) {
 		printf("warning: objAddEffectBox max effect boxes\n");
 	}
 }
 
-void Object_objFreeEffectBox(ObjInstance *box) {
+void objFreeEffectBox(ObjInstance *box) {
 	int ii;
 	ObjInstance **boxes;
 

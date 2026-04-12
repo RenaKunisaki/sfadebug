@@ -7,6 +7,15 @@
 #include "sys/n64.h"
 
 //.data
+
+//probably doesn't belong here. might be another file
+//between this one and the previous.
+/* 802eb0a0 */ Mtx44 mtx44_identity = {
+    1.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 1.0f};
+
 /* clang-format off */
 /* 802eb0e0 */ u32 allocTagColorTbl[] = {
     ALLOC_TAG_ZERO,   ALLOC_TAG_LISTS,    ALLOC_TAG_SCREEN,
@@ -78,13 +87,11 @@ static const char *allocTagNames[] = {
 /* 80398A0C */ int mmDelay;
 /* 80398A10 */ int heapUsed0, heapUsed1, heapUsed2;
 /* 80398A1C */ int memUsedPct;
-/* 80398a38 */ SparseArray *modelsLoadedTable;
-/* 80398a3c */ SparseArray *animsLoadedTable;
 
-/* 80398B70 */ void *pFrameBuffer_80398b70;
-/* 80398B74 */ void *pFrameBuffer_80398b74;
+/* 80398B70 */ extern void *pFrameBuffer_80398b70;
+/* 80398B74 */ extern void *pFrameBuffer_80398b74;
 /* 80398B78 */ extern TVParams *curTvParams; // probably doesn't belong here
-
+	//XXX is this TVParams or GXRenderModeObj?
 
 void _mmHeapFree(void *ptr);
 void _mmAddToFreeList(void *ptr);

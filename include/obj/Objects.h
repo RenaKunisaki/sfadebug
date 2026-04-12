@@ -8,6 +8,11 @@ typedef int ObjDefEnum;
 #define DUMMY_OBJECT_ID 128
 #define MAX_LOADED_OBJECTS 1400
 
+//XXX why are these two different?
+#define MAX_OBJTYPES 70
+#define MAX_OBJTYPE_OBJS 257
+#define MAX_TOUCH_CALLBACKS 16
+
 #include "dolphin/mtx.h"
 #include "sys/dll.h"
 #include "sys/pi.h"
@@ -15,9 +20,22 @@ typedef int ObjDefEnum;
 #include "obj/ObjDef.h"
 #include "obj/ObjInstance.h"
 
+typedef struct {
+    /* 0x0 */ ObjInstance *obj1;
+    /* 0x4 */ ObjInstance *obj2;
+    /* 0x8 */ void *cb;
+} TouchCallback;
+
 enum ObjSetupFlags {
     ObjSetupFlags_Global = (1 << 0), //add to global object list
 };
+
+ObjData *objLoadData(int objType);
+void* objInitState(ObjInstance *object,void *state);
+void* objSetupEvents(int romdefno, ObjInstance *object, void *ptr);
+void* objSetupModels(int romdefno, ModelInstance *modelnstance,ObjInstance *object,void *ptr);
+void* objLoadShadow(ObjInstance *object,void *ptr,int);
+void* objSetupHits(int romdefno,ModelInstance *minst,HitState *hitState,void *buf,ObjInstance *obj);
 
 int Camera_addWorldMtx(void *); /* extern */
 void Camera_setPlayerNo(int); /* extern */
@@ -136,7 +154,7 @@ extern s32 Object_maxObjId;
 extern s32 Object_maxObjType;
 extern s32 ObjListSize;
 extern s32 objDelListCount;
-extern ObjData *Object_objTypes;
+extern ObjData *objTypes;
 extern s16 *Object_pObjIndex;
 extern s32 *Object_pObjectsTab;
 extern s32 defList;

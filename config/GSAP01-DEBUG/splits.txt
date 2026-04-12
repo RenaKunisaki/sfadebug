@@ -128,20 +128,21 @@ main/pi.c:
 
 main/main.c:
 	.text       start:0x80077CA8 end:0x8007A284
-	.data       start:0x802EADC8 end:0x802EB0E0
+	.data       start:0x802EADC8 end:0x802EB0A0
 	.sbss       start:0x803988E0 end:0x803989C4
 
 main/mm_dolphin.c:
 	.text       start:0x8007B3A4 end:0x8007C57C
-	.data       start:0x802EB0E0 end:0x802EB68C
+	.data       start:0x802EB0A0 end:0x802EB68C
 	.bss        start:0x80352CD8 end:0x80357698
-	.sbss       start:0x80398A08 end:0x80398B78
+	.sbss       start:0x80398A08 end:0x80398A20
 
 main/models_dolphin.c:
 	.text       start:0x8007C57C end:0x800816B4
 	.rodata     start:0x802CF000 end:0x802CF018
 	.data       start:0x802EB690 end:0x802EC988
 	.bss        start:0x80357698 end:0x803576F0
+	.sbss       start:0x80398A20 end:0x80398A40
 
 main/SKNControl.c:
 	.text       start:0x800816B4 end:0x80081DB4
@@ -149,13 +150,14 @@ main/SKNControl.c:
 main/objects.c:
 	.text       start:0x80081DB4 end:0x800860E0
 	.data       start:0x802ECA98 end:0x802ED268
+	.bss        start:0x803576F0 end:0x8035C9A8
 
 main/objanim.c:
 	.text       start:0x800860E0 end:0x80086488
 
 main/objhits.c:
 	.text       start:0x80088CE0 end:0x8009063C
-	.rodata     start:0x802CF018 end:0x802CF028
+	.rodata     start:0x802CF018 end:0x802CF020
 
 main/objlib.c:
 	.text       start:0x80091264 end:0x800927D4
@@ -165,7 +167,9 @@ main/expr.c:
 
 main/objprint.c:
 	.text       start:0x8009471C end:0x800961A0
-	.rodata     start:0x802CF028 end:0x802CF3B4
+	.rodata     start:0x802CF020 end:0x802CF3B4
+	.data       start:0x802ED268 end:0x802EECB0
+	.sbss       start:0x80398AE8 end:0x80398B00
 
 main/objprint_dolphin.c:
 	.text       start:0x80096B30 end:0x800993E0
@@ -178,6 +182,7 @@ main/pi_dolphin.c:
 
 main/rcp_dolphin.c:
 	.text       start:0x8009E5F0 end:0x8009FE30
+	.sbss       start:0x80398B40 end:0x80398B90
 
 main/shader.c:
 	.text       start:0x800A138C end:0x800A3270

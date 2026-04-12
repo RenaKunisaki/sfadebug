@@ -11,14 +11,51 @@
 #include "obj/ObjInstance.h"
 #include "obj/Player.h"
 
-/* 80399b8a */ s8 debugRenderMode;
-/* 80398afc */ s8 BYTE_80398afc;
-/* 80398aec */ int DAT_80398aec;
-/* 80396c15 */ u8 framesThisStep;
+typedef struct {
+    int ang[120]; //strange since MAX_JOINTS is 150
+} JointAngleStruct;
+/* 802cf020 */ JointAngleStruct DWORD_802cf020;
+typedef struct {
+    int unk[30];
+} JointStruct2;
+/* 802cf200 */ JointStruct2 DWORD_802cf200;
+/* 802cf278 */
 
+/* 802edea0 */ s8 sphereData[] = {
+    //x, y, z, color (r, g, b all same value)
+    -1,  1, -1, 0xFF,
+     1,  1, -1, 0xF0,
+    -1,  1,  1, 0xE6,
+     1,  1,  1, 0xDC,
+    -1,  0, -1, 0x96,
+     1,  0, -1, 0xA0,
+    -1,  0,  1, 0xAA,
+     1,  0,  1, 0xB4,
+    -1,  1, -1, 0xFF,
+     1,  1, -1, 0xF0,
+    -1,  1,  1, 0xE6,
+     1,  1,  1, 0xDC,
+    -1, -1, -1, 0x96,
+     1, -1, -1, 0xA0,
+    -1, -1,  1, 0xAA,
+     1, -1,  1, 0xB4 };
+/* 802edee0 */ N64VertexIdxs sphereIdxs[12];
+
+/* 802edf10 */ JointStruct2 DWORD_802edf10;
+/* 802edf50 */ N64VertexIdxs N64VertexIdxs_ARRAY_802edf50[10];
+/* 802edff0 */ N64VertexIdxs N64VertexIdxs_ARRAY_802edff0[8];
+/* 802ee158 */ N64VertexIdxs N64VertexIdxs_ARRAY_802ee158[20];
+/* 802ee2b8 */ u8 BYTE_802ee2b8[0x220]; //just guessing size here
+/* 802ee4d8 */ u8 Color_ARRAY_802ee4d8[16*3];
 /* 802ee504 */ u8 Color_ARRAY_802ee504[8][3];
-/* 802ee2b8 */ u8 BYTE_802ee2b8[];
-/* 802ee158 */ u8 BYTE_802ee158;
+
+/* 80396c15 */ u8 framesThisStep;
+/* 80398ad8 */ Mtx44Ptr pMtx_80398ad8;
+/* 80398aec */ int DAT_80398aec;
+/* 80398af8 */ u32 flags_80398af8; //always 0
+/* 80398afc */ s8 BYTE_80398afc;
+/* 8039993c */ s8 BYTE_8039993c; //always 0
+/* 80399b8a */ s8 debugRenderMode;
 
 void playerRender(ObjInstance *object, Gfx **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx, bool shouldRender);
 void objRenderCurrentModel(ObjInstance *obj);
@@ -186,8 +223,6 @@ void objRenderCurrentModel(ObjInstance *obj) {
     }
 }
 
-Mtx44Ptr pMtx_80398ad8;
-
 ModelInstance* playerBoneFn_80094cbc(Gfx **gfx, Mtx44 **mtx, Pol **pol,
 N64Vertex **vtx, ObjInstance *obj, ModelInstance *mInst, Mtx44Ptr mtx2,
 int alwaysZero, ObjInstance *player, int iAttachPoint) {
@@ -337,29 +372,6 @@ ModelInstance *mInst, Gfx **gfx, Mtx44 **mtx, Pol **pol) {
 	}
 }
 
-u8 Color_ARRAY_802ee4d8[16*3];
-s8 sphereData[] = {
-    //x, y, z, color (r, g, b all same value)
-    -1,  1, -1, 0xFF,
-     1,  1, -1, 0xF0,
-    -1,  1,  1, 0xE6,
-     1,  1,  1, 0xDC,
-    -1,  0, -1, 0x96,
-     1,  0, -1, 0xA0,
-    -1,  0,  1, 0xAA,
-     1,  0,  1, 0xB4,
-    -1,  1, -1, 0xFF,
-     1,  1, -1, 0xF0,
-    -1,  1,  1, 0xE6,
-     1,  1,  1, 0xDC,
-    -1, -1, -1, 0x96,
-     1, -1, -1, 0xA0,
-    -1, -1,  1, 0xAA,
-     1, -1,  1, 0xB4 };
-N64VertexIdxs sphereIdxs[12];
-u32 flags_80398af8; //always 0
-s8 BYTE_8039993c; //always 0
-
 //draws a sphere or something around an object if its ID is 9
 void fn_800953E8(Gfx **gfx, N64Vertex **diVtx, Pol **diPol) {
 	float posX;
@@ -451,9 +463,6 @@ void fn_800953E8(Gfx **gfx, N64Vertex **diVtx, Pol **diPol) {
 	}
 }
 
-
-N64VertexIdxs N64VertexIdxs_ARRAY_802ee158[];
-
 void debugRenderFn80095844(Gfx **gfx, Mtx44 **mtx, Pol **pol,
 N64Vertex **vtx, ObjInstance *obj) {
 	float fVar4, y, fVar2, fVar1;
@@ -496,8 +505,9 @@ N64Vertex **vtx, ObjInstance *obj) {
             rcpSetPrimColor(gfx, 0xff, 0, 0, 0xff);
         }
         rspCullFn800a5074(gfx, NULL, NULL, 6, 0, 0, 1);
-        RSP_CMD(gfx, 0x0100c018, &BYTE_802ee2b8);
-        n64DrawTriangles(gfx, N64VertexIdxs_ARRAY_802ee158, 0x14);
+        RSP_CMD(gfx, (G_VTX << 24) | 0x00c018, &BYTE_802ee2b8);
+        //gSPVertex(gfx, 12, 12, (uint)&BYTE_802ee2b8);
+        n64DrawTriangles(gfx, N64VertexIdxs_ARRAY_802ee158, 20);
     }
 }
 
@@ -524,7 +534,7 @@ float x, float y, float z, float scale, u8 iColor) {
 
     LAB_800a5074(gfx, NULL, NULL, 6, 0, 0, 1);
     RSP_CMD(gfx, 0x0100c018, &BYTE_802ee2b8);
-	n64DrawTriangles(gfx, &BYTE_802ee158, 0x14);
+	n64DrawTriangles(gfx, N64VertexIdxs_ARRAY_802ee158, 20);
 }
 
 void fn_80095cc0(Gfx **gfx,Mtx44 **mtx,Pol **pol,N64Vertex **vtx,
@@ -543,27 +553,13 @@ ModelInstance *mInst, UNKTYPE *param_6) {
     }
 }
 
-typedef struct {
-    int ang[120]; //strange since MAX_JOINTS is 150
-} JointAngleStruct;
-JointAngleStruct DWORD_802cf020;
-JointAngleStruct DWORD_802cf200;
-
-typedef struct {
-    int unk[30];
-} JointStruct2;
-JointStruct2 DWORD_802edf10;
-
-N64VertexIdxs N64VertexIdxs_ARRAY_802edf50[10];
-N64VertexIdxs N64VertexIdxs_ARRAY_802edff0[8];
-
 void objPrintFn_80095cd4(Gfx **gfx, Mtx44 **mtx, Pol **pol, N64Vertex **vtx,
 Model *mod, ModelInstance *mInst) {
     Mtx44 mtxTmp; //470
     Vec pos; //464..470
     ObjPos xf; //458..464
     JointAngleStruct jointXZ; //270
-    JointAngleStruct jointY; //90
+    JointStruct2 jointY; //90
     JointStruct2 joint2; //18
 	ModelSkeletonStruct *skel;
     BOOL bVar1;
@@ -586,7 +582,7 @@ Model *mod, ModelInstance *mInst) {
 		jointXZ.ang[ii] = jj;
         jj = getAngle(mod->joints[ii].translation.z,
             mod->joints[ii].translation.x) & 0xffff;
-		jointY.ang[ii] = jj;
+		jointY.unk[ii] = jj;
 	}
 
 	for(ii = 1; ii < mod->numJoints; ii++) {
@@ -601,7 +597,7 @@ Model *mod, ModelInstance *mInst) {
 			mtxTmp[3][3] = jMtx[2][3];
 			xf.rotation.z = 0;
 			xf.rotation.y = jointXZ.ang[iParent];
-			xf.rotation.x = jointY .ang[iParent];
+			xf.rotation.x = jointY .unk[iParent];
 			xf.scale = skel->scale[iParent] / 16.0f;
 			if(mod->exT[iParent] <= 1.0f) {
                 xf.pos.x = mtxTmp[3][1];

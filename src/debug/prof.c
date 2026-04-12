@@ -31,8 +31,8 @@
 /* 803973C0 */ int lbl_803973C0;
 /* 803973C4 */ int lbl_803973C4;
 /* 803989A4 */ extern LoadedDLL *pDll_SaveGame;
-/* 80398b70 */ void *pFrameBuffer_80398b70;
-/* 80398b74 */ void *pFrameBuffer_80398b74;
+/* 80398b70 */ extern void *pFrameBuffer_80398b70;
+/* 80398b74 */ extern void *pFrameBuffer_80398b74;
 /* 803997B8 */ int DWORD_803997b8;
 /* 803997BC */ DebugSaveStruct *pMeterPerfdata1;
 /* 803997C0 */ DebugSaveStruct *pMeterPerfdata2;
