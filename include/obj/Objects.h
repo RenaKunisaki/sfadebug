@@ -50,7 +50,7 @@ void ModelInstance_loadShaders(
 void Modelnstance_setTexFuncPtrsetTexFuncPtr(
     ModelInstance *modelInstance, undefined *cb); /* extern */
 void ModelInstance_unloadShaders(ModelInstance *modelInstance); /* extern */
-void Object_freeFn_80092460(ObjInstance *obj); /* extern */
+void objFreeFn_80092460(ObjInstance *obj); /* extern */
 void Object_objAddObjectType(ObjInstance *object, int type); /* extern */
 void *Object_objLoadShadow(ObjInstance *object, void *ptr, s32); /* extern */
 void *Object_objSetupField58(ObjInstance *object, void *ptr); /* extern */

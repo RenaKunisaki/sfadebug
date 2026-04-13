@@ -110,6 +110,7 @@ void modelApplyBoneTransforms(S16Vec *vtxs,S16Vec *vtxs2,u16 numPositions,short 
 BOOL countModels(void);
 void modelApplyBoneTransform(S16Vec *vIn, S16Vec *vOut, s16 count,short **anims1, short **anims2, int pos);
 void modelGetVtxPosFloat(Model *model,int positionNum,Vec *posVec);
+void fn_800657d8(AnimInstance *animInstance,S16Vec *outPos,S16Vec *outRot);
 
 void *loadModelInstanceAsset(int id, void *buf) { // 8007C57C
 	void *result;
@@ -1178,7 +1179,7 @@ float inScale, float outPosScale, Vec *outPos, S16Vec *outRot) { //8008045C
 	animInstance->unk2c[0] = (UNKTYPE*)((uint)anim +
 		anim->keyframeOffset + iJoint1 * size);
 
-	LAB_800658d0(animInstance, &local_5c, outRot);
+	fn_800657d8(animInstance, &local_5c, outRot);
 	animInstance->joints[0] = joint;
 	outPos->x = local_5c.x * (1.0f / 512.0f);
 	outPos->y = local_5c.y * (1.0f / 512.0f);

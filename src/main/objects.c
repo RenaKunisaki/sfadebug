@@ -122,7 +122,7 @@ void objFreeObject(ObjInstance *obj);
 void objUpdateModels(void);
 void objThaw(ObjInstance *object);
 void objSetFreezing(ObjInstance *object);
-void LAB_8018fb20(ObjInstance *obj,ObjDefEnum objtype);
+void fn_8018fac0(ObjInstance *obj,ObjDefEnum objtype);
 
 //objlist.c
 void objListInit(ObjectList *list, short stride);
@@ -884,7 +884,7 @@ void objSetup(ObjInstance *object, uint flags) {
 		object->flags_0xb0 |= ObjInstance_FlagsB0_IsInGlobalObjList;
 		objLoadedObjs[ObjListSize++] = object;
 		ASSERTLINE(1202, ObjListSize<MAX_OBJECTS);
-		LAB_80083bd4(object);
+		objAddToGlobalObjList(object);
 	}
 	if(0 < object->objdata->numSeqs) {
 		objAddObjectType(object, ObjCat_LevelControl);
@@ -1088,7 +1088,7 @@ void objFreeObject(ObjInstance *obj) {
 	}
 	obj->flags_0xb0 |= ObjInstance_FlagsB0_IsFreed;
 
-	LAB_8018fb20(obj, obj->objtype);
+	fn_8018fac0(obj, obj->objtype);
 	if(obj->lockedFreeTick) {
 		// add to the lock list if not already present
 		for(ii = 0; ii < ObjListSize; ii++) {
@@ -1561,7 +1561,7 @@ void Object_worldProcessObjFreeList(ObjInstance *obj, int param2) {
 
 	ASSERTLINE(2275, obj);
 	ASSERTLINE(2276, obj->objdata);
-	if(obj->nTouchCallbacks) Object_freeFn_80092460(obj);
+	if(obj->nTouchCallbacks) objFreeFn_80092460(obj);
 
 	switch(obj->objtype) {
         case ObjDefNo_Krystal:
