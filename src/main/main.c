@@ -794,7 +794,7 @@ void doQueuedLoads(void) { //80078f48
         }
         anyQueuedLoads = false;
         mmSetDelay(0);
-        fn_80068E00();
+        textureDebugSetupFn_80068e20();
         if (-1 < mapParam_80396c28) {
             gfxDllFn_8007399c(mapParam_80396c28);
             mapParam_80396c28 = -1;

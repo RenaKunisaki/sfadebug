@@ -424,7 +424,7 @@ def assignTagsFromCall(funcAddr, paramIdx):
         val = prop.getRegisterValue(callAddr,
             instr.getRegister('r%d' % (paramIdx + 3)))
         if val is None:
-            printf("an't find param for call to %s at 0x%X",
+            printf("can't find param for call to %s at 0x%X",
                 str(func.getName()), addrToInt(callAddr))
             continue
         val = val.getValue() & 0xFFFFFFFF

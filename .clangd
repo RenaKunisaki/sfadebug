@@ -1,2 +1,4 @@
+CompileFlags:
+  Add: [-fdeclspec]
 Diagnostics:
   Suppress: [-Wunused-function, -Wunused-value]

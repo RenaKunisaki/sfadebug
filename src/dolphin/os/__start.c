@@ -63,7 +63,7 @@ _check_TRK:
 	cmplwi r6, 0
 	beq _goto_main
 	lwz r7, OS_BI2_DEBUGFLAG_OFFSET(r6)
-	
+
 _check_debug_flag:
 	li r5, 0
 	cmplwi r7, 2
@@ -77,7 +77,7 @@ _goto_inittrk:
 	addi r6, r6, InitMetroTRK@l
 	mtlr r6
 	blrl
-	
+
 _goto_main:
 	lis r6, BOOTINFO2_ADDR@ha
 	addi r6, r6, BOOTINFO2_ADDR@l
