@@ -7,6 +7,7 @@ f32 powf(f32 x, f32 y);
 f32 sinf(f32);
 f32 cosf(f32);
 f32 tanf(f32);
+f32 sqrt(f32); //not sqrtf (but this is probably just a wrong name)
 
 float VECLength(Vec *vec);
 void VECSubtract(Vec *a,Vec *b,Vec *a_b);

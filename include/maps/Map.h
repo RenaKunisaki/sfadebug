@@ -2,6 +2,7 @@
 #define _MAPS_MAP_H_
 
 #include "../types.h"
+#include "../gfx/models/models.h"
 
 typedef int mapId32;
 typedef enum {
@@ -257,5 +258,69 @@ typedef struct {
     /* 0x8 */ int unk8;
     /* 0xc */ int unkC;
 } astruct_6;
+
+typedef struct MapBlock {
+    /* 0x00 */ undefined unk00;
+    /* 0x01 */ undefined unk01;
+    /* 0x02 */ undefined unk02;
+    /* 0x03 */ undefined unk03;
+    /* 0x04 */ undefined unk04;
+    /* 0x05 */ undefined unk05;
+    /* 0x06 */ ushort flags; //8:valid?
+    /* 0x08 */ uint size;
+    /* 0x0c */ Mtx mtx;
+    /* 0x3c */ undefined unk3c;
+    /* 0x3d */ undefined unk3d;
+    /* 0x3e */ undefined unk3e;
+    /* 0x3f */ undefined unk3f;
+    /* 0x40 */ undefined unk40;
+    /* 0x41 */ undefined unk41;
+    /* 0x42 */ undefined unk42;
+    /* 0x43 */ undefined unk43;
+    /* 0x44 */ undefined unk44;
+    /* 0x45 */ undefined unk45;
+    /* 0x46 */ undefined unk46;
+    /* 0x47 */ undefined unk47;
+    /* 0x48 */ undefined unk48;
+    /* 0x49 */ undefined unk49;
+    /* 0x4a */ undefined unk4a;
+    /* 0x4b */ undefined unk4b;
+    /* 0x4c */ GCPolygon *GCpolygons;
+    /* 0x50 */ PolygonGroup *polygonGroups;
+    /* 0x54 */ Texture **GCtextures;
+    /* 0x58 */ S16Vec *vertexPositions;
+    /* 0x5c */ UNKTYPE *vertexColours;
+    /* 0x60 */ UNKTYPE *vertexTexCoords;
+    /* 0x64 */ Shader *shaders;
+    /* 0x68 */ UNKTYPE *displayLists; //DisplayListPtr
+    /* 0x6c */ UNKTYPE *linehits; //LineHit
+    /* 0x70 */ undefined4 unk70;
+    /* 0x74 */ BitStream *renderStream;
+    /* 0x78 */ u16 renderStreamSize;
+    /* 0x7a */ undefined unk7a;
+    /* 0x7b */ undefined unk7b;
+    /* 0x7c */ BitStream *transparentRenderStream;
+    /* 0x80 */ u16 transparentRenderStreamSize;
+    /* 0x82 */ undefined unk82;
+    /* 0x83 */ undefined unk83;
+    /* 0x84 */ BitStream *waterRenderStream;
+    /* 0x88 */ u16 waterRenderStreamSize;
+    /* 0x8a */ s16 yMin;
+    /* 0x8c */ s16 yMax;
+    /* 0x8e */ u16 numPositions;
+    /* 0x90 */ undefined unk90;
+    /* 0x91 */ undefined unk91;
+    /* 0x92 */ undefined unk92;
+    /* 0x93 */ undefined unk93;
+    /* 0x94 */ undefined unk94;
+    /* 0x95 */ undefined unk95;
+    /* 0x96 */ u16 numPolygons;
+    /* 0x98 */ u16 numGroups;
+    /* 0x9a */ u16 numLineHits;
+    /* 0x9c */ undefined2 unk9c;
+    /* 0x9e */ s8 numTextures;
+    /* 0x9f */ s8 numDisplayLists;
+    /* 0xa0 */ s8 numShaders;
+} MapBlock;
 
 #endif //_MAPS_MAP_H_
