@@ -312,7 +312,7 @@ typedef struct {
     /* 0x00 */ Model *mod;
     /* 0x04 */ S16Vec *vertexPositions2;
     /* 0x08 */ s32 unk08; //vertexPositions2[1]?
-    /* 0x0c */ Mtx44 *jMtxs[2]; //joint matrices
+    /* 0x0c */ Mtx *jMtxs[2]; //joint matrices
         //obj->frames->jMtxs[(char)obj->modelno + -3]
         //is actually:
         //obj->frames[obj->modelno]
@@ -338,5 +338,7 @@ typedef struct {
 } ModelInstance;
 
 extern SparseArray *modelsLoadedTable; //80398a38
+
+Mtx *modelInstGetjMtx(ModelInstance *, int);
 
 #endif //_GFX_MODELS_MODELS_H_

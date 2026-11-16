@@ -80,7 +80,7 @@ void tiltListFn_8007ebe8(ObjInstance *object,ModelInstance *modelInstance,Model 
 void ModelInstance_loadShaders(ModelInstance *minst,ObjInstance *obj);
 void ModelInstance_unloadShaders(ModelInstance *model);
 TexturePtr* ModelInstance_getShaderTexture(ModelInstance *modelInstance,int shaderNum);
-Mtx44* modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
+Mtx* modelInstGetjMtx(ModelInstance *modelInstance,int iMtx);
 void modelInstSwapJmtxs(ModelInstance *modelInstance);
 void ModelInstance_setTexFuncPtr(ModelInstance *modelInstance,TexFuncPtr cb);
 TexFuncPtr ModelInstance_getTexFuncPtr(ModelInstance *modelInstance);
@@ -688,7 +688,7 @@ TexturePtr* ModelInstance_getShaderTexture(ModelInstance *modelInstance, int sha
 	return &modelInstance->shaderDefs[shaderNum].texture; //sus
 }
 
-Mtx44* modelInstGetjMtx(ModelInstance *modelInstance, int iMtx) { // 8007EFF0
+Mtx* modelInstGetjMtx(ModelInstance *modelInstance, int iMtx) { // 8007EFF0
 	int nJoints;
 
     BADASSERTLINE(1169, modelInstance);

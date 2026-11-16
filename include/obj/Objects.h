@@ -95,12 +95,13 @@ void memclr(void *param1, size_t param2); /* extern */
 void memcpy_src_dst_len(void *param1, void *param2, size_t param3); /* extern */
 u16 modelGetCullDistance(Model *model); /* extern */
 void modelInstanceFree(ModelInstance *modelInstance); /* extern */
-void mtx44Transpose(Mtx44 *src, Mtx44 *dst); /* extern */
-void mtxRotateByVec3s(Mtx44 *mtx, S16Vec *rot); /* extern */
+void mtxTranspose(Mtx src, Mtx dst); /* extern */
+void mtxRotateByVec3s(Mtx mtx, S16Vec *rot); /* extern */
 void multVectorByObjMtx(double x, double y, double z, float *outX, float *outY,
     float *outZ, ObjInstance *obj); /* extern */
 void objFlashWhileFreezing(ObjInstance *); /* extern */
 void objFreeAll(void); /* extern */
+ModelInstance *objGetModelInstance(ObjInstance *obj);
 void objListAdd(
     ObjectList *param_1, ObjInstance *obj1, ObjInstance *obj2); /* extern */
 void objModelMtxFn_8007b0c0(ObjInstance *obj, f32 (*)[4]); /* extern */
@@ -205,11 +206,13 @@ extern s32 var_80396D08;
 
 typedef struct {
     Vec pos;
-    float unk0c;
-    float unk10;
-    float unk14;
-    float unk18;
-    float unk1c;
+    //XXX where did this come from?
+    //objUpdateFeet confirms it's only a Vec
+    //float unk0c;
+    //float unk10;
+    //float unk14;
+    //float unk18;
+    //float unk1c;
 } foot_vol_t;
 
 #endif //_OBJ_OBJECTS_H_
