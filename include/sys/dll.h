@@ -261,6 +261,16 @@ typedef struct {
         } gametext;
 
         struct {
+            void (*func03)(void); //placeholders. TODO: fill these in.
+            void (*func04)(void);
+            void (*func05)(void);
+            void (*func06)(void);
+            void (*func07)(void);
+            void (*func08)(void);
+            int (*CommandMenu_func09)(void);
+        } gameui;
+
+        struct {
             void(*func03_nop)(Gfx**, Mtx44**, N64Vertex **vtx);
             void(*newgame)(int);
             void(*func05)();

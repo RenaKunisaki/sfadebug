@@ -199,7 +199,8 @@ void objGetAttachPointWorldPos(ObjInstance *object, int placeNum, float *outX,
 
 
 /** Update the positions of the feet, starting at the given placement index */
-void objUpdateFeet(ObjInstance *obj, int placeno, int nofeet, foot_vol_t *foot) {
+void objUpdateFeet(
+    ObjInstance *obj, int placeno, int nofeet, foot_vol_t *foot) {
 	Mtx *mtx;
 	int iBone;
 	int iFoot;
@@ -207,12 +208,12 @@ void objUpdateFeet(ObjInstance *obj, int placeno, int nofeet, foot_vol_t *foot) 
 	ObjData *data;
 
 	ASSERTLINE(418, nofeet > 0 && nofeet < 16);
-	ASSERTLINE(419, obj->objdata->noplacements > placeno+nofeet);
+	ASSERTLINE(419, obj->objdata->noplacements > placeno + nofeet);
 
 	data = obj->objdata;
 	frame = obj->frames[obj->modelno];
 	for(iFoot = 0; iFoot < nofeet; iFoot++) {
-		iBone = data->pAttachPoints[placeno+iFoot].bone[obj->modelno];
+		iBone = data->pAttachPoints[placeno + iFoot].bone[obj->modelno];
 		mtx = modelInstGetjMtx(frame, iBone);
 		foot[iFoot].pos.x = (*mtx)[0][3];
 		foot[iFoot].pos.y = (*mtx)[1][3];
@@ -222,4 +223,84 @@ void objUpdateFeet(ObjInstance *obj, int placeno, int nofeet, foot_vol_t *foot) 
 			foot[iFoot].pos.z += playerMapOffsetZ;
 		}
 	}
+}
+
+BOOL objIsInGlobalObjList(ObjInstance *obj) {
+	ObjInstance **objs;
+	s32 iObj;
+	s32 nObjs;
+
+	ASSERTLINE(473, obj);
+	objs = Object_getObjects(&iObj, &nObjs);
+	for(iObj = 0; iObj < nObjs; iObj++) {
+		if(objs[iObj] == obj) return TRUE;
+	}
+	return FALSE;
+}
+
+/**
+ * @brief Find the nearest object to this one of a particular type.
+ *
+ *  @param obj The object to search near.
+ *  @param romdefno The object type to look for. -1 means any object.
+ *  @param mdist The maximum distance to search. Must be > 0.
+ *  @return The nearest object, or NULL.
+ *  @note mdist is replaced with the square of the distance to the
+ *    returned object. If no object is found, mdist is replaced
+ *    with the square of its original value.
+ */
+ObjInstance *objFindNearby(ObjInstance *obj, int romdefno, float *mdist) {
+	ObjInstance **ObjList;
+	ObjInstance *result;
+	s32 iFirstObj;
+	int iObj;
+	s32 nObjs;
+	float dist;
+
+	ASSERTLINE(497, obj);
+	ASSERTLINE(498, mdist);
+	ASSERTLINE(499, *mdist > 0.0F);
+	ObjList = Object_getObjects(&iFirstObj, &nObjs);
+	ASSERTLINE(503, ObjList);
+	result = NULL;
+	*mdist = *mdist * *mdist;
+
+	if(romdefno != -1) {
+		for(iObj = iFirstObj; iObj < nObjs; iObj++) {
+			if(romdefno == ObjList[iObj]->objtype && obj != ObjList[iObj]) {
+				dist = objDistSqObj2Obj(obj, ObjList[iObj]);
+				if(dist < *mdist) {
+					*mdist = dist;
+					result = ObjList[iObj];
+				}
+			}
+		}
+	} else {
+		for(iObj = iFirstObj; iObj < nObjs; iObj++) {
+			dist = objDistSqObj2Obj(obj, ObjList[iObj]);
+			if(dist && dist < *mdist) {
+				*mdist = dist;
+				result = ObjList[iObj];
+			}
+		}
+	}
+	return result;
+}
+
+//probably "is locked on to object"
+BOOL objLockFn_80092258(ObjInstance *obj) {
+	ASSERTLINE(540, obj);
+	ASSERTLINE(541, obj->objdata);
+	ASSERTLINE(542, obj->objdata->lockdata);
+
+	if(obj->flags_0xaf & ObjInstance_FlagsAF_CanPressAToTalk) {
+	    if(!pDll_GameUI->funcs->gameui.CommandMenu_func09()) {
+			ObjInstance *player = objGetMain();
+			if(playerGetStateField878(player) == -1) {
+				disableButtons(0, PAD_BUTTON_A);
+				return TRUE;
+			}
+		}
+	}
+	return FALSE;
 }

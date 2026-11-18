@@ -40,6 +40,7 @@ void* objSetupEvents(int romdefno, ObjInstance *object, void *ptr);
 void* objSetupModels(int romdefno, ModelInstance *modelnstance,ObjInstance *object,void *ptr);
 void* objLoadShadow(ObjInstance *object,void *ptr,int);
 void* objSetupHits(int romdefno,ModelInstance *minst,HitState *hitState,void *buf,ObjInstance *obj);
+ObjInstance* objGetMain();
 
 int Camera_addWorldMtx(void *); /* extern */
 void Camera_setPlayerNo(int); /* extern */
